@@ -52,8 +52,7 @@ impl Decode for Timestamptz {
             PgValueFormat::Text => {
                 let s = value.as_str()?;
                 Timestamptz(
-                    fastdate::DateTime::from_str(s)
-                        .unwrap()
+                    fastdate::DateTime::from_str(s)?
                         .unix_timestamp_millis() as u64,
                 )
             }

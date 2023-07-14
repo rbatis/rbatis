@@ -20,7 +20,7 @@ impl Encode for Date {
 impl Decode for Date {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(Date(match value.format() {
-            MySqlValueFormat::Text => fastdate::Date::from_str(value.as_str()?).unwrap(),
+            MySqlValueFormat::Text => fastdate::Date::from_str(value.as_str()?)?,
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
                 //let len = buf[0];

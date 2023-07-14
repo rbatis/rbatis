@@ -113,7 +113,7 @@ impl FromStr for PgConnectOptions {
                 }
 
                 k if k.starts_with("options[") => {
-                    if let Some(key) = k.strip_prefix("options[").unwrap().strip_suffix(']') {
+                    if let Some(key) = k.strip_prefix("options[")?.strip_suffix(']') {
                         options = options.options([(key, &*value)]);
                     }
                 }

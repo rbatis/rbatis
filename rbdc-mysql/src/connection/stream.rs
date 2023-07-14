@@ -88,7 +88,7 @@ impl MySqlStream {
                     let eof = packet.eof(self.capabilities)?;
 
                     if eof.status.contains(Status::SERVER_MORE_RESULTS_EXISTS) {
-                        *self.waiting.front_mut().unwrap() = Waiting::Result;
+                        *self.waiting.front_mut()? = Waiting::Result;
                     } else {
                         self.waiting.pop_front();
                     };
@@ -105,7 +105,7 @@ impl MySqlStream {
                         self.waiting.pop_front();
                     }
                 } else {
-                    *self.waiting.front_mut().unwrap() = Waiting::Row;
+                    *self.waiting.front_mut()? = Waiting::Row;
                     self.skip_result_metadata(packet).await?;
                 }
             }
