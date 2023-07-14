@@ -146,7 +146,7 @@ impl PgStream {
                         PgSeverity::Log => Level::Trace,
                     };
 
-                    if log::log_enabled!(Debug) {
+                    if log::log_enabled!(log::Level::Debug) {
                         log::logger().log(
                             &log::Record::builder()
                                 .args(format_args!("{}", notice.message()))
