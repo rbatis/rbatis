@@ -43,4 +43,4 @@ serde_bytes = "0.11.6"
 async-trait = "0.1.56"
 uuid = { version = "1.1", features = ["v4"] }
 itoa = "1.0"
-bigdecimal = {version = "0.4.0",features = ["serde"]}
+bigdecimal = {version = "0.4.1",features = ["serde"]}
