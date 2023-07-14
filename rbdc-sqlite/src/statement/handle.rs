@@ -6,8 +6,8 @@ use std::ptr;
 use std::ptr::NonNull;
 use std::slice::from_raw_parts;
 use std::str::{from_utf8, from_utf8_unchecked};
-use std::sync::{Condvar, Mutex};
-
+use parking_lot::Mutex;
+use parking_lot::Condvar;
 use crate::type_info::DataType;
 use crate::{SqliteError, SqliteTypeInfo};
 use libsqlite3_sys::{
@@ -386,12 +386,11 @@ impl Notify {
     fn wait(&self) {
         let _lock = self
             .condvar
-            .wait_while(self.mutex.lock().unwrap(), |fired| !*fired)
-            .unwrap();
+            .wait_while(&mut self.mutex.lock(), |fired| !*fired);
     }
 
     fn fire(&self) {
-        *self.mutex.lock().unwrap() = true;
+        *self.mutex.lock() = true;
         self.condvar.notify_one();
     }
 }

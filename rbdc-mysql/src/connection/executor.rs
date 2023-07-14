@@ -149,7 +149,7 @@ impl MySqlConnection {
                 }
 
                 // otherwise, this first packet is the start of the result-set metadata,
-                *self.stream.waiting.front_mut()? = Waiting::Row;
+                *self.stream.waiting.front_mut().unwrap() = Waiting::Row;
 
                 let num_columns = packet.get_uint_lenenc() as usize; // column count
 
@@ -177,7 +177,7 @@ impl MySqlConnection {
 
                         if eof.status.contains(Status::SERVER_MORE_RESULTS_EXISTS) {
                             // more result sets exist, continue to the next one
-                            *self.stream.waiting.front_mut()? = Waiting::Result;
+                            *self.stream.waiting.front_mut().unwrap() = Waiting::Result;
                             break;
                         }
 

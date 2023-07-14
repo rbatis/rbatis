@@ -23,7 +23,7 @@ impl Driver for PgDriver {
         &'a self,
         opt: &'a dyn ConnectOptions,
     ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
-        let opt: &PgConnectOptions = opt.downcast_ref()?;
+        let opt: &PgConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = opt.connect().await?;
             Ok(conn)
@@ -44,7 +44,9 @@ impl Placeholder for PgDriver {
 mod test {
     use crate::driver::PgDriver;
     use rbdc::db::Placeholder;
-
+    #[test]
+    fn test_default() {
+    }
     #[test]
     fn test_exchange() {
         let v = "insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";

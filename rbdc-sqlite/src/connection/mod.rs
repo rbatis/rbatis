@@ -219,8 +219,8 @@ impl Statements {
             let statement = VirtualStatement::new(query, true)?;
             self.cached.insert(query, statement);
         }
-
-        let statement = self.cached.get_mut(query)?;
+        //.unwrap() is safe
+        let statement = self.cached.get_mut(query).unwrap();
 
         if exists {
             // as this statement has been executed before, we reset before continuing
