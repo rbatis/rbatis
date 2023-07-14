@@ -117,6 +117,11 @@ impl Decode<'_> for Notice {
         let mut message = (0, 0);
         let mut code = (0, 0);
 
+        if buf.is_empty(){
+            return Err(Error::protocol(
+                "Postgres returned a empty data"
+            ))
+        }
         // we cache the three always present fields
         // this enables to keep the access time down for the fields most likely accessed
 
