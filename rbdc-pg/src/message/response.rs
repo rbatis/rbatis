@@ -102,7 +102,7 @@ impl Notice {
     #[inline]
     fn get_cached_str(&self, cache: (u16, u16)) -> &str {
         // unwrap: this cannot fail at this stage
-        from_utf8(&self.storage[cache.0 as usize..cache.1 as usize]).unwrap()
+        from_utf8(&self.storage[cache.0 as usize..cache.1 as usize]).unwrap_or_default()
     }
 }
 
@@ -136,8 +136,11 @@ impl Decode<'_> for Notice {
                 b'S' => {
                     // Discard potential errors, because the message might be localized
                     severity_s = from_utf8(&buf[v.0 as usize..v.1 as usize])
-                        .unwrap()
+                        // If the error string is not UTF-8, we have no hope of interpreting it,
+                        // localized or not. The `V` field would likely fail to parse as well.
+                        .map_err(|_| notice_protocol_err())?
                         .try_into()
+                        // If we couldn't parse the severity here, it might just be localized.
                         .ok();
                 }
 
@@ -146,7 +149,7 @@ impl Decode<'_> for Notice {
                     // variant.
                     severity_v = Some(
                         from_utf8(&buf[v.0 as usize..v.1 as usize])
-                            .unwrap()
+                            .map_err(|_| notice_protocol_err())?
                             .try_into()?,
                     );
                 }
@@ -171,6 +174,17 @@ impl Decode<'_> for Notice {
         })
     }
 }
+
+fn notice_protocol_err() -> Error {
+    Error::protocol(
+        "Postgres returned a non-UTF-8 string for its error message. \
+         This is most likely due to an error that occurred during authentication and \
+         the default lc_messages locale is not binary-compatible with UTF-8. \
+         See the server logs for the error details."
+            .into()
+    )
+}
+
 
 /// An iterator over each field in the Error (or Notice) response.
 struct Fields<'a> {
