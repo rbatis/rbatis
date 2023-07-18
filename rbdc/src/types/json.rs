@@ -1,9 +1,11 @@
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 use crate::Error;
-use serde::Deserializer;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::DeserializeOwned;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Json")]
@@ -11,8 +13,8 @@ pub struct Json(pub String);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         Ok(Json::from(Value::deserialize(deserializer)?))
     }
@@ -94,6 +96,78 @@ impl FromStr for Json {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self(s.to_string()))
+    }
+}
+
+/// unstable
+/// use:
+/// #[derive(Clone, serde::Serialize, serde::Deserialize)]
+/// pub struct BizUser {
+///     pub id: Option<String>,
+///     pub account: Option<JsonV<Account>>,
+/// }
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+pub struct JsonV<T: Serialize + DeserializeOwned>(pub T);
+
+impl<T: Serialize + DeserializeOwned> Serialize for JsonV<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        use serde::ser::Error;
+        if std::any::type_name::<S::Error>() == std::any::type_name::<rbs::Error>() {
+            Json(serde_json::to_string(&self.0).map_err(|e| {
+                Error::custom(e.to_string())
+            })?).serialize(serializer)
+        } else {
+            self.0.serialize(serializer)
+        }
+    }
+}
+
+impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        use serde::de::Error;
+        if std::any::type_name::<D::Error>() == std::any::type_name::<rbs::Error>() {
+            let mut v = Value::deserialize(deserializer)?;
+            let js;
+            if let Value::Ext(_ty, buf) = v {
+                v = *buf;
+            }
+            if let Value::String(buf) = v {
+                js = buf;
+            } else {
+                js = v.to_string();
+            }
+            if std::any::type_name::<D::Error>() == std::any::type_name::<rbs::Error>() {
+                Ok(JsonV(serde_json::from_str(&js).map_err(|e| {
+                    Error::custom(e.to_string())
+                })?))
+            } else {
+                Ok(JsonV(serde_json::from_str(&js).map_err(|e| {
+                    Error::custom(e.to_string())
+                })?))
+            }
+        } else {
+            Ok(JsonV(T::deserialize(deserializer)?))
+        }
+    }
+}
+
+impl<T: Serialize + DeserializeOwned> Deref for JsonV<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T: Serialize + DeserializeOwned> DerefMut for JsonV<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T: Serialize + DeserializeOwned + Display> Display for JsonV<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
     }
 }
 
