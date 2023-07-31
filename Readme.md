@@ -83,7 +83,7 @@ QPS: 885486 QPS/s
 
 | platform                | is supported |
 |-------------------------|--------------|
-| Linux(unbutu laster***) | √            | 
+| Linux(Ubuntu laster***) | √            | 
 | Apple/MacOS(laster)     | √            |  
 | Windows(latest)         | √            |
 
