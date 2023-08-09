@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 pub extern crate deadpool;
 
 pub mod common;
