@@ -131,7 +131,9 @@ impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
             if let Value::Ext(_ty, buf) = v {
                 v = *buf;
             }
-            if let Value::String(buf) = v {
+            if let Value::Binary(buf) = v {
+                js = String::from_utf8(buf).map_err(|e|D::Error::custom(e.to_string()))?;
+            }else if let Value::String(buf) = v {
                 js = buf;
             } else {
                 js = v.to_string();

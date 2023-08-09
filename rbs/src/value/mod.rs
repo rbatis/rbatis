@@ -332,7 +332,17 @@ impl Value {
         match self {
             Value::Binary(v) => Some(v),
             Value::Ext(_, ext) => ext.into_bytes(),
-            _ => None,
+            Value::Null => { Some(vec![]) }
+            Value::Bool(v) => { Some(v.to_string().into_bytes()) }
+            Value::I32(v) => { Some(v.to_string().into_bytes()) }
+            Value::I64(v) => { Some(v.to_string().into_bytes()) }
+            Value::U32(v) => { Some(v.to_string().into_bytes()) }
+            Value::U64(v) => { Some(v.to_string().into_bytes()) }
+            Value::F32(v) => { Some(v.to_string().into_bytes()) }
+            Value::F64(v) => { Some(v.to_string().into_bytes()) }
+            Value::String(v) => { Some(v.into_bytes()) }
+            Value::Array(_) => { Some(self.to_string().into_bytes()) }
+            Value::Map(_) => { Some(self.to_string().into_bytes()) }
         }
     }
 
@@ -589,10 +599,10 @@ impl Into<ValueMap> for Value {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-where
-    V: Into<Value>,
+    where
+        V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
