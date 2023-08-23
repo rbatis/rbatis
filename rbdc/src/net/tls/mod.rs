@@ -137,9 +137,6 @@ async fn configure_tls_connector(
     #[cfg(not(feature = "_rt-async-std"))]
     let connector = builder.build()?.into();
 
-    #[cfg(feature = "_rt-async-std")]
-    let connector = builder.into();
-
     Ok(connector)
 }
 
