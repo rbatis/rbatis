@@ -1,4 +1,4 @@
-#[cfg(all(feature = "tls-native-tls"))]
+#[cfg(feature = "tls-native-tls")]
 pub use native_tls;
 
 //

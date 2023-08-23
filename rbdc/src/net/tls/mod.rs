@@ -213,7 +213,7 @@ where
             #[cfg(feature = "tls-rustls")]
             MaybeTlsStream::Tls(s) => s.get_ref().0,
 
-            #[cfg(all(feature = "tls-native-tls"))]
+            #[cfg(feature = "tls-native-tls")]
             MaybeTlsStream::Tls(s) => s.get_ref().get_ref().get_ref(),
 
             MaybeTlsStream::Upgrading => {
@@ -234,7 +234,7 @@ where
             #[cfg(feature = "tls-rustls")]
             MaybeTlsStream::Tls(s) => s.get_mut().0,
 
-            #[cfg(all(feature = "tls-native-tls"))]
+            #[cfg(feature = "tls-native-tls")]
             MaybeTlsStream::Tls(s) => s.get_mut().get_mut().get_mut(),
 
             MaybeTlsStream::Upgrading => {

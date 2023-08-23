@@ -41,7 +41,7 @@ impl From<std::io::Error> for Error {
     }
 }
 
-#[cfg(all(feature = "tls-native-tls"))]
+#[cfg(feature = "tls-native-tls")]
 impl From<native_tls::Error> for Error {
     fn from(e: native_tls::Error) -> Self {
         Error::E(e.to_string())
