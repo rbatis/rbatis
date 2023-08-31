@@ -298,11 +298,11 @@ macro_rules! impl_delete {
 ///        `order by create_time desc`"});
 /// ```
 ///
-/// limit_sql: If the database does not support the statement `limit ${page_no},${page_size}`,You should add param 'limit_sql:String'
+/// limit_sql: If the database does not support the statement `limit ${page_no},${page_size}`,You should add param 'limit_sql:&str'
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct BizActivity{}
-/// rbatis::impl_select_page!(BizActivity{select_page(limit_sql:String) =>"
+/// rbatis::impl_select_page!(BizActivity{select_page(limit_sql:&str) =>"
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
