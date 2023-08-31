@@ -328,7 +328,7 @@ macro_rules! impl_select_page {
                     if do_count == true:
                        `count(1) as count`
                     ` from ${table_name} `\n",$where_sql,"\n
-                    if !sql.contains('page_no') && !sql.contains('page_size'):
+                    if do_count == false:
                         `${limit_sql}`")]
                    async fn $fn_name(executor: &mut dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
