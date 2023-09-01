@@ -20,12 +20,14 @@ pub trait Intercept: Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
+    /// if set result = Some,will be return result
     fn before(
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
+        _result: ResultType<&mut Option<ExecResult>, &mut Option<Vec<Value>>>,
     ) -> Result<(), Error> {
         Ok(())
     }
