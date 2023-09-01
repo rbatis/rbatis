@@ -56,8 +56,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -73,8 +73,12 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
+            let mut before_result = None;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args)?;
+                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                if let Some(v) = before_result {
+                    return Ok(v);
+                }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
@@ -92,8 +96,12 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
+            let mut before_result = None;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args)?;
+                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                if let Some(v) = before_result {
+                    return Ok(Value::Array(v));
+                }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
@@ -155,8 +163,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// query and decode
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -171,8 +179,12 @@ impl Executor for RBatisTxExecutor {
     ) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
+            let mut before_result = None;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args)?;
+                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                if let Some(r) = before_result {
+                    return Ok(r);
+                }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
@@ -189,8 +201,12 @@ impl Executor for RBatisTxExecutor {
     fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
+            let mut before_result = None;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args)?;
+                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                if let Some(r) = before_result {
+                    return Ok(Value::Array(r));
+                }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
@@ -305,8 +321,8 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-    where
-        F: Future<Output = ()> + Send + 'static,
+        where
+            F: Future<Output=()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -387,8 +403,8 @@ impl RBatis {
 
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+        where
+            T: DeserializeOwned,
     {
         let mut conn = self.acquire().await?;
         let v = conn.query(sql, args).await?;

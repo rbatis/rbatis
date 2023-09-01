@@ -99,6 +99,7 @@ impl Intercept for LogInterceptor {
         _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
+        _result: ResultType<&mut Option<ExecResult>, &mut Option<Vec<Value>>>,
     ) -> Result<(), Error> {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(());
