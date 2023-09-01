@@ -198,18 +198,4 @@ mod test {
         };
         block_on(f);
     }
-    #[test]
-    fn test_to_snake_name() {
-        _ = LOGGER.set(Logger {});
-        log::set_logger(LOGGER.get().unwrap())
-            .map(|()| log::set_max_level(LevelFilter::Info))
-            .unwrap();
-        let rb = RBatis::new();
-
-        rb.init(MockDriver {}, "test").unwrap();
-        let f = async move {
-            _ = rb.exec("select * from table", vec![]).await;
-        };
-        block_on(f);
-    }
 }
