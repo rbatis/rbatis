@@ -22,7 +22,7 @@ pub trait Driver: Debug + Sync + Send {
     fn default_option(&self) -> Box<dyn ConnectOptions>;
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize, Eq, PartialEq)]
 pub struct ExecResult {
     pub rows_affected: u64,
     /// If some databases do not support last_insert_id, the default value is Null

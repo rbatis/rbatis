@@ -6,7 +6,9 @@ mod test {
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
-    use std::sync::OnceLock;
+    use std::sync::{Arc, OnceLock};
+    use rbatis::executor::Executor;
+    use rbatis::intercept::{Intercept, ResultType};
 
     pub struct Logger {}
 
@@ -160,6 +162,42 @@ mod test {
         }
     }
 
+    #[derive(Debug)]
+    pub struct MockIntercept{}
+
+    impl Intercept for MockIntercept{
+        fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, result: ResultType<&mut Option<ExecResult>, &mut Option<Vec<Value>>>) -> Result<(), Error> {
+            match result {
+                ResultType::Exec(v) => {
+                    *v=Some(ExecResult{
+                        rows_affected: 1,
+                        last_insert_id: Value::U64(1),
+                    });
+                }
+                ResultType::Query(_) => {}
+            }
+            Ok(())
+        }
+    }
+    #[test]
+    fn test_mock_intercept() {
+        _ = LOGGER.set(Logger {});
+        log::set_logger(LOGGER.get().unwrap())
+            .map(|()| log::set_max_level(LevelFilter::Info))
+            .unwrap();
+        let rb = RBatis::new();
+        rb.init(MockDriver {}, "test").unwrap();
+        rb.intercepts.push(Arc::new(MockIntercept{}));
+        let f = async move {
+            let r = rb.exec("select * from table", vec![]).await.unwrap();
+            println!("r={}",r);
+            assert_eq!(r, ExecResult{
+                rows_affected: 1,
+                last_insert_id: Value::U64(1),
+            })
+        };
+        block_on(f);
+    }
     #[test]
     fn test_to_snake_name() {
         _ = LOGGER.set(Logger {});
