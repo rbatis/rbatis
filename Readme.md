@@ -16,8 +16,8 @@ It is an ORM, a small compiler, a dynamic SQL languages
 ###### Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4 is Inspired and supported by these frameworks.**
 
 * High-performance: Compile time [Dynamic SQL](dyn_sql.md),Based on Future/Tokio, Connection Pool
-* Reliability:  Rust Safe Code,`#{arg}`, `${arg}`, unify `?` placeholders(support all driver)
-* Productivity: `Box<dyn Intercept>`,  `py_sql`,`html_sql`,`curd!` macro, `Box<dyn Driver>` RBDC driver(JDBC-like),[abs_admin project](https://github.com/rbatis/abs_admin)
+* Reliability:  Rust Safe Code,precompile: `#{arg}`, Direct replacement:`${arg}`, unify `?` placeholders(support all driver)
+* Productivity: `Box<dyn Intercept>`, `#[py_sql]`, Compatible with mybatis3 `#[html_sql]`,`curd!` macro, `Box<dyn Driver>` RBDC driver(JDBC-like),[abs_admin project](https://github.com/rbatis/abs_admin)
 
 
 ### Performance
