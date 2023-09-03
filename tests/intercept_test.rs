@@ -164,17 +164,17 @@ mod test {
     pub struct MockIntercept{}
 
     impl Intercept for MockIntercept{
-        fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, result: ResultType<&mut Option<ExecResult>, &mut Option<Vec<Value>>>) -> Result<(), Error> {
+        fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>,  result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,) -> Result<bool, Error> {
             match result {
                 ResultType::Exec(v) => {
-                    *v=Some(ExecResult{
+                    *v=Ok(ExecResult{
                         rows_affected: 1,
                         last_insert_id: Value::U64(1),
                     });
                 }
                 ResultType::Query(_) => {}
             }
-            Ok(())
+            Ok(false)
         }
     }
     #[test]
