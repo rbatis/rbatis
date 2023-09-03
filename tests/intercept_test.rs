@@ -6,7 +6,7 @@ mod test {
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
-    use std::sync::{Arc, OnceLock};
+    use std::sync::{Arc};
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
 
@@ -27,8 +27,6 @@ mod test {
 
         fn flush(&self) {}
     }
-
-    pub static LOGGER: OnceLock<Logger> = OnceLock::new();
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
@@ -181,8 +179,7 @@ mod test {
     }
     #[test]
     fn test_mock_intercept() {
-        _ = LOGGER.set(Logger {});
-        log::set_logger(LOGGER.get().unwrap())
+        log::set_logger(&Logger {})
             .map(|()| log::set_max_level(LevelFilter::Info))
             .unwrap();
         let rb = RBatis::new();
@@ -194,7 +191,7 @@ mod test {
             assert_eq!(r, ExecResult{
                 rows_affected: 1,
                 last_insert_id: Value::U64(1),
-            })
+            });
         };
         block_on(f);
     }

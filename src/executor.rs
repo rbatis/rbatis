@@ -82,11 +82,7 @@ impl Executor for RBatisConnExecutor {
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &mut result {
-                    Ok(v) => Ok(ResultType::Exec(v)),
-                    Err(e) => Err(e),
-                };
-                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
+                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
             }
             result
         })
@@ -105,11 +101,7 @@ impl Executor for RBatisConnExecutor {
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &mut result {
-                    Ok(v) => Ok(ResultType::Query(v)),
-                    Err(e) => Err(e),
-                };
-                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
+                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
             }
             Ok(Value::Array(result?))
         })
@@ -188,11 +180,7 @@ impl Executor for RBatisTxExecutor {
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &mut result {
-                    Ok(v) => Ok(ResultType::Exec(v)),
-                    Err(e) => Err(e),
-                };
-                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
+                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
             }
             result
         })
@@ -210,11 +198,7 @@ impl Executor for RBatisTxExecutor {
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let r = match &mut result {
-                    Ok(v) => Ok(ResultType::Query(v)),
-                    Err(e) => Err(e),
-                };
-                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], r)?;
+                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
             }
             Ok(Value::Array(result?))
         })

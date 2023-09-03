@@ -40,7 +40,7 @@ pub trait Intercept: Send + Sync + Debug {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: Result<ResultType<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<(), Error> {
         Ok(())
     }
