@@ -46,7 +46,7 @@ mod test {
             rb: &dyn Executor,
             sql: &mut String,
             args: &mut Vec<Value>,
-            _result: ResultType<&mut Option<ExecResult>, &mut Option<Vec<Value>>>,
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
         ) -> Result<(), Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
             Ok(())

@@ -73,16 +73,19 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            let mut before_result = None;
+            let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
-                if let Some(v) = before_result {
-                    return Ok(v);
+                let next = item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                if !next {
+                    return before_result;
                 }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                let next = item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                if !next {
+                    return result;
+                }
             }
             result
         })
@@ -92,16 +95,19 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let rb_task_id = new_snowflake_id();
-            let mut before_result = None;
+            let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
-                if let Some(v) = before_result {
-                    return Ok(Value::Array(v));
+                let next = item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                if !next {
+                    return before_result.map(|v|Value::from(v));
                 }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                let next = item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                if !next {
+                    return result.map(|v|Value::from(v));
+                }
             }
             Ok(Value::Array(result?))
         })
@@ -171,16 +177,19 @@ impl Executor for RBatisTxExecutor {
     ) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let mut before_result = None;
+            let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
-                if let Some(r) = before_result {
-                    return Ok(r);
+                let next = item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                if !next {
+                    return before_result;
                 }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                let next = item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                if !next {
+                    return result;
+                }
             }
             result
         })
@@ -189,16 +198,19 @@ impl Executor for RBatisTxExecutor {
     fn query(&mut self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let mut before_result = None;
+            let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
-                if let Some(r) = before_result {
-                    return Ok(Value::Array(r));
+                let next = item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                if !next {
+                    return before_result.map(|v|Value::from(v));
                 }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                let next = item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                if !next {
+                    return result.map(|v|Value::from(v));
+                }
             }
             Ok(Value::Array(result?))
         })
