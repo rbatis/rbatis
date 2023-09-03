@@ -127,51 +127,61 @@ impl Intercept for LogInterceptor {
         &self,
         task_id: i64,
         _rb: &dyn Executor,
-        sql: &mut String,
+        _sql: &mut String,
         _args: &mut Vec<Value>,
-        result: Result<ResultType<&mut ExecResult, &mut Vec<Value>>, &mut Error>,
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<(), Error> {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(());
         }
         let level = self.to_level().unwrap();
         //recv sql/args
+        let op;
         match result {
-            Ok(result) => {
-                let op;
-                if sql.trim_start().starts_with("select") {
-                    op = "query";
-                } else {
-                    op = "exec ";
-                }
+            ResultType::Query(_) => {
+                op = "query";
+            }
+            ResultType::Exec(_) => {
+                op = "exec ";
+            }
+        }
+        match result {
+            ResultType::Exec(result) => {
                 match result {
-                    ResultType::Exec(result) => {
+                    Ok(result) => {
                         log!(
                             level,
-                            "[rbatis] [{}] {}  <= rows_affected={}",
+                            "[rbatis] [{}] {} <= rows_affected={}",
                             task_id,
                             op,
                             result
                         );
                     }
-                    ResultType::Query(data) => {
+                    Err(e) => {
+                        log!(level, "[rbatis] [{}] {} <= {}", task_id, op, e);
+                    }
+                }
+            }
+            ResultType::Query(result) => {
+                match result {
+                    Ok(result) => {
                         if is_debug_mode() {
                             log!(
                                 level,
                                 "[rbatis] [{}] {} <= len={},rows={}",
                                 task_id,
                                 op,
-                                data.len(),
-                                RbsValueDisplay { inner: data }
+                                result.len(),
+                                RbsValueDisplay { inner: result }
                             );
                         } else {
-                            log!(level, "[rbatis] [{}] {} <= len={}", task_id, op, data.len());
+                            log!(level, "[rbatis] [{}] {} <= len={}", task_id, op, result.len());
                         }
                     }
+                    Err(e) => {
+                        log!(level, "[rbatis] [{}] {} <= {}", task_id, op, e);
+                    }
                 }
-            }
-            Err(e) => {
-                log!(level, "[rbatis] [{}] exec  <= {}", task_id, e);
             }
         }
         Ok(())
