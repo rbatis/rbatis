@@ -135,30 +135,22 @@ impl Intercept for LogInterceptor {
             return Ok(true);
         }
         let level = self.to_level().unwrap();
-        //recv sql/args
-        let op;
-        match result {
-            ResultType::Query(_) => {
-                op = "query";
-            }
-            ResultType::Exec(_) => {
-                op = "exec ";
-            }
-        }
+        let type_name = result.type_name();
+        //ResultType
         match result {
             ResultType::Exec(result) => {
                 match result {
                     Ok(result) => {
                         log!(
                             level,
-                            "[rbatis] [{}] {} <= rows_affected={}",
+                            "[rbatis] [{}] {:5} <= rows_affected={}",
                             task_id,
-                            op,
+                            type_name,
                             result
                         );
                     }
                     Err(e) => {
-                        log!(level, "[rbatis] [{}] {} <= {}", task_id, op, e);
+                        log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
                     }
                 }
             }
@@ -168,18 +160,18 @@ impl Intercept for LogInterceptor {
                         if is_debug_mode() {
                             log!(
                                 level,
-                                "[rbatis] [{}] {} <= len={},rows={}",
+                                "[rbatis] [{}] {:5} <= len={},rows={}",
                                 task_id,
-                                op,
+                                type_name,
                                 result.len(),
                                 RbsValueDisplay { inner: result }
                             );
                         } else {
-                            log!(level, "[rbatis] [{}] {} <= len={}", task_id, op, result.len());
+                            log!(level, "[rbatis] [{}] {:5} <= len={}", task_id, type_name, result.len());
                         }
                     }
                     Err(e) => {
-                        log!(level, "[rbatis] [{}] {} <= {}", task_id, op, e);
+                        log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
                     }
                 }
             }

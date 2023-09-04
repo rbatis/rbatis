@@ -12,6 +12,15 @@ pub enum ResultType<A, B> {
     Query(/* #[pin] */ B),
 }
 
+impl<A, B> ResultType<A, B> {
+    pub fn type_name<'a,'b>(&'a self) -> &'b str {
+        match self {
+            ResultType::Exec(_) => { "exec" }
+            ResultType::Query(_) => { "query" }
+        }
+    }
+}
+
 /// sql intercept
 pub trait Intercept: Send + Sync + Debug {
     fn name(&self) -> &str {
