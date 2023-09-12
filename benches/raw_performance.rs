@@ -5,7 +5,6 @@
 #![allow(unused_assignments)]
 #![allow(unused_must_use)]
 #![allow(dead_code)]
-#![allow(private_in_public)]
 #![feature(test)]
 extern crate test;
 
