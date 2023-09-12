@@ -113,7 +113,7 @@ rbdc-sqlite = { version = "4.3", default-features = false, features = ["tls-nati
 #rbdc-mysql={version="4.3", default-features = false, features = ["tls-native-tls"]}
 #rbdc-pg={version="4.3", default-features = false, features = ["tls-native-tls"]}
 #rbdc-mssql={version="4.3", default-features = false, features = ["tls-native-tls"]}
-rbatis = { version = "4.3", default-features = false, features = ["tls-native-tls","default_mode"] }
+rbatis = { version = "4.4", default-features = false, features = ["tls-native-tls","default_mode"] }
 #other deps
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
