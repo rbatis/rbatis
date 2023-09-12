@@ -4,7 +4,7 @@ use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use futures::lock::Mutex;
+use rbdc::rt::tokio::sync::Mutex;
 use log::LevelFilter;
 use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
