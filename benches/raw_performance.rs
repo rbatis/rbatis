@@ -18,6 +18,47 @@ use rbs::Value;
 use std::any::Any;
 use test::Bencher;
 
+pub trait QPS {
+    fn qps(&self, total: u64);
+    fn time(&self, total: u64);
+    fn cost(&self);
+}
+
+impl QPS for std::time::Instant {
+    fn qps(&self, total: u64) {
+        let time = self.elapsed();
+        println!(
+            "use QPS: {} QPS/s",
+            (total as u128 * 1000000000 as u128 / time.as_nanos() as u128)
+        );
+    }
+
+    fn time(&self, total: u64) {
+        let time = self.elapsed();
+        println!(
+            "use Time: {:?} ,each:{} ns/op",
+            &time,
+            time.as_nanos() / (total as u128)
+        );
+    }
+
+    fn cost(&self) {
+        let time = self.elapsed();
+        println!("cost:{:?}", time);
+    }
+}
+
+#[macro_export]
+macro_rules! rbench {
+    ($total:expr,$body:block) => {{
+        let now = std::time::Instant::now();
+        for _ in 0..$total {
+            $body;
+        }
+        now.time($total);
+        now.qps($total);
+    }};
+}
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
 // ---- bench_raw stdout ----(windows)
 //Time: 52.4187ms ,each:524 ns/op
@@ -28,7 +69,7 @@ fn bench_raw() {
         let rbatis = RBatis::new();
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
-        rbatis::bench!(100000, {
+        rbench!(100000, {
             let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
         });
     };
@@ -59,7 +100,7 @@ fn bench_insert() {
             version: Some(1),
             delete_flag: Some(1),
         };
-        rbatis::bench!(100000, {
+        rbench!(100000, {
             MockTable::insert(&mut rbatis.clone(), &t).await.unwrap();
         });
     };
@@ -76,7 +117,7 @@ fn bench_select() {
         let rbatis = RBatis::new();
         rbatis.init(MockDriver {}, "mock://").unwrap();
         rbatis.acquire().await.unwrap();
-        rbatis::bench!(100000, {
+        rbench!(100000, {
             MockTable::select_all(&mut rbatis.clone()).await.unwrap();
         });
     };

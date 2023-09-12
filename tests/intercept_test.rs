@@ -7,6 +7,7 @@ mod test {
     use rbdc::rt::block_on;
     use rbs::Value;
     use std::sync::{Arc};
+    use async_trait::async_trait;
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
 
@@ -163,8 +164,10 @@ mod test {
     #[derive(Debug)]
     pub struct MockIntercept{}
 
+
+    #[async_trait]
     impl Intercept for MockIntercept{
-        fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>,  result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,) -> Result<bool, Error> {
+        async fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>,  result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,) -> Result<bool, Error> {
             match result {
                 ResultType::Exec(v) => {
                     *v=Ok(ExecResult{

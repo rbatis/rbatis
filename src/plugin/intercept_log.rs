@@ -8,6 +8,7 @@ use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use async_trait::async_trait;
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
@@ -92,8 +93,9 @@ impl LogInterceptor {
     }
 }
 
+#[async_trait]
 impl Intercept for LogInterceptor {
-    fn before(
+    async fn before(
         &self,
         task_id: i64,
         _rb: &dyn Executor,
@@ -102,7 +104,7 @@ impl Intercept for LogInterceptor {
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<bool, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return Ok(true);
+            return  Ok(true);
         }
         let level = self.to_level().unwrap();
         //send sql/args
@@ -120,10 +122,10 @@ impl Intercept for LogInterceptor {
             &sql,
             RbsValueDisplay { inner: args }
         );
-        Ok(true)
+        return Ok(true);
     }
 
-    fn after(
+    async fn after(
         &self,
         task_id: i64,
         _rb: &dyn Executor,
@@ -176,6 +178,6 @@ impl Intercept for LogInterceptor {
                 }
             }
         }
-        Ok(true)
+        return Ok(true);
     }
 }
