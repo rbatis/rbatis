@@ -40,15 +40,16 @@ mod test {
         }
     }
 
+    #[async_trait]
     impl Intercept for MockIntercept {
-        fn before(
+        async fn before(
             &self,
             task_id: i64,
             rb: &dyn Executor,
             sql: &mut String,
             args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<bool, Error> {
+        ) -> Result<bool, Error>{
             self.sql_args.push((sql.to_string(), args.clone()));
             Ok(true)
         }

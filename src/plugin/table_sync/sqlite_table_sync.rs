@@ -46,7 +46,7 @@ fn type_str(v: &Value) -> &'static str {
 impl TableSync for SqliteTableSync {
     fn sync(
         &self,
-        mut rb: RBatisConnExecutor,
+        rb: RBatisConnExecutor,
         table: Value,
         name: &str,
     ) -> BoxFuture<Result<(), Error>> {

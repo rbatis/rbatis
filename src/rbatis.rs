@@ -10,6 +10,7 @@ use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use futures::lock::Mutex;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -173,7 +174,7 @@ impl RBatis {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
         return Ok(RBatisConnExecutor {
-            conn: Box::new(conn),
+            conn: Mutex::new(Box::new(conn)),
             rb: self.clone(),
         });
     }
@@ -185,7 +186,7 @@ impl RBatis {
         default.wait = Some(Duration::ZERO);
         let conn = pool.timeout_get(&default).await?;
         return Ok(RBatisConnExecutor {
-            conn: Box::new(conn),
+            conn: Mutex::new(Box::new(conn)),
             rb: self.clone(),
         });
     }
@@ -197,7 +198,7 @@ impl RBatis {
         conn.exec("begin", vec![]).await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
-            conn: Box::new(conn),
+            conn: Mutex::new(Box::new(conn)),
             rb: self.clone(),
             done: false,
         });
@@ -205,7 +206,7 @@ impl RBatis {
 
     /// try get an DataBase Connection,and call begin method,used for the next step
     pub async fn try_acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
-        let mut conn = self.try_acquire().await?;
+        let conn = self.try_acquire().await?;
         conn.exec("begin", vec![]).await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),

@@ -26,6 +26,8 @@ mod test {
     use rbs::{from_value, to_value, Value};
     use std::any::Any;
     use std::collections::HashMap;
+    use std::future::Future;
+    use std::pin::Pin;
     use std::sync::Arc;
 
     #[derive(Debug)]
@@ -39,8 +41,10 @@ mod test {
         }
     }
 
+
+    #[async_trait]
     impl Intercept for MockIntercept {
-        fn before(
+        async fn before(
             &self,
             task_id: i64,
             rb: &dyn Executor,

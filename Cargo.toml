@@ -13,7 +13,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "4.3.15"
+version = "4.4.0"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -52,6 +52,7 @@ rbdc = { version = "4.3", path = "rbdc", default-features = false, optional = tr
 crossbeam = "0.8.2"
 dark-std = "0.2"
 fastdate = "0.1"
+async-trait = "0.1.68"
 [dev-dependencies]
 serde_json = "1"
 tokio = { version = "1", features = ["fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
