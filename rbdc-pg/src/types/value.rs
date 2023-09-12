@@ -473,20 +473,20 @@ impl Encode for Value {
                         .unwrap_or_default()
                         .encode(buf)?,
                     //Date = "1993-02-06"
-                    "Date" => Date(
-                        fastdate::Date::from_str(&v.into_string().unwrap_or_default())?,
-                    )
+                    "Date" => Date(fastdate::Date::from_str(
+                        &v.into_string().unwrap_or_default(),
+                    )?)
                     .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
-                    "Time" => Time(
-                        fastdate::Time::from_str(&v.into_string().unwrap_or_default())?,
-                    )
+                    "Time" => Time(fastdate::Time::from_str(
+                        &v.into_string().unwrap_or_default(),
+                    )?)
                     .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
-                    "DateTime" => DateTime(
-                        fastdate::DateTime::from_str(&v.into_string().unwrap_or_default())?,
-                    )
+                    "DateTime" => DateTime(fastdate::DateTime::from_str(
+                        &v.into_string().unwrap_or_default(),
+                    )?)
                     .encode(buf)?,
                     "Bytea" => Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?,
                     "Char" => v.into_string().unwrap_or_default().encode(buf)?,

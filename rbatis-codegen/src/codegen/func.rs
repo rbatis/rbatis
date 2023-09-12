@@ -211,7 +211,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                 }
                 // The `<<` operator (shift left)
                 _ => {
-                    panic!("unsupported token {}",b.op.to_token_stream())
+                    panic!("unsupported token {}", b.op.to_token_stream())
                 }
             }
             return Expr::Binary(b);
@@ -282,7 +282,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}
-                _ =>{}
+                _ => {}
             }
             return Expr::Lit(b);
         }

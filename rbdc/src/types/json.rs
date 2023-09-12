@@ -4,8 +4,8 @@ use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 use crate::Error;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Json")]
@@ -13,8 +13,8 @@ pub struct Json(pub String);
 
 impl<'de> serde::Deserialize<'de> for Json {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         Ok(Json::from(Value::deserialize(deserializer)?))
     }
@@ -110,12 +110,14 @@ impl FromStr for Json {
 pub struct JsonV<T: Serialize + DeserializeOwned>(pub T);
 
 impl<T: Serialize + DeserializeOwned> Serialize for JsonV<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         use serde::ser::Error;
         if std::any::type_name::<S::Error>() == std::any::type_name::<rbs::Error>() {
-            Json(serde_json::to_string(&self.0).map_err(|e| {
-                Error::custom(e.to_string())
-            })?).serialize(serializer)
+            Json(serde_json::to_string(&self.0).map_err(|e| Error::custom(e.to_string()))?)
+                .serialize(serializer)
         } else {
             self.0.serialize(serializer)
         }
@@ -123,7 +125,10 @@ impl<T: Serialize + DeserializeOwned> Serialize for JsonV<T> {
 }
 
 impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         use serde::de::Error;
         if std::any::type_name::<D::Error>() == std::any::type_name::<rbs::Error>() {
             let mut v = Value::deserialize(deserializer)?;
@@ -132,20 +137,20 @@ impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
                 v = *buf;
             }
             if let Value::Binary(buf) = v {
-                js = String::from_utf8(buf).map_err(|e|D::Error::custom(e.to_string()))?;
-            }else if let Value::String(buf) = v {
+                js = String::from_utf8(buf).map_err(|e| D::Error::custom(e.to_string()))?;
+            } else if let Value::String(buf) = v {
                 js = buf;
             } else {
                 js = v.to_string();
             }
             if std::any::type_name::<D::Error>() == std::any::type_name::<rbs::Error>() {
-                Ok(JsonV(serde_json::from_str(&js).map_err(|e| {
-                    Error::custom(e.to_string())
-                })?))
+                Ok(JsonV(
+                    serde_json::from_str(&js).map_err(|e| Error::custom(e.to_string()))?,
+                ))
             } else {
-                Ok(JsonV(serde_json::from_str(&js).map_err(|e| {
-                    Error::custom(e.to_string())
-                })?))
+                Ok(JsonV(
+                    serde_json::from_str(&js).map_err(|e| Error::custom(e.to_string()))?,
+                ))
             }
         } else {
             Ok(JsonV(T::deserialize(deserializer)?))

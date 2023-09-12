@@ -45,8 +45,7 @@ impl Placeholder for SqliteDriver {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test_default() {
-    }
+    fn test_default() {}
 }
 // #[cfg(test)]
 // mod test {

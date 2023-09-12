@@ -46,7 +46,7 @@ impl Placeholder for MysqlDriver {
 mod test {
     #[test]
     fn test_default() {
-        assert_eq!(true,true);
+        assert_eq!(true, true);
     }
 }
 // #[cfg(test)]

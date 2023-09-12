@@ -1,15 +1,15 @@
 #[cfg(test)]
 mod test {
+    use async_trait::async_trait;
     use futures_core::future::BoxFuture;
     use log::{LevelFilter, Log, Metadata, Record};
+    use rbatis::executor::Executor;
+    use rbatis::intercept::{Intercept, ResultType};
     use rbatis::{Error, RBatis};
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
-    use std::sync::{Arc};
-    use async_trait::async_trait;
-    use rbatis::executor::Executor;
-    use rbatis::intercept::{Intercept, ResultType};
+    use std::sync::Arc;
 
     pub struct Logger {}
 
@@ -162,15 +162,21 @@ mod test {
     }
 
     #[derive(Debug)]
-    pub struct MockIntercept{}
-
+    pub struct MockIntercept {}
 
     #[async_trait]
-    impl Intercept for MockIntercept{
-        async fn before(&self, _task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>,  result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,) -> Result<bool, Error> {
+    impl Intercept for MockIntercept {
+        async fn before(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+        ) -> Result<bool, Error> {
             match result {
                 ResultType::Exec(v) => {
-                    *v=Ok(ExecResult{
+                    *v = Ok(ExecResult {
                         rows_affected: 1,
                         last_insert_id: Value::U64(1),
                     });
@@ -187,14 +193,17 @@ mod test {
             .unwrap();
         let rb = RBatis::new();
         rb.init(MockDriver {}, "test").unwrap();
-        rb.intercepts.push(Arc::new(MockIntercept{}));
+        rb.intercepts.push(Arc::new(MockIntercept {}));
         let f = async move {
             let r = rb.exec("select * from table", vec![]).await.unwrap();
-            println!("r={}",r);
-            assert_eq!(r, ExecResult{
-                rows_affected: 1,
-                last_insert_id: Value::U64(1),
-            });
+            println!("r={}", r);
+            assert_eq!(
+                r,
+                ExecResult {
+                    rows_affected: 1,
+                    last_insert_id: Value::U64(1),
+                }
+            );
         };
         block_on(f);
     }

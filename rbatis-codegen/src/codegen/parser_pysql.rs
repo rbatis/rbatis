@@ -13,15 +13,13 @@ use crate::codegen::syntax_tree_pysql::trim_node::TrimNode;
 use crate::codegen::syntax_tree_pysql::when_node::WhenNode;
 use crate::codegen::syntax_tree_pysql::where_node::WhereNode;
 use crate::codegen::syntax_tree_pysql::{DefaultName, Name, NodeType};
+use crate::codegen::ParseArgs;
 use quote::ToTokens;
 use std::collections::HashMap;
-use syn::{ItemFn};
-use crate::codegen::ParseArgs;
+use syn::ItemFn;
 
 pub trait ParsePySql {
-    fn parse_pysql(
-        arg: &str,
-    ) -> Result<Vec<NodeType>, Error>;
+    fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error>;
 }
 
 pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {

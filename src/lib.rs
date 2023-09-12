@@ -21,7 +21,7 @@ pub mod error;
 pub mod decode;
 
 pub use crate::rbatis::*;
+pub use async_trait::async_trait;
 pub use crud::*;
 pub use decode::*;
 pub use error::*;
-pub use async_trait::async_trait;

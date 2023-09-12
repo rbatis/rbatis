@@ -42,10 +42,7 @@ impl Decode for Timestamp {
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
-                Timestamp(
-                    fastdate::DateTime::from_str(s)?
-                        .unix_timestamp_millis() as u64,
-                )
+                Timestamp(fastdate::DateTime::from_str(s)?.unix_timestamp_millis() as u64)
             }
         })
     }

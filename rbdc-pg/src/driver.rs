@@ -45,8 +45,7 @@ mod test {
     use crate::driver::PgDriver;
     use rbdc::db::Placeholder;
     #[test]
-    fn test_default() {
-    }
+    fn test_default() {}
     #[test]
     fn test_exchange() {
         let v = "insert into biz_activity (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";

@@ -4,13 +4,13 @@ use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
+use futures::lock::Mutex;
 use log::LevelFilter;
 use rbdc::db::Connection;
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use futures::lock::Mutex;
 
 /// RBatis engine
 #[derive(Clone, Debug)]

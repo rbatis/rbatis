@@ -1,13 +1,6 @@
 use std::ffi::c_void;
 use std::ffi::CStr;
 
-use std::os::raw::{c_char, c_int};
-use std::ptr;
-use std::ptr::NonNull;
-use std::slice::from_raw_parts;
-use std::str::{from_utf8, from_utf8_unchecked};
-use parking_lot::Mutex;
-use parking_lot::Condvar;
 use crate::type_info::DataType;
 use crate::{SqliteError, SqliteTypeInfo};
 use libsqlite3_sys::{
@@ -22,7 +15,14 @@ use libsqlite3_sys::{
     sqlite3_unlock_notify, sqlite3_value, SQLITE_DONE, SQLITE_LOCKED_SHAREDCACHE, SQLITE_MISUSE,
     SQLITE_OK, SQLITE_ROW, SQLITE_TRANSIENT, SQLITE_UTF8,
 };
+use parking_lot::Condvar;
+use parking_lot::Mutex;
 use rbdc::Error;
+use std::os::raw::{c_char, c_int};
+use std::ptr;
+use std::ptr::NonNull;
+use std::slice::from_raw_parts;
+use std::str::{from_utf8, from_utf8_unchecked};
 
 #[derive(Debug)]
 pub(crate) struct StatementHandle(NonNull<sqlite3_stmt>);
