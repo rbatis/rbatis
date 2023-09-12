@@ -271,7 +271,7 @@ async fn py_sql_tx(rb: &RBatis, tx_id: &String, name: &str) -> Vec<BizActivity> 
 ```rust
     ///select page must have  '?:&PageRequest' arg and return 'Page<?>'
 #[html_sql("example/example.html")]
-async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name: &str) -> Page<BizActivity> { impled!() }
+async fn select_by_condition(rb: &dyn Executor, page_req: &PageRequest, name: &str) -> Page<BizActivity> { impled!() }
 ```
 
 ```rust
