@@ -25,8 +25,8 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 * this bench test is MockTable,MockDriver,MockConnection to Assume that the network I/O time is 0
 * run code ```rbatis.query_decode::<Vec<i32>>("", vec![]).await;``` on benches bench_raw()
-* run code ```MockTable::insert(&mut rbatis.clone(),&t).await;``` on benches bench_insert()
-* run code ```MockTable::select_all(&mut rbatis.clone()).await.unwrap();``` on benches bench_select()
+* run code ```MockTable::insert(&rbatis,&t).await;``` on benches bench_insert()
+* run code ```MockTable::select_all(&rbatis).await.unwrap();``` on benches bench_select()
 
 ```
 ---- bench_raw stdout ----(windows)
@@ -182,28 +182,28 @@ async fn main() {
         version: Some(1),
         delete_flag: Some(1),
     };
-    let data = BizActivity::insert(&mut rb, &activity).await;
+    let data = BizActivity::insert(&rb, &activity).await;
     println!("insert = {:?}", data);
 
-    let data = BizActivity::select_all_by_id(&mut rb, "1", "1").await;
+    let data = BizActivity::select_all_by_id(&rb, "1", "1").await;
     println!("select_all_by_id = {:?}", data);
 
-    let data = BizActivity::select_by_id(&mut rb, "1".to_string()).await;
+    let data = BizActivity::select_by_id(&rb, "1".to_string()).await;
     println!("select_by_id = {:?}", data);
 
-    let data = BizActivity::update_by_column(&mut rb, &activity, "id").await;
+    let data = BizActivity::update_by_column(&rb, &activity, "id").await;
     println!("update_by_column = {:?}", data);
 
-    let data = BizActivity::update_by_name(&mut rb, &activity, "test").await;
+    let data = BizActivity::update_by_name(&rb, &activity, "test").await;
     println!("update_by_name = {:?}", data);
 
-    let data = BizActivity::delete_by_column(&mut rb, "id", &"2".into()).await;
+    let data = BizActivity::delete_by_column(&rb, "id", &"2".into()).await;
     println!("delete_by_column = {:?}", data);
 
-    let data = BizActivity::delete_by_name(&mut rb, "2").await;
+    let data = BizActivity::delete_by_name(&rb, "2").await;
     println!("delete_by_column = {:?}", data);
 
-    let data = BizActivity::select_page(&mut rb, &PageRequest::new(1, 10), "2").await;
+    let data = BizActivity::select_page(&rb, &PageRequest::new(1, 10), "2").await;
     println!("select_page = {:?}", data);
 }
 ///...more usage,see crud.rs
