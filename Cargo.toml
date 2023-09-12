@@ -37,8 +37,8 @@ tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 
 [dependencies]
-rbatis-codegen = { version = "4.0", path = "rbatis-codegen" }
-rbatis-macro-driver = { version = "4.0", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-codegen = { version = "4.4", path = "rbatis-codegen" }
+rbatis-macro-driver = { version = "4.4", path = "rbatis-macro-driver", default-features = false, optional = true }
 serde = "1"
 #log
 log = "0.4"
@@ -47,8 +47,8 @@ futures = { version = "0.3" }
 #object_id
 hex = "0.4"
 rand = "0.8"
-rbs = { version = "4.3", path = "rbs" }
-rbdc = { version = "4.3", path = "rbdc", default-features = false, optional = true }
+rbs = { version = "4.4", path = "rbs" }
+rbdc = { version = "4.4", path = "rbdc", default-features = false, optional = true }
 crossbeam = "0.8.2"
 dark-std = "0.2"
 fastdate = "0.1"
