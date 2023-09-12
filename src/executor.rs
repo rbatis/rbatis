@@ -75,14 +75,14 @@ impl Executor for RBatisConnExecutor {
             let rb_task_id = new_snowflake_id();
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                let next = item.before(rb_task_id, self, &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
                 if !next {
                     return before_result;
                 }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                let next = item.after(rb_task_id, self, &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
                 if !next {
                     return result;
                 }
@@ -97,14 +97,14 @@ impl Executor for RBatisConnExecutor {
             let rb_task_id = new_snowflake_id();
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.before(rb_task_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                let next = item.before(rb_task_id, self, &mut sql, &mut args, ResultType::Query(&mut before_result))?;
                 if !next {
                     return before_result.map(|v|Value::from(v));
                 }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.after(rb_task_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                let next = item.after(rb_task_id, self, &mut sql, &mut vec![], ResultType::Query(&mut result))?;
                 if !next {
                     return result.map(|v|Value::from(v));
                 }
@@ -179,14 +179,14 @@ impl Executor for RBatisTxExecutor {
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
+                let next = item.before(self.tx_id, self, &mut sql, &mut args, ResultType::Exec(&mut before_result))?;
                 if !next {
                     return before_result;
                 }
             }
             let mut result = self.conn.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
+                let next = item.after(self.tx_id, self, &mut sql, &mut vec![], ResultType::Exec(&mut result))?;
                 if !next {
                     return result;
                 }
@@ -200,14 +200,14 @@ impl Executor for RBatisTxExecutor {
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.before(self.tx_id, self.rbatis_ref(), &mut sql, &mut args, ResultType::Query(&mut before_result))?;
+                let next = item.before(self.tx_id, self, &mut sql, &mut args, ResultType::Query(&mut before_result))?;
                 if !next {
                     return before_result.map(|v|Value::from(v));
                 }
             }
             let mut result = self.conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
-                let next = item.after(self.tx_id, self.rbatis_ref(), &mut sql, &mut vec![], ResultType::Query(&mut result))?;
+                let next = item.after(self.tx_id, self, &mut sql, &mut vec![], ResultType::Query(&mut result))?;
                 if !next {
                     return result.map(|v|Value::from(v));
                 }
