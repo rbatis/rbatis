@@ -49,7 +49,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 #[html_sql("example/example.html")]
-async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name: &str, dt: &DateTime) -> Vec<BizActivity> {
+async fn select_by_condition(rb: &dyn Executor, page_req: &PageRequest, name: &str, dt: &DateTime) -> Vec<BizActivity> {
     impled!()
 }
 ```
@@ -73,7 +73,7 @@ async fn select_by_condition(rb: &mut dyn Executor, page_req: &PageRequest, name
         </if>
   </select>"#)]
 async fn select_by_condition(
-    rb: &mut dyn Executor,
+    rb: &dyn Executor,
     name: &str,
     a: bool,
 ) -> rbatis::Result<Vec<BizActivity>> {
@@ -95,7 +95,7 @@ async fn select_by_condition(
 //  fn query(&mut self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 // }
 pub async fn select_by_condition(
-    rb: &mut dyn Executor,
+    rb: &dyn Executor,
     name: &str,
     a: bool,
 ) -> rbatis::Result<Vec<BizActivity>> {
