@@ -5,15 +5,12 @@
 #![allow(unused_assignments)]
 #![allow(unused_must_use)]
 #![allow(dead_code)]
-#![allow(private_in_public)]
 
 #[macro_use]
 extern crate rbatis;
 
 #[cfg(test)]
 mod test {
-    #![allow(private_in_public)]
-
     use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
