@@ -1,9 +1,9 @@
 use crate::executor::Executor;
 use crate::Error;
+use async_trait::async_trait;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::Debug;
-use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub enum ResultType<A, B> {
@@ -14,14 +14,13 @@ pub enum ResultType<A, B> {
 }
 
 impl<A, B> ResultType<A, B> {
-    pub fn type_name<'a,'b>(&'a self) -> &'b str {
+    pub fn type_name<'a, 'b>(&'a self) -> &'b str {
         match self {
-            ResultType::Exec(_) => { "exec" }
-            ResultType::Query(_) => { "query" }
+            ResultType::Exec(_) => "exec",
+            ResultType::Query(_) => "query",
         }
     }
 }
-
 
 /// sql intercept
 /// example:

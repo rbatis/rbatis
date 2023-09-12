@@ -1,9 +1,9 @@
+use crate::ParseArgs;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use syn;
-use syn::{ FnArg, ItemFn, Pat};
-use crate::ParseArgs;
+use syn::{FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};

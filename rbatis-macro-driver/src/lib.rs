@@ -2,9 +2,9 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
-use syn::{parse_macro_input, ItemFn, Token};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
+use syn::{parse_macro_input, ItemFn, Token};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -26,7 +26,6 @@ impl Parse for ParseArgs {
         })
     }
 }
-
 
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:

@@ -2,13 +2,13 @@ use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
 use crate::Error;
+use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use async_trait::async_trait;
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
@@ -104,7 +104,7 @@ impl Intercept for LogInterceptor {
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<bool, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return  Ok(true);
+            return Ok(true);
         }
         let level = self.to_level().unwrap();
         //send sql/args
@@ -140,43 +140,45 @@ impl Intercept for LogInterceptor {
         let type_name = result.type_name();
         //ResultType
         match result {
-            ResultType::Exec(result) => {
-                match result {
-                    Ok(result) => {
+            ResultType::Exec(result) => match result {
+                Ok(result) => {
+                    log!(
+                        level,
+                        "[rbatis] [{}] {:5} <= rows_affected={}",
+                        task_id,
+                        type_name,
+                        result
+                    );
+                }
+                Err(e) => {
+                    log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
+                }
+            },
+            ResultType::Query(result) => match result {
+                Ok(result) => {
+                    if is_debug_mode() {
                         log!(
                             level,
-                            "[rbatis] [{}] {:5} <= rows_affected={}",
+                            "[rbatis] [{}] {:5} <= len={},rows={}",
                             task_id,
                             type_name,
-                            result
+                            result.len(),
+                            RbsValueDisplay { inner: result }
+                        );
+                    } else {
+                        log!(
+                            level,
+                            "[rbatis] [{}] {:5} <= len={}",
+                            task_id,
+                            type_name,
+                            result.len()
                         );
                     }
-                    Err(e) => {
-                        log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
-                    }
                 }
-            }
-            ResultType::Query(result) => {
-                match result {
-                    Ok(result) => {
-                        if is_debug_mode() {
-                            log!(
-                                level,
-                                "[rbatis] [{}] {:5} <= len={},rows={}",
-                                task_id,
-                                type_name,
-                                result.len(),
-                                RbsValueDisplay { inner: result }
-                            );
-                        } else {
-                            log!(level, "[rbatis] [{}] {:5} <= len={}", task_id, type_name, result.len());
-                        }
-                    }
-                    Err(e) => {
-                        log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
-                    }
+                Err(e) => {
+                    log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
                 }
-            }
+            },
         }
         return Ok(true);
     }

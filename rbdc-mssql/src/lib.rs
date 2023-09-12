@@ -103,7 +103,11 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .query(self.inner.as_mut().ok_or_else(||Error::from("MssqlConnection is close"))?)
+                .query(
+                    self.inner
+                        .as_mut()
+                        .ok_or_else(|| Error::from("MssqlConnection is close"))?,
+                )
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             let mut results = Vec::with_capacity(v.size_hint().0);
@@ -132,11 +136,7 @@ impl Connection for MssqlConnection {
         })
     }
 
-    fn exec(
-        &mut self,
-        sql: &str,
-        params: Vec<Value>,
-    ) -> BoxFuture<Result<ExecResult, Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         let sql = MssqlDriver {}.exchange(sql);
         Box::pin(async move {
             let mut q = Query::new(sql);
@@ -144,7 +144,11 @@ impl Connection for MssqlConnection {
                 x.encode(&mut q)?;
             }
             let v = q
-                .execute( self.inner.as_mut().ok_or_else(||Error::from("MssqlConnection is close"))?)
+                .execute(
+                    self.inner
+                        .as_mut()
+                        .ok_or_else(|| Error::from("MssqlConnection is close"))?,
+                )
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
             Ok(ExecResult {
@@ -174,7 +178,8 @@ impl Connection for MssqlConnection {
         //TODO While 'select 1' can temporarily solve the problem of checking that the connection is valid, it looks ugly.Better replace it with something better way
         Box::pin(async move {
             self.inner
-                .as_mut().expect("MssqlConnection inner is none")
+                .as_mut()
+                .expect("MssqlConnection inner is none")
                 .query("select 1", &[])
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;

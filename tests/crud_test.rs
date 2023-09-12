@@ -41,7 +41,6 @@ mod test {
         }
     }
 
-
     #[async_trait]
     impl Intercept for MockIntercept {
         async fn before(

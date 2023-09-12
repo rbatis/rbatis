@@ -49,7 +49,7 @@ mod test {
             sql: &mut String,
             args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<bool, Error>{
+        ) -> Result<bool, Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
             Ok(true)
         }

@@ -138,8 +138,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }
@@ -148,7 +148,7 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     fn set_uri(&mut self, uri: &str) -> Result<(), Error>;
 
     #[deprecated(note = "deprecated method,you can remove this")]
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync){
+    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
         unimplemented!()
     }
 }
@@ -166,7 +166,7 @@ impl dyn ConnectOptions {
     pub fn downcast_ref_mut<E: ConnectOptions>(&mut self) -> Option<&mut E> {
         let v = unsafe {
             //this is safe
-            std::mem::transmute_copy::<&mut dyn ConnectOptions, &mut E>( &self)
+            std::mem::transmute_copy::<&mut dyn ConnectOptions, &mut E>(&self)
         };
         Some(v)
     }

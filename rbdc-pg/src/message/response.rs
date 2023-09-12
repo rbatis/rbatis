@@ -117,10 +117,8 @@ impl Decode<'_> for Notice {
         let mut message = (0, 0);
         let mut code = (0, 0);
 
-        if buf.is_empty(){
-            return Err(Error::protocol(
-                "Postgres returned a empty data"
-            ))
+        if buf.is_empty() {
+            return Err(Error::protocol("Postgres returned a empty data"));
         }
         // we cache the three always present fields
         // this enables to keep the access time down for the fields most likely accessed
@@ -185,10 +183,9 @@ fn notice_protocol_err() -> Error {
         "Postgres returned a non-UTF-8 string for its error message. \
          This is most likely due to an error that occurred during authentication and \
          the default lc_messages locale is not binary-compatible with UTF-8. \
-         See the server logs for the error details."
+         See the server logs for the error details.",
     )
 }
-
 
 /// An iterator over each field in the Error (or Notice) response.
 struct Fields<'a> {

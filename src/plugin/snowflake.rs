@@ -14,13 +14,16 @@ pub struct Snowflake {
 
 impl serde::Serialize for Snowflake {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         let mut s = serializer.serialize_struct("Snowflake", 5)?;
         s.serialize_field("epoch", &self.epoch)?;
         s.serialize_field("worker_id", &self.worker_id)?;
-        s.serialize_field("last_timestamp", &self.last_timestamp.load(Ordering::Relaxed))?;
+        s.serialize_field(
+            "last_timestamp",
+            &self.last_timestamp.load(Ordering::Relaxed),
+        )?;
         s.serialize_field("sequence", &self.sequence.load(Ordering::Relaxed))?;
         s.end()
     }
@@ -28,8 +31,8 @@ impl serde::Serialize for Snowflake {
 
 impl<'de> serde::Deserialize<'de> for Snowflake {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Debug, serde::Serialize, serde::Deserialize)]
         struct Snowflake {
@@ -71,8 +74,8 @@ impl Snowflake {
 
     pub const fn new(epoch: u64, worker_id: u64, last_timestamp: u64) -> Snowflake {
         Snowflake {
-            epoch:epoch,
-            worker_id:worker_id,
+            epoch: epoch,
+            worker_id: worker_id,
             last_timestamp: AtomicU64::new(last_timestamp),
             sequence: AtomicU64::new(0),
         }
@@ -89,7 +92,7 @@ impl Snowflake {
     }
 
     pub fn set_datacenter_id(&mut self, last_timestamp: u64) -> &mut Self {
-        self.last_timestamp =  AtomicU64::new(last_timestamp);
+        self.last_timestamp = AtomicU64::new(last_timestamp);
         self
     }
 
@@ -104,7 +107,16 @@ impl Snowflake {
             }
             // Compare and swap the last recorded timestamp with the current timestamp.
             // If the comparison succeeds, break the loop.
-            if self.last_timestamp.compare_exchange(last_timestamp, timestamp, Ordering::SeqCst, Ordering::SeqCst).is_ok() {
+            if self
+                .last_timestamp
+                .compare_exchange(
+                    last_timestamp,
+                    timestamp,
+                    Ordering::SeqCst,
+                    Ordering::SeqCst,
+                )
+                .is_ok()
+            {
                 break;
             }
         }
@@ -118,7 +130,9 @@ impl Snowflake {
 
     fn get_timestamp(&self) -> u64 {
         let start = SystemTime::now();
-        let since_epoch = start.duration_since(UNIX_EPOCH).expect("Failed to get system time");
+        let since_epoch = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Failed to get system time");
         since_epoch.as_millis() as u64 - self.epoch
     }
 }
@@ -233,10 +247,10 @@ mod test {
         snowflake.generate();
         let initial_timestamp = snowflake.last_timestamp.load(Ordering::Relaxed);
         let initial_id = snowflake.generate();
-        println!("initial_id={}",initial_id);
-        snowflake.last_timestamp=AtomicU64::new(initial_timestamp - 1224655892);
+        println!("initial_id={}", initial_id);
+        snowflake.last_timestamp = AtomicU64::new(initial_timestamp - 1224655892);
         let new_id = snowflake.generate();
-        println!("new_id____={}",new_id);
+        println!("new_id____={}", new_id);
         assert!(new_id > initial_id);
     }
 }

@@ -99,6 +99,5 @@ mod test {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test_default() {
-    }
+    fn test_default() {}
 }
