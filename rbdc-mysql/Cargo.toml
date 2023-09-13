@@ -25,7 +25,7 @@ bitflags = "2.0.2"
 digest = { version = "0.10.0", default-features = false, features = ["std"] }
 futures-core = { version = "0.3.19", default-features = false }
 futures-util = { version = "0.3.21", features = ["alloc", "sink"] }
-generic-array = { version = "0.14.4", default-features = false }
+generic-array = { version = "1.0.0", default-features = false }
 rsa = { version = "0.9.2" }
 rand = { version = "0.8.4", default-features = false, features = ["std", "std_rng"] }
 sha-1 = { version = "0.10.0", default-features = false }
