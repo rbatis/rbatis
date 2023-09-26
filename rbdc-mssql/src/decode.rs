@@ -142,7 +142,7 @@ impl Decode for Value {
             ColumnData::DateTime2(v) => match v {
                 None => Value::Null,
                 Some(_) => {
-                    let v: tiberius::Result<Option<chrono::DateTime<Utc>>> =
+                    let v: tiberius::Result<Option<NaiveDateTime>> =
                         tiberius::FromSql::from_sql(row);
                     match v {
                         Ok(v) => match v {
