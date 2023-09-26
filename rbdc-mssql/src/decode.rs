@@ -1,4 +1,4 @@
-use chrono::{FixedOffset, NaiveDateTime, Utc};
+use chrono::{FixedOffset, NaiveDateTime};
 use rbdc::datetime::DateTime;
 use rbdc::Error;
 use rbs::Value;
