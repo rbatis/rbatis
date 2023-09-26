@@ -241,6 +241,7 @@ impl<T> IPageRequest for Page<T> {
     fn get_page_size(&self) -> u64 {
         self.page_size
     }
+
     fn get_page_no(&self) -> u64 {
         self.page_no
     }
@@ -253,8 +254,8 @@ impl<T> IPageRequest for Page<T> {
         self.search_count
     }
 
-    fn set_total(mut self, total: u64) -> Self {
-        self.total = total;
+    fn set_total(mut self, arg: u64) -> Self {
+        self.total = arg;
         self
     }
 
