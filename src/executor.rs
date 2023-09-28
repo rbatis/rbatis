@@ -159,6 +159,7 @@ impl RBatisConnExecutor {
     }
 }
 
+
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Mutex<Box<dyn Connection>>,
@@ -170,6 +171,7 @@ impl Debug for RBatisTxExecutor {
         f.debug_struct("RBatisTxExecutor")
             .field("tx_id", &self.tx_id)
             .field("rb", &self.rb)
+            .field("done",&self.done)
             .finish()
     }
 }
