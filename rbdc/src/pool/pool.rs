@@ -1,9 +1,7 @@
 use crate::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use crate::Error;
 use async_trait::async_trait;
-use deadpool::managed::{
-    Manager, Object, PoolBuilder, PoolError, RecycleError, RecycleResult, Timeouts,
-};
+use deadpool::managed::{Manager, Metrics, Object, PoolBuilder, PoolError, RecycleError, RecycleResult, Timeouts};
 use deadpool::Status;
 use futures_core::future::BoxFuture;
 use rbs::Value;
@@ -167,7 +165,7 @@ impl Manager for ManagerPorxy {
         })
     }
 
-    async fn recycle(&self, conn: &mut Self::Type) -> RecycleResult<Self::Error> {
+    async fn recycle(&self, conn: &mut Self::Type, _metrics: &Metrics) -> RecycleResult<Self::Error> {
         match conn.ping().await {
             Ok(_) => Ok(()),
             Err(e) => {
