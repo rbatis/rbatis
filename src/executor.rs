@@ -36,9 +36,6 @@ pub struct RBatisConnExecutor {
     pub conn: Mutex<Box<dyn Connection>>,
     pub rb: RBatis,
 }
-
-unsafe impl Sync for RBatisConnExecutor {}
-
 impl Debug for RBatisConnExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.rb.fmt(f)
@@ -162,20 +159,19 @@ impl RBatisConnExecutor {
     }
 }
 
+
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Mutex<Box<dyn Connection>>,
     pub rb: RBatis,
     pub done: bool,
 }
-
-unsafe impl Sync for RBatisTxExecutor {}
-
 impl Debug for RBatisTxExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatisTxExecutor")
             .field("tx_id", &self.tx_id)
             .field("rb", &self.rb)
+            .field("done",&self.done)
             .finish()
     }
 }
@@ -313,7 +309,6 @@ pub struct RBatisTxExecutorGuard {
     pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send>,
 }
 
-// unsafe impl Send for RBatisTxExecutorGuard{}
 unsafe impl Sync for RBatisTxExecutorGuard {}
 
 impl Debug for RBatisTxExecutorGuard {
