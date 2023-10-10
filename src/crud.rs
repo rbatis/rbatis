@@ -177,14 +177,22 @@ macro_rules! impl_update {
                 <$table>::update_by_column_value(executor,table,column,column_value).await
             }
 
+            /// todo unstable,this maybe have the batter way?
             pub async fn update_by_column_batch(
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
                 column: &str,
+                batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 let mut rows_affected = 0;
-                for item in tables{
-                    rows_affected += <$table>::update_by_column(executor,item,column).await?.rows_affected;
+                // let ranges = $crate::sql::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                // for (offset, limit) in ranges {
+                //     for table in &tables[offset as usize..limit as usize]{
+                //       rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
+                //     }
+                // }
+                for table in tables{
+                    rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
                 }
                 Ok($crate::rbdc::db::ExecResult{
                     rows_affected:rows_affected,
@@ -252,11 +260,25 @@ macro_rules! impl_delete {
           trim ',': for _,item in column_values:
              #{item},
           `)`"},$table_name);
-        $crate::impl_delete!($table {delete_by_column_batch<V:serde::Serialize>(column:&str,column_values: &[V]) => "`where ${column} in (`
-                                       trim ',':
-                                         for _,v in column_values:
-                                            #{v},
-                                       `)`"},$table_name);
+
+        impl $table {
+            pub async fn delete_by_column_batch<V:serde::Serialize>(
+                executor: &dyn $crate::executor::Executor,
+                column: &str,
+                values: &[V],
+                batch_size: u64,
+            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                let mut rows_affected = 0;
+                let ranges = $crate::sql::Page::<()>::make_ranges(values.len() as u64, batch_size);
+                for (offset, limit) in ranges {
+                    rows_affected += <$table>::delete_in_column(executor,column,&values[offset as usize..limit as usize]).await?.rows_affected;
+                }
+                Ok($crate::rbdc::db::ExecResult{
+                    rows_affected: rows_affected,
+                    last_insert_id: rbs::Value::Null
+                })
+            }
+        }
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
