@@ -25,7 +25,9 @@ mod test {
     use std::collections::HashMap;
     use std::future::Future;
     use std::pin::Pin;
+    use std::str::FromStr;
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicI32, Ordering};
 
     #[derive(Debug)]
     pub struct MockIntercept {
@@ -181,7 +183,7 @@ mod test {
         }
     }
 
-    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq)]
     struct MockTable {
         pub id: Option<String>,
         pub name: Option<String>,
@@ -192,7 +194,7 @@ mod test {
         pub sort: Option<String>,
         pub status: Option<i32>,
         pub remark: Option<String>,
-        pub create_time: Option<rbdc::datetime::DateTime>,
+        pub create_time: Option<DateTime>,
         pub version: Option<i64>,
         pub delete_flag: Option<i32>,
         //exec sql
@@ -408,6 +410,101 @@ mod test {
     }
 
     #[test]
+    fn test_update_by_column_batch() {
+        #[derive(Debug)]
+        pub struct TestIntercept{
+            pub num:AtomicI32,
+        }
+
+        #[async_trait]
+        impl Intercept for TestIntercept{
+            async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<bool, Error> {
+
+                assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
+                let num=self.num.load(Ordering::Relaxed)+1;
+                assert_eq!(args, &[Value::String(num.to_string()),
+                    Value::String(num.to_string()),
+                    Value::String(num.to_string()),
+                    Value::I32(num),
+                    Value::String(num.to_string()),
+                    Value::Ext("DateTime", Box::new(Value::String("2023-10-10 00:00:00".to_string()))),
+                    Value::I64(num as i64),
+                    Value::I32(num),
+                    Value::U64(num as u64),
+                    Value::String(num.to_string())]);
+                self.num.fetch_add(1,Ordering::Relaxed);
+                return Ok(true);
+            }
+        }
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.set_intercepts(vec![Arc::new(TestIntercept{ num: Default::default() })]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let tables = vec![MockTable {
+                id: Some("1".into()),
+                name: Some("1".into()),
+                pc_link: Some("1".into()),
+                h5_link: Some("1".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(1),
+                remark: Some("1".into()),
+                create_time: Some(DateTime::from_str("2023-10-10 00:00:00").unwrap()),
+                version: Some(1),
+                delete_flag: Some(1),
+                count: 1,
+            },MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(DateTime::from_str("2023-10-10 00:00:00").unwrap()),
+                version: Some(2),
+                delete_flag: Some(2),
+                count: 2,
+            },MockTable {
+                id: Some("3".into()),
+                name: Some("3".into()),
+                pc_link: Some("3".into()),
+                h5_link: Some("3".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(3),
+                remark: Some("3".into()),
+                create_time: Some(DateTime::from_str("2023-10-10 00:00:00").unwrap()),
+                version: Some(3),
+                delete_flag: Some(3),
+                count: 3,
+            },MockTable {
+                id: Some("4".into()),
+                name: Some("4".into()),
+                pc_link: Some("4".into()),
+                h5_link: Some("4".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(4),
+                remark: Some("4".into()),
+                create_time: Some(DateTime::from_str("2023-10-10 00:00:00").unwrap()),
+                version: Some(4),
+                delete_flag: Some(4),
+                count: 4,
+            }];
+            let r = MockTable::update_by_column_batch(&mut rb, &tables, "id",2)
+                .await
+                .unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_select_all() {
         let f = async move {
             let mut rb = RBatis::new();
@@ -442,18 +539,32 @@ mod test {
 
     #[test]
     fn test_delete_by_column_batch() {
+        #[derive(Debug)]
+        pub struct TestIntercept{
+            pub num:AtomicI32,
+        }
+
+        #[async_trait]
+        impl Intercept for TestIntercept{
+            async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<bool, Error> {
+                if self.num.load(Ordering::Relaxed)==0{
+                    assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
+                    assert_eq!(args, &vec![to_value!("1"), to_value!("2")]);
+                }else{
+                    assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
+                    assert_eq!(args, &vec![to_value!("3"), to_value!("4")]);
+                }
+                self.num.fetch_add(1,Ordering::Relaxed);
+                return Ok(true);
+            }
+        }
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![Arc::new(TestIntercept{ num: Default::default() })]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2"])
+            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2","3", "4"],2)
                 .await
                 .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
-            assert_eq!(args, vec![to_value!("1"), to_value!("2")]);
         };
         block_on(f);
     }
