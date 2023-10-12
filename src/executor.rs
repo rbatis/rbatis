@@ -2,7 +2,7 @@ use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
-use crate::sql::tx::Tx;
+use crate::sql::Tx;
 use crate::Error;
 use futures::Future;
 use futures_core::future::BoxFuture;

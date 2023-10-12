@@ -1,5 +1,7 @@
 pub mod page;
-pub use page::*;
-pub mod methods;
 pub mod tx;
-pub use methods::*;
+pub mod into_sql;
+
+pub use page::*;
+pub use into_sql::*;
+pub use tx::*;
