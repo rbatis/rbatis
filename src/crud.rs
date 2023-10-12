@@ -177,26 +177,37 @@ macro_rules! impl_update {
                 <$table>::update_by_column_value(executor,table,column,column_value).await
             }
 
-            /// todo unstable,this maybe have the batter way?
             pub async fn update_by_column_batch(
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
                 column: &str,
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                let temp_executor = $crate::executor::TempExecutor::new(executor.rbatis_ref());
                 let mut rows_affected = 0;
-                // let ranges = $crate::sql::Page::<()>::make_ranges(tables.len() as u64, batch_size);
-                // for (offset, limit) in ranges {
-                //     for table in &tables[offset as usize..limit as usize]{
-                //       rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
-                //     }
-                // }
-                for table in tables{
-                    rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
+                let ranges = $crate::sql::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                for (offset, limit) in ranges {
+                    for table in &tables[offset as usize..limit as usize]{
+                       <$table>::update_by_column(&temp_executor,table,column).await?;
+                    }
+                    let sqls = temp_executor.clear_sql();
+                    let arg_vec = temp_executor.clear_args();
+                    let mut sql = String::new();
+                    let mut args = Vec::new();
+                    for item in sqls{
+                        sql.push_str(&item);
+                        sql.push_str(";");
+                    }
+                    for item in arg_vec{
+                        for v in item{
+                            args.push(v);
+                        }
+                    }
+                    rows_affected += executor.exec(&sql,args).await?.rows_affected;
                 }
                 Ok($crate::rbdc::db::ExecResult{
                     rows_affected:rows_affected,
-                    last_insert_id:rbs::Value::Null
+                    last_insert_id:rbs::Value::Null,
                 })
             }
         }
