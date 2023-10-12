@@ -6,11 +6,41 @@ pub const DEFAULT_PAGE_SIZE: u64 = 10;
 
 ///Page interface, support get_pages() and offset()
 pub trait IPageRequest {
-    fn get_page_size(&self) -> u64;
-    fn get_page_no(&self) -> u64;
-    fn get_total(&self) -> u64;
+    fn page_size(&self) -> u64;
+    fn page_no(&self) -> u64;
+    fn total(&self) -> u64;
     ///Control whether to execute count statements to count the total number
-    fn is_search_count(&self) -> bool;
+    fn search_count(&self) -> bool;
+
+    ///sum pages
+    fn pages(&self) -> u64 {
+        if self.page_size() == 0 {
+            return 0;
+        }
+        let mut pages = self.total() / self.page_size();
+        if self.total() % self.page_size() != 0 {
+            pages = pages + 1;
+        }
+        return pages;
+    }
+    ///sum offset
+    fn offset(&self) -> u64 {
+        if self.page_no() > 0 {
+            (self.page_no() - 1) * self.page_size()
+        } else {
+            0
+        }
+    }
+
+    ///sum offset_limit
+    fn offset_limit(&self) -> u64 {
+        let v = self.offset() + self.page_size();
+        if v > self.total() {
+            return self.total();
+        }
+        v
+    }
+
 
     fn set_total(self, arg: u64) -> Self;
     fn set_page_size(self, arg: u64) -> Self;
@@ -19,33 +49,19 @@ pub trait IPageRequest {
     ///Control whether to execute count statements to count the total number
     fn set_search_count(self, arg: bool) -> Self;
 
-    ///sum pages
+    #[deprecated(note = "please use page_size() replace this")]
+    fn get_page_size(&self) -> u64{self.page_size()}
+    #[deprecated(note = "please use page_no() replace this")]
+    fn get_page_no(&self) -> u64{self.page_no()}
+    #[deprecated(note = "please use total() replace this")]
+    fn get_total(&self) -> u64{self.total()}
+    #[deprecated(note = "please use search_count() replace this")]
+    fn is_search_count(&self) -> bool{
+        self.search_count()
+    }
+    #[deprecated(note = "please use pages() replace this")]
     fn get_pages(&self) -> u64 {
-        if self.get_page_size() == 0 {
-            return 0;
-        }
-        let mut pages = self.get_total() / self.get_page_size();
-        if self.get_total() % self.get_page_size() != 0 {
-            pages = pages + 1;
-        }
-        return pages;
-    }
-    ///sum offset
-    fn offset(&self) -> u64 {
-        if self.get_page_no() > 0 {
-            (self.get_page_no() - 1) * self.get_page_size()
-        } else {
-            0
-        }
-    }
-
-    ///sum offset_limit
-    fn offset_limit(&self) -> u64 {
-        let v = self.offset() + self.get_page_size();
-        if v > self.get_total() {
-            return self.get_total();
-        }
-        v
+        self.pages()
     }
 }
 
@@ -119,19 +135,19 @@ impl Default for PageRequest {
 }
 
 impl IPageRequest for PageRequest {
-    fn get_page_size(&self) -> u64 {
+    fn page_size(&self) -> u64 {
         self.page_size
     }
 
-    fn get_page_no(&self) -> u64 {
+    fn page_no(&self) -> u64 {
         self.page_no
     }
 
-    fn get_total(&self) -> u64 {
+    fn total(&self) -> u64 {
         self.total
     }
     /// Control whether to execute count statements to count the total number
-    fn is_search_count(&self) -> bool {
+    fn search_count(&self) -> bool {
         self.search_count
     }
 
@@ -242,19 +258,19 @@ impl<T> Default for Page<T> {
 }
 
 impl<T> IPageRequest for Page<T> {
-    fn get_page_size(&self) -> u64 {
+    fn page_size(&self) -> u64 {
         self.page_size
     }
 
-    fn get_page_no(&self) -> u64 {
+    fn page_no(&self) -> u64 {
         self.page_no
     }
 
-    fn get_total(&self) -> u64 {
+    fn total(&self) -> u64 {
         self.total
     }
     /// Control whether to execute count statements to count the total number
-    fn is_search_count(&self) -> bool {
+    fn search_count(&self) -> bool {
         self.search_count
     }
 

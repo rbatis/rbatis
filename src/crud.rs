@@ -377,7 +377,7 @@ macro_rules! impl_select_page {
                    async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
                 let mut total = 0;
-                if page_req.is_search_count() {
+                if page_req.search_count() {
                     let total_value = Inner::$fn_name(executor,true,&table_column,&table_name,page_req.page_no, page_req.page_size,page_req.offset(),"",$($param_key,)*).await?;
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
@@ -430,7 +430,7 @@ macro_rules! htmlsql_select_page {
               }
             }
             let mut total = 0;
-            if page_req.is_search_count() {
+            if page_req.search_count() {
                let total_value = Inner::$fn_name(executor, true, page_req.offset(), page_req.page_size, $($param_key,)*).await?;
                total = $crate::decode(total_value).unwrap_or(0);
             }
