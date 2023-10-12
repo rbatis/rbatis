@@ -783,7 +783,7 @@ mod test {
         };
         block_on(f);
     }
-    impl_select_page!(MockTable{select_page_by_name(name:&str) =>"
+    impl_select_page!(MockTable{select_page_by_name(name:&str,account:&str) =>"
      if name != null && name != '':
        `where name != #{name}`
      if name == '':
@@ -795,7 +795,7 @@ mod test {
             let queue = Arc::new(SegQueue::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
+            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "","")
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
