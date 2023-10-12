@@ -329,6 +329,15 @@ impl<V> Page<V> {
 mod test {
     use crate::sql::page::Page;
 
+
+    #[test]
+    fn test_page_zero() {
+        let mut page = Page::<i32>::new_total(1, 10, 0);
+        page.records = vec![];
+        println!("{:?}", page);
+        assert_eq!(page.pages, 0);
+    }
+
     #[test]
     fn test_page() {
         let mut page = Page::<i32>::new_total(1, 10, 1);
