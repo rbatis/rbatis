@@ -9,11 +9,14 @@ pub trait IPageRequest {
     fn get_page_size(&self) -> u64;
     fn get_page_no(&self) -> u64;
     fn get_total(&self) -> u64;
+    ///Control whether to execute count statements to count the total number
     fn is_search_count(&self) -> bool;
 
     fn set_total(self, arg: u64) -> Self;
     fn set_page_size(self, arg: u64) -> Self;
     fn set_page_no(self, arg: u64) -> Self;
+
+    ///Control whether to execute count statements to count the total number
     fn set_search_count(self, arg: bool) -> Self;
 
     ///sum pages
@@ -65,7 +68,7 @@ pub struct Page<T> {
     pub page_no: u64,
     /// default 10
     pub page_size: u64,
-    /// is search_count
+    /// Control whether to execute count statements to count the total number
     pub search_count: bool,
 }
 
@@ -77,6 +80,7 @@ pub struct PageRequest {
     pub page_no: u64,
     /// page page_size default 10
     pub page_size: u64,
+    /// Control whether to execute count statements to count the total number
     pub search_count: bool,
 }
 
@@ -126,7 +130,7 @@ impl IPageRequest for PageRequest {
     fn get_total(&self) -> u64 {
         self.total
     }
-
+    /// Control whether to execute count statements to count the total number
     fn is_search_count(&self) -> bool {
         self.search_count
     }
@@ -145,7 +149,7 @@ impl IPageRequest for PageRequest {
         self.page_no = arg;
         self
     }
-
+    /// Control whether to execute count statements to count the total number
     fn set_search_count(mut self, arg: bool) -> Self {
         self.search_count = arg;
         self
@@ -249,7 +253,7 @@ impl<T> IPageRequest for Page<T> {
     fn get_total(&self) -> u64 {
         self.total
     }
-
+    /// Control whether to execute count statements to count the total number
     fn is_search_count(&self) -> bool {
         self.search_count
     }
@@ -269,6 +273,7 @@ impl<T> IPageRequest for Page<T> {
         self
     }
 
+    /// Control whether to execute count statements to count the total number
     fn set_search_count(mut self, arg: bool) -> Self {
         self.search_count = arg;
         self
