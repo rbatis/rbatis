@@ -42,21 +42,21 @@ pub trait IPageRequest {
     }
 
 
-    fn set_total(self, arg: u64) -> Self;
-    fn set_page_size(self, arg: u64) -> Self;
-    fn set_page_no(self, arg: u64) -> Self;
+    fn set_total(&mut self, arg: u64);
+    fn set_page_size(&mut self, arg: u64);
+    fn set_page_no(&mut self, arg: u64);
 
     ///Control whether to execute count statements to count the total number
-    fn set_search_count(self, arg: bool) -> Self;
+    fn set_search_count(&mut self, arg: bool);
 
     #[deprecated(note = "please use page_size() replace this")]
-    fn get_page_size(&self) -> u64{self.page_size()}
+    fn get_page_size(&self) -> u64 { self.page_size() }
     #[deprecated(note = "please use page_no() replace this")]
-    fn get_page_no(&self) -> u64{self.page_no()}
+    fn get_page_no(&self) -> u64 { self.page_no() }
     #[deprecated(note = "please use total() replace this")]
-    fn get_total(&self) -> u64{self.total()}
+    fn get_total(&self) -> u64 { self.total() }
     #[deprecated(note = "please use search_count() replace this")]
-    fn is_search_count(&self) -> bool{
+    fn is_search_count(&self) -> bool {
         self.search_count()
     }
     #[deprecated(note = "please use pages() replace this")]
@@ -121,6 +121,27 @@ impl PageRequest {
             search_count: true,
         }
     }
+
+
+    pub fn set_total(mut self, total: u64) -> Self {
+        self.total = total;
+        self
+    }
+
+    pub fn set_page_size(mut self, arg: u64) -> Self {
+        self.page_size = arg;
+        self
+    }
+
+    pub fn set_page_no(mut self, arg: u64) -> Self {
+        self.page_no = arg;
+        self
+    }
+    /// Control whether to execute count statements to count the total number
+    pub fn set_search_count(mut self, arg: bool) -> Self {
+        self.search_count = arg;
+        self
+    }
 }
 
 impl Default for PageRequest {
@@ -151,24 +172,20 @@ impl IPageRequest for PageRequest {
         self.search_count
     }
 
-    fn set_total(mut self, total: u64) -> Self {
+    fn set_total(&mut self, total: u64) {
         self.total = total;
-        self
     }
 
-    fn set_page_size(mut self, arg: u64) -> Self {
+    fn set_page_size(&mut self, arg: u64) {
         self.page_size = arg;
-        self
     }
 
-    fn set_page_no(mut self, arg: u64) -> Self {
+    fn set_page_no(&mut self, arg: u64) {
         self.page_no = arg;
-        self
     }
     /// Control whether to execute count statements to count the total number
-    fn set_search_count(mut self, arg: bool) -> Self {
+    fn set_search_count(&mut self, arg: bool) {
         self.search_count = arg;
-        self
     }
 }
 
@@ -242,6 +259,27 @@ impl<T> Page<T> {
         }
         result
     }
+
+
+    pub fn set_total(mut self, total: u64) -> Self {
+        self.total = total;
+        self
+    }
+
+    pub fn set_page_size(mut self, arg: u64) -> Self {
+        self.page_size = arg;
+        self
+    }
+
+    pub fn set_page_no(mut self, arg: u64) -> Self {
+        self.page_no = arg;
+        self
+    }
+    /// Control whether to execute count statements to count the total number
+    pub fn set_search_count(mut self, arg: bool) -> Self {
+        self.search_count = arg;
+        self
+    }
 }
 
 impl<T> Default for Page<T> {
@@ -274,25 +312,21 @@ impl<T> IPageRequest for Page<T> {
         self.search_count
     }
 
-    fn set_total(mut self, arg: u64) -> Self {
+    fn set_total(&mut self, arg: u64) {
         self.total = arg;
-        self
     }
 
-    fn set_page_size(mut self, arg: u64) -> Self {
+    fn set_page_size(&mut self, arg: u64) {
         self.page_size = arg;
-        self
     }
 
-    fn set_page_no(mut self, arg: u64) -> Self {
+    fn set_page_no(&mut self, arg: u64) {
         self.page_no = arg;
-        self
     }
 
     /// Control whether to execute count statements to count the total number
-    fn set_search_count(mut self, arg: bool) -> Self {
+    fn set_search_count(&mut self, arg: bool) {
         self.search_count = arg;
-        self
     }
 }
 
@@ -326,8 +360,8 @@ impl<T: Display + Debug> Display for Page<T> {
 
 impl<V> Page<V> {
     pub fn from<T>(arg: Page<T>) -> Self
-    where
-        V: From<T>,
+        where
+            V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.pages = arg.pages;
