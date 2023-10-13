@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-mssql"
-version = "4.4.1"
+version = "4.4.7"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -30,4 +30,4 @@ rust_decimal = "1.25.0"
 byteorder = "1.4.3"
 uuid = "1.1.2"
 log = "0.4"
-fastdate = { version = "0.1" }
+fastdate = { version = "0.2" }

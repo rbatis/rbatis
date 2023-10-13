@@ -63,6 +63,7 @@ impl Decode for Timestamp {
                         day: date.day,
                         mon: date.mon,
                         year: date.year,
+                        offset: fastdate::offset_sec() as i64,
                     }
                     .unix_timestamp_millis() as u64,
                 )
