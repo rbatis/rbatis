@@ -21,6 +21,7 @@ impl Decode for fastdate::Date {
                     year: 2000,
                     day: 1,
                     mon: 1,
+                    offset: fastdate::offset_sec() as i64,
                 };
                 let dt = {
                     if days < 0 {
@@ -51,6 +52,7 @@ impl Encode for fastdate::Date {
             day: self.day,
             mon: self.mon,
             year: self.year,
+            offset: fastdate::offset_sec() as i64,
         }
         .unix_timestamp_millis()
             - fastdate::DateTime {
@@ -61,6 +63,7 @@ impl Encode for fastdate::Date {
                 year: 2000,
                 day: 1,
                 mon: 1,
+            offset: fastdate::offset_sec() as i64,
             }
             .unix_timestamp_millis())
             / (86400 * 1000) as i64;

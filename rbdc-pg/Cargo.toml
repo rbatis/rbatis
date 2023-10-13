@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-pg"
-version = "4.4.0"
+version = "4.4.7"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -41,7 +41,7 @@ url = "2.2.2"
 base64 = "0.21.0"
 dirs = { version = "5.0.0" }
 whoami = { version = "1.2.1" }
-fastdate = { version = "0.1" }
+fastdate = { version = "0.2" }
 bigdecimal = {version = "0.4.1",features = ["serde"]}
 num-bigint = "0.4.3"
 uuid = { version = "1.1", features = ["v4"] }

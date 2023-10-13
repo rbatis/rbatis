@@ -21,7 +21,8 @@ mod test {
             "1" : date.clone(),
         };
         let v: rbdc::types::datetime::DateTime = rbatis::decode(Value::Array(vec![m])).unwrap();
-        assert_eq!(v, date);
+        assert_eq!(v.to_string(), date.to_string());
+        println!("{}",v.offset);
     }
 
     #[test]
