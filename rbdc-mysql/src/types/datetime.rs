@@ -60,7 +60,7 @@ impl Decode for DateTime {
                     day: date.day,
                     mon: date.mon,
                     year: date.year,
-                    offset: fastdate::offset_sec() as i64,
+                    offset: fastdate::offset_sec(),
                 })
             }
         })
