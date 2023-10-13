@@ -969,4 +969,28 @@ mod test {
         };
         block_on(f);
     }
+
+    rbatis::htmlsql_select_page!(htmlsql_select_page_by_name(name: &str) -> MockTable => r#"<select id="select_page_data">`select `<if test="do_count == true">`count(1) from table`</if><if test="do_count == false">`* from table limit ${page_no},${page_size}`</if></select>"#);
+    #[test]
+    fn test_htmlsql_select_page_by_name() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SegQueue::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = htmlsql_select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql,
+                "select count(1) from table"
+            );
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "select * from table limit 0,10");
+        };
+        block_on(f);
+    }
 }

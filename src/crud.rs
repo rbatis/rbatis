@@ -352,7 +352,7 @@ macro_rules! impl_select_page {
         impl $table {
             pub async fn $fn_name(
                 executor: &dyn $crate::executor::Executor,
-                page_req: &(dyn $crate::sql::IPageRequest+Sync),
+                page_req: &dyn $crate::sql::IPageRequest,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::sql::Page::<$table>, $crate::rbdc::Error> {
                 let mut table_column = "*".to_string();

@@ -5,7 +5,7 @@ use std::fmt::{Debug, Display, Formatter};
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
 
 ///Page interface, support get_pages() and offset()
-pub trait IPageRequest {
+pub trait IPageRequest: Send+Sync {
     fn page_size(&self) -> u64;
     fn page_no(&self) -> u64;
     fn total(&self) -> u64;
@@ -73,7 +73,7 @@ pub trait IPage<T>: IPageRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub struct Page<T> {
+pub struct Page<T: Send+Sync> {
     /// data
     pub records: Vec<T>,
     /// total num
@@ -189,7 +189,7 @@ impl IPageRequest for PageRequest {
     }
 }
 
-impl<T> Page<T> {
+impl<T: Send+Sync> Page<T> {
     pub fn new(current: u64, page_size: u64) -> Self {
         return Page::new_total(current, page_size, 0);
     }
@@ -282,7 +282,7 @@ impl<T> Page<T> {
     }
 }
 
-impl<T> Default for Page<T> {
+impl<T: Send+Sync> Default for Page<T> {
     fn default() -> Self {
         return Page {
             records: vec![],
@@ -295,7 +295,7 @@ impl<T> Default for Page<T> {
     }
 }
 
-impl<T> IPageRequest for Page<T> {
+impl<T: Send+Sync> IPageRequest for Page<T> {
     fn page_size(&self) -> u64 {
         self.page_size
     }
@@ -330,7 +330,7 @@ impl<T> IPageRequest for Page<T> {
     }
 }
 
-impl<T> IPage<T> for Page<T> {
+impl<T: Send+Sync> IPage<T> for Page<T> {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
@@ -345,7 +345,7 @@ impl<T> IPage<T> for Page<T> {
     }
 }
 
-impl<T: Display + Debug> Display for Page<T> {
+impl<T: Display + Debug + Send+Sync> Display for Page<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Page")
             .field("records", &self.records)
@@ -358,8 +358,8 @@ impl<T: Display + Debug> Display for Page<T> {
     }
 }
 
-impl<V> Page<V> {
-    pub fn from<T>(arg: Page<T>) -> Self
+impl<V: Send+Sync> Page<V> {
+    pub fn from<T: Send+Sync>(arg: Page<T>) -> Self
         where
             V: From<T>,
     {
