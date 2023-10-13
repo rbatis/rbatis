@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    ".",
     "rbs",
     "rbdc",
     "rbatis-codegen",
