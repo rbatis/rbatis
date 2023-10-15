@@ -36,6 +36,7 @@ impl Value {
         }
     }
 
+    /// return array/map/string's length
     pub fn len(&self) -> usize {
         match self {
             Value::Null => 0,
