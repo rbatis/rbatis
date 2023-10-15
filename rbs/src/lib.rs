@@ -35,6 +35,24 @@ impl Value {
             Value::Ext(_, v) => v.is_empty(),
         }
     }
+
+    pub fn len(&self) -> usize {
+        match self {
+            Value::Null => 0,
+            Value::Bool(_) => 0,
+            Value::I32(_) => 0,
+            Value::I64(_) => 0,
+            Value::U32(_) => 0,
+            Value::U64(_) => 0,
+            Value::F32(_) => 0,
+            Value::F64(_) => 0,
+            Value::String(v) => v.len(),
+            Value::Binary(v) => v.len(),
+            Value::Array(v) => v.len(),
+            Value::Map(v) => v.len(),
+            Value::Ext(_, v) => v.len(),
+        }
+    }
 }
 
 #[macro_export]
