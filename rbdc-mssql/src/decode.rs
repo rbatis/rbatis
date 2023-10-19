@@ -82,7 +82,7 @@ impl Decode for Value {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            )).to_string()),
+                            ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -100,7 +100,7 @@ impl Decode for Value {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            )).to_string()),
+                            ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -150,7 +150,7 @@ impl Decode for Value {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            )).to_string()),
+                            ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
