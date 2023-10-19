@@ -80,9 +80,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(DateTime::from_timestamp_nano(
+                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            ).set_offset(offset_sec())),
+                            )).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -98,9 +98,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(DateTime::from_timestamp_nano(
+                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            ).set_offset(offset_sec())),
+                            )).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -148,9 +148,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(DateTime::from_timestamp_nano(
+                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            ).set_offset(offset_sec())),
+                            )).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -166,9 +166,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::from(DateTime::from_timestamp_nano(
+                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos() as i128,
-                            ).set_offset(v.offset().utc_minus_local()*60)),
+                            ).set_offset(v.offset().utc_minus_local()*60)).to_string()),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
