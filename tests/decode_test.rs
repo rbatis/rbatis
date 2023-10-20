@@ -22,7 +22,7 @@ mod test {
         };
         let v: rbdc::types::datetime::DateTime = rbatis::decode(Value::Array(vec![m])).unwrap();
         assert_eq!(v.to_string(), date.to_string());
-        println!("{}",v.offset);
+        println!("{}",v.offset());
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod test {
         let date_new: date::Date = rbs::from_value(rbs::to_value!(date.clone())).unwrap();
         assert_eq!(date, date_new);
 
-        let datetime = datetime::DateTime::from_str("2023-12-12 12-12-12").unwrap();
+        let datetime = datetime::DateTime::from_str("2023-12-12 12:12:12").unwrap();
         let datetime_new: datetime::DateTime =
             rbs::from_value(rbs::to_value!(datetime.clone())).unwrap();
         assert_eq!(datetime, datetime_new);

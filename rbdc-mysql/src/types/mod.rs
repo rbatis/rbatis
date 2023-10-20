@@ -29,3 +29,12 @@ pub trait Decode {
 pub trait Encode {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error>;
 }
+
+
+#[cfg(test)]
+mod test{
+    #[test]
+    fn test_datetime(){
+
+    }
+}

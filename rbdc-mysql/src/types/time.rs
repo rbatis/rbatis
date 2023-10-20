@@ -30,7 +30,7 @@ impl Encode for fastdate::Time {
         buf.push(size as u8);
 
         buf.push(self.hour as u8); //1
-        buf.push(self.min as u8); //1
+        buf.push(self.minu as u8); //1
         buf.push(self.sec as u8); //1
         if self.nano != 0 {
             buf.extend(self.get_micro().to_le_bytes()); //4
@@ -52,7 +52,7 @@ impl Decode for fastdate::Time {
                     fastdate::Time {
                         nano: 0,
                         sec: 0,
-                        min: 0,
+                        minu: 0,
                         hour: 0,
                     }
                 }
@@ -75,7 +75,7 @@ pub fn decode_time(len: u8, mut buf: &[u8]) -> fastdate::Time {
     fastdate::Time {
         nano: micros as u32 * 1000,
         sec: seconds,
-        min: minute,
+        minu: minute,
         hour,
     }
 }

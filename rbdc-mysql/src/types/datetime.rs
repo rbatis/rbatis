@@ -5,26 +5,27 @@ use crate::value::{MySqlValue, MySqlValueFormat};
 use rbdc::datetime::DateTime;
 use rbdc::Error;
 use std::str::FromStr;
+use fastdate::offset_sec;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
         let datetime_size =
-            date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
+            date_time_size_hint(datetime.hour(), datetime.minu(), datetime.sec(), datetime.nano());
         buf.push(datetime_size as u8);
         let date = fastdate::Date {
-            day: datetime.day,
-            mon: datetime.mon,
-            year: datetime.year,
+            day: datetime.day(),
+            mon: datetime.mon(),
+            year: datetime.year(),
         };
         let mut size = date.encode(buf)?;
         buf.remove(buf.len() - (size + 1));
         if datetime_size > 4 {
             let time = fastdate::Time {
-                nano: datetime.nano,
-                sec: datetime.sec,
-                min: datetime.min,
-                hour: datetime.hour,
+                nano: datetime.nano(),
+                sec: datetime.sec(),
+                minu: datetime.minu(),
+                hour: datetime.hour(),
             };
             let size_time = time.encode(buf)?;
             buf.remove(buf.len() - (size_time + 1));
@@ -48,20 +49,12 @@ impl Decode for DateTime {
                     fastdate::Time {
                         nano: 0,
                         sec: 0,
-                        min: 0,
+                        minu: 0,
                         hour: 0,
                     }
                 };
-                Self(fastdate::DateTime {
-                    nano: time.nano,
-                    sec: time.sec,
-                    min: time.min,
-                    hour: time.hour,
-                    day: date.day,
-                    mon: date.mon,
-                    year: date.year,
-                    offset: fastdate::offset_sec(),
-                })
+                let v = fastdate::DateTime::from((date, time)).set_offset(offset_sec());
+                Self(v)
             }
         })
     }
