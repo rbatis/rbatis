@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use rbdc::date::Date;
 
 use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
@@ -12,11 +13,11 @@ impl Encode for Timestamp {
         let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
         let size = date_time_size_hint(datetime.hour(), datetime.minu(), datetime.sec(), datetime.nano());
         buf.push(size as u8);
-        let date = fastdate::Date {
+        let date = Date(fastdate::Date {
             day: datetime.day(),
             mon: datetime.mon(),
             year: datetime.year(),
-        };
+        });
         let size_date = date.encode(buf)?;
         buf.remove(buf.len() - 1 - size_date);
         let mut size_time = 0;
