@@ -81,7 +81,8 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as i128,
+                                v.timestamp_nanos_opt()
+                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
                             ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
@@ -99,7 +100,8 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as i128,
+                                v.timestamp_nanos_opt()
+                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
                             ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
@@ -149,7 +151,8 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as i128,
+                                v.timestamp_nanos_opt()
+                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
                             ).set_offset(offset_sec())).to_string()),
                         },
                         Err(e) => {
@@ -167,7 +170,8 @@ impl Decode for Value {
                         Ok(v) => match v {
                             None => Value::Null,
                             Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos() as i128,
+                                v.timestamp_nanos_opt()
+                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
                             ).set_offset(v.offset().utc_minus_local()*60)).to_string()),
                         },
                         Err(e) => {

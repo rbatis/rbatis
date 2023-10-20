@@ -11,7 +11,7 @@ impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
         let datetime_size =
-            date_time_size_hint(datetime.hour(), datetime.minu(), datetime.sec(), datetime.nano());
+            date_time_size_hint(datetime.hour(), datetime.minute(), datetime.sec(), datetime.nano());
         buf.push(datetime_size as u8);
         let date = rbdc::date::Date(fastdate::Date {
             day: datetime.day(),
@@ -24,7 +24,7 @@ impl Encode for DateTime {
             let time = fastdate::Time {
                 nano: datetime.nano(),
                 sec: datetime.sec(),
-                minu: datetime.minu(),
+                minute: datetime.minute(),
                 hour: datetime.hour(),
             };
             let size_time = time.encode(buf)?;
@@ -49,7 +49,7 @@ impl Decode for DateTime {
                     fastdate::Time {
                         nano: 0,
                         sec: 0,
-                        minu: 0,
+                        minute: 0,
                         hour: 0,
                     }
                 };

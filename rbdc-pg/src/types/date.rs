@@ -21,7 +21,7 @@ impl Decode for fastdate::Date {
                 }, fastdate::Time{
                     nano: 0,
                     sec: 0,
-                    minu: 0,
+                    minute: 0,
                     hour: 0,
                 })).set_offset(offset_sec());
                 let dt = {
@@ -53,7 +53,7 @@ impl Encode for fastdate::Date {
         }, fastdate::Time{
             nano: 0,
             sec: 0,
-            minu: 0,
+            minute: 0,
             hour: 0,
         }))
         .unix_timestamp_millis()
@@ -64,7 +64,7 @@ impl Encode for fastdate::Date {
         }, fastdate::Time{
             nano: 0,
             sec: 0,
-            minu: 0,
+            minute: 0,
             hour: 0,
         }))
             .unix_timestamp_millis())
