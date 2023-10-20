@@ -381,8 +381,8 @@ macro_rules! impl_select_page {
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no(), page_req.page_size(), total);
-                let recordsValue = Inner::$fn_name(executor,false,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),&limit_sql,$($param_key,)*).await?;
-                page.records = rbs::from_value(recordsValue)?;
+                let records_value = Inner::$fn_name(executor,false,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),&limit_sql,$($param_key,)*).await?;
+                page.records = rbs::from_value(records_value)?;
                 Ok(page)
             }
         }
@@ -433,8 +433,8 @@ macro_rules! htmlsql_select_page {
                total = $crate::decode(total_value).unwrap_or(0);
             }
             let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size(), total);
-            let recordsValue = Inner::$fn_name(executor, false, page_req.offset(), page_req.page_size(), $($param_key,)*).await?;
-            page.records = rbs::from_value(recordsValue)?;
+            let records_value = Inner::$fn_name(executor, false, page_req.offset(), page_req.page_size(), $($param_key,)*).await?;
+            page.records = rbs::from_value(records_value)?;
             Ok(page)
          }
     }
