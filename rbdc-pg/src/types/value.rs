@@ -246,17 +246,17 @@ impl Decode for Value {
                 let v: Date = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Time => {
                 let v: Time = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamp => {
                 let v: Timestamp = Decode::decode(arg)?;
                 v
             }
-            .into(),
+                .into(),
             PgType::Timestamptz => Timestamptz::decode(arg)?.into(),
             PgType::Interval => Value::Ext(
                 "Interval",
@@ -476,18 +476,18 @@ impl Encode for Value {
                     "Date" => Date(fastdate::Date::from_str(
                         &v.into_string().unwrap_or_default(),
                     )?)
-                    .encode(buf)?,
+                        .encode(buf)?,
                     //RFC3339NanoTime = "15:04:05.999999999"
                     "Time" => Time(fastdate::Time::from_str(
                         &v.into_string().unwrap_or_default(),
                     )?)
-                    .encode(buf)?,
+                        .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
                     "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
                     "DateTime" => DateTime(fastdate::DateTime::from_str(
                         &v.into_string().unwrap_or_default(),
                     )?)
-                    .encode(buf)?,
+                        .encode(buf)?,
                     "Bytea" => Bytea(v.as_u64().unwrap_or_default() as u8).encode(buf)?,
                     "Char" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Name" => v.into_string().unwrap_or_default().encode(buf)?,
@@ -513,7 +513,10 @@ impl Encode for Value {
                     "Inet" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Bpchar" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Varchar" => v.into_bytes().unwrap_or_default().encode(buf)?,
-                    "Timestamptz" => Timestamptz(v.as_u64().unwrap_or_default()).encode(buf)?,
+                    "Timestamptz" => {
+                        let tz: Timestamptz = rbs::from_value(Value::Ext(type_name, v))?;
+                        tz.encode(buf)?
+                    }
                     "Interval" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Timetz" => {
                         Timetz(rbs::from_value(*v).map_err(|e| Error::from(e.to_string()))?)

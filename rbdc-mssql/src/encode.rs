@@ -62,12 +62,9 @@ impl Encode for Value {
                     Ok(())
                 }
                 "DateTime" => {
-                    let mut s = v.as_str().unwrap_or_default().to_string();
-                    if s.len() > 10 {
-                        s.replace_range(10..11, "T");
-                    }
+                    let date = fastdate::DateTime::from_str(&v.as_str().unwrap_or_default())?;
                     q.bind(
-                        chrono::NaiveDateTime::from_str(&s)
+                        chrono::NaiveDateTime::from_str(&date.display(false))
                             .map_err(|e| Error::from(e.to_string()))?,
                     );
                     Ok(())
@@ -109,10 +106,10 @@ mod test {
 
     #[test]
     fn test_from() {
-        let mut v = fastdate::DateTime::now().to_string();
-        v.replace_range(10..11, "T");
-        println!("{}", v.to_string());
-        let n = chrono::NaiveDateTime::from_str(&v).unwrap();
-        assert_eq!(n.to_string().replace(" ", "T").trim_end_matches("00"), v);
+        let mut v = fastdate::DateTime::now();
+        println!("{}", v.display(false));
+        let n = chrono::NaiveDateTime::from_str(&v.display(false)).unwrap();
+        assert_eq!(v.display(false),n.to_string().replace(" ","T").trim_end_matches("0"));
     }
+
 }
