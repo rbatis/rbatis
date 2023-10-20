@@ -8,8 +8,8 @@ use std::str::FromStr;
 impl Encode for Date {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         buf.push(4);
-        // MySQL supports years from 1000 - 9999
-        let year = &self.0.year.to_le_bytes();
+        //u16:  MySQL supports years from 1000 - 9999
+        let year = &(self.0.year as u16).to_le_bytes();
         buf.extend_from_slice(year);
         buf.push(self.0.mon as u8);
         buf.push(self.0.day as u8);
@@ -44,16 +44,4 @@ pub fn decode_date_buf(buf: &[u8]) -> Result<fastdate::Date, Error> {
         mon: buf[2],
         year: LittleEndian::read_u16(buf) as i32,
     })
-}
-
-impl Encode for fastdate::Date {
-    fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
-        buf.push(4);
-        // MySQL supports years from 1000 - 9999
-        let year = &self.year.to_le_bytes();
-        buf.extend_from_slice(year);
-        buf.push(self.mon as u8);
-        buf.push(self.day as u8);
-        Ok(4)
-    }
 }

@@ -13,11 +13,11 @@ impl Encode for DateTime {
         let datetime_size =
             date_time_size_hint(datetime.hour(), datetime.minu(), datetime.sec(), datetime.nano());
         buf.push(datetime_size as u8);
-        let date = fastdate::Date {
+        let date = rbdc::date::Date(fastdate::Date {
             day: datetime.day(),
             mon: datetime.mon(),
             year: datetime.year(),
-        };
+        });
         let mut size = date.encode(buf)?;
         buf.remove(buf.len() - (size + 1));
         if datetime_size > 4 {
