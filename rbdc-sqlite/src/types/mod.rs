@@ -31,3 +31,12 @@ mod str;
 mod uint;
 use crate::type_info::Type;
 mod value;
+
+
+#[cfg(test)]
+mod test{
+    #[test]
+    fn test_datetime(){
+
+    }
+}

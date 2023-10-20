@@ -126,7 +126,7 @@ pub(crate) fn decode_date_buf(buf: &[u8]) -> Result<Date, Error> {
         });
     }
     Ok(Date {
-        year: LittleEndian::read_u16(buf),
+        year: LittleEndian::read_u16(buf) as i32,
         mon: buf[2] as u8,
         day: buf[3] as u8,
     })

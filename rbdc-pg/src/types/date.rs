@@ -6,6 +6,7 @@ use rbdc::date::Date;
 use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
+use fastdate::offset_sec;
 
 impl Decode for fastdate::Date {
     fn decode(value: PgValue) -> Result<Self, Error> {
@@ -13,16 +14,16 @@ impl Decode for fastdate::Date {
             PgValueFormat::Binary => {
                 // DATE is encoded as the days since epoch
                 let days: i32 = Decode::decode(value)?;
-                let dt = fastdate::DateTime {
-                    nano: 0,
-                    sec: 0,
-                    min: 0,
-                    hour: 0,
-                    year: 2000,
+                let dt = fastdate::DateTime::from((fastdate::Date{
                     day: 1,
                     mon: 1,
-                    offset: fastdate::offset_sec(),
-                };
+                    year: 2000,
+                }, fastdate::Time{
+                    nano: 0,
+                    sec: 0,
+                    minu: 0,
+                    hour: 0,
+                })).set_offset(offset_sec());
                 let dt = {
                     if days < 0 {
                         dt - Duration::from_secs((-days * 24 * 3600) as u64)
@@ -44,27 +45,28 @@ impl Decode for fastdate::Date {
 impl Encode for fastdate::Date {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
         // DATE is encoded as the days since epoch
-        let days = (fastdate::DateTime {
-            nano: 0,
-            sec: 0,
-            min: 0,
-            hour: 0,
+
+        let days = (fastdate::DateTime::from((fastdate::Date{
             day: self.day,
             mon: self.mon,
             year: self.year,
-            offset: fastdate::offset_sec(),
-        }
+        }, fastdate::Time{
+            nano: 0,
+            sec: 0,
+            minu: 0,
+            hour: 0,
+        }))
         .unix_timestamp_millis()
-            - fastdate::DateTime {
-                nano: 0,
-                sec: 0,
-                min: 0,
-                hour: 0,
-                year: 2000,
-                day: 1,
-                mon: 1,
-            offset: fastdate::offset_sec(),
-            }
+            - fastdate::DateTime::from((fastdate::Date{
+            day: 1,
+            mon: 1,
+            year: 2000,
+        }, fastdate::Time{
+            nano: 0,
+            sec: 0,
+            minu: 0,
+            hour: 0,
+        }))
             .unix_timestamp_millis())
             / (86400 * 1000) as i64;
         (days as i32).encode(buf)

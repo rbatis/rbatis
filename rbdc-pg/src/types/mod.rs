@@ -27,3 +27,12 @@ use crate::type_info::PgTypeInfo;
 pub trait TypeInfo {
     fn type_info(&self) -> PgTypeInfo;
 }
+
+
+#[cfg(test)]
+mod test{
+    #[test]
+    fn test_datetime(){
+
+    }
+}

@@ -10,22 +10,22 @@ use rbdc::Error;
 impl Encode for Timestamp {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
-        let size = date_time_size_hint(datetime.hour, datetime.min, datetime.sec, datetime.nano);
+        let size = date_time_size_hint(datetime.hour(), datetime.minu(), datetime.sec(), datetime.nano());
         buf.push(size as u8);
         let date = fastdate::Date {
-            day: datetime.day,
-            mon: datetime.mon,
-            year: datetime.year,
+            day: datetime.day(),
+            mon: datetime.mon(),
+            year: datetime.year(),
         };
         let size_date = date.encode(buf)?;
         buf.remove(buf.len() - 1 - size_date);
         let mut size_time = 0;
         if (size + size_date) > 4 {
             let time = fastdate::Time {
-                nano: datetime.nano,
-                sec: datetime.sec,
-                min: datetime.min,
-                hour: datetime.hour,
+                nano: datetime.nano(),
+                sec: datetime.sec(),
+                minu: datetime.minu(),
+                hour: datetime.hour(),
             };
             size_time = time.encode(buf)?;
             buf.remove(buf.len() - 1 - size_time);
@@ -50,21 +50,12 @@ impl Decode for Timestamp {
                     fastdate::Time {
                         nano: 0,
                         sec: 0,
-                        min: 0,
+                        minu: 0,
                         hour: 0,
                     }
                 };
                 Self(
-                    fastdate::DateTime {
-                        nano: time.nano,
-                        sec: time.sec,
-                        min: time.min,
-                        hour: time.hour,
-                        day: date.day,
-                        mon: date.mon,
-                        year: date.year,
-                        offset: fastdate::offset_sec(),
-                    }
+                    fastdate::DateTime::from((date, time))
                     .unix_timestamp_millis() as u64,
                 )
             }

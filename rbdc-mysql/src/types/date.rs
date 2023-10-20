@@ -42,7 +42,7 @@ pub fn decode_date_buf(buf: &[u8]) -> Result<fastdate::Date, Error> {
     Ok(fastdate::Date {
         day: buf[3],
         mon: buf[2],
-        year: LittleEndian::read_u16(buf),
+        year: LittleEndian::read_u16(buf) as i32,
     })
 }
 
