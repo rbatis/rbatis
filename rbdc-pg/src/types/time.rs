@@ -22,7 +22,7 @@ impl Decode for Time {
                 }, fastdate::Time{
                     nano: 0,
                     sec: 0,
-                    minu: 0,
+                    minute: 0,
                     hour: 0,
                 }));
                 let t = {
@@ -35,7 +35,7 @@ impl Decode for Time {
                 Ok(Time(fastdate::Time {
                     nano: t.nano(),
                     sec: t.sec(),
-                    minu: t.minu(),
+                    minute: t.minute(),
                     hour: t.hour(),
                 }))
             }
@@ -50,7 +50,7 @@ impl Encode for Time {
         // microseconds
         let us = self.0.get_micro()
             + self.0.hour as u32 * 60 * 60 * 1000000
-            + self.0.minu as u32 * 60 * 1000000
+            + self.0.minute as u32 * 60 * 1000000
             + self.0.sec as u32 * 1000000;
         us.encode(buf)
     }
