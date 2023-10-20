@@ -185,3 +185,34 @@ impl Decode for Value {
         })
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::time::Duration;
+    use chrono::{FixedOffset, Local, NaiveDateTime};
+    use fastdate::offset_sec;
+
+
+    #[test]
+    fn test_decode() {
+        let dt = NaiveDateTime::from_timestamp_opt(1697804165, 0).unwrap();
+        assert_eq!(dt.timestamp(),1697804165);
+        println!("{}",dt.to_string());
+
+        let date = fastdate::DateTime::from_timestamp(
+            dt.timestamp()).set_offset(offset_sec());
+        println!("{}",date.to_string());
+    }
+
+    #[test]
+    fn test_decode_time_zone() {
+        let offset = FixedOffset::east_opt( 8*60* 60).unwrap();
+        let dt: chrono::DateTime<FixedOffset> = chrono::DateTime::from_local(NaiveDateTime::from_timestamp_opt(1697801035, 0).unwrap(), offset);
+        let date = fastdate::DateTime::from_timestamp_nano(
+            dt.timestamp_nanos_opt()
+                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128)
+            .set_offset(offset_sec());
+        println!("{},{}", dt.to_string(), date.to_string());
+        assert_eq!(dt.to_string().replacen(" ","T",1).replace(" ",""), date.display(true));
+    }
+}
