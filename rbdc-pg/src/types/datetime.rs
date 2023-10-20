@@ -7,6 +7,7 @@ use rbdc::timestamp::Timestamp;
 use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
+use fastdate::offset_sec;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
@@ -26,17 +27,19 @@ impl Decode for fastdate::DateTime {
         Ok(match value.format() {
             PgValueFormat::Binary => {
                 // TIMESTAMP is encoded as the microseconds since the epoch
-                let epoch = fastdate::DateTime::from(fastdate::Date {
+                let mut epoch = fastdate::DateTime::from(fastdate::Date {
                     day: 1,
                     mon: 1,
                     year: 2000,
                 });
                 let us: i64 = Decode::decode(value)?;
                 if us < 0 {
-                    epoch - Duration::from_micros(-us as u64)
+                    epoch = epoch - Duration::from_micros(-us as u64)
                 } else {
-                    epoch + Duration::from_micros(us as u64)
+                    epoch = epoch + Duration::from_micros(us as u64)
                 }
+                epoch = epoch.add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
+                epoch
             }
             PgValueFormat::Text => {
                 //2022-07-22 05:22:22.123456+00

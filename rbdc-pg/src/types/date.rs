@@ -23,7 +23,7 @@ impl Decode for fastdate::Date {
                     sec: 0,
                     minute: 0,
                     hour: 0,
-                })).set_offset(offset_sec());
+                })).add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
                 let dt = {
                     if days < 0 {
                         dt - Duration::from_secs((-days * 24 * 3600) as u64)
