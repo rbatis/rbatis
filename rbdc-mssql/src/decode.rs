@@ -2,7 +2,7 @@ use chrono::{FixedOffset, NaiveDateTime};
 use fastdate::offset_sec;
 use rbdc::datetime::DateTime;
 use rbdc::Error;
-use rbs::Value;
+use rbs::{to_value, Value};
 use tiberius::numeric::BigDecimal;
 use tiberius::ColumnData;
 
@@ -80,10 +80,10 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
+                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos_opt()
                                     .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-                            ).set_offset(offset_sec())).to_string()),
+                            ).set_offset(offset_sec()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -99,10 +99,10 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
+                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos_opt()
                                     .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-                            ).set_offset(offset_sec())).to_string()),
+                            ).set_offset(offset_sec()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -150,10 +150,10 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
+                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
                                 v.timestamp_nanos_opt()
                                     .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-                            ).set_offset(offset_sec())).to_string()),
+                            ).set_offset(offset_sec()))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -169,10 +169,12 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => Value::String(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos_opt()
-                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-                            ).set_offset(v.offset().utc_minus_local()*60)).to_string()),
+                            Some(v) => {
+                                let dt=DateTime(fastdate::DateTime::from_timestamp_nano(
+                                    v.timestamp_nanos_opt()
+                                        .expect("value can not be represented in a timestamp with nanosecond precision.") as i128).set_offset(v.offset().utc_minus_local()*60));
+                                to_value!(dt)
+                            },
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));

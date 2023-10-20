@@ -17,8 +17,8 @@ impl Display for DateTime {
 
 impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         serializer.serialize_newtype_struct("DateTime", &self.0)
     }
@@ -32,8 +32,8 @@ impl Debug for DateTime {
 
 impl<'de> Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
         #[serde(rename = "DateTime")]
@@ -134,5 +134,46 @@ impl FromStr for DateTime {
 impl From<DateTime> for Value {
     fn from(arg: DateTime) -> Self {
         Value::Ext("DateTime", Box::new(Value::String(arg.0.to_string())))
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::str::FromStr;
+    use crate::datetime::DateTime;
+
+    #[test]
+    fn test_ser_de() {
+        let dt = DateTime::now();
+        let v = serde_json::to_value(&dt).unwrap();
+        let new_dt: DateTime = serde_json::from_value(v).unwrap();
+        assert_eq!(new_dt, dt);
+    }
+
+    #[test]
+    fn test_de() {
+        let dt = DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap();
+        println!("dt={}",dt);
+        let v = serde_json::to_value(&dt).unwrap();
+        let new_dt: DateTime = serde_json::from_value(v).unwrap();
+        assert_eq!(new_dt, dt);
+    }
+
+    #[test]
+    fn test_de2() {
+        let dt = vec![DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap()];
+        let v = serde_json::to_value(&dt).unwrap();
+        println!("dt={:?}",dt);
+        let new_dt: Vec<DateTime> = serde_json::from_value(v).unwrap();
+        assert_eq!(new_dt, dt);
+    }
+
+    #[test]
+    fn test_de3() {
+        let dt = vec![DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap()];
+        let v = rbs::to_value!(&dt);
+        let new_dt: Vec<DateTime> = rbs::from_value(v).unwrap();
+        assert_eq!(new_dt, dt);
     }
 }
