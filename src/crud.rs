@@ -398,7 +398,7 @@ macro_rules! impl_select_page {
 /// return Vec<Record>（if param do_count = false）
 /// return u64（if param do_count = true）
 ///
-/// just like this exmaple:
+/// just like this example:
 /// ```html
 /// <select id="select_page_data">
 ///         `select `
@@ -423,6 +423,61 @@ macro_rules! htmlsql_select_page {
             struct Inner{}
             impl Inner{
               #[$crate::html_sql($html_file)]
+              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+                 $crate::impled!()
+              }
+            }
+            let mut total = 0;
+            if page_req.search_count() {
+               let total_value = Inner::$fn_name(executor, true, page_req.offset(), page_req.page_size(), $($param_key,)*).await?;
+               total = $crate::decode(total_value).unwrap_or(0);
+            }
+            let mut page = $crate::sql::Page::<$table>::new_total(page_req.offset(), page_req.page_size(), total);
+            let records_value = Inner::$fn_name(executor, false, page_req.offset(), page_req.page_size(), $($param_key,)*).await?;
+            page.records = rbs::from_value(records_value)?;
+            Ok(page)
+         }
+    }
+}
+
+
+
+/// impl py_sql select page.
+///
+/// you must deal with 3 param:
+/// (do_count:bool,page_no:u64,page_size:u64)
+///
+/// you must deal with sql:
+/// return Vec<Record>（if param do_count = false）
+/// return u64（if param do_count = true）
+///
+/// just like this example:
+/// ```py
+/// `select * from activity where delete_flag = 0`
+///                   if name != '':
+///                     ` and name=#{name}`
+///                   if !ids.is_empty():
+///                     ` and id in `
+///                     ${ids.sql()}
+/// ```
+/// ```
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{}
+/// rbatis::pysql_select_page!(select_page_data(name: &str) -> BizActivity =>
+/// r#"`select * from activity where delete_flag = 0`
+///                   if name != '':
+///                     ` and name=#{name}`
+///                   if !ids.is_empty():
+///                     ` and id in `
+///                     ${ids.sql()}"#);
+/// ```
+#[macro_export]
+macro_rules! pysql_select_page {
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
+            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_req: &dyn $crate::sql::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
+            struct Inner{}
+            impl Inner{
+              #[$crate::py_sql($py_file)]
               pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
