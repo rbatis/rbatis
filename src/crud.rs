@@ -461,6 +461,7 @@ macro_rules! htmlsql_select_page {
 ///                     ${ids.sql()}
 /// ```
 /// ```
+/// use rbatis::sql::IntoSql;
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct BizActivity{}
 /// rbatis::pysql_select_page!(select_page_data(name: &str) -> BizActivity =>
