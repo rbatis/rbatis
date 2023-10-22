@@ -151,11 +151,11 @@ impl DateTime {
     /// parse an string by format.
     /// format str must be:
     /// ```rust
-    ///  rbdc::types::datetime::DateTime::parse("YYYY-MM-DD hh:mm:ss.000000","2022-12-13 11:12:14.123456").unwrap();
+    ///  rbdc::types::datetime::DateTime::parse("YYYY-MM-DD HH:MM:SS.000000","2022-12-13 11:12:14.123456").unwrap();
     /// ```
     /// or any position
     /// ```rust
-    ///  rbdc::types::datetime::DateTime::parse("hh:mm:ss.000000,YYYY-MM-DD","11:12:14.123456,2022-12-13").unwrap();
+    ///  rbdc::types::datetime::DateTime::parse("YYYY-MM-DD hh:mm:ss.000000","2022-12-13 11:12:14.123456").unwrap();
     /// ```
     pub fn parse(format: &str, arg: &str) -> Result<DateTime, Error> {
         Ok(Self(fastdate::DateTime::parse(format,arg).map_err(|e|Error::from(e.to_string()))?))
