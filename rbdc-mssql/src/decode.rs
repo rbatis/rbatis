@@ -80,11 +80,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos_opt()
-                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128
-                                -offset_sec() as i128,
-                            ).set_offset(offset_sec()))),
+                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -100,10 +96,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos_opt()
-                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128 -offset_sec() as i128,
-                            ).set_offset(offset_sec()))),
+                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -151,10 +144,7 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(fastdate::DateTime::from_timestamp_nano(
-                                v.timestamp_nanos_opt()
-                                    .expect("value can not be represented in a timestamp with nanosecond precision.") as i128 -offset_sec() as i128,
-                            ).set_offset(offset_sec()))),
+                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -187,30 +177,55 @@ impl Decode for Value {
     }
 }
 
+pub trait DateTimeFromNativeDatetime {
+    fn from(arg: chrono::NaiveDateTime) -> Self;
+}
+
+pub trait DateTimeFromDateTimeFixedOffset {
+    fn from(arg: chrono::DateTime<chrono::FixedOffset>) -> Self;
+}
+
+impl DateTimeFromNativeDatetime for fastdate::DateTime {
+    fn from(arg: NaiveDateTime) -> Self {
+        fastdate::DateTime::from_timestamp_nano(
+            arg.timestamp_nanos_opt()
+                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
+        ).set_offset(offset_sec()).add_sub_sec(-offset_sec() as i64)
+    }
+}
+
+impl DateTimeFromDateTimeFixedOffset for fastdate::DateTime{
+    fn from(arg: chrono::DateTime<FixedOffset>) -> Self {
+        fastdate::DateTime::from_timestamp_nano(
+            arg.timestamp_nanos_opt()
+                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
+        ).set_offset(offset_sec())
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
     use chrono::{FixedOffset, NaiveDateTime};
-    use fastdate::offset_sec;
+    use fastdate::DateTime;
+    use crate::decode::{DateTimeFromDateTimeFixedOffset, DateTimeFromNativeDatetime};
 
-
-    #[test]
-    fn test_decode_zone() {
-        let mut dt = fastdate::DateTime::from_str("2023-12-12T00:00:00Z").unwrap();
-        println!("{}", dt.to_string());
-        dt = dt.add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
-        println!("{}", dt.to_string());
-    }
 
     #[test]
     fn test_decode_time_zone() {
         let offset = FixedOffset::east_opt(8 * 60 * 60).unwrap();
         let dt: chrono::DateTime<FixedOffset> = chrono::DateTime::from_local(NaiveDateTime::from_timestamp_opt(1697801035, 0).unwrap(), offset);
-        let date = fastdate::DateTime::from_timestamp_nano(
-            dt.timestamp_nanos_opt()
-                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128)
-            .set_offset(offset_sec());
-        println!("{},{}", dt.to_string(), date.to_string());
-        assert_eq!(dt.to_string().replacen(" ", "T", 1).replace(" ", ""), date.display(true));
+        println!("{}", dt.to_string());
+        let de = <DateTime as DateTimeFromDateTimeFixedOffset>::from(dt);
+        println!("{}", de.to_string());
+        assert_eq!(dt.to_string().replacen(" ","T",1).replace(" ",""),de.display(true));
+    }
+
+    #[test]
+    fn test_decode_zone_native() {
+        let dt = NaiveDateTime::from_timestamp(1698039464, 0);
+        println!("{}", dt.to_string());
+        let de = <DateTime as DateTimeFromNativeDatetime>::from(dt);
+        println!("{}", de.to_string());
+        assert_eq!(dt.to_string(),de.display_stand());
     }
 }
