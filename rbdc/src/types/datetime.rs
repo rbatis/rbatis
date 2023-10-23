@@ -318,6 +318,12 @@ impl From<(Date, Time)> for DateTime {
     }
 }
 
+impl From<(Date, Time, i32)> for DateTime {
+    fn from(arg: (Date, Time, i32)) -> Self {
+        Self(fastdate::DateTime::from((arg.0.0,arg.1.0,arg.2)))
+    }
+}
+
 
 impl FromStr for DateTime {
     type Err = Error;

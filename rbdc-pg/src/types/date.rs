@@ -23,7 +23,7 @@ impl Decode for fastdate::Date {
                     sec: 0,
                     minute: 0,
                     hour: 0,
-                })).add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
+                }));
                 let dt = {
                     if days < 0 {
                         dt - Duration::from_secs((-days * 24 * 3600) as u64)
@@ -35,7 +35,7 @@ impl Decode for fastdate::Date {
             }
 
             PgValueFormat::Text => {
-                let dt = fastdate::DateTime::from_str(&format!("{}T00:00:00", value.as_str()?))?;
+                let dt = fastdate::DateTime::from_str(&format!("{}T00:00:00Z", value.as_str()?))?;
                 fastdate::Date::from(dt)
             }
         })

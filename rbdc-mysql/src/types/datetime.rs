@@ -53,7 +53,7 @@ impl Decode for DateTime {
                         hour: 0,
                     }
                 };
-                let v = fastdate::DateTime::from((date, time)).add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
+                let v = fastdate::DateTime::from((date, time, offset_sec()));
                 Self(v)
             }
         })
