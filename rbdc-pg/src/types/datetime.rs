@@ -22,6 +22,7 @@ impl Decode for DateTime {
     }
 }
 
+/// pg only have timestamp,so time is utc time
 impl Decode for fastdate::DateTime {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(match value.format() {
@@ -38,7 +39,6 @@ impl Decode for fastdate::DateTime {
                 } else {
                     epoch = epoch + Duration::from_micros(us as u64)
                 }
-                epoch = epoch.add_sub_sec(-offset_sec() as i64).set_offset(offset_sec());
                 epoch
             }
             PgValueFormat::Text => {
