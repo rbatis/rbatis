@@ -6,7 +6,6 @@ use rbdc::date::Date;
 use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
-use fastdate::offset_sec;
 
 impl Decode for fastdate::Date {
     fn decode(value: PgValue) -> Result<Self, Error> {

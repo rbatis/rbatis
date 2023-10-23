@@ -7,7 +7,6 @@ use rbdc::timestamp::Timestamp;
 use rbdc::Error;
 use std::str::FromStr;
 use std::time::Duration;
-use fastdate::offset_sec;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
