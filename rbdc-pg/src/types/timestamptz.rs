@@ -18,13 +18,13 @@ pub struct Timestamptz(pub u64, pub i32);
 
 impl Display for Timestamptz {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Timestamptz({})", self.0)
+        write!(f, "Timestamptz({})", fastdate::DateTime::from_timestamp_millis(self.0 as i64).set_offset(self.1))
     }
 }
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::Ext("Timestamptz", Box::new(Value::U64(arg.0)))
+        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::U64(arg.0),Value::I32(arg.1)])))
     }
 }
 
@@ -58,7 +58,7 @@ impl Decode for Timestamptz {
                         epoch + std::time::Duration::from_micros(us as u64)
                     }
                 };
-                Timestamptz(v.unix_timestamp_millis() as u64, offset_seconds as i32)
+                Timestamptz(v.unix_timestamp_millis() as u64, offset_seconds)
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
