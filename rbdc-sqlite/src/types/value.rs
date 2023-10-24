@@ -102,7 +102,7 @@ impl Encode for Value {
                     Ok(IsNull::No)
                 }
                 "Timestamp" => {
-                    (v.as_u64().unwrap_or_default() as i64).encode(args)?;
+                    v.as_i64().unwrap_or_default().encode(args)?;
                     Ok(IsNull::No)
                 }
                 "Decimal" => {

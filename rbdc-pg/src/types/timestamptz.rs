@@ -12,7 +12,7 @@ use byteorder::{BigEndian, ReadBytesExt};
 /// (timestamp,offset sec)
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timestamptz")]
-pub struct Timestamptz(pub u64, pub i32);
+pub struct Timestamptz(pub i64, pub i32);
 
 
 impl Display for Timestamptz {
@@ -23,7 +23,7 @@ impl Display for Timestamptz {
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::U64(arg.0),Value::I32(arg.1)])))
+        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::I64(arg.0),Value::I32(arg.1)])))
     }
 }
 
@@ -55,12 +55,12 @@ impl Decode for Timestamptz {
                         epoch + std::time::Duration::from_micros(us as u64)
                     }
                 };
-                Timestamptz(v.unix_timestamp_millis() as u64, offset_seconds)
+                Timestamptz(v.unix_timestamp_millis() , offset_seconds)
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
                 let date = fastdate::DateTime::from_str(s)?;
-                Timestamptz(date.unix_timestamp_millis() as u64, date.offset())
+                Timestamptz(date.unix_timestamp_millis() , date.offset())
             }
         })
     }

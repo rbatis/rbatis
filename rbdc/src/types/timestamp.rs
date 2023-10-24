@@ -7,7 +7,13 @@ use std::str::FromStr;
 /// Timestamp(timestamp_millis:u64)
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Timestamp")]
-pub struct Timestamp(pub u64);
+pub struct Timestamp(pub i64);
+
+impl Timestamp{
+    pub fn now()->Self{
+        Self(fastdate::DateTime::utc().unix_timestamp_millis())
+    }
+}
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -15,7 +21,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
         D: Deserializer<'de>,
     {
         use serde::de::Error;
-        match Value::deserialize(deserializer)?.as_u64() {
+        match Value::deserialize(deserializer)?.as_i64() {
             None => Err(Error::custom("warn type decode Json")),
             Some(v) => Ok(Self(v)),
         }
@@ -36,7 +42,7 @@ impl Debug for Timestamp {
 
 impl From<Timestamp> for Value {
     fn from(arg: Timestamp) -> Self {
-        Value::Ext("Timestamp", Box::new(Value::U64(arg.0)))
+        Value::Ext("Timestamp", Box::new(Value::I64(arg.0)))
     }
 }
 
@@ -44,7 +50,7 @@ impl FromStr for Timestamp {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Timestamp(u64::from_str(s)?))
+        Ok(Timestamp(i64::from_str(s)?))
     }
 }
 
@@ -58,6 +64,14 @@ impl From<Timestamp> for fastdate::DateTime{
 mod test {
     use crate::timestamp::Timestamp;
     use rbs::Value;
+
+    #[test]
+    fn test_ser_de() {
+        let dt = Timestamp::now();
+        let v = serde_json::to_value(&dt).unwrap();
+        let new_dt: Timestamp = serde_json::from_value(v).unwrap();
+        assert_eq!(new_dt, dt);
+    }
 
     #[test]
     fn test_decode_timestamp_u64() {
