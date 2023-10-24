@@ -8,7 +8,6 @@ use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::str::FromStr;
 use byteorder::{BigEndian, ReadBytesExt};
-use fastdate::offset_sec;
 
 /// (timestamp,offset sec)
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
@@ -41,10 +40,8 @@ impl Decode for Timestamptz {
                 let mut buf = Cursor::new(value.as_bytes()?);
                 // TIME is encoded as the microseconds since midnight
                 let us = buf.read_i64::<BigEndian>()?;
-                // OFFSET is encoded as seconds from UTC
-                //let offset_seconds = buf.read_i32::<BigEndian>()?;
-                //todo offset from session
-                let offset_seconds = offset_sec();
+                // Binary is UTC time
+                let offset_seconds = 0;
                 // TIMESTAMP is encoded as the microseconds since the epoch
                 let epoch = fastdate::DateTime::from(fastdate::Date {
                     day: 1,
