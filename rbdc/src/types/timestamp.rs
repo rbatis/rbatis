@@ -16,7 +16,7 @@ impl<'de> serde::Deserialize<'de> for Timestamp {
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.as_u64() {
-            None => Err(D::Error::custom("warn type decode Json")),
+            None => Err(Error::custom("warn type decode Json")),
             Some(v) => Ok(Self(v)),
         }
     }
@@ -45,6 +45,12 @@ impl FromStr for Timestamp {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Timestamp(u64::from_str(s)?))
+    }
+}
+
+impl From<Timestamp> for fastdate::DateTime{
+    fn from(value: Timestamp) -> Self {
+        fastdate::DateTime::from_timestamp_millis(value.0 as i64)
     }
 }
 

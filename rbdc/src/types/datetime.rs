@@ -354,6 +354,12 @@ impl PartialOrd for DateTime {
     }
 }
 
+impl From<DateTime> for fastdate::DateTime{
+    fn from(value: DateTime) -> Self {
+        value.0
+    }
+}
+
 
 #[cfg(test)]
 mod test {
