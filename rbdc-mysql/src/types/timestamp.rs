@@ -39,7 +39,7 @@ impl Decode for Timestamp {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
             MySqlValueFormat::Text => {
-                Self(fastdate::DateTime::from_str(value.as_str()?)?.unix_timestamp_millis() as u64)
+                Self(fastdate::DateTime::from_str(value.as_str()?)?.unix_timestamp_millis())
             }
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
@@ -57,7 +57,7 @@ impl Decode for Timestamp {
                 };
                 Self(
                     fastdate::DateTime::from((date, time))
-                    .unix_timestamp_millis() as u64,
+                    .unix_timestamp_millis(),
                 )
             }
         })

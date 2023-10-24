@@ -51,6 +51,6 @@ impl Decode for fastdate::DateTime {
 
 impl Encode for fastdate::DateTime {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        Timestamp(self.unix_timestamp_millis() as u64).encode(buf)
+        Timestamp(self.unix_timestamp_millis()).encode(buf)
     }
 }

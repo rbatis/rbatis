@@ -483,7 +483,7 @@ impl Encode for Value {
                     )?)
                         .encode(buf)?,
                     //RFC3339 = "2006-01-02 15:04:05.999999"
-                    "Timestamp" => Timestamp(v.as_u64().unwrap_or_default()).encode(buf)?,
+                    "Timestamp" => Timestamp(v.as_i64().unwrap_or_default()).encode(buf)?,
                     "DateTime" => DateTime(fastdate::DateTime::from_str(
                         &v.into_string().unwrap_or_default(),
                     )?)
