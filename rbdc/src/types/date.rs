@@ -32,3 +32,9 @@ impl FromStr for Date {
         Ok(Date(fastdate::Date::from_str(s)?))
     }
 }
+
+impl From<Date> for fastdate::Date{
+    fn from(value: Date) -> Self {
+        value.0
+    }
+}
