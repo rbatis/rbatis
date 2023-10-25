@@ -1,4 +1,5 @@
-use hashlink::lru_cache::LruCache;
+use std::num::NonZeroUsize;
+use lru::LruCache;
 
 /// A cache for prepared statements. When full, the least recently used
 /// statement gets removed.
@@ -11,7 +12,7 @@ impl<T> StatementCache<T> {
     /// Create a new cache with the given capacity.
     pub fn new(capacity: usize) -> Self {
         Self {
-            inner: LruCache::new(capacity),
+            inner: LruCache::new(NonZeroUsize::new(capacity).unwrap()),
         }
     }
 
@@ -30,10 +31,16 @@ impl<T> StatementCache<T> {
         if self.capacity() == self.len() && !self.contains_key(k) {
             lru_item = self.remove_lru();
         } else if self.contains_key(k) {
-            lru_item = self.inner.remove(k);
+           let entry = self.inner.pop_entry(k);
+            match entry {
+                None => {}
+                Some(v) => {
+                    lru_item = Some(v.1);
+                }
+            }
         }
 
-        self.inner.insert(k.into(), v);
+        self.inner.put(k.into(), v);
 
         lru_item
     }
@@ -45,7 +52,7 @@ impl<T> StatementCache<T> {
 
     /// Removes the least recently used item from the cache.
     pub fn remove_lru(&mut self) -> Option<T> {
-        self.inner.remove_lru().map(|(_, v)| v)
+        self.inner.pop_lru().map(|v|v.1)
     }
 
     /// Clear all cached statements from the cache.
@@ -55,12 +62,12 @@ impl<T> StatementCache<T> {
 
     /// True if cache has a value for the given key.
     pub fn contains_key(&mut self, k: &str) -> bool {
-        self.inner.contains_key(k)
+        self.inner.contains(k)
     }
 
     /// Returns the maximum number of statements the cache can hold.
     pub fn capacity(&self) -> usize {
-        self.inner.capacity()
+        self.inner.cap().get()
     }
 
     /// Returns true if the cache capacity is more than 0.
