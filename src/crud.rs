@@ -339,7 +339,8 @@ macro_rules! impl_delete {
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
-///
+/// you can see ${page_no} = (page_no -1) * page_size;
+/// you can see ${page_size} = page_size;
 #[macro_export]
 macro_rules! impl_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
@@ -397,6 +398,9 @@ macro_rules! impl_select_page {
 /// you must deal with sql:
 /// return Vec<Record>（if param do_count = false）
 /// return u64（if param do_count = true）
+///
+/// you can see ${page_no} = (page_no -1) * page_size;
+/// you can see ${page_size} = page_size;
 ///
 /// just like this example:
 /// ```html
