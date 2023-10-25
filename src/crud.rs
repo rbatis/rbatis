@@ -449,7 +449,10 @@ macro_rules! htmlsql_select_page {
 ///
 /// you must deal with sql:
 /// return Vec<Record>（if param do_count = false）
-/// return u64（if param do_count = true）
+/// return u64（if param do_count = true）·
+///
+/// you can see ${page_no} = (page_no -1) * page_size;
+/// you can see ${page_size} = page_size;
 ///
 /// just like this example:
 /// ```py
