@@ -471,7 +471,9 @@ macro_rules! htmlsql_select_page {
 ///          ` * `
 ///       `from activity where delete_flag = 0`
 ///         if name != '':
-///            ` and name=#{name}`"#);
+///            ` and name=#{name}`
+///       ` limit ${page_no},${page_size}`
+/// "#);
 /// ```
 #[macro_export]
 macro_rules! pysql_select_page {
