@@ -993,4 +993,44 @@ mod test {
         };
         block_on(f);
     }
+
+    #[derive(serde::Serialize, serde::Deserialize, Clone)]
+    pub struct PySqlSelectPageArg{
+        pub name:String
+    }
+
+    rbatis::pysql_select_page!(pysql_select_page(item: PySqlSelectPageArg) -> MockTable =>
+    r#"`select `
+      if do_count == true:
+        ` count(1) as count `
+      if do_count == false:
+         ` * `
+      `from activity where delete_flag = 0`
+        if item.name != '':
+           ` and name=#{item.name}`"#);
+
+    #[test]
+    fn test_pysql_select_page(){
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SegQueue::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = pysql_select_page(&mut rb, &PageRequest::new(1, 10), PySqlSelectPageArg{
+                name: "aaa".to_string(),
+            })
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql,
+                "select  count(1) as count from activity where delete_flag = 0 and name=?"
+            );
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "select  * from activity where delete_flag = 0 and name=?");
+        };
+        block_on(f);
+    }
 }
