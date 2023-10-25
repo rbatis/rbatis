@@ -373,15 +373,15 @@ macro_rules! impl_select_page {
                     ` from ${table_name} `\n",$where_sql,"\n
                     if do_count == false:
                         `${limit_sql}`")]
-                   async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                   async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
                 let mut total = 0;
                 if page_req.search_count() {
-                    let total_value = Inner::$fn_name(executor,true,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),"",$($param_key,)*).await?;
+                    let total_value = Inner::$fn_name(executor,true,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),"",$(&$param_key,)*).await?;
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
                 let mut page = $crate::sql::Page::<$table>::new_total(page_req.page_no(), page_req.page_size(), total);
-                let records_value = Inner::$fn_name(executor,false,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),&limit_sql,$($param_key,)*).await?;
+                let records_value = Inner::$fn_name(executor,false,&table_column,&table_name,page_req.page_no(), page_req.page_size(),page_req.offset(),&limit_sql,$(&$param_key,)*).await?;
                 page.records = rbs::from_value(records_value)?;
                 Ok(page)
             }
