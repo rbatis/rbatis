@@ -13,6 +13,7 @@ use std::time::Duration;
 
 /// RBDC pool.
 /// you can use just like any deadpool methods  pool.deref().close() and more...
+/// Max & idle connection lifetime see https://github.com/bikeshedder/deadpool/issues/178
 #[derive(Clone)]
 pub struct Pool {
     pub manager: ManagerPorxy,
