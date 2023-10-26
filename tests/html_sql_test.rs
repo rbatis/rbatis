@@ -230,7 +230,7 @@ mod test {
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
 
             htmlsql!(test_same_id(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
-            <select id="select_by_condition">
+            <select id="test_same_id">
             select ${id},${id},#{id},#{id}
             </select>
             </mapper>"#);
