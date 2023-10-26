@@ -514,15 +514,12 @@ macro_rules! pysql_select_page {
 #[macro_export]
 macro_rules! pysql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
-       struct Inner{}
-       impl Inner{
-        #[$crate::py_sql($py_file)]
-        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-            $crate::impled!()
-        }
-       }
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-           Inner::$fn_name($($param_key,)*).await
+           #[$crate::py_sql($py_file)]
+           pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+             impled!()
+           }
+           $fn_name($($param_key,)*).await
        }
     }
 }
@@ -544,15 +541,12 @@ macro_rules! pysql {
 #[macro_export]
 macro_rules! htmlsql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
-       struct Inner{}
-       impl Inner{
-        #[$crate::html_sql($html_file)]
         pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-            $crate::impled!()
+           #[$crate::html_sql($html_file)]
+           pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+            impled!()
+           }
+           $fn_name($($param_key,)*).await
         }
-       }
-       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-           Inner::$fn_name($($param_key,)*).await
-       }
     }
 }
