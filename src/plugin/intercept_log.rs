@@ -93,7 +93,16 @@ impl LogInterceptor {
     }
 }
 
-/// let intercept: Option<&LogInterceptor> = (&rb).into();
+/// from  rb
+/// ```rust
+/// use std::sync::Arc;
+/// use log::LevelFilter;
+/// use rbatis::intercept_log::LogInterceptor;
+/// use rbatis::RBatis;
+/// let rb = RBatis::new();
+/// rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
+/// let v=Option::<&LogInterceptor>::from(&rb);
+/// ```
 impl From<&RBatis> for Option<&LogInterceptor> {
     fn from(value: &RBatis) -> Self {
         let name = std::any::type_name::<LogInterceptor>();
@@ -214,7 +223,7 @@ mod test {
     fn test_get() {
         let rb = RBatis::new();
         rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
-        let intercept: Option<&LogInterceptor> = (&rb).into();
+        let intercept = Option::<&LogInterceptor>::from(&rb);
         assert_eq!(intercept.is_some(),true);
         println!("{}",intercept.unwrap().name());
     }
