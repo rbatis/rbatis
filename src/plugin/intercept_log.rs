@@ -1,7 +1,7 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
-use crate::Error;
+use crate::{Error, RBatis};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
 use rbdc::db::ExecResult;
@@ -90,6 +90,12 @@ impl LogInterceptor {
             LevelFilter::Debug => self.level_filter.store(4, Ordering::SeqCst),
             LevelFilter::Trace => self.level_filter.store(5, Ordering::SeqCst),
         }
+    }
+}
+
+impl From<&RBatis> for Option<&LogInterceptor> {
+    fn from(value: &RBatis) -> Self {
+        value.get_intercept(value.name())
     }
 }
 
