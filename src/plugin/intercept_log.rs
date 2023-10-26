@@ -93,9 +93,20 @@ impl LogInterceptor {
     }
 }
 
+/// let intercept: Option<&LogInterceptor> = (&rb).into();
 impl From<&RBatis> for Option<&LogInterceptor> {
     fn from(value: &RBatis) -> Self {
-        value.get_intercept(value.name())
+        let name = std::any::type_name::<LogInterceptor>();
+        let r = value.get_intercept(name);
+        match r {
+            None => {
+                None
+            }
+            Some(r) => {
+                let call: &LogInterceptor = unsafe { std::mem::transmute_copy(&r) };
+                Some(call)
+            }
+        }
     }
 }
 
@@ -187,5 +198,24 @@ impl Intercept for LogInterceptor {
             },
         }
         return Ok(true);
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::sync::Arc;
+    use log::LevelFilter;
+    use crate::intercept::Intercept;
+    use crate::intercept_log::LogInterceptor;
+    use crate::RBatis;
+
+    #[test]
+    fn test_get() {
+        let rb = RBatis::new();
+        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
+        let intercept: Option<&LogInterceptor> = (&rb).into();
+        assert_eq!(intercept.is_some(),true);
+        println!("{}",intercept.unwrap().name());
     }
 }
