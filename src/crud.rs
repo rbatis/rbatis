@@ -505,3 +505,50 @@ macro_rules! pysql_select_page {
          }
     }
 }
+
+/// use macro wrapper #[py_sql]
+/// for example:
+/// ```rust
+/// rbatis::pysql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
+/// ```
+#[macro_export]
+macro_rules! pysql {
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+       struct Inner{}
+       impl Inner{
+        #[$crate::py_sql($py_file)]
+        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+            $crate::impled!()
+        }
+       }
+       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+           Inner::$fn_name($($param_key,)*).await
+       }
+    }
+}
+
+
+/// use macro wrapper #[html_sql]
+/// for example:
+/// ```rust
+/// rbatis::htmlsql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
+///             <select id="select_by_condition">
+///             select ${id},${id},#{id},#{id}
+///             </select>
+///             </mapper>"#);
+/// ```
+#[macro_export]
+macro_rules! htmlsql {
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
+       struct Inner{}
+       impl Inner{
+        #[$crate::html_sql($html_file)]
+        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+            $crate::impled!()
+        }
+       }
+       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+           Inner::$fn_name($($param_key,)*).await
+       }
+    }
+}
