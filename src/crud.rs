@@ -509,7 +509,7 @@ macro_rules! pysql_select_page {
 /// use macro wrapper #[py_sql]
 /// for example:
 /// ```rust
-/// rbatis::pysql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
+/// rbatis::pysql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
 /// ```
 #[macro_export]
 macro_rules! pysql {
@@ -531,7 +531,7 @@ macro_rules! pysql {
 /// use macro wrapper #[html_sql]
 /// for example:
 /// ```rust
-/// rbatis::htmlsql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
+/// rbatis::htmlsql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
 ///             <select id="select_by_condition">
 ///             select ${id},${id},#{id},#{id}
 ///             </select>
@@ -539,7 +539,7 @@ macro_rules! pysql {
 /// ```
 /// or load from file
 /// ```rust
-/// //rbatis::htmlsql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "example.html");
+/// //rbatis::htmlsql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "example.html");
 /// ```
 #[macro_export]
 macro_rules! htmlsql {
