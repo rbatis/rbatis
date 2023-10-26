@@ -210,7 +210,7 @@ mod test {
             select ${id},${id},#{id},#{id}
             </select>
             </mapper>"#)]
-            pub async fn test_same_id(rb: &mut RBatis, id: &u64) -> Result<Value, Error> {
+            pub async fn test_same_id(rb: &RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
             let r = test_same_id(&mut rb, &1).await.unwrap();
@@ -229,7 +229,7 @@ mod test {
             let queue = Arc::new(SegQueue::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
 
-            htmlsql!(test_same_id(rb: &mut RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
+            htmlsql!(test_same_id(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
             <select id="select_by_condition">
             select ${id},${id},#{id},#{id}
             </select>

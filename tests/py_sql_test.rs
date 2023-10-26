@@ -206,7 +206,7 @@ mod test {
             let queue = Arc::new(SegQueue::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             #[py_sql("select ${id},${id},#{id},#{id} ")]
-            pub async fn test_same_id(rb: &mut RBatis, id: &u64) -> Result<Value, Error> {
+            pub async fn test_same_id(rb: &RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
             let r = test_same_id(&mut rb, &1).await.unwrap();
@@ -225,7 +225,7 @@ mod test {
             let queue = Arc::new(SegQueue::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
 
-            pysql!(test_same_id(rb: &mut RBatis, id: &u64)  -> Result<Value, Error> => "select ${id},${id},#{id},#{id} ");
+            pysql!(test_same_id(rb: &RBatis, id: &u64)  -> Result<Value, Error> => "select ${id},${id},#{id},#{id} ");
 
             let r = test_same_id(&mut rb, &1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
