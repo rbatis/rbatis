@@ -532,7 +532,7 @@ macro_rules! pysql {
 /// for example:
 /// ```rust
 /// rbatis::htmlsql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
-///             <select id="select_by_condition">
+///             <select id="test_same_id">
 ///             select ${id},${id},#{id},#{id}
 ///             </select>
 ///             </mapper>"#);
