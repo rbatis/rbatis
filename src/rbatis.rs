@@ -220,4 +220,15 @@ impl RBatis {
     pub fn is_debug_mode(&self) -> bool {
         crate::decode::is_debug_mode()
     }
+
+    /// get intercept from name
+    /// the default name just like `let name = std::any::type_name::<LogInterceptor>()`
+    pub fn get_intercept(&self, name: &str) -> Option<&dyn Intercept> {
+        for x in self.intercepts.iter() {
+            if name == x.name() {
+                return Some(x.as_ref());
+            }
+        }
+        return None;
+    }
 }
