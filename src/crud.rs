@@ -537,6 +537,10 @@ macro_rules! pysql {
 ///             </select>
 ///             </mapper>"#);
 /// ```
+/// or load from file
+/// ```rust
+/// //rbatis::htmlsql!(test_same_id(rb: &mut rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "example.html");
+/// ```
 #[macro_export]
 macro_rules! htmlsql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
