@@ -183,27 +183,13 @@ macro_rules! impl_update {
                 column: &str,
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                let temp_executor = $crate::executor::TempExecutor::new(executor.rbatis_ref());
                 let mut rows_affected = 0;
                 let ranges = $crate::sql::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
+                    //todo better way impl batch?
                     for table in &tables[offset as usize..limit as usize]{
-                       <$table>::update_by_column(&temp_executor,table,column).await?;
+                       rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
                     }
-                    let sqls = temp_executor.clear_sql();
-                    let arg_vec = temp_executor.clear_args();
-                    let mut sql = String::new();
-                    let mut args = Vec::new();
-                    for item in sqls{
-                        sql.push_str(&item);
-                        sql.push_str(";");
-                    }
-                    for item in arg_vec{
-                        for v in item{
-                            args.push(v);
-                        }
-                    }
-                    rows_affected += executor.exec(&sql,args).await?.rows_affected;
                 }
                 Ok($crate::rbdc::db::ExecResult{
                     rows_affected:rows_affected,
