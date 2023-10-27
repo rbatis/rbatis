@@ -11,7 +11,6 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
-    use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
@@ -25,14 +24,15 @@ mod test {
     use std::collections::HashMap;
     use std::fmt::{Debug, Formatter};
     use std::sync::Arc;
+    use dark_std::sync::SyncVec;
 
     #[derive(Debug)]
     pub struct MockIntercept {
-        pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
+        pub sql_args: Arc<SyncVec<(String, Vec<Value>)>>,
     }
 
     impl MockIntercept {
-        fn new(inner: Arc<SegQueue<(String, Vec<Value>)>>) -> Self {
+        fn new(inner: Arc<SyncVec<(String, Vec<Value>)>>) -> Self {
             Self { sql_args: inner }
         }
     }
@@ -203,7 +203,7 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             #[html_sql(r#"<mapper>
             <select id="select_by_condition">
@@ -226,7 +226,7 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
 
             htmlsql!(test_same_id(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>

@@ -11,7 +11,6 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
-    use crossbeam::queue::SegQueue;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
@@ -28,14 +27,15 @@ mod test {
     use std::str::FromStr;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicI32, Ordering};
+    use dark_std::sync::SyncVec;
 
     #[derive(Debug)]
     pub struct MockIntercept {
-        pub sql_args: Arc<SegQueue<(String, Vec<Value>)>>,
+        pub sql_args: Arc<SyncVec<(String, Vec<Value>)>>,
     }
 
     impl MockIntercept {
-        fn new(inner: Arc<SegQueue<(String, Vec<Value>)>>) -> Self {
+        fn new(inner: Arc<SyncVec<(String, Vec<Value>)>>) -> Self {
             Self { sql_args: inner }
         }
     }
@@ -252,7 +252,7 @@ mod test {
     fn test_insert() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
@@ -300,7 +300,7 @@ mod test {
     fn test_insert_batch() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
@@ -364,7 +364,7 @@ mod test {
     fn test_update_by_column() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
@@ -520,7 +520,7 @@ mod test {
     fn test_select_all() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all(&mut rb).await.unwrap();
@@ -535,7 +535,7 @@ mod test {
     fn test_delete_by_column() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
@@ -586,7 +586,7 @@ mod test {
     fn test_select_all_by_id() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_all_by_id(&mut rb, "1", "1")
@@ -604,7 +604,7 @@ mod test {
     fn test_select_by_id() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_id(&mut rb, "1").await.unwrap();
@@ -625,7 +625,7 @@ mod test {
     fn test_select_by_dto() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_dto(
@@ -647,7 +647,7 @@ mod test {
     fn test_update_by_name() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
@@ -695,7 +695,7 @@ mod test {
     fn test_update_by_dto() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let t = MockTable {
@@ -749,7 +749,7 @@ mod test {
     fn test_delete_by_name() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_name(&mut rb, "2").await.unwrap();
@@ -764,7 +764,7 @@ mod test {
     fn test_select_page() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10))
@@ -773,12 +773,12 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
-                "select count(1) as count from mock_table order by create_time desc"
+                "select * from mock_table order by create_time desc limit 0,10"
             );
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
-                "select * from mock_table order by create_time desc limit 0,10"
+                "select count(1) as count from mock_table order by create_time desc"
             );
         };
         block_on(f);
@@ -792,7 +792,7 @@ mod test {
     fn test_select_page_by_name() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "","")
@@ -800,13 +800,13 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
+            assert_eq!(sql, "select * from mock_table where name != '' limit 0,10");
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
                 sql,
                 "select count(1) as count from mock_table where name != ''"
             );
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where name != '' limit 0,10");
         };
         block_on(f);
     }
@@ -815,7 +815,7 @@ mod test {
     fn test_select_by_column() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_column(&mut rb, "id", "1")
@@ -835,7 +835,7 @@ mod test {
     fn test_select_from_table_name_by_id() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_from_table_name_by_id(&mut rb, "1", "mock_table2")
@@ -855,7 +855,7 @@ mod test {
     fn test_select_table_column_from_table_name_by_id() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_table_column_from_table_name_by_id(&mut rb, "1", "id,name")
@@ -873,7 +873,7 @@ mod test {
     fn test_select_in_column() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_in_column(&mut rb, "1", &["1", "2"])
@@ -891,7 +891,7 @@ mod test {
     fn test_delete_in_column() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_in_column(&mut rb, "1", &["1", "2"])
@@ -975,7 +975,7 @@ mod test {
     fn test_htmlsql_select_page_by_name() {
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = htmlsql_select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
@@ -983,13 +983,13 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
+            assert_eq!(sql, "select * from table limit 0,10");
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
                 sql,
                 "select count(1) from table"
             );
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from table limit 0,10");
         };
         block_on(f);
     }
@@ -1013,7 +1013,7 @@ mod test {
     fn test_pysql_select_page(){
         let f = async move {
             let mut rb = RBatis::new();
-            let queue = Arc::new(SegQueue::new());
+            let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = pysql_select_page(&mut rb, &PageRequest::new(1, 10), PySqlSelectPageArg{
@@ -1023,13 +1023,13 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
+            assert_eq!(sql, "select  * from activity where delete_flag = 0 and name=?");
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
             assert_eq!(
                 sql,
                 "select  count(1) as count from activity where delete_flag = 0 and name=?"
             );
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select  * from activity where delete_flag = 0 and name=?");
         };
         block_on(f);
     }

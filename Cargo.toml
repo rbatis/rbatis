@@ -48,7 +48,6 @@ hex = "0.4"
 rand = "0.8"
 rbs = { version = "4.4", path = "rbs" }
 rbdc = { version = "4.4", path = "rbdc", default-features = false, optional = true }
-crossbeam = "0.8.2"
 dark-std = "0.2"
 async-trait = "0.1.68"
 [dev-dependencies]
