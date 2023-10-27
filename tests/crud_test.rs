@@ -419,7 +419,7 @@ mod test {
         #[async_trait]
         impl Intercept for TestIntercept{
             async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<bool, Error> {
-                assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?;update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?;");
+                assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
                 let num=self.num.load(Ordering::Relaxed)+1;
                 println!("{}",sql);
                 println!("{}",Value::Array(args.clone()));
@@ -432,19 +432,8 @@ mod test {
                     Value::I64(num as i64),
                     Value::I32(num),
                     Value::U64(num as u64),
-                    Value::String(num.to_string()),
-
-                    Value::String((num+1).to_string()),
-                    Value::String((num+1).to_string()),
-                    Value::String((num+1).to_string()),
-                    Value::I32(num+1),
-                    Value::String((num+1).to_string()),
-                    Value::Ext("DateTime", Box::new(Value::String("2023-10-10T00:00:00+08:00".to_string()))),
-                    Value::I64((num+1) as i64),
-                    Value::I32(num+1),
-                    Value::U64((num+1) as u64),
-                    Value::String((num+1).to_string())]);
-                self.num.fetch_add(2,Ordering::Relaxed);
+                    Value::String(num.to_string())]);
+                self.num.fetch_add(1,Ordering::Relaxed);
                 return Ok(true);
             }
         }
