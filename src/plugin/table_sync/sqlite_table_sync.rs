@@ -28,8 +28,8 @@ fn type_str(v: &Value) -> &'static str {
         Value::F64(_) => "DOUBLE",
         Value::String(_) => "TEXT",
         Value::Binary(_) => "BLOB",
-        Value::Array(_) => "NULL",
-        Value::Map(_) => "NULL",
+        Value::Array(_) => "BLOB",
+        Value::Map(_) => "BLOB",
         Value::Ext(t, _v) => match *t {
             "Date" => "TEXT",
             "DateTime" => "TEXT",
