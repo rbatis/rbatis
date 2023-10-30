@@ -3,7 +3,7 @@ pub mod mysql_mapper;
 pub mod pg_mapper;
 pub mod mssql_mapper;
 
-use crate::executor::{Executor, RBatisConnExecutor};
+use crate::executor::{Executor};
 use crate::Error;
 use futures_core::future::BoxFuture;
 use log::debug;
