@@ -92,7 +92,7 @@ pub struct Page<T: Send+Sync> {
 pub struct PageRequest {
     /// total num
     pub total: u64,
-    /// current page index
+    /// current page index default 1,range=1...MAX
     pub page_no: u64,
     /// page page_size default 10
     pub page_size: u64,
