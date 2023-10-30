@@ -11,7 +11,7 @@ pub struct SqliteTableSync {
 impl Default for SqliteTableSync {
     fn default() -> Self {
         Self {
-            sql_id: " PRIMARY KEY NOT NULL ".to_string(),
+            sql_id: " PRIMARY KEY ".to_string(),
         }
     }
 }
