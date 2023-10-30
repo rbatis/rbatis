@@ -16,3 +16,5 @@ pub mod query_result;
 pub mod row;
 pub mod types;
 pub mod value;
+
+pub use driver::MysqlDriver;

@@ -4,8 +4,9 @@ pub mod decode;
 pub mod driver;
 pub mod encode;
 
+pub use crate::driver::MssqlDriver;
+
 use crate::decode::Decode;
-use crate::driver::MssqlDriver;
 use crate::encode::Encode;
 use futures_core::future::BoxFuture;
 use futures_core::Stream;
