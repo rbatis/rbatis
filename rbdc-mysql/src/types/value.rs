@@ -34,8 +34,8 @@ impl TypeInfo for Value {
             Value::F64(_) => MySqlTypeInfo::from_type(ColumnType::Double),
             Value::String(_) => MySqlTypeInfo::from_type(ColumnType::VarChar),
             Value::Binary(_) => MySqlTypeInfo::from_type(ColumnType::Blob),
-            Value::Array(_) => MySqlTypeInfo::null(),
-            Value::Map(_) => MySqlTypeInfo::null(),
+            Value::Array(_) => MySqlTypeInfo::from_type(ColumnType::Json),
+            Value::Map(_) => MySqlTypeInfo::from_type(ColumnType::Json),
             Value::Ext(ext_type, _) => {
                 match *ext_type {
                     "Uuid" => MySqlTypeInfo::from_type(ColumnType::VarChar),
