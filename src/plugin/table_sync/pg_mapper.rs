@@ -3,7 +3,7 @@ use rbs::Value;
 
 pub struct PGTableMapper {}
 impl ColumMapper for PGTableMapper {
-    fn get_column(&self, v: &Value) -> &'static str {
+    fn get_column(&self, _column:&str,  v: &Value) -> &'static str {
         match v {
             Value::Null => "NULL",
             Value::Bool(_) => "BOOLEAN",
@@ -13,7 +13,9 @@ impl ColumMapper for PGTableMapper {
             Value::U64(_) => "BIGINT",
             Value::F32(_) => "REAL",
             Value::F64(_) => "DOUBLE PRECISION",
-            Value::String(_) => "TEXT",
+            Value::String(_) => {
+                "TEXT"
+            },
             Value::Binary(_) => "BYTEA",
             Value::Array(_) => "JSON",
             Value::Map(_) => "JSON",

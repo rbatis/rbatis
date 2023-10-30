@@ -54,7 +54,7 @@ pub fn sync<'a>(
                     let k = k.as_str().unwrap_or_default();
                     sql_column.push_str(k);
                     sql_column.push_str(" ");
-                    sql_column.push_str(mapper.get_column(&v));
+                    sql_column.push_str(mapper.get_column(k,&v));
                     if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                         sql_column.push_str(&PRIMARY_KEY);
                     }
@@ -81,7 +81,7 @@ pub fn sync<'a>(
                                             "alter table {} add {} {} {};",
                                             name,
                                             k,
-                                            mapper.get_column(&v),
+                                            mapper.get_column(k,&v),
                                             id_key
                                         ),
                                         vec![],
@@ -108,5 +108,5 @@ pub fn sync<'a>(
 }
 
 pub trait ColumMapper: Sync + Send {
-    fn get_column(&self, v: &Value) -> &'static str;
+    fn get_column(&self, column:&str, v: &Value) -> &'static str;
 }

@@ -3,7 +3,7 @@ use rbs::Value;
 
 pub struct MssqlTableMapper {}
 impl ColumMapper for MssqlTableMapper {
-    fn get_column(&self, v: &Value) -> &'static str {
+    fn get_column(&self, _column:&str, v: &Value) -> &'static str {
         match v {
             Value::Null => "NULL",
             Value::Bool(_) => "BIT",
