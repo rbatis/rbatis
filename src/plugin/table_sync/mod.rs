@@ -39,7 +39,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// }
 /// ```
 pub fn sync<'a>(
-    rb: &'a dyn Executor,
+    conn: &'a dyn Executor,
     mapper: &'a dyn ColumMapper,
     table: Value,
     name: &str,
@@ -64,7 +64,7 @@ pub fn sync<'a>(
                     sql_column = sql_column.trim_end_matches(",").to_string();
                 }
                 sql_create = sql_create + &format!("({});", sql_column);
-                let result_create = rb.exec(&sql_create, vec![]).await;
+                let result_create = conn.exec(&sql_create, vec![]).await;
                 match result_create {
                     Ok(_) => {}
                     Err(e) => {
@@ -75,7 +75,7 @@ pub fn sync<'a>(
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = &PRIMARY_KEY;
                                 }
-                                match rb
+                                match conn
                                     .exec(
                                         &format!(
                                             "alter table {} add {} {} {};",
