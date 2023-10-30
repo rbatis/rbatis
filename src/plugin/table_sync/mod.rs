@@ -3,7 +3,7 @@ pub mod mysql_mapper;
 pub mod pg_mapper;
 pub mod mssql_mapper;
 
-use crate::executor::RBatisConnExecutor;
+use crate::executor::{Executor, RBatisConnExecutor};
 use crate::Error;
 use futures_core::future::BoxFuture;
 use log::debug;
@@ -39,7 +39,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// }
 /// ```
 pub fn sync<'a>(
-    rb: &'a RBatisConnExecutor,
+    rb: &'a dyn Executor,
     mapper: &'a dyn ColumMapper,
     table: Value,
     name: &str,
