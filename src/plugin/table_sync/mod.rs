@@ -35,14 +35,8 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// /// let rb = RBatis::new();
 /// /// let conn = rb.acquire().await;
 /// pub async fn do_sync_table(conn: &RBatisConnExecutor){
-/// match conn{
-///  Ok(conn) => {
-///      let user = User{id: "1".to_string(), name: Some("".to_string())};
+///      let table = User{id: "1".to_string(), name: Some("".to_string())};
 ///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
-///    }
-///  Err(_) => {
-///    }
-///  }
 /// }
 /// ```
 pub fn sync<'a>(
