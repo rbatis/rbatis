@@ -31,7 +31,6 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///   pub name: Option<String>
 /// }
 ///
-/// /// use rbs::to_value;
 /// /// let rb = RBatis::new();
 /// /// let conn = rb.acquire().await;
 /// pub async fn do_sync_table(conn: &RBatisConnExecutor){
