@@ -3,29 +3,35 @@ use rbs::Value;
 
 pub struct MssqlTableMapper {}
 impl ColumMapper for MssqlTableMapper {
-    fn get_column(&self, _column:&str, v: &Value) -> &'static str {
+    fn get_column(&self, _column:&str, v: &Value) -> String {
         match v {
-            Value::Null => "NULL",
-            Value::Bool(_) => "BIT",
-            Value::I32(_) => "INT",
-            Value::I64(_) => "BIGINT",
-            Value::U32(_) => "INT",
-            Value::U64(_) => "BIGINT",
-            Value::F32(_) => "REAL",
-            Value::F64(_) => "FLOAT",
-            Value::String(_) => "NVARCHAR(MAX)",
-            Value::Binary(_) => "VARBINARY(MAX)",
-            Value::Array(_) => "NVARCHAR(MAX)", // or appropriate JSON type
-            Value::Map(_) => "NVARCHAR(MAX)",   // or appropriate JSON type
+            Value::Null => "NULL".to_string(),
+            Value::Bool(_) => "BIT".to_string(),
+            Value::I32(_) => "INT".to_string(),
+            Value::I64(_) => "BIGINT".to_string(),
+            Value::U32(_) => "INT".to_string(),
+            Value::U64(_) => "BIGINT".to_string(),
+            Value::F32(_) => "REAL".to_string(),
+            Value::F64(_) => "FLOAT".to_string(),
+            Value::String(v) => {
+                if v != "" {
+                    v.to_string()
+                } else {
+                    "NVARCHAR(MAX)".to_string()
+                }
+            },
+            Value::Binary(_) => "VARBINARY(MAX)".to_string(),
+            Value::Array(_) => "NVARCHAR(MAX)".to_string(), // or appropriate JSON type
+            Value::Map(_) => "NVARCHAR(MAX)".to_string(),   // or appropriate JSON type
             Value::Ext(t, _v) => match *t {
-                "Date" => "DATE",
-                "DateTime" => "DATETIME2",
-                "Time" => "TIME",
-                "Timestamp" => "DATETIME2",
-                "Decimal" => "DECIMAL",
-                "Json" => "NVARCHAR(MAX)", // or appropriate JSON type
-                "Uuid" => "NVARCHAR(36)",
-                _ => "NULL",
+                "Date" => "DATE".to_string(),
+                "DateTime" => "DATETIME2".to_string(),
+                "Time" => "TIME".to_string(),
+                "Timestamp" => "DATETIME2".to_string(),
+                "Decimal" => "DECIMAL".to_string(),
+                "Json" => "NVARCHAR(MAX)".to_string(), // or appropriate JSON type
+                "Uuid" => "NVARCHAR(36)".to_string(),
+                _ => "NULL".to_string(),
             },
         }
     }
