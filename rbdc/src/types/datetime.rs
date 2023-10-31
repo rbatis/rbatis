@@ -360,6 +360,11 @@ impl From<DateTime> for fastdate::DateTime{
     }
 }
 
+impl Default for DateTime{
+    fn default() -> Self {
+        DateTime(fastdate::DateTime::from_timestamp(0))
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -398,5 +403,11 @@ mod test {
         let v = rbs::to_value!(&dt);
         let new_dt: Vec<DateTime> = rbs::from_value(v).unwrap();
         assert_eq!(new_dt, dt);
+    }
+
+    #[test]
+    fn test_default() {
+        let dt = DateTime::default();
+        println!("{}",dt);
     }
 }

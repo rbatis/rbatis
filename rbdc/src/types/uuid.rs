@@ -53,3 +53,22 @@ impl Uuid {
         Self(uuid::Uuid::new_v4().to_string())
     }
 }
+
+/// '00000000-0000-0000-0000-000000000000'
+impl Default for Uuid{
+    fn default() -> Self {
+        Uuid(uuid::Uuid::default().to_string())
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use uuid::Uuid;
+
+    #[test]
+    fn test_default() {
+        let u = Uuid::default();
+        println!("{}",u);
+    }
+}
