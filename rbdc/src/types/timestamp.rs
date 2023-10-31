@@ -60,6 +60,12 @@ impl From<Timestamp> for fastdate::DateTime{
     }
 }
 
+impl Default for Timestamp{
+    fn default() -> Self {
+        Timestamp(0)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::timestamp::Timestamp;

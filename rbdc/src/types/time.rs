@@ -39,3 +39,14 @@ impl From<Time> for fastdate::Time{
         value.0
     }
 }
+
+impl Default for Time{
+    fn default() -> Self {
+        Time(fastdate::Time{
+            nano: 0,
+            sec: 0,
+            minute: 0,
+            hour: 0,
+        })
+    }
+}

@@ -38,3 +38,13 @@ impl From<Date> for fastdate::Date{
         value.0
     }
 }
+
+impl Default for Date{
+    fn default() -> Self {
+        Date(fastdate::Date{
+            day: 1,
+            mon: 1,
+            year: 1970,
+        })
+    }
+}
