@@ -289,7 +289,7 @@ mod test {
                     to_value!(t.create_time),
                     to_value!(t.version),
                     to_value!(t.delete_flag),
-                    to_value!(t.count)
+                    to_value!(t.count),
                 ]
             );
         };
@@ -402,7 +402,7 @@ mod test {
                     to_value!(t.version),
                     to_value!(t.delete_flag),
                     to_value!(t.count),
-                    to_value!(t.id)
+                    to_value!(t.id),
                 ]
             );
         };
@@ -412,17 +412,17 @@ mod test {
     #[test]
     fn test_update_by_column_batch() {
         #[derive(Debug)]
-        pub struct TestIntercept{
-            pub num:AtomicI32,
+        pub struct TestIntercept {
+            pub num: AtomicI32,
         }
 
         #[async_trait]
-        impl Intercept for TestIntercept{
+        impl Intercept for TestIntercept {
             async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<bool, Error> {
                 assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
-                let num=self.num.load(Ordering::Relaxed)+1;
-                println!("{}",sql);
-                println!("{}",Value::Array(args.clone()));
+                let num = self.num.load(Ordering::Relaxed) + 1;
+                println!("{}", sql);
+                println!("{}", Value::Array(args.clone()));
                 assert_eq!(args, &[Value::String(num.to_string()),
                     Value::String(num.to_string()),
                     Value::String(num.to_string()),
@@ -433,13 +433,13 @@ mod test {
                     Value::I32(num),
                     Value::U64(num as u64),
                     Value::String(num.to_string())]);
-                self.num.fetch_add(1,Ordering::Relaxed);
+                self.num.fetch_add(1, Ordering::Relaxed);
                 return Ok(true);
             }
         }
         let f = async move {
             let mut rb = RBatis::new();
-            rb.set_intercepts(vec![Arc::new(TestIntercept{ num: Default::default() })]);
+            rb.set_intercepts(vec![Arc::new(TestIntercept { num: Default::default() })]);
             rb.init(MockDriver {}, "test").unwrap();
             let tables = vec![MockTable {
                 id: Some("1".into()),
@@ -455,7 +455,7 @@ mod test {
                 version: Some(1),
                 delete_flag: Some(1),
                 count: 1,
-            },MockTable {
+            }, MockTable {
                 id: Some("2".into()),
                 name: Some("2".into()),
                 pc_link: Some("2".into()),
@@ -469,7 +469,7 @@ mod test {
                 version: Some(2),
                 delete_flag: Some(2),
                 count: 2,
-            },MockTable {
+            }, MockTable {
                 id: Some("3".into()),
                 name: Some("3".into()),
                 pc_link: Some("3".into()),
@@ -483,7 +483,7 @@ mod test {
                 version: Some(3),
                 delete_flag: Some(3),
                 count: 3,
-            },MockTable {
+            }, MockTable {
                 id: Some("4".into()),
                 name: Some("4".into()),
                 pc_link: Some("4".into()),
@@ -498,7 +498,7 @@ mod test {
                 delete_flag: Some(4),
                 count: 4,
             }];
-            let r = MockTable::update_by_column_batch(&mut rb, &tables, "id",2)
+            let r = MockTable::update_by_column_batch(&mut rb, &tables, "id", 2)
                 .await
                 .unwrap();
         };
@@ -541,29 +541,29 @@ mod test {
     #[test]
     fn test_delete_by_column_batch() {
         #[derive(Debug)]
-        pub struct TestIntercept{
-            pub num:AtomicI32,
+        pub struct TestIntercept {
+            pub num: AtomicI32,
         }
 
         #[async_trait]
-        impl Intercept for TestIntercept{
+        impl Intercept for TestIntercept {
             async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<bool, Error> {
-                if self.num.load(Ordering::Relaxed)==0{
+                if self.num.load(Ordering::Relaxed) == 0 {
                     assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
                     assert_eq!(args, &vec![to_value!("1"), to_value!("2")]);
-                }else{
+                } else {
                     assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
                     assert_eq!(args, &vec![to_value!("3"), to_value!("4")]);
                 }
-                self.num.fetch_add(1,Ordering::Relaxed);
+                self.num.fetch_add(1, Ordering::Relaxed);
                 return Ok(true);
             }
         }
         let f = async move {
             let mut rb = RBatis::new();
-            rb.set_intercepts(vec![Arc::new(TestIntercept{ num: Default::default() })]);
+            rb.set_intercepts(vec![Arc::new(TestIntercept { num: Default::default() })]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2","3", "4"],2)
+            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2", "3", "4"], 2)
                 .await
                 .unwrap();
         };
@@ -623,8 +623,8 @@ mod test {
                     id: "1".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select * from mock_table where id = '1' limit 1");
@@ -672,7 +672,7 @@ mod test {
                     to_value!(t.create_time),
                     to_value!(t.version),
                     to_value!(t.delete_flag),
-                    to_value!(t.count)
+                    to_value!(t.count),
                 ]
             );
         };
@@ -709,8 +709,8 @@ mod test {
                     id: "2".to_string(),
                 },
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
@@ -726,7 +726,7 @@ mod test {
                     to_value!(t.create_time),
                     to_value!(t.version),
                     to_value!(t.delete_flag),
-                    to_value!(t.count)
+                    to_value!(t.count),
                 ]
             );
         };
@@ -784,7 +784,7 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "","")
+            let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "", "")
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
@@ -984,8 +984,8 @@ mod test {
     }
 
     #[derive(serde::Serialize, serde::Deserialize, Clone)]
-    pub struct PySqlSelectPageArg{
-        pub name:String
+    pub struct PySqlSelectPageArg {
+        pub name: String,
     }
 
     rbatis::pysql_select_page!(pysql_select_page(item: PySqlSelectPageArg) -> MockTable =>
@@ -999,13 +999,13 @@ mod test {
            ` and name=#{item.name}`"#);
 
     #[test]
-    fn test_pysql_select_page(){
+    fn test_pysql_select_page() {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = pysql_select_page(&mut rb, &PageRequest::new(1, 10), PySqlSelectPageArg{
+            let r = pysql_select_page(&mut rb, &PageRequest::new(1, 10), PySqlSelectPageArg {
                 name: "aaa".to_string(),
             })
                 .await
@@ -1021,5 +1021,12 @@ mod test {
             );
         };
         block_on(f);
+    }
+
+    #[test]
+    fn test_string_code() {
+        #[string_code("println!("aaa");")]
+        pub fn aaa(){}
+        aaa();
     }
 }

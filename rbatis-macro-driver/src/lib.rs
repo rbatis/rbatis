@@ -2,9 +2,10 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
+use quote::{ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token};
+use syn::{parse_macro_input, ItemFn, Token, Block};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -131,4 +132,32 @@ pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     rbatis_codegen::rb_html(args, func)
+}
+
+
+#[proc_macro_attribute]
+pub fn string_code(attr: TokenStream, func: TokenStream) -> TokenStream {
+    // 解析函数
+    let mut input_func = parse_macro_input!(func as ItemFn);
+
+    // 获取属性中的内容
+    let mut new_code = attr.to_string();
+    new_code=new_code.trim_start_matches("r#").to_string();
+    new_code=new_code.trim_start_matches("\"").to_string();
+    new_code=new_code.trim_end_matches("\"").to_string();
+    new_code.insert(0,'{');
+    new_code.push_str("}");
+    println!("newcode={}",new_code);
+
+    // 用提供的代码构建一个新的函数体
+   let body:Block = syn::parse_str(&new_code).expect("Invalid Rust code provided");
+
+    // 替换函数体
+    input_func.block = Box::new(Block{
+        brace_token: input_func.block.brace_token.clone(),
+        stmts: body.stmts.clone(),
+    });
+
+    // 返回修改后的函数
+    input_func.to_token_stream().into()
 }
