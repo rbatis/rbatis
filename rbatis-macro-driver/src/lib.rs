@@ -145,10 +145,14 @@ pub fn string_code(attr: TokenStream, func: TokenStream) -> TokenStream {
     new_code=new_code.trim_start_matches("r#").to_string();
     new_code=new_code.trim_start_matches("\"").to_string();
     new_code=new_code.trim_end_matches("\"").to_string();
-    new_code.insert(0,'{');
-    new_code.push_str("}");
+    new_code = new_code.trim().to_string();
+    if new_code.starts_with("{") && new_code.ends_with("}"){
+        //do nothing
+    }else{
+        new_code.insert(0,'{');
+        new_code.push_str("}");
+    }
     println!("newcode={}",new_code);
-
     // 用提供的代码构建一个新的函数体
    let body:Block = syn::parse_str(&new_code).expect("Invalid Rust code provided");
 
