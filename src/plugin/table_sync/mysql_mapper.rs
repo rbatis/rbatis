@@ -21,7 +21,8 @@ impl ColumMapper for MysqlTableMapper {
             Value::F32(_) => "FLOAT",
             Value::F64(_) => "DOUBLE",
             Value::String(_) => {
-                if column.to_lowercase().contains("id") {
+                let column = column.to_lowercase();
+                if column.starts_with("id") || column.ends_with("id") {
                     "VARCHAR(50)"
                 } else {
                     "TEXT"
