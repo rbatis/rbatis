@@ -37,6 +37,11 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///      let table = User{id: "".to_string(), name: Some("".to_string())};
 ///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
 /// }
+///
+/// pub async fn do_sync_table_mysql(conn: &RBatisConnExecutor){
+///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
+///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
+/// }
 /// ```
 pub fn sync<'a>(
     conn: &'a dyn Executor,
