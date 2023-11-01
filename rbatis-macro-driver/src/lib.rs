@@ -150,6 +150,7 @@ pub fn string_fn(attr: TokenStream, func: TokenStream) -> TokenStream {
     let mut input_func = parse_macro_input!(func as ItemFn);
     let mut new_code = attr.to_string();
     new_code = new_code.trim_start_matches("r#").to_string();
+    new_code = new_code.trim_end_matches("#").to_string();
     new_code = new_code.trim_start_matches("\"").to_string();
     new_code = new_code.trim_end_matches("\"").to_string();
     new_code = new_code.trim().to_string();
