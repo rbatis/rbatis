@@ -406,6 +406,22 @@ mod test {
     }
 
     #[test]
+    fn test_de4() {
+        let dt = DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap();
+        let v = rbs::to_value!(&dt.unix_timestamp_millis());
+        let new_dt: DateTime = rbs::from_value(v).unwrap();
+        assert_eq!(new_dt, DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap());
+    }
+
+    #[test]
+    fn test_de5() {
+        let dt = DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap();
+        let v = serde_json::to_value(&dt.unix_timestamp_millis()).unwrap();
+        let new_dt: DateTime = serde_json::from_value(v).unwrap();
+        assert_eq!(new_dt, DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap());
+    }
+
+    #[test]
     fn test_default() {
         let dt = DateTime::default();
         println!("{}",dt);
