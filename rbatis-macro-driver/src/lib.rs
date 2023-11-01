@@ -149,11 +149,17 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn string_fn(attr: TokenStream, func: TokenStream) -> TokenStream {
     let mut input_func = parse_macro_input!(func as ItemFn);
     let mut new_code = attr.to_string();
-    new_code = new_code.trim_start_matches("r#").to_string();
-    new_code = new_code.trim_end_matches("#").to_string();
-    new_code = new_code.trim_start_matches("\"").to_string();
-    new_code = new_code.trim_end_matches("\"").to_string();
     new_code = new_code.trim().to_string();
+    if new_code.starts_with("r#") {
+        new_code = new_code.trim_start_matches("r#").to_string();
+        new_code = new_code.trim_end_matches("#").to_string();
+        new_code = new_code.trim().to_string();
+    }
+    if new_code.starts_with("\"") && new_code.ends_with("\"")  {
+        new_code = new_code.trim_start_matches("\"").to_string();
+        new_code = new_code.trim_end_matches("\"").to_string();
+        new_code = new_code.trim().to_string();
+    }
     if new_code.starts_with("{") && new_code.ends_with("}") {
         //do nothing
     } else {
