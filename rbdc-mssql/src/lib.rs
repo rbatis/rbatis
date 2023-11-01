@@ -5,6 +5,7 @@ pub mod driver;
 pub mod encode;
 
 pub use crate::driver::MssqlDriver;
+pub use crate::driver::MssqlDriver as Driver;
 
 use crate::decode::Decode;
 use crate::encode::Encode;

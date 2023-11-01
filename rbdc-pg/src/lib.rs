@@ -17,4 +17,5 @@ pub mod types;
 pub mod value;
 
 pub use driver::PgDriver;
-pub type PostgresDriver = PgDriver;
+pub use driver::PgDriver as PostgresDriver;
+pub use driver::PgDriver as Driver;
