@@ -39,3 +39,4 @@ pub mod value;
 
 
 pub use driver::SqliteDriver;
+pub use driver::SqliteDriver as Driver;
