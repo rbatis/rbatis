@@ -1,7 +1,5 @@
 #![allow(deprecated)]
 pub extern crate deadpool;
-pub extern crate fastdate;
-
 pub mod common;
 pub use common::*;
 pub mod db;
