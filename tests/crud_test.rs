@@ -1025,7 +1025,7 @@ mod test {
 
     #[test]
     fn test_string_code() {
-        #[string_code("println!("aaa");")]
+        #[string_fn("println!("aaa");")]
         pub fn aaa(){}
         aaa();
     }

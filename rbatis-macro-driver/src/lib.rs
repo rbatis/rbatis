@@ -135,8 +135,18 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 
+/// string rust code write into func body
+/// for example:
+/// ```rust
+/// use rbatis_macro_driver::string_fn;
+///
+/// #[string_fn("println!("aaa");")]
+/// pub fn do_print(){}
+/// //run func
+/// do_print();
+/// ```
 #[proc_macro_attribute]
-pub fn string_code(attr: TokenStream, func: TokenStream) -> TokenStream {
+pub fn string_fn(attr: TokenStream, func: TokenStream) -> TokenStream {
     let mut input_func = parse_macro_input!(func as ItemFn);
     let mut new_code = attr.to_string();
     new_code = new_code.trim_start_matches("r#").to_string();
