@@ -522,7 +522,8 @@ macro_rules! pysql {
 /// use macro wrapper #[html_sql]
 /// for example:
 /// ```rust
-/// rbatis::htmlsql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
+/// use rbatis::executor::Executor;
+/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
 ///             <select id="test_same_id">
 ///             select ${id},${id},#{id},#{id}
 ///             </select>
