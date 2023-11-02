@@ -7,8 +7,6 @@ pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 
 pub mod plugin;
 
-pub use plugin::*;
-
 pub mod rbatis;
 #[macro_use]
 pub mod utils;
@@ -20,7 +18,8 @@ pub mod crud;
 pub mod error;
 pub mod decode;
 
-pub use crate::rbatis::*;
+pub use plugin::*;
+pub use rbatis::*;
 pub use async_trait::async_trait;
 pub use decode::*;
 pub use error::*;
