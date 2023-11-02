@@ -6,7 +6,6 @@ use crate::Error;
 use dark_std::sync::SyncVec;
 use rbdc::rt::tokio::sync::Mutex;
 use log::LevelFilter;
-use rbdc::db::{Connection, Driver};
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
