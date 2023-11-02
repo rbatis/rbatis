@@ -496,7 +496,11 @@ macro_rules! pysql_select_page {
 /// for example:
 /// ```rust
 /// use rbatis::executor::Executor;
-/// rbatis::pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
+/// rbatis::pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> =>
+/// "select * from table where ${id} = 1
+///  if id != 0:
+///    `id = #{id}`"
+/// );
 /// ```
 #[macro_export]
 macro_rules! pysql {
