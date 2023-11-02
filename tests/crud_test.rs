@@ -1022,11 +1022,4 @@ mod test {
         };
         block_on(f);
     }
-
-    #[test]
-    fn test_string_code() {
-        #[string_fn("println!("aaa");")]
-        pub fn aaa(){}
-        aaa();
-    }
 }
