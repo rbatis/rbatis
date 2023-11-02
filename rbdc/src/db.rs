@@ -4,6 +4,7 @@ use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::any::Any;
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::Deref;
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
@@ -20,6 +21,24 @@ pub trait Driver: Debug + Sync + Send {
 
     /// make an default option
     fn default_option(&self) -> Box<dyn ConnectOptions>;
+}
+
+impl Driver for Box<dyn Driver>{
+    fn name(&self) -> &str {
+        self.deref().name()
+    }
+
+    fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        self.deref().connect(url)
+    }
+
+    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        self.deref().connect_opt(opt)
+    }
+
+    fn default_option(&self) -> Box<dyn ConnectOptions> {
+        self.deref().default_option()
+    }
 }
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize, Eq, PartialEq)]

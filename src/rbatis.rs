@@ -84,24 +84,6 @@ impl RBatis {
     }
 
     /// init pool
-    pub fn init_dyn(
-        &self,
-        driver: Box<dyn Driver>,
-        url: &str,
-    ) -> Result<(), Error> {
-        if url.is_empty() {
-            return Err(Error::from("[rbatis] link url is empty!"));
-        }
-        let mut option = driver.default_option();
-        option.set_uri(url)?;
-        let pool = Pool::new_box(driver, option)?;
-        self.pool
-            .set(pool)
-            .map_err(|_e| Error::from("pool set fail!"))?;
-        return Ok(());
-    }
-
-    /// init pool
     pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
