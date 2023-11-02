@@ -165,11 +165,6 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
 
     ///set option from uri
     fn set_uri(&mut self, uri: &str) -> Result<(), Error>;
-
-    #[deprecated(note = "deprecated method,you can remove this")]
-    fn uppercase_self(&self) -> &(dyn Any + Send + Sync) {
-        unimplemented!()
-    }
 }
 
 /// database driver ConnectOptions

@@ -48,21 +48,6 @@ pub trait IPageRequest: Send+Sync {
 
     ///Control whether to execute count statements to count the total number
     fn set_search_count(&mut self, arg: bool);
-
-    #[deprecated(note = "please use page_size() replace this")]
-    fn get_page_size(&self) -> u64 { self.page_size() }
-    #[deprecated(note = "please use page_no() replace this")]
-    fn get_page_no(&self) -> u64 { self.page_no() }
-    #[deprecated(note = "please use total() replace this")]
-    fn get_total(&self) -> u64 { self.total() }
-    #[deprecated(note = "please use search_count() replace this")]
-    fn is_search_count(&self) -> bool {
-        self.search_count()
-    }
-    #[deprecated(note = "please use pages() replace this")]
-    fn get_pages(&self) -> u64 {
-        self.pages()
-    }
 }
 
 ///Page interface, support get_pages() and offset()

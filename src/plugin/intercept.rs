@@ -83,6 +83,3 @@ pub trait Intercept: Send + Sync + Debug {
         Ok(true)
     }
 }
-
-#[deprecated(note = "please use Intercept replace this")]
-pub type SqlIntercept = dyn Intercept;
