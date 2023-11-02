@@ -10,7 +10,11 @@ pub trait IPageRequest: Send+Sync {
     fn page_no(&self) -> u64;
     fn total(&self) -> u64;
     ///Control whether to execute count statements to count the total number
+    #[deprecated(note = "please use do_count")]
     fn search_count(&self) -> bool;
+
+    ///Control whether to execute count statements to count the total number
+    fn do_count(&self) -> bool;
 
     ///sum pages
     fn pages(&self) -> u64 {
@@ -70,7 +74,7 @@ pub struct Page<T: Send+Sync> {
     /// default 10
     pub page_size: u64,
     /// Control whether to execute count statements to count the total number
-    pub search_count: bool,
+    pub do_count: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -82,7 +86,7 @@ pub struct PageRequest {
     /// page page_size default 10
     pub page_size: u64,
     /// Control whether to execute count statements to count the total number
-    pub search_count: bool,
+    pub do_count: bool,
 }
 
 impl PageRequest {
@@ -103,7 +107,7 @@ impl PageRequest {
             total,
             page_size,
             page_no,
-            search_count: true,
+            do_count: true,
         }
     }
 
@@ -124,7 +128,7 @@ impl PageRequest {
     }
     /// Control whether to execute count statements to count the total number
     pub fn set_search_count(mut self, arg: bool) -> Self {
-        self.search_count = arg;
+        self.do_count = arg;
         self
     }
 }
@@ -135,7 +139,7 @@ impl Default for PageRequest {
             total: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
-            search_count: true,
+            do_count: true,
         };
     }
 }
@@ -154,7 +158,11 @@ impl IPageRequest for PageRequest {
     }
     /// Control whether to execute count statements to count the total number
     fn search_count(&self) -> bool {
-        self.search_count
+        self.do_count
+    }
+
+    fn do_count(&self) -> bool {
+        self.do_count
     }
 
     fn set_total(&mut self, total: u64) {
@@ -170,7 +178,7 @@ impl IPageRequest for PageRequest {
     }
     /// Control whether to execute count statements to count the total number
     fn set_search_count(&mut self, arg: bool) {
-        self.search_count = arg;
+        self.do_count = arg;
     }
 }
 
@@ -200,7 +208,7 @@ impl<T: Send+Sync> Page<T> {
                 page_size: page_size,
                 page_no: 1 as u64,
                 records: vec![],
-                search_count: true,
+                do_count: true,
             };
         }
         return Self {
@@ -215,7 +223,7 @@ impl<T: Send+Sync> Page<T> {
             page_size,
             page_no,
             records: vec![],
-            search_count: true,
+            do_count: true,
         };
     }
 
@@ -262,7 +270,7 @@ impl<T: Send+Sync> Page<T> {
     }
     /// Control whether to execute count statements to count the total number
     pub fn set_search_count(mut self, arg: bool) -> Self {
-        self.search_count = arg;
+        self.do_count = arg;
         self
     }
 }
@@ -275,7 +283,7 @@ impl<T: Send+Sync> Default for Page<T> {
             pages: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
-            search_count: true,
+            do_count: true,
         };
     }
 }
@@ -293,8 +301,13 @@ impl<T: Send+Sync> IPageRequest for Page<T> {
         self.total
     }
     /// Control whether to execute count statements to count the total number
+    ///
     fn search_count(&self) -> bool {
-        self.search_count
+        self.do_count
+    }
+
+    fn do_count(&self) -> bool {
+        self.do_count
     }
 
     fn set_total(&mut self, arg: u64) {
@@ -311,7 +324,7 @@ impl<T: Send+Sync> IPageRequest for Page<T> {
 
     /// Control whether to execute count statements to count the total number
     fn set_search_count(&mut self, arg: bool) {
-        self.search_count = arg;
+        self.do_count = arg;
     }
 }
 
@@ -338,7 +351,7 @@ impl<T: Display + Debug + Send+Sync> Display for Page<T> {
             .field("pages", &self.pages)
             .field("page_no", &self.page_no)
             .field("page_size", &self.page_size)
-            .field("search_count", &self.search_count)
+            .field("do_count", &self.do_count)
             .finish()
     }
 }
@@ -353,7 +366,7 @@ impl<V: Send+Sync> Page<V> {
         p.page_no = arg.page_no;
         p.page_size = arg.page_size;
         p.total = arg.total;
-        p.search_count = arg.search_count;
+        p.do_count = arg.do_count;
         p.records = {
             let mut records = Vec::with_capacity(arg.records.len());
             for x in arg.records {

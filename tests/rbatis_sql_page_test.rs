@@ -25,7 +25,7 @@ mod tests {
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
             assert_eq!(pr.total(), total);
-            assert_eq!(pr.search_count(), search_count);
+            assert_eq!(pr.do_count(), search_count);
 
             let mut pr = PageRequest::new_option(
                 if page_no == 0 { None } else { Some(page_no) },
@@ -38,7 +38,7 @@ mod tests {
             pr = pr.set_search_count(search_count);
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
-            assert_eq!(pr.search_count(), search_count);
+            assert_eq!(pr.do_count(), search_count);
 
             let mut pr = page_req
                 .clone()
@@ -50,7 +50,7 @@ mod tests {
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
             assert_eq!(pr.total(), total);
-            assert_eq!(pr.search_count(), search_count);
+            assert_eq!(pr.do_count(), search_count);
         }
     }
 }
