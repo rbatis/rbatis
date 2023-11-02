@@ -2,10 +2,9 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
-use quote::{ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token, Block};
+use syn::{parse_macro_input, ItemFn, Token};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
