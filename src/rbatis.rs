@@ -19,13 +19,6 @@ pub struct RBatis {
     // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
-
-#[deprecated(note = "please use RBatis replace this")]
-pub type Rbatis = RBatis;
-
-#[deprecated(note = "please use RBatisOption replace this")]
-pub type RbatisOption = RBatisOption;
-
 impl Default for RBatis {
     fn default() -> RBatis {
         RBatis::new()
