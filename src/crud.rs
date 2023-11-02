@@ -495,7 +495,8 @@ macro_rules! pysql_select_page {
 /// use macro wrapper #[py_sql]
 /// for example:
 /// ```rust
-/// rbatis::pysql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
+/// use rbatis::executor::Executor;
+/// rbatis::pysql!(test_same_id(rb: &Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "select ${id},${id},#{id},#{id} ");
 /// ```
 #[macro_export]
 macro_rules! pysql {
@@ -525,7 +526,8 @@ macro_rules! pysql {
 /// ```
 /// or load from file
 /// ```rust
-/// //rbatis::htmlsql!(test_same_id(rb: &rbatis::RBatis, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "example.html");
+/// //use rbatis::executor::Executor;
+/// //rbatis::htmlsql!(test_same_id(rb: &Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => "example.html");
 /// ```
 #[macro_export]
 macro_rules! htmlsql {
