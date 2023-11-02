@@ -6,7 +6,7 @@ use crate::Error;
 use dark_std::sync::SyncVec;
 use rbdc::rt::tokio::sync::Mutex;
 use log::LevelFilter;
-use rbdc::db::Connection;
+use rbdc::db::{Connection, Driver};
 use rbdc::pool::{ManagerPorxy, Pool};
 use std::fmt::Debug;
 use std::sync::{Arc, OnceLock};
@@ -81,6 +81,24 @@ impl RBatis {
         self.init(driver, url)?;
         self.try_acquire().await?;
         Ok(())
+    }
+
+    /// init pool
+    pub fn init_box(
+        &self,
+        driver: Box<dyn Driver>,
+        url: &str,
+    ) -> Result<(), Error> {
+        if url.is_empty() {
+            return Err(Error::from("[rbatis] link url is empty!"));
+        }
+        let mut option = driver.default_option();
+        option.set_uri(url)?;
+        let pool = Pool::new_box(driver, option)?;
+        self.pool
+            .set(pool)
+            .map_err(|_e| Error::from("pool set fail!"))?;
+        return Ok(());
     }
 
     /// init pool
