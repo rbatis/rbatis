@@ -84,7 +84,7 @@ impl RBatis {
     }
 
     /// init pool
-    pub fn init_box(
+    pub fn init_dyn(
         &self,
         driver: Box<dyn Driver>,
         url: &str,
