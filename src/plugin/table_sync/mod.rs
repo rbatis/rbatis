@@ -74,6 +74,7 @@ pub fn sync<'a>(
                     Ok(_) => {}
                     Err(e) => {
                         if e.to_string().to_lowercase().contains("already") {
+                            //TODO have any better way do not Repeated add and compatibility with most databases
                             for (k, v) in &m {
                                 let k = k.as_str().unwrap_or_default();
                                 let mut id_key = "";
