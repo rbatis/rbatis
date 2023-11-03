@@ -6,7 +6,7 @@ use syn;
 use syn::{FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
 
 //impl sql macro
 pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
@@ -20,7 +20,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
             FnArg::Receiver(_) => {}
             FnArg::Typed(t) => {
                 let ty_stream = t.ty.to_token_stream().to_string();
-                if is_rbatis_ref(&ty_stream) {
+                if is_rb_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
                     rbatis_name = rbatis_ident
                         .to_string()

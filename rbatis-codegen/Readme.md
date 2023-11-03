@@ -106,7 +106,7 @@ pub async fn select_by_condition(
     );
     rb_arg_map.insert("a".to_string().into(), rbs::to_value(a).unwrap_or_default());
     use rbatis::executor::RBatisRef;
-    let driver_type = rb.rbatis_ref().driver_type()?;
+    let driver_type = rb.rb_ref().driver_type()?;
     use rbatis::rbatis_codegen;
     pub fn impl_html_sql(arg: &rbs::Value, _tag: char) -> (String, Vec<rbs::Value>) {
         use rbatis_codegen::ops::*;
