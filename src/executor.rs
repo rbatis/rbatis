@@ -24,15 +24,15 @@ pub trait Executor: RBatisRef + Send + Sync {
 }
 
 pub trait RBatisRef: Send + Sync {
-    fn rbatis_ref(&self) -> &RBatis;
+    fn rb_ref(&self) -> &RBatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
-        self.rbatis_ref().driver_type()
+        self.rb_ref().driver_type()
     }
 }
 
 impl RBatisRef for RBatis {
-    fn rbatis_ref(&self) -> &RBatis {
+    fn rb_ref(&self) -> &RBatis {
         self
     }
 }
@@ -78,7 +78,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.id + utils::timestamp::create_timestamp();
             let mut before_result = Err(Error::from(""));
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -94,7 +94,7 @@ impl Executor for RBatisConnExecutor {
             }
             let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -117,7 +117,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.id + utils::timestamp::create_timestamp();
             let mut before_result = Err(Error::from(""));
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -134,7 +134,7 @@ impl Executor for RBatisConnExecutor {
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
             let mut result = conn.get_values(&sql, args).await;
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -154,7 +154,7 @@ impl Executor for RBatisConnExecutor {
 }
 
 impl RBatisRef for RBatisConnExecutor {
-    fn rbatis_ref(&self) -> &RBatis {
+    fn rb_ref(&self) -> &RBatis {
         &self.rb
     }
 }
@@ -215,7 +215,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -231,7 +231,7 @@ impl Executor for RBatisTxExecutor {
             }
             let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -253,7 +253,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -271,7 +271,7 @@ impl Executor for RBatisTxExecutor {
             let mut args_after = args.clone();
             let conn = conn.get_values(&sql, args);
             let mut result = conn.await;
-            for item in self.rbatis_ref().intercepts.iter() {
+            for item in self.rb_ref().intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -291,7 +291,7 @@ impl Executor for RBatisTxExecutor {
 }
 
 impl RBatisRef for RBatisTxExecutor {
-    fn rbatis_ref(&self) -> &RBatis {
+    fn rb_ref(&self) -> &RBatis {
         &self.rb
     }
 }
@@ -395,7 +395,7 @@ impl RBatisTxExecutor {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
-                let rb = arg.rbatis_ref().clone();
+                let rb = arg.rb_ref().clone();
                 let future = callback(arg);
                 if let Ok(pool) = rb.get_pool() {
                     pool.spawn_task(future);
@@ -414,8 +414,8 @@ impl Drop for RBatisTxExecutorGuard {
 }
 
 impl RBatisRef for RBatisTxExecutorGuard {
-    fn rbatis_ref(&self) -> &RBatis {
-        self.tx.as_ref().unwrap().rbatis_ref()
+    fn rb_ref(&self) -> &RBatis {
+        self.tx.as_ref().unwrap().rb_ref()
     }
 }
 
@@ -485,7 +485,7 @@ impl Executor for RBatis {
 }
 
 impl RBatisRef for &RBatis {
-    fn rbatis_ref(&self) -> &RBatis {
+    fn rb_ref(&self) -> &RBatis {
         self
     }
 }
@@ -551,7 +551,7 @@ impl <'a>TempExecutor<'a>{
 }
 
 impl RBatisRef for TempExecutor<'_> {
-    fn rbatis_ref(&self) -> &RBatis {
+    fn rb_ref(&self) -> &RBatis {
         self.rb
     }
 }

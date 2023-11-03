@@ -7,7 +7,7 @@ use syn::{FnArg, ItemFn};
 
 use crate::macros::py_sql_impl;
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rbatis_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
 use crate::ParseArgs;
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
@@ -21,7 +21,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             FnArg::Receiver(_) => {}
             FnArg::Typed(t) => {
                 let ty_stream = t.ty.to_token_stream().to_string();
-                if is_rbatis_ref(&ty_stream) {
+                if is_rb_ref(&ty_stream) {
                     rbatis_ident = t.pat.to_token_stream();
                     rbatis_name = rbatis_ident
                         .to_string()
@@ -135,7 +135,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RBatisRef};
-         let driver_type = #rbatis_ident.rbatis_ref().driver_type()?;
+         let driver_type = #rbatis_ident.rb_ref().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func
          let (mut sql,rb_args) = impl_html_sql(&rbs::Value::Map(rb_arg_map),'?');
