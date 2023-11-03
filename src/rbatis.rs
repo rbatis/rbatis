@@ -166,6 +166,7 @@ impl RBatis {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
         return Ok(RBatisConnExecutor {
+            id: new_snowflake_id(),
             conn: Mutex::new(Box::new(conn)),
             rb: self.clone(),
         });
@@ -178,6 +179,7 @@ impl RBatis {
         default.wait = Some(Duration::ZERO);
         let conn = pool.timeout_get(&default).await?;
         return Ok(RBatisConnExecutor {
+            id: new_snowflake_id(),
             conn: Mutex::new(Box::new(conn)),
             rb: self.clone(),
         });
