@@ -86,7 +86,7 @@ QPS: 885486 QPS/s
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
 
-* Rust v1.70+ later
+* Rust v1.73+ later
 
 * Cargo.toml
 
