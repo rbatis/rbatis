@@ -93,6 +93,7 @@ QPS: 885486 QPS/s
 #### default
 ```toml
 #rbatis deps
+rbs = { version = "4.4"}
 rbatis = { version = "4.4"}
 rbdc-sqlite = { version = "4.4" }
 #rbdc-mysql={version="4.4"}
