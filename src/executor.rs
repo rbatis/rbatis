@@ -88,6 +88,7 @@ impl Executor for RBatisConnExecutor {
                     return before_result;
                 }
             }
+            let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let next = item
@@ -95,7 +96,7 @@ impl Executor for RBatisConnExecutor {
                         rb_task_id,
                         self as &dyn Executor,
                         &mut sql,
-                        &mut vec![],
+                        &mut args_after,
                         ResultType::Exec(&mut result),
                     )
                     .await?;
@@ -127,6 +128,7 @@ impl Executor for RBatisConnExecutor {
                 }
             }
             let mut conn = self.conn.lock().await;
+            let mut args_after = args.clone();
             let mut result = conn.get_values(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let next = item
@@ -134,7 +136,7 @@ impl Executor for RBatisConnExecutor {
                         rb_task_id,
                         self,
                         &mut sql,
-                        &mut vec![],
+                        &mut args_after,
                         ResultType::Query(&mut result),
                     )
                     .await?;
@@ -223,6 +225,7 @@ impl Executor for RBatisTxExecutor {
                     return before_result;
                 }
             }
+            let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
             for item in self.rbatis_ref().intercepts.iter() {
                 let next = item
@@ -230,7 +233,7 @@ impl Executor for RBatisTxExecutor {
                         self.tx_id,
                         self,
                         &mut sql,
-                        &mut vec![],
+                        &mut args_after,
                         ResultType::Exec(&mut result),
                     )
                     .await?;
@@ -261,6 +264,7 @@ impl Executor for RBatisTxExecutor {
                 }
             }
             let mut conn = self.conn.lock().await;
+            let mut args_after = args.clone();
             let conn = conn.get_values(&sql, args);
             let mut result = conn.await;
             for item in self.rbatis_ref().intercepts.iter() {
@@ -269,7 +273,7 @@ impl Executor for RBatisTxExecutor {
                         self.tx_id,
                         self,
                         &mut sql,
-                        &mut vec![],
+                        &mut args_after,
                         ResultType::Query(&mut result),
                     )
                     .await?;
