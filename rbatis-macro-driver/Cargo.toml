@@ -25,3 +25,8 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 rbatis-codegen = { version = "4.4", path = "../rbatis-codegen", optional = true }
 rust-format = { version = "0.3.4", optional = true }
+
+[dev-dependencies]
+rbs = { version = "4.4", path = "../rbs" }
+rbatis = { version = "4.4", path = "../"}
+serde = "1.0"

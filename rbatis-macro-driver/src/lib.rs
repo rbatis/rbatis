@@ -29,9 +29,15 @@ impl Parse for ParseArgs {
 
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
-///     #[sql("select * from biz_activity where id = ?")]
-///     async fn select(rb:&RBatis, name: &str) -> BizActivity {}
+///```rust
+///     use rbatis::sql;
+///     use rbatis::executor::Executor;
+///     #[derive(serde::Serialize,serde::Deserialize)]
+///     pub struct BizActivity{}
 ///
+///     #[sql("select * from biz_activity where id = ?")]
+///     async fn select(rb:&dyn Executor, name: &str) -> BizActivity {}
+///```
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
@@ -47,13 +53,23 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 /// py sql create macro,this macro use RB.py_query and RB.py_exec
+///```rust
+/// use rbatis::executor::Executor;
+/// use rbatis::py_sql;
+/// #[derive(serde::Serialize,serde::Deserialize)]
+/// pub struct BizActivity{}
 ///
-///  pub static RB:Lazy<RBatis> = Lazy::new(||RBatis::new());
-///  #[py_sql("select * from biz_activity where delete_flag = 0")]
-///  async fn py_select_page(rb: &Executor, page_req: &PageRequest, name: &str) -> Page<BizActivity> { }
-///
+/// #[py_sql("select * from biz_activity where delete_flag = 0")]
+/// async fn py_select_page(rb: &dyn Executor, name: &str) -> Vec<BizActivity> { }
+///```
 ///  or more example:
-///  #[py_sql("
+///```rust
+/// use rbatis::executor::Executor;
+/// use rbatis::py_sql;
+/// #[derive(serde::Serialize,serde::Deserialize)]
+/// pub struct BizActivity{}
+///
+/// #[py_sql("
 ///     SELECT * FROM biz_activity
 ///     if  name != null:
 ///       AND delete_flag = #{del}
@@ -79,7 +95,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///         otherwise:
 ///           AND age = 0
 ///     WHERE id  = '2'")]
-///   pub async fn py_select_rb(rbatis: &RBatis, name: &str) -> Option<BizActivity> {}
+///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// ```
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
@@ -100,8 +117,39 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
-/// #[py_sql("example/example.html")]
-/// pub async fn py_select_rb(rbatis: &RBatis, name: &str) -> Option<BizActivity> {}
+/// ```rust
+/// use rbatis::executor::Executor;
+/// use rbatis::html_sql;
+/// #[derive(serde::Serialize,serde::Deserialize)]
+/// pub struct BizActivity{}
+///
+/// #[html_sql(r#"
+/// <select id="select_by_condition">
+///         `select * from activity`
+///         <where>
+///          <if test="a">
+///                 ` and name like #{name}`
+///             </if>
+///             <if test="name != ''">
+///                 ` and name like #{name}`
+///             </if>
+///             <if test="dt >= '2023-11-03T21:13:09.9357266+08:00'">
+///                 ` and create_time < #{dt}`
+///             </if>
+///             <choose>
+///                 <when test="true">
+///                     ` and id != '-1'`
+///                 </when>
+///                 <otherwise>and id != -2</otherwise>
+///             </choose>
+///             ` and `
+///             <trim prefixOverrides=" and">
+///                 ` and name != '' `
+///             </trim>
+///         </where>
+///   </select>"#)]
+/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// ```
 ///
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
