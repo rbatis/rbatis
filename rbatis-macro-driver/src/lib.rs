@@ -97,11 +97,16 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///     WHERE id  = '2'")]
 ///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<BizActivity> {}
 /// ```
+/// or read from file
+/// ```rust
+/// //#[rbatis::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
+/// //pub async fn test_same_id(rb: &dyn Executor, id: &u64) -> Result<Value, Error> { impled!() }
+/// ```
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = impl_macro_py_sql(&target_fn, &args);
+    let stream = impl_macro_py_sql(&target_fn, args);
     #[cfg(feature = "debug_mode")]
     if cfg!(debug_assertions) {
         use rust_format::{Formatter, RustFmt};
@@ -147,7 +152,11 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///   </select>"#)]
 /// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
 /// ```
-///
+/// or from file
+/// ```rust
+/// //#[html_sql("xxxx.html")]
+/// //pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// ```
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);

@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Read;
 use crate::ParseArgs;
 use proc_macro2::{Ident, Span};
 use quote::quote;
@@ -9,7 +11,7 @@ use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_r
 
 ///py_sql macro
 ///support args for rb:&RBatis
-pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
+pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let mut rbatis_ident = "".to_token_stream();
     let mut rbatis_name = String::new();
@@ -30,6 +32,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenSt
         }
     }
 
+
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
@@ -37,6 +40,17 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenSt
         }
         let mut s = "".to_string();
         for v in &args.sqls {
+            if args.sqls.len() == 1 {
+                let v = args.sqls[0].value();
+                if v.starts_with("include_str!(\"") && v.ends_with("\")") {
+                    let include_file = v.trim_start_matches(r#"include_str!(""#).trim_end_matches(r#"")"#).to_string();
+                    let mut f = File::open(&include_file).expect(&format!("can't find file={}", include_file));
+                    let mut data = String::new();
+                    _ = f.read_to_string(&mut data);
+                    s.push_str(&data);
+                    continue;
+                }
+            }
             s = s + v.value().as_str();
         }
         sql_ident = quote!(#s);
@@ -58,7 +72,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenSt
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-        .to_token_stream();
+            .to_token_stream();
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
@@ -101,7 +115,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenSt
          #call_method
        }
     }
-    .into();
+        .into();
 }
 
 pub(crate) fn filter_args_context_id(
@@ -125,7 +139,7 @@ pub(crate) fn filter_args_context_id(
                 item.to_string().trim_start_matches("mut "),
                 Span::call_site(),
             )
-            .to_token_stream();
+                .to_token_stream();
         }
         sql_args_gen = quote! {
              #sql_args_gen
