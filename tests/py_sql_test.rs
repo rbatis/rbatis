@@ -205,7 +205,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            #[py_sql(r#"include_str!("C:/rs/rbatis/target/debug/xx.rs")"#)]
+            #[py_sql("select ${id},${id},#{id},#{id} ")]
             pub async fn test_same_id(rb: &RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
