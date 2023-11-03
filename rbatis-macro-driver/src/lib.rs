@@ -127,9 +127,6 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// <select id="select_by_condition">
 ///         `select * from activity`
 ///         <where>
-///          <if test="a">
-///                 ` and name like #{name}`
-///             </if>
 ///             <if test="name != ''">
 ///                 ` and name like #{name}`
 ///             </if>
