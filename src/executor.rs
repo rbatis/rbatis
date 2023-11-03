@@ -3,7 +3,7 @@ use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::Tx;
-use crate::Error;
+use crate::{Error, utils};
 use futures::Future;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
@@ -38,13 +38,17 @@ impl RBatisRef for RBatis {
 }
 
 pub struct RBatisConnExecutor {
+    pub id: i64,
     pub conn: Mutex<Box<dyn Connection>>,
     pub rb: RBatis,
 }
 
 impl Debug for RBatisConnExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.rb.fmt(f)
+        f.debug_struct("RBatisTxExecutor")
+            .field("id", &self.id)
+            .field("rb", &self.rb)
+            .finish()
     }
 }
 
@@ -72,7 +76,7 @@ impl Executor for RBatisConnExecutor {
     fn exec(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = new_snowflake_id();
+            let rb_task_id = self.id + utils::timestamp::create_timestamp();
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
                 let next = item
@@ -111,7 +115,7 @@ impl Executor for RBatisConnExecutor {
     fn query(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = new_snowflake_id();
+            let rb_task_id = self.id + utils::timestamp::create_timestamp();
             let mut before_result = Err(Error::from(""));
             for item in self.rbatis_ref().intercepts.iter() {
                 let next = item
