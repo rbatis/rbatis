@@ -318,6 +318,15 @@ impl Value {
     }
 
     #[inline]
+    pub fn as_string(&self) -> Option<String> {
+        match self {
+            Value::String(v) => Some(v.to_string()),
+            Value::Ext(_, ext) => ext.as_string(),
+            _ => None,
+        }
+    }
+
+    #[inline]
     pub fn into_string(self) -> Option<String> {
         match self {
             Value::String(v) => Some(v),
@@ -325,6 +334,7 @@ impl Value {
             _ => None,
         }
     }
+
 
     /// self to Binary
     #[inline]

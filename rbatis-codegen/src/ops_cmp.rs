@@ -72,10 +72,10 @@ fn eq_bool(value: &Value, rhs: bool) -> Option<Ordering> {
 }
 
 fn eq_str(value: &Value, rhs: &str) -> Option<Ordering> {
-    let value = value.str();
+    let value = value.clone().string();
     if value == rhs {
         Some(Ordering::Equal)
-    } else if value > rhs {
+    } else if value.as_str() > rhs {
         Some(Ordering::Greater)
     } else {
         Some(Ordering::Less)
@@ -92,7 +92,7 @@ fn op_partial_cmp_value(left: &Value, rhs: &Value) -> Option<Ordering> {
         Value::U64(n) => cmp_u64(*n as u64, rhs.u64()),
         Value::F32(n) => cmp_f64(*n as f64, rhs.f64()),
         Value::F64(n) => cmp_f64(*n, rhs.f64()),
-        Value::String(s) => Some(s.as_str().cmp(rhs.str())),
+        Value::String(s) => Some(s.as_str().cmp(&rhs.clone().string())),
         Value::Ext(_, e) => op_partial_cmp_value(e.as_ref(), rhs),
         _ => None,
     }
@@ -140,6 +140,12 @@ macro_rules! impl_numeric_cmp {
             impl PartialOrd<$ty> for Value {
                 fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
                     $eq(self, *rhs as _)
+                }
+            }
+
+            impl PartialOrd<&$ty> for Value {
+                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
+                    $eq(self, **rhs as _)
                 }
             }
 

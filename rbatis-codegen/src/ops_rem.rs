@@ -109,6 +109,13 @@ macro_rules! impl_numeric_rem {
                 }
             }
 
+            impl Rem<&$ty> for Value {
+                type Output = $return_ty;
+                fn op_rem(self, other: &$ty) -> Self::Output {
+                    $rem(&self, *other as _)
+                }
+            }
+
             impl Rem<Value> for $ty {
                 type Output = $return_ty;
                 fn op_rem(self, other: Value) -> Self::Output {

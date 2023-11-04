@@ -11,8 +11,8 @@ impl IntoSql for Value {
             Value::Map(m) => {
                 let mut sql = "".to_string();
                 for (k, v) in m {
-                    let k_str = k.str();
-                    sql.push_str(k_str);
+                    let k_str = k.clone().string();
+                    sql.push_str(&k_str);
                     if v.is_str() {
                         sql.push_str("'");
                         sql.push_str(&v.as_sql());
@@ -48,7 +48,7 @@ impl IntoSql for Value {
                 if x.is_str() {
                     let mut sql = String::new();
                     sql.push_str("'");
-                    sql.push_str(x.str());
+                    sql.push_str(&x.clone().string());
                     sql.push_str("'");
                     Value::String(sql)
                 } else {

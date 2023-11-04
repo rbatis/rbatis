@@ -92,6 +92,13 @@ macro_rules! impl_numeric_sub {
                 }
             }
 
+            impl Sub<&$ty> for Value {
+                type Output = $return_ty;
+                fn op_sub(self, other: &$ty) -> Self::Output {
+                    $sub(&self, *other as _)
+                }
+            }
+
             impl Sub<Value> for $ty {
                 type Output = $return_ty;
                 fn op_sub(self, other: Value) -> Self::Output {

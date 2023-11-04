@@ -97,6 +97,13 @@ macro_rules! impl_numeric_mul {
                 }
             }
 
+            impl Mul<&$ty> for Value {
+                type Output = $return_ty;
+                fn op_mul(self, other: &$ty) -> Self::Output {
+                    $mul(&self, *other as _)
+                }
+            }
+
             impl Mul<Value> for $ty {
                 type Output = $return_ty;
                 fn op_mul(self, other: Value) -> Self::Output {
