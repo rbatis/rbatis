@@ -70,6 +70,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
+    include_data = quote! {#include_data};
+
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
