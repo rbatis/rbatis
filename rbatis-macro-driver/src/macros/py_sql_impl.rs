@@ -32,7 +32,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         }
     }
 
-
+    let mut include_data = quote::quote!{};
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
@@ -43,11 +43,23 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
             if args.sqls.len() == 1 {
                 let v = args.sqls[0].value();
                 if v.starts_with("include_str!(\"") && v.ends_with("\")") {
-                    let include_file = v.trim_start_matches(r#"include_str!(""#).trim_end_matches(r#"")"#).to_string();
-                    let mut f = File::open(&include_file).expect(&format!("can't find file={}", include_file));
+                    let mut include_file_name = v.trim_start_matches(r#"include_str!(""#).trim_end_matches(r#"")"#).to_string();
+                    let mut f = File::open(&include_file_name).expect(&format!("can't find file={}", include_file_name));
                     let mut data = String::new();
                     _ = f.read_to_string(&mut data);
                     data = data.replace("\r\n","\n");
+
+                    #[cfg(feature = "debug_mode")]
+                    if cfg!(debug_assertions) {
+                        use std::env::current_dir;
+                        use std::path::PathBuf;
+                        let current_dir = current_dir().unwrap();
+                        if !PathBuf::from(&include_file_name).is_absolute() {
+                            include_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), include_file_name);
+                            println!("include_file_name={}",include_file_name)
+                        }
+                        include_data = quote! {#include_data  let _ = include_bytes!(#include_file_name);};
+                    }
                     s.push_str(&data);
                     continue;
                 }
@@ -111,6 +123,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
          use rbatis::executor::{RBatisRef};
          let driver_type = #rbatis_ident.rb_ref().driver_type()?;
          use rbatis::rbatis_codegen;
+         #include_data
          #gen_func
          let (mut sql,rb_args) = do_py_sql(&rbs::Value::Map(rb_arg_map), '?');
          #call_method

@@ -23,6 +23,13 @@ macro_rules! impl_numeric_add {
                 }
             }
 
+            impl Add<&$ty> for Value {
+                type Output = $return_ty;
+                fn op_add(self, other: &$ty) -> Self::Output {
+                    $eq(&self, *other as _)
+                }
+            }
+
             impl Add<Value> for $ty {
                 type Output = $return_ty;
                 fn op_add(self, other: Value) -> Self::Output {
@@ -128,14 +135,14 @@ impl Add<Value> for &Value {
 impl Add<Value> for &str {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + &rhs.string()
     }
 }
 
 impl Add<&Value> for &str {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + rhs.clone().string().as_str()
     }
 }
 
@@ -184,14 +191,14 @@ impl Add<String> for &Value {
 impl Add<Value> for &String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + &rhs.string()
     }
 }
 
 impl Add<&Value> for &String {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + &rhs.clone().string()
     }
 }
 
@@ -212,14 +219,14 @@ impl Add<&String> for &Value {
 impl Add<Value> for String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + &rhs.string()
     }
 }
 
 impl Add<&Value> for String {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
-        self.to_string() + rhs.str()
+        self.to_string() + &rhs.clone().string()
     }
 }
 
@@ -249,13 +256,15 @@ impl Add<&$ty> for &$ty{
       fn op_add(self, rhs: &$ty) -> Self::Output {
         *self+*rhs
       }
-    }
+}
         )*
     };
 }
 add_self!([u8 u16 u32 u64]);
 add_self!([i8 i16 i32 i64 isize]);
 add_self!([f32 f64]);
+
+
 
 impl Add<String> for String {
     type Output = String;
@@ -302,5 +311,20 @@ impl Add<&&String> for &str {
 
     fn op_add(self, rhs: &&String) -> Self::Output {
         self.to_string() + rhs.as_str()
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use rbs::{to_value, Value};
+    use crate::ops::Add;
+
+    #[test]
+    fn test_add() {
+        let i: i64 = 1;
+        let v = to_value!(1);
+        let r = v.op_add(&i);
+        assert_eq!(r, Value::from(2));
     }
 }
