@@ -47,6 +47,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                     let mut f = File::open(&include_file).expect(&format!("can't find file={}", include_file));
                     let mut data = String::new();
                     _ = f.read_to_string(&mut data);
+                    data = data.replace("\r\n","\n");
                     s.push_str(&data);
                     continue;
                 }
