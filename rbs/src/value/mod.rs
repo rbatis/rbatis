@@ -430,6 +430,28 @@ impl Value {
             None
         }
     }
+
+    #[inline]
+    pub fn into_map(self) -> Option<ValueMap> {
+        if let Value::Map(map) = self {
+            Some(map)
+        } else if let Value::Ext(_,  map) = self {
+            map.into_map()
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub fn into_array(self) -> Option<Vec<Value>> {
+        if let Value::Array( array) = self {
+            Some(array)
+        } else if let Value::Ext(_,  ext) = self {
+            ext.into_array()
+        } else {
+            None
+        }
+    }
 }
 
 impl From<bool> for Value {

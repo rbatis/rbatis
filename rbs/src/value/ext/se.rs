@@ -184,11 +184,10 @@ impl ser::Serializer for Serializer {
     fn serialize_unit_variant(
         self,
         _name: &'static str,
-        idx: u32,
-        _variant: &'static str,
+        _idx: u32,
+        variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        let vec = vec![Value::from(idx), Value::Array(Vec::new())];
-        Ok(Value::Array(vec))
+        Ok(Value::String(variant.to_string()))
     }
 
     #[inline]
@@ -206,15 +205,16 @@ impl ser::Serializer for Serializer {
     fn serialize_newtype_variant<T: ?Sized>(
         self,
         _name: &'static str,
-        idx: u32,
-        _variant: &'static str,
+        _idx: u32,
+        variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        let vec = vec![Value::from(idx), Value::Array(vec![to_value(value)?])];
-        Ok(Value::Array(vec))
+        let mut values = ValueMap::new();
+        values.insert(Value::String(variant.to_string()), value.serialize(self)?);
+        Ok(Value::Map(values))
     }
 
     #[inline]
@@ -252,15 +252,16 @@ impl ser::Serializer for Serializer {
     fn serialize_tuple_variant(
         self,
         _name: &'static str,
-        idx: u32,
+        _idx: u32,
         _variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Error> {
-        let se = SerializeTupleVariant {
-            idx,
-            vec: Vec::with_capacity(len),
-        };
-        Ok(se)
+        return Err(Error::Syntax("rbs Serialize unimplemented serialize_tuple_variant".to_string()));
+        // let se = SerializeTupleVariant {
+        //     idx,
+        //     vec: Vec::with_capacity(len),
+        // };
+        // Ok(se)
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Error> {
@@ -290,13 +291,14 @@ impl ser::Serializer for Serializer {
         _name: &'static str,
         _idx: u32,
         _variant: &'static str,
-        len: usize,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant, Error> {
-        let se = DefaultSerializeMap {
-            map: Vec::with_capacity(len),
-            next_key: None,
-        };
-        Ok(se)
+        return Err(Error::Syntax("rbs Serialize unimplemented serialize_struct_variant".to_string()));
+        // let se = DefaultSerializeMap {
+        //     map: Vec::with_capacity(len),
+        //     next_key: None,
+        // };
+        // Ok(se)
     }
 }
 
