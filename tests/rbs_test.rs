@@ -4,6 +4,7 @@ mod test {
     use rbdc::datetime::DateTime;
     use rbs::Value;
     use std::cmp::Ordering;
+    use serde::{Deserialize, Serialize};
 
     #[test]
     fn test_ser_i32() {
@@ -153,5 +154,44 @@ mod test {
             r#"Ext("DateTime", String("2023-03-22T00:39:04.0278992Z"))"#
         );
         assert_eq!(d.to_string(), r#"{"1":1}"#);
+    }
+
+    #[test]
+    fn test_ser() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        pub enum A {
+            AA,
+            BB,
+        }
+        let v = rbs::to_value!(A::BB);
+        println!("{:?}", v);
+
+        let nv: A = rbs::from_value(v).unwrap();
+        println!("{:?}", nv);
+        assert_eq!(nv, A::BB);
+    }
+
+    #[test]
+    fn test_ser_variant() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        pub enum A {
+            BB(i32) //{"BB":2}
+        }
+        let v = rbs::to_value!(A::BB(2));
+        println!("{:?}", v);
+        let nv: A = rbs::from_value(v).unwrap();
+        assert_eq!(nv,A::BB(2));
+    }
+
+    #[test]
+    fn test_ser_variant2() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        pub enum A {
+            BB(String)//{"BB":"2"}
+        }
+        let v = rbs::to_value!(A::BB(2.to_string()));
+        println!("{:?}", v);
+        let nv: A = rbs::from_value(v).unwrap();
+        assert_eq!(nv,A::BB(2.to_string()));
     }
 }
