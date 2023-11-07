@@ -180,7 +180,7 @@ mod test {
         let v = rbs::to_value!(A::BB(2));
         println!("{:?}", v);
         let nv: A = rbs::from_value(v).unwrap();
-        assert_eq!(nv,A::BB(2));
+        assert_eq!(nv, A::BB(2));
     }
 
     #[test]
@@ -192,6 +192,13 @@ mod test {
         let v = rbs::to_value!(A::BB(2.to_string()));
         println!("{:?}", v);
         let nv: A = rbs::from_value(v).unwrap();
-        assert_eq!(nv,A::BB(2.to_string()));
+        assert_eq!(nv, A::BB(2.to_string()));
+    }
+
+    #[test]
+    fn test_ser_num() {
+        let v = rbs::to_value!(1i8);
+        let d: u64 = rbs::from_value(v).unwrap();
+        assert_eq!(d, 1);
     }
 }

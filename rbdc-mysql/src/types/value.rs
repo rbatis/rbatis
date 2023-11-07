@@ -68,7 +68,7 @@ impl Encode for Value {
         match self {
             Value::Null => Ok(0),
             Value::Bool(v) => {
-                buf.extend(&(v as i8).to_le_bytes());
+                buf.extend(&(v as u8).to_le_bytes());
                 Ok(1)
             }
             Value::I32(v) => {
