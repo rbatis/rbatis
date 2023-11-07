@@ -244,6 +244,7 @@ impl RBatis {
         return None;
     }
 
+    /// get intercept from name
     ///  ```rust
     /// use std::sync::Arc;
     /// use async_trait::async_trait;
