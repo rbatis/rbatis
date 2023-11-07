@@ -231,9 +231,10 @@ impl RBatis {
     /// use async_trait::async_trait;
     /// use rbatis::RBatis;
     /// use rbatis::intercept::{Intercept};
-    ///     #[derive(Debug)]
-    ///     pub struct MockIntercept {
-    ///     }
+    ///
+    /// #[derive(Debug)]
+    /// pub struct MockIntercept {
+    /// }
     /// #[async_trait]
     /// impl Intercept for MockIntercept {
     /// }
