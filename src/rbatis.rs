@@ -264,9 +264,10 @@ impl RBatis {
     /// ```
     pub fn get_intercept<T>(&self) -> Option<&T> {
         let name = std::any::type_name::<T>();
-        for x in self.intercepts.iter() {
-            if name == x.name() {
-                let rf= x.as_ref();
+        for item in self.intercepts.iter() {
+            if name == item.name() {
+                //this is safe,limit by T::name() == item.name
+                let rf= item.as_ref();
                 let call: &T = unsafe { std::mem::transmute_copy(&rf) };
                 return Some(call);
             }
