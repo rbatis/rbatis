@@ -262,7 +262,7 @@ impl RBatis {
     ///  rb.set_intercepts(vec![Arc::new(MockIntercept{})]);
     ///  let intercept = rb.get_intercept::<MockIntercept>();
     /// ```
-    pub fn get_intercept<T>(&self) -> Option<&T> {
+    pub fn get_intercept<T:Intercept>(&self) -> Option<&T> {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
