@@ -256,6 +256,7 @@ impl ser::Serializer for Serializer {
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Error> {
+        //TODO impl serialize_tuple_variant
         return Err(Error::Syntax("rbs Serialize unimplemented serialize_tuple_variant".to_string()));
         // let se = SerializeTupleVariant {
         //     idx,
@@ -293,6 +294,7 @@ impl ser::Serializer for Serializer {
         _variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Error> {
+        //TODO impl serialize_struct_variant
         return Err(Error::Syntax("rbs Serialize unimplemented serialize_struct_variant".to_string()));
         // let se = DefaultSerializeMap {
         //     map: Vec::with_capacity(len),

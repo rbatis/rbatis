@@ -475,6 +475,7 @@ impl<'de> de::VariantAccess<'de> for VariantDeserializer {
         where
             V: Visitor<'de>,
     {
+        //todo impl tuple_variant
         return Err(Error::Syntax("rbs Deserialize unimplemented tuple_variant".to_string()));
     }
 
@@ -486,6 +487,7 @@ impl<'de> de::VariantAccess<'de> for VariantDeserializer {
         where
             V: Visitor<'de>,
     {
+        //todo impl struct_variant
         return Err(Error::Syntax("rbs Deserialize unimplemented struct_variant".to_string()));
     }
 }
