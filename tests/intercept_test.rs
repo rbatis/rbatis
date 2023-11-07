@@ -2,7 +2,7 @@
 mod test {
     use async_trait::async_trait;
     use futures_core::future::BoxFuture;
-    use log::{LevelFilter, Log, Metadata, Record};
+    use log::{Log, Metadata, Record};
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::{Error, RBatis};
@@ -10,6 +10,7 @@ mod test {
     use rbdc::rt::block_on;
     use rbs::Value;
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicI64, Ordering};
 
     pub struct Logger {}
 
@@ -208,14 +209,24 @@ mod test {
 
     #[test]
     fn test_get_intercept_type() {
-        log::set_logger(&Logger {})
-            .map(|()| log::set_max_level(LevelFilter::Info))
-            .unwrap();
+        #[derive(Debug)]
+        pub struct MockIntercept {
+            pub inner:AtomicI64
+        }
+
+        #[async_trait]
+        impl Intercept for MockIntercept {
+        }
         let rb = RBatis::new();
         rb.init(MockDriver {}, "test").unwrap();
-        rb.intercepts.push(Arc::new(MockIntercept {}));
+        rb.intercepts.push(Arc::new(MockIntercept {
+            inner:AtomicI64::new(0),
+        }));
         let m = rb.get_intercept::<MockIntercept>();
         assert_eq!(m.is_some(),true);
         println!("{}",m.unwrap().name());
+        let m=m.unwrap();
+        m.inner.store(1,Ordering::SeqCst);
+        assert_eq!(m.inner.load(Ordering::Relaxed),1);
     }
 }
