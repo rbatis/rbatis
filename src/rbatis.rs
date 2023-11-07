@@ -217,7 +217,7 @@ impl RBatis {
 
     /// get intercept from name
     /// the default name just like `let name = std::any::type_name::<LogInterceptor>()`
-    pub fn get_intercept(&self, name: &str) -> Option<&dyn Intercept> {
+    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
         for x in self.intercepts.iter() {
             if name == x.name() {
                 return Some(x.as_ref());
@@ -226,7 +226,23 @@ impl RBatis {
         return None;
     }
 
-    pub fn get_intercept_type<T>(&self) -> Option<&T> {
+    ///  ```rust
+    /// use std::sync::Arc;
+    /// use async_trait::async_trait;
+    /// use rbatis::RBatis;
+    /// use rbatis::intercept::{Intercept};
+    ///     #[derive(Debug)]
+    ///     pub struct MockIntercept {
+    ///     }
+    /// #[async_trait]
+    /// impl Intercept for MockIntercept {
+    /// }
+    ///  //use get_intercept_type
+    ///  let mut rb = RBatis::new();
+    ///  rb.set_intercepts(vec![Arc::new(MockIntercept{})]);
+    ///  let m= rb.get_intercept::<MockIntercept>();
+    /// ```
+    pub fn get_intercept<T>(&self) -> Option<&T> {
         let name = std::any::type_name::<T>();
         for x in self.intercepts.iter() {
             if name == x.name() {

@@ -132,7 +132,7 @@ impl LogInterceptor {
 impl From<&RBatis> for Option<&LogInterceptor> {
     fn from(value: &RBatis) -> Self {
         let name = std::any::type_name::<LogInterceptor>();
-        let r = value.get_intercept(name);
+        let r = value.get_intercept_dyn(name);
         match r {
             None => {
                 None

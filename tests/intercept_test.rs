@@ -188,11 +188,9 @@ mod test {
     }
     #[test]
     fn test_mock_intercept() {
-        log::set_logger(&Logger {})
-            .map(|()| log::set_max_level(LevelFilter::Info))
-            .unwrap();
         let rb = RBatis::new();
         rb.init(MockDriver {}, "test").unwrap();
+        rb.intercepts.clear();
         rb.intercepts.push(Arc::new(MockIntercept {}));
         let f = async move {
             let r = rb.exec("select * from table", vec![]).await.unwrap();
@@ -206,5 +204,18 @@ mod test {
             );
         };
         block_on(f);
+    }
+
+    #[test]
+    fn test_get_intercept_type() {
+        log::set_logger(&Logger {})
+            .map(|()| log::set_max_level(LevelFilter::Info))
+            .unwrap();
+        let rb = RBatis::new();
+        rb.init(MockDriver {}, "test").unwrap();
+        rb.intercepts.push(Arc::new(MockIntercept {}));
+        let m = rb.get_intercept::<MockIntercept>();
+        assert_eq!(m.is_some(),true);
+        println!("{}",m.unwrap().name());
     }
 }
