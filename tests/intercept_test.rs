@@ -187,6 +187,7 @@ mod test {
             Ok(false)
         }
     }
+
     #[test]
     fn test_mock_intercept() {
         let rb = RBatis::new();
@@ -211,22 +212,21 @@ mod test {
     fn test_get_intercept_type() {
         #[derive(Debug)]
         pub struct MockIntercept {
-            pub inner:AtomicI64
+            pub inner: AtomicI64,
         }
 
         #[async_trait]
-        impl Intercept for MockIntercept {
-        }
+        impl Intercept for MockIntercept {}
         let rb = RBatis::new();
         rb.init(MockDriver {}, "test").unwrap();
         rb.intercepts.push(Arc::new(MockIntercept {
-            inner:AtomicI64::new(0),
+            inner: AtomicI64::new(0),
         }));
         let m = rb.get_intercept::<MockIntercept>();
-        assert_eq!(m.is_some(),true);
-        println!("{}",m.unwrap().name());
-        let m=m.unwrap();
-        m.inner.store(1,Ordering::SeqCst);
-        assert_eq!(m.inner.load(Ordering::Relaxed),1);
+        assert_eq!(m.is_some(), true);
+        println!("{}", m.unwrap().name());
+        let m = m.unwrap();
+        m.inner.store(1, Ordering::SeqCst);
+        assert_eq!(m.inner.load(Ordering::Relaxed), 1);
     }
 }
