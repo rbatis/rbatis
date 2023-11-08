@@ -54,10 +54,10 @@ impl Encode for Timestamptz {
             year: 2000,
         });
         let dt = fastdate::DateTime::from_timestamp_millis(self.0);
-        let mut micros = 0;
-        if dt >= epoch{
+        let micros;
+        if dt >= epoch {
             micros = (dt - epoch).as_micros() as i64;
-        }else{
+        } else {
             micros = (epoch - dt).as_micros() as i64 * -1;
         }
         micros.encode(buf)
