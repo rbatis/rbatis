@@ -53,8 +53,14 @@ impl Encode for Timestamptz {
             mon: 1,
             year: 2000,
         });
-        let d = fastdate::DateTime::from_timestamp_millis(self.0) - epoch;
-        (d.as_micros() as i64).encode(buf)
+        let dt = fastdate::DateTime::from_timestamp_millis(self.0);
+        let mut micros = 0;
+        if dt >= epoch{
+            micros = (dt - epoch).as_micros() as i64;
+        }else{
+            micros = (epoch - dt).as_micros() as i64 * -1;
+        }
+        micros.encode(buf)
     }
 }
 
@@ -65,7 +71,7 @@ impl Decode for Timestamptz {
                 let mut buf = Cursor::new(value.as_bytes()?);
                 // TIME is encoded as the microseconds since midnight
                 let us = buf.read_i64::<BigEndian>()?;
-                // Binary is UTC time
+                // TODO offset_seconds from connection params
                 let offset_seconds = offset_sec();
                 // TIMESTAMP is encoded as the microseconds since the epoch
                 let epoch = fastdate::DateTime::from(fastdate::Date {
