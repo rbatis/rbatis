@@ -13,8 +13,14 @@ impl Encode for Timestamp {
             mon: 1,
             year: 2000,
         });
-        let d = fastdate::DateTime::from_timestamp_millis(self.0) - epoch;
-        (d.as_micros() as i64).encode(buf)
+        let dt = fastdate::DateTime::from_timestamp_millis(self.0);
+        let mut micros = 0;
+        if dt >= epoch{
+            micros = (dt - epoch).as_micros() as i64;
+        }else{
+            micros = (epoch - dt).as_micros() as i64 * -1;
+        }
+        micros.encode(buf)
     }
 }
 
