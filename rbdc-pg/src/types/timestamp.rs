@@ -14,7 +14,7 @@ impl Encode for Timestamp {
             year: 2000,
         });
         let dt = fastdate::DateTime::from_timestamp_millis(self.0);
-        let mut micros = 0;
+        let  micros;
         if dt >= epoch{
             micros = (dt - epoch).as_micros() as i64;
         }else{
