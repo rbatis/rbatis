@@ -8,11 +8,30 @@ use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::str::FromStr;
 use byteorder::{BigEndian, ReadBytesExt};
+use fastdate::offset_sec;
 
 /// (timestamp,offset sec)
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timestamptz")]
 pub struct Timestamptz(pub i64, pub i32);
+
+impl Timestamptz {
+    pub fn now() -> Self {
+        let now = fastdate::DateTime::now();
+        Self {
+            0: now.unix_timestamp_millis(),
+            1: now.offset(),
+        }
+    }
+
+    pub fn utc() -> Self {
+        let now = fastdate::DateTime::utc();
+        Self {
+            0: now.unix_timestamp_millis(),
+            1: 0,
+        }
+    }
+}
 
 
 impl Display for Timestamptz {
@@ -23,13 +42,19 @@ impl Display for Timestamptz {
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::I64(arg.0),Value::I32(arg.1)])))
+        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::I64(arg.0), Value::I32(arg.1)])))
     }
 }
 
 impl Encode for Timestamptz {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        self.0.encode(buf)
+        let epoch = fastdate::DateTime::from(fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2000,
+        });
+        let d = fastdate::DateTime::from_timestamp_millis(self.0) - epoch;
+        (d.as_micros() as i64).encode(buf)
     }
 }
 
@@ -41,7 +66,7 @@ impl Decode for Timestamptz {
                 // TIME is encoded as the microseconds since midnight
                 let us = buf.read_i64::<BigEndian>()?;
                 // Binary is UTC time
-                let offset_seconds = 0;
+                let offset_seconds = offset_sec();
                 // TIMESTAMP is encoded as the microseconds since the epoch
                 let epoch = fastdate::DateTime::from(fastdate::Date {
                     day: 1,
@@ -55,12 +80,12 @@ impl Decode for Timestamptz {
                         epoch + std::time::Duration::from_micros(us as u64)
                     }
                 };
-                Timestamptz(v.unix_timestamp_millis() , offset_seconds)
+                Timestamptz(v.unix_timestamp_millis(), offset_seconds)
             }
             PgValueFormat::Text => {
                 let s = value.as_str()?;
                 let date = fastdate::DateTime::from_str(s)?;
-                Timestamptz(date.unix_timestamp_millis() , date.offset())
+                Timestamptz(date.unix_timestamp_millis(), date.offset())
             }
         })
     }
