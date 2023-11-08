@@ -63,7 +63,13 @@ pub(crate) fn f64_decode(value: MySqlValue) -> Result<f64, Error> {
 
 pub(crate) fn decode_timestamp(value: MySqlValue) -> Result<String, Error> {
     Ok(match value.format() {
-        MySqlValueFormat::Text => value.as_str()?.to_string(),
+        MySqlValueFormat::Text => {
+            let mut v = value.as_str()?.to_string();
+            if !v.ends_with("Z") {
+                v.push_str("Z");
+            }
+            v
+        }
         MySqlValueFormat::Binary => {
             let buf = value.as_bytes()?;
             let len = buf[0];
@@ -73,7 +79,7 @@ pub(crate) fn decode_timestamp(value: MySqlValue) -> Result<String, Error> {
             } else {
                 "00:00:00".to_string()
             };
-            date + " " + &dt
+            date + " " + &dt + "Z"
         }
     })
 }
@@ -137,7 +143,7 @@ pub(crate) fn decode_year_buf(buf: &[u8]) -> Result<String, Error> {
         // zero buffer means a zero date (null)
         return Ok("".to_string());
     }
-    Ok(format!("{:0>4}", LittleEndian::read_u16(buf) as i32,))
+    Ok(format!("{:0>4}", LittleEndian::read_u16(buf) as i32, ))
 }
 
 pub(crate) fn decode_time_buf(_: u8, mut buf: &[u8]) -> Result<String, Error> {
