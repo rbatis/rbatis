@@ -5,6 +5,7 @@ mod test {
     use rbs::Value;
     use std::cmp::Ordering;
     use serde::{Deserialize, Serialize};
+    use rbdc::Timestamp;
 
     #[test]
     fn test_ser_i32() {
@@ -200,5 +201,29 @@ mod test {
         let v = rbs::to_value!(1i8);
         let d: u64 = rbs::from_value(v).unwrap();
         assert_eq!(d, 1);
+    }
+
+    #[test]
+    fn test_ser_newtype_struct() {
+        #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+        pub struct A(i32);
+        let v = rbs::to_value!(A(1));
+        assert_eq!(v, Value::Ext("A",Box::new(Value::I32(1))));
+    }
+
+    #[test]
+    fn test_ser_newtype_struct_timestamp() {
+        let v = rbs::to_value!(Timestamp(1));
+        assert_eq!(v, Value::Ext("Timestamp",Box::new(Value::I64(1))));
+    }
+
+    #[test]
+    fn test_ser_newtype_struct_timestamp_tz() {
+        #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+        #[serde(rename = "Timestamptz")]
+        pub struct Timestamptz(pub i64, pub i32);
+
+        let v = rbs::to_value!(Timestamptz(1,1));
+        assert_eq!(v, Value::Ext("Timestamptz",Box::new(Value::Array(vec![Value::I64(1),Value::I32(1)]))));
     }
 }

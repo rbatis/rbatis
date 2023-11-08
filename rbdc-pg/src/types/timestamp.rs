@@ -8,15 +8,13 @@ use std::str::FromStr;
 
 impl Encode for Timestamp {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
-        let v = 1000
-            * (self.0 as i64
-                - fastdate::DateTime::from(fastdate::Date {
-                    day: 1,
-                    mon: 1,
-                    year: 2000,
-                })
-                .unix_timestamp_millis());
-        v.encode(buf)
+        let epoch = fastdate::DateTime::from(fastdate::Date {
+            day: 1,
+            mon: 1,
+            year: 2000,
+        });
+        let d = fastdate::DateTime::from_timestamp_millis(self.0) - epoch;
+        (d.as_micros() as i64).encode(buf)
     }
 }
 

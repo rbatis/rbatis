@@ -10,7 +10,13 @@ use std::str::FromStr;
 pub struct Timestamp(pub i64);
 
 impl Timestamp{
+
+    #[deprecated(note = "please use utc()")]
     pub fn now()->Self{
+        Self(fastdate::DateTime::utc().unix_timestamp_millis())
+    }
+    /// utc time
+    pub fn utc()->Self{
         Self(fastdate::DateTime::utc().unix_timestamp_millis())
     }
 }
