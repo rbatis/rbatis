@@ -230,7 +230,7 @@ mod test {
     #[test]
     fn test_de_null(){
         #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-        pub struct MockTable {
+        struct MockTable {
             pub id: Option<String>,
             pub name: Option<String>,
         }
