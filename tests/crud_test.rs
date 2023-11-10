@@ -28,6 +28,9 @@ mod test {
     use std::sync::Arc;
     use std::sync::atomic::{AtomicI32, Ordering};
     use dark_std::sync::SyncVec;
+    use rbdc::pool::conn_manager::ConnManager;
+    use rbdc::pool::Pool;
+    use rbdc_pool_mobc::MobcPool;
 
     #[derive(Debug)]
     pub struct MockIntercept {
@@ -254,6 +257,32 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             rb.link(MockDriver {}, "test").await.unwrap();
+        };
+        block_on(f);
+    }
+
+
+    #[test]
+    fn test_init_option() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let mut opts =MockConnectOptions{};
+            opts.set_uri("test");
+            rb.init_option::<MockDriver, MockConnectOptions, MobcPool>(MockDriver {},opts).unwrap();
+            rb.acquire().await.unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_init_pool() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let mut opts =MockConnectOptions{};
+            opts.set_uri("test");
+            let pool:MobcPool = MobcPool::new(ConnManager::new_opt_box(Box::new(MockDriver {}), Box::new(opts))).unwrap();
+            rb.init_pool(pool).unwrap();
+            rb.acquire().await.unwrap();
         };
         block_on(f);
     }
