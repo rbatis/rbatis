@@ -79,7 +79,7 @@ mod test {
 
     #[test]
     fn test_ser_de() {
-        let dt = Timestamp::now();
+        let dt = Timestamp::utc();
         let v = serde_json::to_value(&dt).unwrap();
         let new_dt: Timestamp = serde_json::from_value(v).unwrap();
         assert_eq!(new_dt, dt);
