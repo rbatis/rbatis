@@ -15,7 +15,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 
 * High-performance: Compile time [Dynamic SQL](dyn_sql.md),Based on Future/Tokio, Connection Pool
 * Reliability:  Rust Safe Code,precompile: `#{arg}`, Direct replacement:`${arg}`, unify `?` placeholders(support all driver)
-* Productivity: Powerful ([Interceptor interface](https://github.com/rbatis/rbatis/blob/master/src/plugin/intercept_log.rs)),  `#[py_sql]` ,  `#[html_sql] (just like mybatis3)`, `curd!`,  [RBDC driver](https://crates.io/crates/rbdc) ([rbdc-mysql](https://crates.io/crates/rbdc-mysql),[rbdc-pg](https://crates.io/crates/rbdc-pg),[rbdc-sqlite](https://crates.io/crates/rbdc-sqlite) and more),[Table synchronize plugin](https://rbatis.github.io/rbatis.io/#/v4/?id=plugin-table-sync),[abs_admin project](https://github.com/rbatis/abs_admin)
+* Productivity: Powerful [Interceptor interface](https://github.com/rbatis/rbatis/blob/master/src/plugin/intercept_log.rs),  `#[py_sql]` ,  `#[html_sql] (just like mybatis3)`, `curd!`,  [RBDC driver](https://crates.io/crates/rbdc) ([rbdc-mysql](https://crates.io/crates/rbdc-mysql),[rbdc-pg](https://crates.io/crates/rbdc-pg),[rbdc-sqlite](https://crates.io/crates/rbdc-sqlite),[Table synchronize plugin](https://rbatis.github.io/rbatis.io/#/v4/?id=plugin-table-sync),[abs_admin project](https://github.com/rbatis/abs_admin)
 * maintainability: The RBDC driver supports custom drivers, custom connection pool,support third-party driver package
 
 ###### Thanks to ```SQLX, deadpool,mobc, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4 is Inspired and supported by these frameworks.**
