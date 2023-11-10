@@ -248,6 +248,26 @@ mod test {
     }
 
     crud!(MockTable {});
+
+    #[test]
+    fn test_link() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.link(MockDriver {}, "test").await.unwrap();
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_try_acq() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            rb.try_acquire().await.unwrap();
+        };
+        block_on(f);
+    }
+
     #[test]
     fn test_insert() {
         let f = async move {
