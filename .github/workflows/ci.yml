@@ -35,6 +35,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 #      - name: Run cargo release test
 #        uses: actions-rs/cargo@v1
 #        with:
