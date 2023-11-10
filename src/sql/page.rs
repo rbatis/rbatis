@@ -4,8 +4,8 @@ use std::fmt::{Debug, Display, Formatter};
 /// default 10
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
 
-///Page interface, support get_pages() and offset()
-pub trait IPageRequest: Send+Sync {
+///Page interface
+pub trait IPageRequest: Send + Sync {
     fn page_size(&self) -> u64;
     fn page_no(&self) -> u64;
     fn total(&self) -> u64;
@@ -15,6 +15,7 @@ pub trait IPageRequest: Send+Sync {
 
     ///Control whether to execute count statements to count the total number
     fn do_count(&self) -> bool;
+
 
     ///sum pages
     fn pages(&self) -> u64 {
@@ -27,6 +28,7 @@ pub trait IPageRequest: Send+Sync {
         }
         return pages;
     }
+
     ///sum offset
     fn offset(&self) -> u64 {
         if self.page_no() > 0 {
@@ -54,7 +56,7 @@ pub trait IPageRequest: Send+Sync {
     fn set_search_count(&mut self, arg: bool);
 }
 
-///Page interface, support get_pages() and offset()
+///Page interface
 pub trait IPage<T>: IPageRequest {
     fn get_records(&self) -> &Vec<T>;
     fn get_records_mut(&mut self) -> &mut Vec<T>;
@@ -62,13 +64,11 @@ pub trait IPage<T>: IPageRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub struct Page<T: Send+Sync> {
+pub struct Page<T: Send + Sync> {
     /// data
     pub records: Vec<T>,
     /// total num
     pub total: u64,
-    /// pages
-    pub pages: u64,
     /// current page index
     pub page_no: u64,
     /// default 10
@@ -182,7 +182,7 @@ impl IPageRequest for PageRequest {
     }
 }
 
-impl<T: Send+Sync> Page<T> {
+impl<T: Send + Sync> Page<T> {
     pub fn new(current: u64, page_size: u64) -> Self {
         return Page::new_total(current, page_size, 0);
     }
@@ -198,13 +198,6 @@ impl<T: Send+Sync> Page<T> {
         if page_no < 1 {
             return Self {
                 total,
-                pages: {
-                    let mut pages = total / page_size;
-                    if total % page_size != 0 {
-                        pages += 1;
-                    }
-                    pages
-                },
                 page_size: page_size,
                 page_no: 1 as u64,
                 records: vec![],
@@ -213,13 +206,6 @@ impl<T: Send+Sync> Page<T> {
         }
         return Self {
             total,
-            pages: {
-                let mut pages = total / page_size;
-                if total % page_size != 0 {
-                    pages += 1;
-                }
-                pages
-            },
             page_size,
             page_no,
             records: vec![],
@@ -229,10 +215,10 @@ impl<T: Send+Sync> Page<T> {
 
     /// create Vec<Page> from data
     pub fn make_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
-        let total = data.len();
+        let total = data.len() as u64;
         let mut result = vec![];
-        let page = Page::<T>::new_total(1, page_size, total as u64);
-        for idx in 0..page.pages {
+        let pages = PageRequest::new(1, page_size).set_total(total).pages();
+        for idx in 0..pages {
             let mut current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
             for _ in current_page.offset()..current_page.offset_limit() {
                 current_page.records.push(data.remove(0));
@@ -245,9 +231,9 @@ impl<T: Send+Sync> Page<T> {
     /// create (Vec<offset,limit>) from total,page_size
     pub fn make_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
         let mut result = vec![];
-        let page = Page::<T>::new_total(1, page_size, total as u64);
-        for idx in 0..page.pages {
-            let current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
+        let pages = PageRequest::new(1, page_size).set_total(total).pages();
+        for idx in 0..pages {
+            let current_page = Page::<T>::new_total(idx + 1, page_size, total);
             result.push((current_page.offset(), current_page.offset_limit()));
         }
         result
@@ -275,12 +261,11 @@ impl<T: Send+Sync> Page<T> {
     }
 }
 
-impl<T: Send+Sync> Default for Page<T> {
+impl<T: Send + Sync> Default for Page<T> {
     fn default() -> Self {
         return Page {
             records: vec![],
             total: 0,
-            pages: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             do_count: true,
@@ -288,7 +273,7 @@ impl<T: Send+Sync> Default for Page<T> {
     }
 }
 
-impl<T: Send+Sync> IPageRequest for Page<T> {
+impl<T: Send + Sync> IPageRequest for Page<T> {
     fn page_size(&self) -> u64 {
         self.page_size
     }
@@ -328,7 +313,7 @@ impl<T: Send+Sync> IPageRequest for Page<T> {
     }
 }
 
-impl<T: Send+Sync> IPage<T> for Page<T> {
+impl<T: Send + Sync> IPage<T> for Page<T> {
     fn get_records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
@@ -343,12 +328,11 @@ impl<T: Send+Sync> IPage<T> for Page<T> {
     }
 }
 
-impl<T: Display + Debug + Send+Sync> Display for Page<T> {
+impl<T: Display + Debug + Send + Sync> Display for Page<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Page")
             .field("records", &self.records)
             .field("total", &self.total)
-            .field("pages", &self.pages)
             .field("page_no", &self.page_no)
             .field("page_size", &self.page_size)
             .field("do_count", &self.do_count)
@@ -356,13 +340,12 @@ impl<T: Display + Debug + Send+Sync> Display for Page<T> {
     }
 }
 
-impl<V: Send+Sync> Page<V> {
-    pub fn from<T: Send+Sync>(arg: Page<T>) -> Self
+impl<V: Send + Sync> Page<V> {
+    pub fn from<T: Send + Sync>(arg: Page<T>) -> Self
         where
             V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
-        p.pages = arg.pages;
         p.page_no = arg.page_no;
         p.page_size = arg.page_size;
         p.total = arg.total;
@@ -384,22 +367,6 @@ mod test {
 
 
     #[test]
-    fn test_page_zero() {
-        let mut page = Page::<i32>::new_total(1, 10, 0);
-        page.records = vec![];
-        println!("{:?}", page);
-        assert_eq!(page.pages, 0);
-    }
-
-    #[test]
-    fn test_page() {
-        let mut page = Page::<i32>::new_total(1, 10, 1);
-        page.records = vec![];
-        println!("{:?}", page);
-        assert_eq!(page.pages, 1);
-    }
-
-    #[test]
     fn test_page_into_range() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let ranges = Page::<i32>::make_ranges(v.len() as u64, 3);
@@ -416,6 +383,7 @@ mod test {
     fn test_page_into_pages() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::make_pages(v.clone(), 3);
+        assert_eq!(pages.len(), 3);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
@@ -429,6 +397,7 @@ mod test {
     fn test_page_into_pages_more_than() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::make_pages(v.clone(), 18);
+        assert_eq!(pages.len(), 1);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
@@ -441,7 +410,37 @@ mod test {
     #[test]
     fn test_page_into_pages_zero() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let pages = Page::make_pages(v.clone(), 0);
+        let pages = Page::make_pages(v.clone(), 1);
+        assert_eq!(pages.len(), 9);
+        let mut new_v = vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v, new_v);
+    }
+
+
+    #[test]
+    fn test_page_into_pages_8() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8];
+        let pages = Page::make_pages(v.clone(), 3);
+        assert_eq!(pages.len(), 3);
+        let mut new_v = vec![];
+        for x in pages {
+            for i in x.records {
+                new_v.push(i);
+            }
+        }
+        assert_eq!(v, new_v);
+    }
+
+    #[test]
+    fn test_page_into_pages_10() {
+        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let pages = Page::make_pages(v.clone(), 3);
+        assert_eq!(pages.len(), 4);
         let mut new_v = vec![];
         for x in pages {
             for i in x.records {
