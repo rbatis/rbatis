@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-sqlite"
-version = "4.4.19"
+version = "4.5.0"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -17,8 +17,8 @@ default = ["tls-rustls"]
 tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 [dependencies]
-rbs = { version = "4.4", path = "../rbs" }
-rbdc = { version = "4.4", path = "../rbdc", default-features = false, optional = true }
+rbs = { version = "4.5", path = "../rbs" }
+rbdc = { version = "4.5", path = "../rbdc", default-features = false, optional = true }
 serde = "1.0"
 log = "0.4"
 atoi = "2.0"

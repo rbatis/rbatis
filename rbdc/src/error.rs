@@ -95,11 +95,6 @@ impl From<rbs::Error> for Error {
     }
 }
 
-impl<E: std::fmt::Debug> From<deadpool::managed::PoolError<E>> for Error {
-    fn from(arg: deadpool::managed::PoolError<E>) -> Self {
-        Error::from(format!("{:?}", arg))
-    }
-}
 
 // Format an error message as a `Protocol` error
 #[macro_export]

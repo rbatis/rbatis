@@ -93,12 +93,12 @@ QPS: 885486 QPS/s
 #### default
 ```toml
 #rbatis deps
-rbs = { version = "4.4"}
-rbatis = { version = "4.4"}
-rbdc-sqlite = { version = "4.4" }
-#rbdc-mysql={version="4.4"}
-#rbdc-pg={version="4.4"}
-#rbdc-mssql={version="4.4"}
+rbs = { version = "4.5"}
+rbatis = { version = "4.5"}
+rbdc-sqlite = { version = "4.5" }
+#rbdc-mysql={version="4.5"}
+#rbdc-pg={version="4.5"}
+#rbdc-mssql={version="4.5"}
 
 #other deps
 serde = { version = "1", features = ["derive"] }
@@ -108,12 +108,12 @@ fast_log = "1.6"
 ```
 #### (option) 'native-tls'
 ```toml
-rbs = { version = "4.4" }
-rbdc-sqlite = { version = "4.4", default-features = false, features = ["tls-native-tls"] }
-#rbdc-mysql={version="4.4", default-features = false, features = ["tls-native-tls"]}
-#rbdc-pg={version="4.4", default-features = false, features = ["tls-native-tls"]}
-#rbdc-mssql={version="4.4", default-features = false, features = ["tls-native-tls"]}
-rbatis = { version = "4.4", default-features = false, features = ["tls-native-tls","default_mode"] }
+rbs = { version = "4.5" }
+rbdc-sqlite = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
+#rbdc-mysql={version="4.5", default-features = false, features = ["tls-native-tls"]}
+#rbdc-pg={version="4.5", default-features = false, features = ["tls-native-tls"]}
+#rbdc-mssql={version="4.5", default-features = false, features = ["tls-native-tls"]}
+rbatis = { version = "4.5", default-features = false, features = ["tls-native-tls","default_mode"] }
 #other deps
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }

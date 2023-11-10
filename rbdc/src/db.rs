@@ -4,7 +4,7 @@ use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::any::Any;
 use std::fmt::{Debug, Display, Formatter};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 /// Represents database driver that can be shared between threads, and can therefore implement
 /// a connection pool
@@ -105,6 +105,24 @@ pub trait Connection: Send {
     /// It is recommended to use Option<DataBaseConnection>
     /// and then call take to take ownership and then if let Some(v) = self.inner.take() {v.lose ().await; }
     fn close(&mut self) -> BoxFuture<Result<(), Error>>;
+}
+
+impl Connection for Box<dyn Connection>{
+    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        self.deref_mut().get_rows(sql,params)
+    }
+
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        self.deref_mut().exec(sql,params)
+    }
+
+    fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().ping()
+    }
+
+    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().close()
+    }
 }
 
 /// Result set from executing a query against a statement

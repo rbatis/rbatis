@@ -12,7 +12,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "4.4.21"
+version = "4.5.0"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -36,8 +36,8 @@ tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 
 [dependencies]
-rbatis-codegen = { version = "4.4", path = "rbatis-codegen" }
-rbatis-macro-driver = { version = "4.4", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-codegen = { version = "4.5", path = "rbatis-codegen" }
+rbatis-macro-driver = { version = "4.5", path = "rbatis-macro-driver", default-features = false, optional = true }
 serde = "1"
 #log
 log = "0.4"
@@ -46,8 +46,8 @@ futures = { version = "0.3" }
 #object_id
 hex = "0.4"
 rand = "0.8"
-rbs = { version = "4.4", path = "rbs" }
-rbdc = { version = "4.4", path = "rbdc", default-features = false, optional = true }
+rbs = { version = "4.5", path = "rbs" }
+rbdc = { version = "4.5", path = "rbdc", default-features = false, optional = true }
 dark-std = "0.2"
 async-trait = "0.1.68"
 [dev-dependencies]

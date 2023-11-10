@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-mysql"
-version = "4.4.20"
+version = "4.5.0"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -17,9 +17,9 @@ default = ["tls-rustls"]
 tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 [dependencies]
-rbs = { version = "4.4", path = "../rbs" }
+rbs = { version = "4.5", path = "../rbs" }
 bytes = "1.1.0"
-rbdc = { version = "4.4", path = "../rbdc", default-features = false, optional = true }
+rbdc = { version = "4.5", path = "../rbdc", default-features = false, optional = true }
 serde = "1"
 bitflags = "2.0.2"
 digest = { version = "0.10.0", default-features = false, features = ["std"] }

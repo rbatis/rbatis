@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-macro-driver"
-version = "4.4.24"
+version = "4.5.0"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -23,10 +23,10 @@ proc-macro = true
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
-rbatis-codegen = { version = "4.4", path = "../rbatis-codegen", optional = true }
+rbatis-codegen = { version = "4.5", path = "../rbatis-codegen", optional = true }
 rust-format = { version = "0.3.4", optional = true }
 
 [dev-dependencies]
-rbs = { version = "4.4", path = "../rbs" }
-rbatis = { version = "4.4", path = "../"}
+rbs = { version = "4.5", path = "../rbs" }
+rbatis = { version = "4.5", path = "../"}
 serde = "1.0"
