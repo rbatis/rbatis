@@ -33,6 +33,3 @@ pub trait Pool: Sync + Send + Debug {
     /// get driver_type from manager: ConnManager
     fn driver_type(&self) -> &str;
 }
-
-#[cfg(test)]
-mod test {}
