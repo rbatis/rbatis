@@ -46,4 +46,4 @@ itoa = "1.0"
 bigdecimal = {version = "0.4.1",features = ["serde"]}
 lru = "0.12.0"
 once_cell = "1.18.0"
-mobc = "0.8"
+mobc = {version = "0.8",features = ["tokio"]}
