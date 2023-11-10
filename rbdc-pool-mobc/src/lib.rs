@@ -60,7 +60,7 @@ impl Pool for MobcPool {
             if state.in_use < state.max_open {
                 d = Duration::from_secs(10);
             } else {
-                return Err(Error::from("get timeout"));
+                return Err(Error::from("Time out in the connection pool"));
             }
         }
         let v = self.inner.get_timeout(d).await.map_err(|e| Error::from(e.to_string()))?;
