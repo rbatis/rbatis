@@ -226,4 +226,15 @@ mod test {
         let v = rbs::to_value!(Timestamptz(1,1));
         assert_eq!(v, Value::Ext("Timestamptz",Box::new(Value::Array(vec![Value::I64(1),Value::I32(1)]))));
     }
+
+    #[test]
+    fn test_de_null(){
+        #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+        pub struct MockTable {
+            pub id: Option<String>,
+            pub name: Option<String>,
+        }
+        let v:Option<MockTable>=rbs::from_value(Value::Null).unwrap();
+        assert_eq!(v.is_none(),true);
+    }
 }
