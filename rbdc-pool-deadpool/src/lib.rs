@@ -128,20 +128,40 @@ impl deadpool::managed::Manager for ConnManagerProxy {
 
 impl db::Connection for ConnManagerProxy {
     fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
         self.conn.as_mut().unwrap().get_rows(sql, params)
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
         self.conn.as_mut().unwrap().exec(sql, params)
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
         Box::pin(async {
             self.conn.as_mut().unwrap().ping().await
         })
     }
 
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
         Box::pin(async {
             self.conn.as_mut().unwrap().close().await
         })

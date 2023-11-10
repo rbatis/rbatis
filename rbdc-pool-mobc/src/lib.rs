@@ -15,12 +15,13 @@ pub struct MobcPool {
     pub manager: ConnManagerProxy,
     pub inner: mobc::Pool<ConnManagerProxy>,
 }
+
 pub struct ConnManagerProxy {
     inner: ConnManager,
     conn: Option<mobc::Connection<ConnManagerProxy>>,
 }
 
-impl std::fmt::Debug for ConnManagerProxy{
+impl std::fmt::Debug for ConnManagerProxy {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.inner.fmt(f)
     }
@@ -82,17 +83,16 @@ impl Pool for MobcPool {
     async fn state(&self) -> Value {
         let mut m = ValueMap::new();
         let state = self.inner.state().await;
-        m.insert("max_open".to_string().into(),state.max_open.into());
-        m.insert("connections".to_string().into(),state.connections.into());
-        m.insert("in_use".to_string().into(),state.in_use.into());
-        m.insert("idle".to_string().into(),state.idle.into());
-        m.insert("wait_count".to_string().into(),state.wait_count.into());
-        m.insert("wait_duration".to_string().into(),to_value!(state.wait_duration));
-        m.insert("max_idle_closed".to_string().into(),state.max_idle_closed.into());
-        m.insert("max_lifetime_closed".to_string().into(),state.max_lifetime_closed.into());
+        m.insert("max_open".to_string().into(), state.max_open.into());
+        m.insert("connections".to_string().into(), state.connections.into());
+        m.insert("in_use".to_string().into(), state.in_use.into());
+        m.insert("idle".to_string().into(), state.idle.into());
+        m.insert("wait_count".to_string().into(), state.wait_count.into());
+        m.insert("wait_duration".to_string().into(), to_value!(state.wait_duration));
+        m.insert("max_idle_closed".to_string().into(), state.max_idle_closed.into());
+        m.insert("max_lifetime_closed".to_string().into(), state.max_lifetime_closed.into());
         Value::Map(m)
     }
-
 }
 
 #[async_trait]
@@ -111,19 +111,39 @@ impl mobc::Manager for ConnManagerProxy {
 
 impl Connection for ConnManagerProxy {
     fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        self.conn.as_mut().expect("conn is none").get_rows(sql, params)
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
+        self.conn.as_mut().unwrap().get_rows(sql, params)
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        self.conn.as_mut().expect("conn is none").exec(sql, params)
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
+        self.conn.as_mut().unwrap().exec(sql, params)
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.conn.as_mut().expect("conn is none").ping()
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
+        self.conn.as_mut().unwrap().ping()
     }
 
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.conn.as_mut().expect("conn is none").close()
+        if self.conn.is_none() {
+            return Box::pin(async {
+                Err(Error::from("conn is drop"))
+            });
+        }
+        self.conn.as_mut().unwrap().close()
     }
 }
 
@@ -131,7 +151,5 @@ impl Connection for ConnManagerProxy {
 #[cfg(test)]
 mod test {
     #[test]
-    fn test() {
-
-    }
+    fn test() {}
 }
