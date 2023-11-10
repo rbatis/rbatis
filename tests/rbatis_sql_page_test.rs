@@ -21,7 +21,7 @@ mod tests {
                 data[i][3] != 0,
             );
             let mut pr = PageRequest::new_total(page_no, page_size, total);
-            pr = pr.set_search_count(search_count);
+            pr = pr.set_do_count(search_count);
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
             assert_eq!(pr.total(), total);
@@ -35,7 +35,7 @@ mod tests {
                     Some(page_size)
                 },
             );
-            pr = pr.set_search_count(search_count);
+            pr = pr.set_do_count(search_count);
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
             assert_eq!(pr.do_count(), search_count);
@@ -45,8 +45,8 @@ mod tests {
                 .set_page_no(page_no)
                 .set_page_size(page_size)
                 .set_total(total)
-                .set_search_count(search_count);
-            pr = pr.set_search_count(search_count);
+                .set_do_count(search_count);
+            pr = pr.set_do_count(search_count);
             assert_eq!(pr.page_size(), page_size);
             assert_eq!(pr.page_no(), if page_no < 1 { 1 } else { page_no });
             assert_eq!(pr.total(), total);
