@@ -35,12 +35,14 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+      - name: Run cargo tarpaulin
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --out xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-#      - name: Run cargo release test
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: test
-#          args: --release
+        with:
+          file: cobertura.xml
+
