@@ -13,7 +13,6 @@ pub mod types;
 pub mod util;
 pub use error::*;
 pub use util::*;
-
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
