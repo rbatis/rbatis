@@ -1,5 +1,6 @@
  init pool by DBPoolOptions and Pool
- for example:
+ 
+* for example:
 ```
  use rbatis::RBatis;
  use rbdc_pool_mobc::MobcPool;
