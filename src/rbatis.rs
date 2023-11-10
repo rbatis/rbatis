@@ -188,7 +188,7 @@ impl RBatis {
 
     /// try get an DataBase Connection used for the next step
     pub async fn try_acquire(&self) -> Result<RBatisConnExecutor, Error> {
-        self.try_acquire_timeout(Duration::from_secs(10)).await
+        self.try_acquire_timeout(Duration::from_secs(5)).await
     }
 
     /// try get an DataBase Connection used for the next step
