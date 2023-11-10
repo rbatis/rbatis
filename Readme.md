@@ -4,6 +4,7 @@
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
 [![](https://img.shields.io/crates/d/rbatis)](https://crates.io/crates/rbatis)
 [![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
+[![codecov](https://codecov.io/gh/rbatis/rbatis/graph/badge.svg?token=VAVPXSHoff)](https://codecov.io/gh/rbatis/rbatis)
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
 [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
