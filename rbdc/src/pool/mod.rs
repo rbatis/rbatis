@@ -11,11 +11,14 @@ use rbs::Value;
 
 #[async_trait]
 pub trait Pool: Sync + Send + Debug {
+
+    /// create an Pool,use ConnManager
     fn new(manager: ConnManager) -> Result<Self, Error> where Self: Sized;
 
     /// get an connection from pool
     async fn get(&self) -> Result<Box<dyn Connection>, Error>;
 
+    /// get timeout from pool
     async fn get_timeout(&self, d: Duration) -> Result<Box<dyn Connection>, Error>;
 
     async fn set_conn_max_lifetime(&self, max_lifetime: Option<Duration>);
