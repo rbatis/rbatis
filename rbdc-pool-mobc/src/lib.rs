@@ -2,12 +2,13 @@ use std::fmt::Formatter;
 use std::time::Duration;
 use async_trait::async_trait;
 use futures_core::future::BoxFuture;
-use rbs::Value;
+use rbs::{to_value, Value};
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::Error;
 use rbdc::pool::conn_box::ConnectionBox;
 use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
+use rbs::value::map::ValueMap;
 
 #[derive(Debug)]
 pub struct MobcPool {
@@ -76,6 +77,22 @@ impl Pool for MobcPool {
     fn driver_type(&self) -> &str {
         self.manager.inner.driver_type()
     }
+
+
+    async fn state(&self) -> Value {
+        let mut m = ValueMap::new();
+        let state = self.inner.state().await;
+        m.insert("max_open".to_string().into(),state.max_open.into());
+        m.insert("connections".to_string().into(),state.connections.into());
+        m.insert("in_use".to_string().into(),state.in_use.into());
+        m.insert("idle".to_string().into(),state.idle.into());
+        m.insert("wait_count".to_string().into(),state.wait_count.into());
+        m.insert("wait_duration".to_string().into(),to_value!(state.wait_duration));
+        m.insert("max_idle_closed".to_string().into(),state.max_idle_closed.into());
+        m.insert("max_lifetime_closed".to_string().into(),state.max_lifetime_closed.into());
+        Value::Map(m)
+    }
+
 }
 
 #[async_trait]

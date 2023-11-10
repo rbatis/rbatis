@@ -7,10 +7,11 @@ use crate::Error;
 use crate::pool::conn_manager::ConnManager;
 use std::time::Duration;
 use async_trait::async_trait;
+use rbs::Value;
 
 #[async_trait]
-pub trait Pool:Sync+Send+Debug {
-    fn new(manager: ConnManager) -> Result<Self,Error> where Self: Sized;
+pub trait Pool: Sync + Send + Debug {
+    fn new(manager: ConnManager) -> Result<Self, Error> where Self: Sized;
 
     /// get an connection from pool
     async fn get(&self) -> Result<Box<dyn Connection>, Error>;
@@ -23,11 +24,11 @@ pub trait Pool:Sync+Send+Debug {
 
     async fn set_max_open_conns(&self, n: u64);
 
-    fn driver_type(&self)->&str;
+    ///return state
+    async fn state(&self) -> Value{ Value::Null  }
 
+    fn driver_type(&self) -> &str;
 }
 
 #[cfg(test)]
-mod test {
-
-}
+mod test {}
