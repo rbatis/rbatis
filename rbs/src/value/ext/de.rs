@@ -198,7 +198,7 @@ impl<'de> Deserializer<'de> for Value {
             V: Visitor<'de>,
     {
         match self {
-            Value::Null => visitor.visit_unit(),
+            Value::Null => visitor.visit_none(),
             Value::Bool(v) => visitor.visit_bool(v),
             Value::I32(v) => visitor.visit_i32(v),
             Value::I64(v) => visitor.visit_i64(v),

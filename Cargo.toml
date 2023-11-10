@@ -20,7 +20,7 @@ edition = "2021"
 license = "Apache-2.0"
 categories = ["database"]
 keywords = ["database", "orm", "mysql", "postgres", "sqlite"]
-documentation = "https://rbatis.github.io/rbatis.io"
+documentation = "https://docs.rs/rbatis/latest"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io"
 
