@@ -128,6 +128,13 @@ impl RBatis {
         return Ok(());
     }
 
+    pub fn init_pool<Pool: rbdc::pool::Pool + 'static>(&self, pool: Pool) -> Result<(), Error> {
+        self.pool
+            .set(Box::new(pool))
+            .map_err(|_e| Error::from("pool set fail!"))?;
+        return Ok(());
+    }
+
     #[deprecated(note = "please use init_option()")]
     pub fn init_opt<
         Driver: rbdc::db::Driver + 'static,
@@ -137,7 +144,7 @@ impl RBatis {
         driver: Driver,
         options: ConnectOptions,
     ) -> Result<(), Error> {
-        self.init_option::<Driver, ConnectOptions, MobcPool>(driver,options)
+        self.init_option::<Driver, ConnectOptions, MobcPool>(driver, options)
     }
 
     /// set_intercepts for many
