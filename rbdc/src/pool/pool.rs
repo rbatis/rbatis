@@ -125,12 +125,12 @@ pub struct RBDCManager {
     pub option: Box<dyn ConnectOptions>,
 }
 
-pub struct DropBox {
-    pub manager_proxy: ManagerPorxy,
+pub struct ConnectionBox {
     pub conn: Option<Box<dyn Connection>>,
+    pub manager_proxy: ManagerPorxy,
 }
 
-impl Deref for DropBox {
+impl Deref for ConnectionBox {
     type Target = Box<dyn Connection>;
 
     fn deref(&self) -> &Self::Target {
@@ -138,13 +138,13 @@ impl Deref for DropBox {
     }
 }
 
-impl DerefMut for DropBox {
+impl DerefMut for ConnectionBox {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.conn.as_mut().unwrap()
     }
 }
 
-impl Drop for DropBox {
+impl Drop for ConnectionBox {
     fn drop(&mut self) {
         if let Some(mut conn) = self.conn.take() {
             self.manager_proxy.spawn_task(async move {
@@ -156,11 +156,11 @@ impl Drop for DropBox {
 
 #[async_trait]
 impl Manager for ManagerPorxy {
-    type Type = DropBox;
+    type Type = ConnectionBox;
     type Error = Error;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
-        Ok(DropBox {
+        Ok(ConnectionBox {
             manager_proxy: self.clone(),
             conn: Some(self.driver.connect_opt(self.option.as_ref()).await?),
         })
