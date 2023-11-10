@@ -29,7 +29,7 @@ impl Parse for ParseArgs {
 
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
-///```rust
+///```log
 ///     use rbatis::sql;
 ///     use rbatis::executor::Executor;
 ///     #[derive(serde::Serialize,serde::Deserialize)]
@@ -53,7 +53,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 }
 
 /// py sql create macro,this macro use RB.py_query and RB.py_exec
-///```rust
+///```log
 /// use rbatis::executor::Executor;
 /// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
@@ -63,7 +63,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// async fn py_select_page(rb: &dyn Executor, name: &str) -> Vec<BizActivity> { }
 ///```
 ///  or more example:
-///```rust
+///```log
 /// use rbatis::executor::Executor;
 /// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
@@ -122,7 +122,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
-/// ```rust
+/// ```log
 /// use rbatis::executor::Executor;
 /// use rbatis::html_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
@@ -153,9 +153,9 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
 /// ```
 /// or from file
-/// ```rust
-/// //#[html_sql("xxxx.html")]
-/// //pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// ```log
+/// #[html_sql("xxxx.html")]
+/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
 /// ```
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
