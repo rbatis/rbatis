@@ -17,7 +17,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * Reliability:  Rust Safe Code,precompile: `#{arg}`, Direct replacement:`${arg}`, unify `?` placeholders(support all driver)
 * Productivity: Powerful `Box<dyn Intercept>` ([LogInterceptor](https://github.com/rbatis/rbatis/blob/master/src/plugin/intercept_log.rs)), `#[py_sql]`, Compatible with mybatis3 `#[html_sql]`,`curd!` macro, `Box<dyn Driver>` [RBDC driver](https://crates.io/crates/rbdc) ([rbdc-mysql](https://crates.io/crates/rbdc-mysql),[rbdc-pg](https://crates.io/crates/rbdc-pg),[rbdc-sqlite](https://crates.io/crates/rbdc-sqlite)..and more),[table_sync_plugin](https://rbatis.github.io/rbatis.io/#/v4/?id=plugin-table-sync),[abs_admin project](https://github.com/rbatis/abs_admin)
 
-###### Thanks to ```SQLX, deadpool, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4 is Inspired and supported by these frameworks.**
+###### Thanks to ```SQLX, deadpool,mobc, Tiberius, MyBatis, xorm``` and so on reference design or code implementation. Release of V4 is Inspired and supported by these frameworks.**
 
 
 
@@ -321,7 +321,7 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 # Roadmap
 
 - [x] sqlite table sync plugin(auto create table/column)
-- [ ] connection pool add more dynamically configured parameters
+- [x] customize connection pooling,connection pool add more dynamically configured parameters
 - [ ] More simplified syntax
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
