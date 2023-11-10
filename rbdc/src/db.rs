@@ -125,6 +125,7 @@ impl Connection for Box<dyn Connection>{
     }
 }
 
+
 /// Result set from executing a query against a statement
 pub trait Row: 'static + Send + Debug {
     /// get meta data about this result set

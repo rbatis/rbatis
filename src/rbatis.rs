@@ -12,7 +12,7 @@ use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 use rbdc::pool::conn_manager::ConnManager;
-use rbdc::pool::pool_mobc::MobcPool;
+use rbdc_pool_mobc::MobcPool;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -104,7 +104,7 @@ impl RBatis {
     /// for example:
     ///```
     /// use rbatis::RBatis;
-    /// use rbdc::pool::pool_mobc::MobcPool;
+    /// use rbdc_pool_mobc::MobcPool;
     /// use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
     /// let rb=RBatis::new();
     ///

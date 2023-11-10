@@ -1,14 +1,9 @@
 pub mod conn_manager;
 pub mod conn_box;
 
-#[cfg(feature = "deadpool")]
-pub mod pool_deadpool;
-pub mod pool_mobc;
-
 use std::fmt::Debug;
 use crate::db::Connection;
 use crate::Error;
-use crate::pool::conn_box::ConnectionBox;
 use crate::pool::conn_manager::ConnManager;
 use std::time::Duration;
 use async_trait::async_trait;

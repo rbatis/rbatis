@@ -1,0 +1,13 @@
+[package]
+name = "rbdc-pool-mobc"
+version = "4.5.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1"
+futures-core = { version = "0.3" }
+rbs = { version ="4.5", path = "../rbs" }
+rbdc = { version ="4.5", path = "../rbdc" }
+mobc = {version = "0.8",features = ["tokio"]}
