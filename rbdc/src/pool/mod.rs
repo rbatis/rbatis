@@ -30,6 +30,7 @@ pub trait Pool: Sync + Send + Debug {
     ///return state
     async fn state(&self) -> Value{ Value::Null  }
 
+    /// get driver_type from manager: ConnManager
     fn driver_type(&self) -> &str;
 }
 
