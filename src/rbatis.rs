@@ -6,19 +6,23 @@ use crate::Error;
 use dark_std::sync::SyncVec;
 use rbdc::rt::tokio::sync::Mutex;
 use log::LevelFilter;
-use rbdc::pool::{ManagerPorxy, Pool};
+use rbdc::pool::{Pool};
 use std::fmt::Debug;
+use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use rbdc::pool::conn_manager::ConnManager;
+use rbdc::pool::pool_mobc::MobcPool;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
 pub struct RBatis {
     // the connection pool
-    pub pool: Arc<OnceLock<Pool>>,
+    pub pool: Arc<OnceLock<Box<dyn Pool>>>,
     // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
+
 impl Default for RBatis {
     fn default() -> RBatis {
         RBatis::new()
@@ -65,6 +69,7 @@ impl RBatis {
     }
 
     /// self.init(driver, url)? and self.try_acquire().await? a connection.
+    /// default use MobcPool
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -75,7 +80,8 @@ impl RBatis {
         Ok(())
     }
 
-    /// init pool
+    /// init pool.
+    /// default is MobcPool,if you want other pool please use init_option
     pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -86,38 +92,43 @@ impl RBatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = Pool::new_box(Box::new(driver), option)?;
+        let pool = MobcPool::new(ConnManager::new_opt_box(Box::new(driver), option))?;
         self.pool
-            .set(pool)
+            .set(Box::new(pool))
             .map_err(|_e| Error::from("pool set fail!"))?;
         return Ok(());
     }
 
-    /// init pool
-    pub async fn init_builder<Driver: rbdc::db::Driver + 'static>(
-        &self,
-        builder: rbdc::deadpool::managed::PoolBuilder<
-            ManagerPorxy,
-            rbdc::deadpool::managed::Object<ManagerPorxy>,
-        >,
-        driver: Driver,
-        url: &str,
-    ) -> Result<(), Error> {
-        if url.is_empty() {
-            return Err(Error::from("[rbatis] link url is empty!"));
-        }
-        let mut option = driver.default_option();
-        option.set_uri(url)?;
-        let pool = Pool::new_builder(builder, Box::new(driver), option)?;
-        self.pool
-            .set(pool)
-            .map_err(|_e| Error::from("pool set fail!"))?;
-        return Ok(());
-    }
 
-    /// init pool by DBPoolOptions
+    /// init pool by DBPoolOptions and Pool
     /// for example:
+    ///```
+    /// use rbatis::RBatis;
+    /// use rbdc::pool::pool_mobc::MobcPool;
+    /// use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
+    /// let rb=RBatis::new();
     ///
+    /// let opts=SqliteConnectOptions::new();
+    /// let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, MobcPool>(SqliteDriver{},opts);
+    /// ```
+    ///
+    pub fn init_option<
+        Driver: rbdc::db::Driver + 'static,
+        ConnectOptions: rbdc::db::ConnectOptions,
+        Pool: rbdc::pool::Pool + 'static,
+    >(
+        &self,
+        driver: Driver,
+        option: ConnectOptions,
+    ) -> Result<(), Error> {
+        let pool = Pool::new(ConnManager::new_opt_box(Box::new(driver), Box::new(option)))?;
+        self.pool
+            .set(Box::new(pool))
+            .map_err(|_e| Error::from("pool set fail!"))?;
+        return Ok(());
+    }
+
+    #[deprecated(note = "please use init_option()")]
     pub fn init_opt<
         Driver: rbdc::db::Driver + 'static,
         ConnectOptions: rbdc::db::ConnectOptions,
@@ -126,11 +137,7 @@ impl RBatis {
         driver: Driver,
         options: ConnectOptions,
     ) -> Result<(), Error> {
-        let pool = Pool::new(driver, options)?;
-        self.pool
-            .set(pool)
-            .map_err(|_e| Error::from("pool set fail!"))?;
-        return Ok(());
+        self.init_option::<Driver, ConnectOptions, MobcPool>(driver,options)
     }
 
     /// set_intercepts for many
@@ -147,12 +154,12 @@ impl RBatis {
     /// //rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db");
     /// //rb.get_pool().unwrap().resize(10);
     /// ```
-    pub fn get_pool(&self) -> Result<&Pool, Error> {
+    pub fn get_pool(&self) -> Result<&dyn Pool, Error> {
         let p = self
             .pool
             .get()
             .ok_or_else(|| Error::from("[rbatis] rbatis pool not inited!"))?;
-        return Ok(p);
+        return Ok(p.deref());
     }
 
     /// get driver type
@@ -174,10 +181,13 @@ impl RBatis {
 
     /// try get an DataBase Connection used for the next step
     pub async fn try_acquire(&self) -> Result<RBatisConnExecutor, Error> {
+        self.try_acquire_timeout(Duration::from_secs(0)).await
+    }
+
+    /// try get an DataBase Connection used for the next step
+    pub async fn try_acquire_timeout(&self, d: Duration) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
-        let mut default = pool.inner.timeouts().clone();
-        default.wait = Some(Duration::ZERO);
-        let conn = pool.timeout_get(&default).await?;
+        let conn = pool.get_timeout(d).await?;
         return Ok(RBatisConnExecutor {
             id: new_snowflake_id(),
             conn: Mutex::new(Box::new(conn)),
@@ -262,12 +272,12 @@ impl RBatis {
     ///  rb.set_intercepts(vec![Arc::new(MockIntercept{})]);
     ///  let intercept = rb.get_intercept::<MockIntercept>();
     /// ```
-    pub fn get_intercept<T:Intercept>(&self) -> Option<&T> {
+    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
                 //this is safe,limit by T::name() == item.name
-                let rf= item.as_ref();
+                let rf = item.as_ref();
                 let call: &T = unsafe { std::mem::transmute_copy(&rf) };
                 return Some(call);
             }

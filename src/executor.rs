@@ -399,11 +399,10 @@ impl RBatisTxExecutor {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
-                let rb = arg.rb_ref().clone();
                 let future = callback(arg);
-                if let Ok(pool) = rb.get_pool() {
-                    pool.spawn_task(future);
-                }
+                rbdc::rt::spawn(async move{
+                    future.await;
+                });
             }),
         }
     }
