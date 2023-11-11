@@ -9,11 +9,6 @@ pub trait IPageRequest: Send + Sync {
     fn page_size(&self) -> u64;
     fn page_no(&self) -> u64;
     fn total(&self) -> u64;
-    ///Control whether to execute count statements to count the total number
-    #[deprecated(note = "please use do_count()")]
-    fn search_count(&self) -> bool {
-        self.do_count()
-    }
 
     ///Control whether to execute count statements to count the total number
     fn do_count(&self) -> bool;
@@ -57,6 +52,10 @@ pub trait IPageRequest: Send + Sync {
     ///Control execute select count(1) from table
     fn set_do_count(&mut self, arg: bool);
 
+    #[deprecated(note = "please use do_count()")]
+    fn search_count(&self) -> bool {
+        self.do_count()
+    }
     #[deprecated(note = "please use set_do_count()")]
     fn set_search_count(&mut self, arg: bool){
         self.set_do_count(arg)
@@ -133,10 +132,6 @@ impl PageRequest {
         self.page_no = arg;
         self
     }
-    #[deprecated(note = "please use set_do_count")]
-    pub fn set_search_count(self, arg: bool) -> Self {
-        self.set_do_count(arg)
-    }
 
     /// Control whether to execute count statements to count the total number
     pub fn set_do_count(mut self, arg: bool) -> Self {
@@ -167,10 +162,6 @@ impl IPageRequest for PageRequest {
 
     fn total(&self) -> u64 {
         self.total
-    }
-    /// Control whether to execute count statements to count the total number
-    fn search_count(&self) -> bool {
-        self.do_count
     }
 
     fn do_count(&self) -> bool {
@@ -271,11 +262,6 @@ impl<T: Send + Sync> Page<T> {
         self.do_count = arg;
         self
     }
-
-    #[deprecated(note = "please use set_do_count()")]
-    pub fn set_search_count(self, arg: bool) -> Self {
-        self.set_do_count(arg)
-    }
 }
 
 impl<T: Send + Sync> Default for Page<T> {
@@ -301,11 +287,6 @@ impl<T: Send + Sync> IPageRequest for Page<T> {
 
     fn total(&self) -> u64 {
         self.total
-    }
-    /// Control whether to execute count statements to count the total number
-    ///
-    fn search_count(&self) -> bool {
-        self.do_count
     }
 
     fn do_count(&self) -> bool {
