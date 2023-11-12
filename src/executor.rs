@@ -28,6 +28,7 @@ pub trait RBatisRef: Send + Sync {
     fn rbatis_ref(&self) -> &RBatis {
         self.rb_ref()
     }
+
     fn rb_ref(&self) -> &RBatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
@@ -446,7 +447,7 @@ impl Executor for RBatisTxExecutorGuard {
 
 impl RBatis {
     /// exec sql
-    pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<rbdc::db::ExecResult, Error> {
+    pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error> {
         let conn = self.acquire().await?;
         conn.exec(sql, args).await
     }
