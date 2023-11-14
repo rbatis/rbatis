@@ -5,6 +5,8 @@ pub mod error;
 #[macro_use]
 pub mod ext;
 pub mod io;
+
+#[cfg(feature = "net")]
 pub mod net;
 pub mod pool;
 pub mod rt;
