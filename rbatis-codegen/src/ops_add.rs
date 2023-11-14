@@ -324,7 +324,7 @@ mod test {
     fn test_add() {
         let i: i64 = 1;
         let v = to_value!(1);
-        let r = v.op_add(&i);
+        let r = Value::from(v.op_add(&i));
         assert_eq!(r, Value::from(2));
     }
 }
