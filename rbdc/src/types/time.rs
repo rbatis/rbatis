@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{DateTime, Error};
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
@@ -37,6 +37,12 @@ impl FromStr for Time {
 impl From<Time> for fastdate::Time{
     fn from(value: Time) -> Self {
         value.0
+    }
+}
+
+impl From<DateTime> for Time{
+    fn from(value: DateTime) -> Self {
+        Self(fastdate::Time::from(value.0))
     }
 }
 
