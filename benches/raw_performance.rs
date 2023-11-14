@@ -12,10 +12,11 @@ use futures_core::future::BoxFuture;
 use rbatis::rbatis::RBatis;
 use rbatis::{impl_insert, impl_select};
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
-use rbdc::{block_on, Error};
+use rbdc::{Error};
 use rbs::Value;
 use std::any::Any;
 use test::Bencher;
+use rbdc::rt::block_on;
 
 pub trait QPS {
     fn qps(&self, total: u64);
@@ -72,7 +73,7 @@ fn bench_raw() {
             let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
         });
     };
-    block_on!(f);
+    block_on(f);
 }
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
@@ -103,7 +104,7 @@ fn bench_insert() {
             MockTable::insert(&mut rbatis.clone(), &t).await.unwrap();
         });
     };
-    block_on!(f);
+    block_on(f);
 }
 
 //cargo test --release --color=always --package rbatis --bench raw_performance bench_select --no-fail-fast --  --exact -Z unstable-options --show-output
@@ -120,7 +121,7 @@ fn bench_select() {
             MockTable::select_all(&mut rbatis.clone()).await.unwrap();
         });
     };
-    block_on!(f);
+    block_on(f);
 }
 
 #[derive(Debug, Clone)]
