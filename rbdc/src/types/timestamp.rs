@@ -92,6 +92,12 @@ impl From<DateTime> for Timestamp {
     }
 }
 
+impl Into<DateTime> for Timestamp{
+    fn into(self) -> DateTime {
+        DateTime::from_timestamp_millis(self.0)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::timestamp::Timestamp;
