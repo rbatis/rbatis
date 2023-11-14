@@ -12,7 +12,7 @@ impl Error {
     #[allow(dead_code)]
     #[inline]
     pub fn protocol(err: impl Display) -> Self {
-        Error::E(err.to_string())
+        Error::E(format!("ProtocolError {}", err))
     }
 }
 
@@ -28,8 +28,8 @@ impl std::error::Error for Error {}
 
 impl serde::ser::Error for Error {
     fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
+        where
+            T: Display,
     {
         Self::E(msg.to_string())
     }
@@ -59,6 +59,7 @@ impl From<&str> for Error {
         Error::E(arg.to_string())
     }
 }
+
 impl From<String> for Error {
     fn from(arg: String) -> Self {
         Error::E(arg)
