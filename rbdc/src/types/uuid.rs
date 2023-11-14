@@ -2,6 +2,7 @@ use crate::Error;
 use rbs::Value;
 use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
@@ -61,6 +62,20 @@ impl Default for Uuid{
     }
 }
 
+
+impl Deref for Uuid{
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Uuid{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 #[cfg(test)]
 mod test {
