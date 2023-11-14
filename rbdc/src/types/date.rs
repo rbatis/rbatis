@@ -2,6 +2,7 @@ use crate::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
+use fastdate::DateTime;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Date")]
@@ -36,6 +37,12 @@ impl FromStr for Date {
 impl From<Date> for fastdate::Date{
     fn from(value: Date) -> Self {
         value.0
+    }
+}
+
+impl From<DateTime> for Date{
+    fn from(value: DateTime) -> Self {
+        Date(value.into())
     }
 }
 
