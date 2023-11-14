@@ -133,8 +133,6 @@ async fn configure_tls_connector(
             builder.add_root_certificate(cert);
         }
     }
-
-    #[cfg(not(feature = "_rt-async-std"))]
     let connector = builder.build()?.into();
 
     Ok(connector)
