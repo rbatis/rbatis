@@ -322,9 +322,10 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 # Roadmap
 
-- [x] sqlite table sync plugin(auto create table/column)
+- [x] table sync plugin,auto create table/column (sqlite/mysql/mssql/postgres)
 - [x] customize connection pooling,connection pool add more dynamically configured parameters
-- [ ] More simplified syntax
+- [ ] Specify different trustls/native tls for different drivers through drivers and features
+- [ ] V5 version
 
 # Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
 
