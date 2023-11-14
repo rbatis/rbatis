@@ -1,9 +1,9 @@
+use crate::db::{ConnectOptions, Driver};
+use crate::pool::conn_box::ConnectionBox;
+use crate::Error;
 use std::future::Future;
 use std::ops::Deref;
 use std::sync::Arc;
-use crate::db::{ConnectOptions, Driver};
-use crate::Error;
-use crate::pool::conn_box::ConnectionBox;
 
 #[derive(Clone, Debug)]
 pub struct ConnManager {
@@ -11,13 +11,12 @@ pub struct ConnManager {
     pub option: Arc<Box<dyn ConnectOptions>>,
 }
 
-
 impl ConnManager {
     /// spawn task on runtime
     pub fn spawn_task<T>(&self, task: T)
-        where
-            T: Future + Send + 'static,
-            T::Output: Send + 'static,
+    where
+        T: Future + Send + 'static,
+        T::Output: Send + 'static,
     {
         tokio::spawn(task);
     }
@@ -58,12 +57,8 @@ impl ConnManager {
 
     pub async fn check(&self, mut conn: ConnectionBox) -> Result<ConnectionBox, Error> {
         return match conn.ping().await {
-            Ok(_) => {
-                Ok(conn)
-            }
-            Err(e) => {
-                Err(e)
-            }
-        }
+            Ok(_) => Ok(conn),
+            Err(e) => Err(e),
+        };
     }
 }

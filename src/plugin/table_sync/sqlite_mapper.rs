@@ -1,4 +1,4 @@
-use crate::table_sync::{ColumMapper};
+use crate::table_sync::ColumMapper;
 use rbs::Value;
 
 pub struct SqliteTableMapper {}
@@ -20,7 +20,7 @@ impl ColumMapper for SqliteTableMapper {
                 } else {
                     "TEXT".to_string()
                 }
-            },
+            }
             Value::Binary(_) => "BLOB".to_string(),
             Value::Array(_) => "BLOB".to_string(),
             Value::Map(_) => "BLOB".to_string(),
@@ -37,4 +37,3 @@ impl ColumMapper for SqliteTableMapper {
         }
     }
 }
-

@@ -1,9 +1,9 @@
-use std::ops::{Deref, DerefMut};
+use crate::db::{Connection, ExecResult, Row};
+use crate::pool::conn_manager::ConnManager;
+use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
-use crate::db::{Connection, ExecResult, Row};
-use crate::Error;
-use crate::pool::conn_manager::ConnManager;
+use std::ops::{Deref, DerefMut};
 
 pub struct ConnectionBox {
     pub conn: Option<Box<dyn Connection>>,
@@ -11,7 +11,7 @@ pub struct ConnectionBox {
     pub auto_close: bool,
 }
 
-unsafe impl Sync for ConnectionBox{}
+unsafe impl Sync for ConnectionBox {}
 
 impl Connection for ConnectionBox {
     fn get_rows(

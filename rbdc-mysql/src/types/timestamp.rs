@@ -1,5 +1,5 @@
-use std::str::FromStr;
 use rbdc::date::Date;
+use std::str::FromStr;
 
 use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
@@ -11,7 +11,12 @@ use rbdc::Error;
 impl Encode for Timestamp {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = fastdate::DateTime::from_timestamp_millis(self.0 as i64);
-        let size = date_time_size_hint(datetime.hour(), datetime.minute(), datetime.sec(), datetime.nano());
+        let size = date_time_size_hint(
+            datetime.hour(),
+            datetime.minute(),
+            datetime.sec(),
+            datetime.nano(),
+        );
         buf.push(size as u8);
         let date = Date(fastdate::Date {
             day: datetime.day(),
@@ -55,10 +60,7 @@ impl Decode for Timestamp {
                         hour: 0,
                     }
                 };
-                Self(
-                    fastdate::DateTime::from((date, time))
-                    .unix_timestamp_millis(),
-                )
+                Self(fastdate::DateTime::from((date, time)).unix_timestamp_millis())
             }
         })
     }

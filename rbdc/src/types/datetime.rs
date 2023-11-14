@@ -1,13 +1,13 @@
-use std::cmp;
+use crate::date::Date;
+use crate::types::time::Time;
+use crate::Error;
 use rbs::Value;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::cmp;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Add, Deref, DerefMut, Sub};
 use std::str::FromStr;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use crate::date::Date;
-use crate::Error;
-use crate::types::time::Time;
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct DateTime(pub fastdate::DateTime);
@@ -20,8 +20,8 @@ impl Display for DateTime {
 
 impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         serializer.serialize_newtype_struct("DateTime", &self.0)
     }
@@ -35,8 +35,8 @@ impl Debug for DateTime {
 
 impl<'de> Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -128,16 +128,15 @@ impl DateTime {
         self.0.unix_timestamp_millis()
     }
 
-    pub fn unix_timestamp_nano(&self) -> i128{
+    pub fn unix_timestamp_nano(&self) -> i128 {
         self.0.unix_timestamp_nano()
     }
-
 
     pub fn from_timestamp(sec: i64) -> Self {
         DateTime(fastdate::DateTime::from_timestamp(sec))
     }
 
-    pub fn from_timestamp_micros(micros: i64) -> DateTime{
+    pub fn from_timestamp_micros(micros: i64) -> DateTime {
         DateTime(fastdate::DateTime::from_timestamp_micros(micros))
     }
     pub fn from_timestamp_millis(ms: i64) -> Self {
@@ -158,26 +157,27 @@ impl DateTime {
     ///  rbdc::types::datetime::DateTime::parse("YYYY-MM-DD hh:mm:ss.000000","2022-12-13 11:12:14.123456").unwrap();
     /// ```
     pub fn parse(format: &str, arg: &str) -> Result<DateTime, Error> {
-        Ok(Self(fastdate::DateTime::parse(format,arg).map_err(|e|Error::from(e.to_string()))?))
+        Ok(Self(
+            fastdate::DateTime::parse(format, arg).map_err(|e| Error::from(e.to_string()))?,
+        ))
     }
 
     pub fn week_day(&self) -> u8 {
         self.0.week_day()
     }
-    pub fn nano(&self) -> u32{
+    pub fn nano(&self) -> u32 {
         self.0.nano()
     }
 
-    pub fn ms(&self) -> u16{
+    pub fn ms(&self) -> u16 {
         self.0.ms()
     }
 
-
-    pub fn micro(&self) -> u32{
+    pub fn micro(&self) -> u32 {
         self.0.micro()
     }
 
-    pub fn sec(&self) -> u8{
+    pub fn sec(&self) -> u8 {
         self.0.sec()
     }
 
@@ -211,7 +211,7 @@ impl DateTime {
     }
 
     pub fn from_system_time(s: SystemTime, offset: i32) -> Self {
-        Self(fastdate::DateTime::from_system_time(s,offset))
+        Self(fastdate::DateTime::from_system_time(s, offset))
     }
 
     /// stand "0000-00-00 00:00:00.000000000"
@@ -230,14 +230,13 @@ impl DateTime {
     /// RFC3339 "0000-00-00T00:00:00.000000000Z"
     /// RFC3339 "0000-00-00T00:00:00.000000000+00:00:00"
     pub fn do_display(&self, buf: &mut [u8; 38], add_zone: bool) -> usize {
-        self.0.do_display(buf,add_zone)
+        self.0.do_display(buf, add_zone)
     }
 
     pub fn set_nano(self, nano: u32) -> Self {
         Self(self.0.set_nano(nano))
     }
 }
-
 
 impl Add<Duration> for DateTime {
     type Output = DateTime;
@@ -271,7 +270,6 @@ impl Sub<&Duration> for DateTime {
     }
 }
 
-
 impl Sub<DateTime> for DateTime {
     type Output = Duration;
 
@@ -281,13 +279,11 @@ impl Sub<DateTime> for DateTime {
     }
 }
 
-
 impl From<SystemTime> for DateTime {
     fn from(v: SystemTime) -> DateTime {
         DateTime::from_system_time(v, 0)
     }
 }
-
 
 impl From<DateTime> for SystemTime {
     fn from(v: DateTime) -> SystemTime {
@@ -314,16 +310,15 @@ impl From<Time> for DateTime {
 
 impl From<(Date, Time)> for DateTime {
     fn from(arg: (Date, Time)) -> Self {
-        Self(fastdate::DateTime::from((arg.0.0,arg.1.0)))
+        Self(fastdate::DateTime::from((arg.0 .0, arg.1 .0)))
     }
 }
 
 impl From<(Date, Time, i32)> for DateTime {
     fn from(arg: (Date, Time, i32)) -> Self {
-        Self(fastdate::DateTime::from((arg.0.0,arg.1.0,arg.2)))
+        Self(fastdate::DateTime::from((arg.0 .0, arg.1 .0, arg.2)))
     }
 }
-
 
 impl FromStr for DateTime {
     type Err = Error;
@@ -354,13 +349,13 @@ impl PartialOrd for DateTime {
     }
 }
 
-impl From<DateTime> for fastdate::DateTime{
+impl From<DateTime> for fastdate::DateTime {
     fn from(value: DateTime) -> Self {
         value.0
     }
 }
 
-impl Default for DateTime{
+impl Default for DateTime {
     fn default() -> Self {
         DateTime(fastdate::DateTime::from_timestamp(0))
     }
@@ -368,8 +363,8 @@ impl Default for DateTime{
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
     use crate::datetime::DateTime;
+    use std::str::FromStr;
 
     #[test]
     fn test_ser_de() {
@@ -410,7 +405,10 @@ mod test {
         let dt = DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap();
         let v = rbs::to_value!(&dt.unix_timestamp_millis());
         let new_dt: DateTime = rbs::from_value(v).unwrap();
-        assert_eq!(new_dt, DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap());
+        assert_eq!(
+            new_dt,
+            DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap()
+        );
     }
 
     #[test]
@@ -418,12 +416,15 @@ mod test {
         let dt = DateTime::from_str("2023-10-21T00:15:00.9233333+08:00").unwrap();
         let v = serde_json::to_value(&dt.unix_timestamp_millis()).unwrap();
         let new_dt: DateTime = serde_json::from_value(v).unwrap();
-        assert_eq!(new_dt, DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap());
+        assert_eq!(
+            new_dt,
+            DateTime::from_str("2023-10-20T16:15:00.923Z").unwrap()
+        );
     }
 
     #[test]
     fn test_default() {
         let dt = DateTime::default();
-        println!("{}",dt);
+        println!("{}", dt);
     }
 }

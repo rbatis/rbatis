@@ -11,6 +11,7 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
+    use dark_std::sync::SyncVec;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
@@ -24,7 +25,6 @@ mod test {
     use std::collections::HashMap;
     use std::fmt::{Debug, Formatter};
     use std::sync::Arc;
-    use dark_std::sync::SyncVec;
 
     #[derive(Debug)]
     pub struct MockIntercept {
@@ -205,11 +205,13 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            #[html_sql(r#"<mapper>
+            #[html_sql(
+                r#"<mapper>
             <select id="select_by_condition">
             select ${id},${id},#{id},#{id}
             </select>
-            </mapper>"#)]
+            </mapper>"#
+            )]
             pub async fn test_same_id(rb: &RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }

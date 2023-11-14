@@ -264,8 +264,6 @@ add_self!([u8 u16 u32 u64]);
 add_self!([i8 i16 i32 i64 isize]);
 add_self!([f32 f64]);
 
-
-
 impl Add<String> for String {
     type Output = String;
 
@@ -314,11 +312,10 @@ impl Add<&&String> for &str {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use rbs::{to_value, Value};
     use crate::ops::Add;
+    use rbs::{to_value, Value};
 
     #[test]
     fn test_add() {

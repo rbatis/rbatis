@@ -1,6 +1,6 @@
-use std::future::Future;
 #[cfg(feature = "tls-native-tls")]
 pub use native_tls;
+use std::future::Future;
 
 pub use tokio::{
     self, fs, io::AsyncRead, io::AsyncReadExt, io::AsyncWrite, io::AsyncWriteExt, io::ReadBuf,
@@ -8,9 +8,9 @@ pub use tokio::{
 };
 
 pub fn block_on<T>(task: T)
-    where
-        T: Future + Send + 'static,
-        T::Output: Send + 'static,
+where
+    T: Future + Send + 'static,
+    T::Output: Send + 'static,
 {
     tokio::task::block_in_place(|| {
         tokio::runtime::Builder::new_current_thread()

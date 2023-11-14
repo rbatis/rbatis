@@ -1,14 +1,14 @@
-use std::fmt::Formatter;
-use std::time::Duration;
 use async_trait::async_trait;
 use futures_core::future::BoxFuture;
-use rbs::{to_value, Value};
 use rbdc::db::{Connection, ExecResult, Row};
-use rbdc::Error;
 use rbdc::pool::conn_box::ConnectionBox;
 use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
+use rbdc::Error;
 use rbs::value::map::ValueMap;
+use rbs::{to_value, Value};
+use std::fmt::Formatter;
+use std::time::Duration;
 
 #[derive(Debug)]
 pub struct MobcPool {
@@ -38,7 +38,10 @@ impl From<ConnManager> for ConnManagerProxy {
 
 #[async_trait]
 impl Pool for MobcPool {
-    fn new(manager: ConnManager) -> Result<Self, Error> where Self: Sized {
+    fn new(manager: ConnManager) -> Result<Self, Error>
+    where
+        Self: Sized,
+    {
         Ok(Self {
             manager: manager.clone().into(),
             inner: mobc::Pool::new(manager.into()),
@@ -46,7 +49,11 @@ impl Pool for MobcPool {
     }
 
     async fn get(&self) -> Result<Box<dyn Connection>, Error> {
-        let v = self.inner.get().await.map_err(|e| Error::from(e.to_string()))?;
+        let v = self
+            .inner
+            .get()
+            .await
+            .map_err(|e| Error::from(e.to_string()))?;
         let proxy = ConnManagerProxy {
             inner: v.manager_proxy.clone(),
             conn: Some(v),
@@ -63,7 +70,11 @@ impl Pool for MobcPool {
                 return Err(Error::from("Time out in the connection pool"));
             }
         }
-        let v = self.inner.get_timeout(d).await.map_err(|e| Error::from(e.to_string()))?;
+        let v = self
+            .inner
+            .get_timeout(d)
+            .await
+            .map_err(|e| Error::from(e.to_string()))?;
         let proxy = ConnManagerProxy {
             inner: v.manager_proxy.clone(),
             conn: Some(v),
@@ -87,7 +98,6 @@ impl Pool for MobcPool {
         self.manager.inner.driver_type()
     }
 
-
     async fn state(&self) -> Value {
         let mut m = ValueMap::new();
         let state = self.inner.state().await;
@@ -96,9 +106,18 @@ impl Pool for MobcPool {
         m.insert("in_use".to_string().into(), state.in_use.into());
         m.insert("idle".to_string().into(), state.idle.into());
         m.insert("wait_count".to_string().into(), state.wait_count.into());
-        m.insert("wait_duration".to_string().into(), to_value!(state.wait_duration));
-        m.insert("max_idle_closed".to_string().into(), state.max_idle_closed.into());
-        m.insert("max_lifetime_closed".to_string().into(), state.max_lifetime_closed.into());
+        m.insert(
+            "wait_duration".to_string().into(),
+            to_value!(state.wait_duration),
+        );
+        m.insert(
+            "max_idle_closed".to_string().into(),
+            state.max_idle_closed.into(),
+        );
+        m.insert(
+            "max_lifetime_closed".to_string().into(),
+            state.max_lifetime_closed.into(),
+        );
         Value::Map(m)
     }
 }
@@ -118,43 +137,38 @@ impl mobc::Manager for ConnManagerProxy {
 }
 
 impl Connection for ConnManagerProxy {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
         if self.conn.is_none() {
-            return Box::pin(async {
-                Err(Error::from("conn is drop"))
-            });
+            return Box::pin(async { Err(Error::from("conn is drop")) });
         }
         self.conn.as_mut().unwrap().get_rows(sql, params)
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         if self.conn.is_none() {
-            return Box::pin(async {
-                Err(Error::from("conn is drop"))
-            });
+            return Box::pin(async { Err(Error::from("conn is drop")) });
         }
         self.conn.as_mut().unwrap().exec(sql, params)
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
         if self.conn.is_none() {
-            return Box::pin(async {
-                Err(Error::from("conn is drop"))
-            });
+            return Box::pin(async { Err(Error::from("conn is drop")) });
         }
         self.conn.as_mut().unwrap().ping()
     }
 
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
         if self.conn.is_none() {
-            return Box::pin(async {
-                Err(Error::from("conn is drop"))
-            });
+            return Box::pin(async { Err(Error::from("conn is drop")) });
         }
         self.conn.as_mut().unwrap().close()
     }
 }
-
 
 #[cfg(test)]
 mod test {

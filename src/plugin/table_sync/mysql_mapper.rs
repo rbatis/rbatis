@@ -1,4 +1,4 @@
-use crate::table_sync::{ColumMapper};
+use crate::table_sync::ColumMapper;
 use rbs::Value;
 
 pub struct MysqlTableMapper {}
@@ -48,4 +48,3 @@ impl ColumMapper for MysqlTableMapper {
         }
     }
 }
-

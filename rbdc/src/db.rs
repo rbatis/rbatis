@@ -23,7 +23,7 @@ pub trait Driver: Debug + Sync + Send {
     fn default_option(&self) -> Box<dyn ConnectOptions>;
 }
 
-impl Driver for Box<dyn Driver>{
+impl Driver for Box<dyn Driver> {
     fn name(&self) -> &str {
         self.deref().name()
     }
@@ -32,7 +32,10 @@ impl Driver for Box<dyn Driver>{
         self.deref().connect(url)
     }
 
-    fn connect_opt<'a>(&'a self, opt: &'a dyn ConnectOptions) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect_opt<'a>(
+        &'a self,
+        opt: &'a dyn ConnectOptions,
+    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
         self.deref().connect_opt(opt)
     }
 
@@ -107,13 +110,17 @@ pub trait Connection: Send {
     fn close(&mut self) -> BoxFuture<Result<(), Error>>;
 }
 
-impl Connection for Box<dyn Connection>{
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        self.deref_mut().get_rows(sql,params)
+impl Connection for Box<dyn Connection> {
+    fn get_rows(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        self.deref_mut().get_rows(sql, params)
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        self.deref_mut().exec(sql,params)
+        self.deref_mut().exec(sql, params)
     }
 
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
@@ -124,7 +131,6 @@ impl Connection for Box<dyn Connection>{
         self.deref_mut().close()
     }
 }
-
 
 /// Result set from executing a query against a statement
 pub trait Row: 'static + Send + Debug {

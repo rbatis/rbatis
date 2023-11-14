@@ -1,9 +1,9 @@
-use crate::table_sync::{ColumMapper};
+use crate::table_sync::ColumMapper;
 use rbs::Value;
 
 pub struct PGTableMapper {}
 impl ColumMapper for PGTableMapper {
-    fn get_column(&self, _column:&str, v: &Value) -> String {
+    fn get_column(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
             Value::Bool(_) => "BOOLEAN".to_string(),
@@ -19,7 +19,7 @@ impl ColumMapper for PGTableMapper {
                 } else {
                     "TEXT".to_string()
                 }
-            },
+            }
             Value::Binary(_) => "BYTEA".to_string(),
             Value::Array(_) => "JSON".to_string(),
             Value::Map(_) => "JSON".to_string(),
@@ -36,4 +36,3 @@ impl ColumMapper for PGTableMapper {
         }
     }
 }
-

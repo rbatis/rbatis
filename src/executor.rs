@@ -3,19 +3,18 @@ use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::sql::Tx;
-use crate::{Error, utils};
+use crate::{utils, Error};
+use dark_std::sync::SyncVec;
 use futures::Future;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
+use rbdc::rt::tokio::sync::Mutex;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
-use dark_std::sync::SyncVec;
-use rbdc::rt::tokio::sync::Mutex;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
-
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
@@ -69,8 +68,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -176,7 +175,6 @@ impl RBatisConnExecutor {
     }
 }
 
-
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Mutex<Box<dyn Connection>>,
@@ -207,8 +205,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -375,8 +373,8 @@ impl RBatisTxExecutorGuard {
     }
 
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let tx = self
             .tx
@@ -394,14 +392,14 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-        where
-            F: Future<Output=()> + Send + 'static,
+    where
+        F: Future<Output = ()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
             callback: Box::new(move |arg| {
                 let future = callback(arg);
-                rbdc::rt::spawn(async move{
+                rbdc::rt::spawn(async move {
                     future.await;
                 });
             }),
@@ -461,8 +459,8 @@ impl RBatis {
 
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let conn = self.acquire().await?;
         let v = conn.query(sql, args).await?;
@@ -512,7 +510,6 @@ impl Executor for &RBatis {
     }
 }
 
-
 #[derive(Debug)]
 pub struct TempExecutor<'a> {
     pub rb: &'a RBatis,
@@ -520,33 +517,33 @@ pub struct TempExecutor<'a> {
     pub args: SyncVec<Vec<Value>>,
 }
 
-impl <'a>TempExecutor<'a>{
-    pub fn new(rb:&'a RBatis)->Self{
-        Self{
+impl<'a> TempExecutor<'a> {
+    pub fn new(rb: &'a RBatis) -> Self {
+        Self {
             rb: rb,
             sql: SyncVec::new(),
             args: SyncVec::new(),
         }
     }
 
-    pub fn clear_sql(&self)->Vec<String>{
-        let mut arr =vec![];
-        loop{
-            if let Some(v)=self.sql.remove(0){
+    pub fn clear_sql(&self) -> Vec<String> {
+        let mut arr = vec![];
+        loop {
+            if let Some(v) = self.sql.remove(0) {
                 arr.push(v);
-            }else{
+            } else {
                 break;
             }
         }
         arr
     }
 
-    pub fn clear_args(&self)->Vec<Vec<Value>>{
-        let mut arr =vec![];
-        loop{
-            if let Some(v)=self.args.remove(0){
+    pub fn clear_args(&self) -> Vec<Vec<Value>> {
+        let mut arr = vec![];
+        loop {
+            if let Some(v) = self.args.remove(0) {
                 arr.push(v);
-            }else{
+            } else {
                 break;
             }
         }
@@ -564,16 +561,12 @@ impl Executor for TempExecutor<'_> {
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         self.sql.push(sql.to_string());
         self.args.push(args);
-        Box::pin(async{
-            Ok(ExecResult::default())
-        })
+        Box::pin(async { Ok(ExecResult::default()) })
     }
 
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         self.sql.push(sql.to_string());
         self.args.push(args);
-        Box::pin(async{
-            Ok(Value::default())
-        })
+        Box::pin(async { Ok(Value::default()) })
     }
 }

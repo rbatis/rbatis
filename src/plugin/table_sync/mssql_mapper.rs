@@ -1,9 +1,9 @@
-use crate::table_sync::{ColumMapper};
+use crate::table_sync::ColumMapper;
 use rbs::Value;
 
 pub struct MssqlTableMapper {}
 impl ColumMapper for MssqlTableMapper {
-    fn get_column(&self, _column:&str, v: &Value) -> String {
+    fn get_column(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
             Value::Bool(_) => "BIT".to_string(),
@@ -19,7 +19,7 @@ impl ColumMapper for MssqlTableMapper {
                 } else {
                     "NVARCHAR(MAX)".to_string()
                 }
-            },
+            }
             Value::Binary(_) => "VARBINARY(MAX)".to_string(),
             Value::Array(_) => "NVARCHAR(MAX)".to_string(), // or appropriate JSON type
             Value::Map(_) => "NVARCHAR(MAX)".to_string(),   // or appropriate JSON type
@@ -36,4 +36,3 @@ impl ColumMapper for MssqlTableMapper {
         }
     }
 }
-

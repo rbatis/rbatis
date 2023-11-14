@@ -15,16 +15,19 @@ impl Decode for Time {
                 // TIME is encoded as the microseconds since midnight
                 let us = i64::decode(value)?;
                 //+microseconds
-                let t = fastdate::DateTime::from((fastdate::Date{
-                    day: 1,
-                    mon: 1,
-                    year: 2000,
-                }, fastdate::Time{
-                    nano: 0,
-                    sec: 0,
-                    minute: 0,
-                    hour: 0,
-                }));
+                let t = fastdate::DateTime::from((
+                    fastdate::Date {
+                        day: 1,
+                        mon: 1,
+                        year: 2000,
+                    },
+                    fastdate::Time {
+                        nano: 0,
+                        sec: 0,
+                        minute: 0,
+                        hour: 0,
+                    },
+                ));
                 let t = {
                     if us < 0 {
                         t - Duration::from_micros(-us as u64)
