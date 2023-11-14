@@ -1,7 +1,8 @@
-use crate::Error;
+use crate::{DateTime, Error};
 use rbs::Value;
 use serde::Deserializer;
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 /// Timestamp(timestamp_millis:u64)
@@ -9,22 +10,21 @@ use std::str::FromStr;
 #[serde(rename = "Timestamp")]
 pub struct Timestamp(pub i64);
 
-impl Timestamp{
-
+impl Timestamp {
     #[deprecated(note = "please use utc()")]
-    pub fn now()->Self{
+    pub fn now() -> Self {
         Self(fastdate::DateTime::utc().unix_timestamp_millis())
     }
     /// utc time
-    pub fn utc()->Self{
+    pub fn utc() -> Self {
         Self(fastdate::DateTime::utc().unix_timestamp_millis())
     }
 }
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.as_i64() {
@@ -60,15 +60,35 @@ impl FromStr for Timestamp {
     }
 }
 
-impl From<Timestamp> for fastdate::DateTime{
+impl From<Timestamp> for fastdate::DateTime {
     fn from(value: Timestamp) -> Self {
         fastdate::DateTime::from_timestamp_millis(value.0 as i64)
     }
 }
 
-impl Default for Timestamp{
+impl Default for Timestamp {
     fn default() -> Self {
         Timestamp(0)
+    }
+}
+
+impl Deref for Timestamp {
+    type Target = i64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Timestamp {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<DateTime> for Timestamp {
+    fn from(value: DateTime) -> Self {
+        Self(value.unix_timestamp_millis())
     }
 }
 
