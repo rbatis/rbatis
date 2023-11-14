@@ -9,8 +9,8 @@ mod test {
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicI64, Ordering};
+    use std::sync::Arc;
 
     pub struct Logger {}
 

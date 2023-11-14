@@ -2,13 +2,13 @@ use crate::arguments::PgArgumentBuffer;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
+use byteorder::{BigEndian, ReadBytesExt};
+use fastdate::offset_sec;
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::str::FromStr;
-use byteorder::{BigEndian, ReadBytesExt};
-use fastdate::offset_sec;
 
 /// (timestamp,offset sec)
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
@@ -33,16 +33,22 @@ impl Timestamptz {
     }
 }
 
-
 impl Display for Timestamptz {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Timestamptz({})", fastdate::DateTime::from_timestamp_millis(self.0 as i64).set_offset(self.1))
+        write!(
+            f,
+            "Timestamptz({})",
+            fastdate::DateTime::from_timestamp_millis(self.0 as i64).set_offset(self.1)
+        )
     }
 }
 
 impl From<Timestamptz> for Value {
     fn from(arg: Timestamptz) -> Self {
-        Value::Ext("Timestamptz", Box::new(Value::Array(vec![Value::I64(arg.0), Value::I32(arg.1)])))
+        Value::Ext(
+            "Timestamptz",
+            Box::new(Value::Array(vec![Value::I64(arg.0), Value::I32(arg.1)])),
+        )
     }
 }
 
@@ -96,7 +102,6 @@ impl Decode for Timestamptz {
         })
     }
 }
-
 
 #[cfg(test)]
 mod test {

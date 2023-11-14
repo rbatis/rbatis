@@ -4,15 +4,15 @@ use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use rbdc::rt::tokio::sync::Mutex;
 use log::LevelFilter;
-use rbdc::pool::{Pool};
+use rbdc::pool::conn_manager::ConnManager;
+use rbdc::pool::Pool;
+use rbdc::rt::tokio::sync::Mutex;
+use rbdc_pool_mobc::MobcPool;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use rbdc::pool::conn_manager::ConnManager;
-use rbdc_pool_mobc::MobcPool;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -98,7 +98,6 @@ impl RBatis {
             .map_err(|_e| Error::from("pool set fail!"))?;
         return Ok(());
     }
-
 
     /// init pool by DBPoolOptions and Pool
     /// for example:

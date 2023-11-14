@@ -335,7 +335,6 @@ impl Value {
         }
     }
 
-
     /// self to Binary
     #[inline]
     pub fn into_bytes(self) -> Option<Vec<u8>> {
@@ -435,7 +434,7 @@ impl Value {
     pub fn into_map(self) -> Option<ValueMap> {
         if let Value::Map(map) = self {
             Some(map)
-        } else if let Value::Ext(_,  map) = self {
+        } else if let Value::Ext(_, map) = self {
             map.into_map()
         } else {
             None
@@ -444,9 +443,9 @@ impl Value {
 
     #[inline]
     pub fn into_array(self) -> Option<Vec<Value>> {
-        if let Value::Array( array) = self {
+        if let Value::Array(array) = self {
             Some(array)
-        } else if let Value::Ext(_,  ext) = self {
+        } else if let Value::Ext(_, ext) = self {
             ext.into_array()
         } else {
             None

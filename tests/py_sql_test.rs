@@ -11,6 +11,7 @@ extern crate rbatis;
 
 #[cfg(test)]
 mod test {
+    use dark_std::sync::SyncVec;
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
@@ -24,7 +25,6 @@ mod test {
     use std::collections::HashMap;
     use std::fmt::{Debug, Formatter};
     use std::sync::Arc;
-    use dark_std::sync::SyncVec;
 
     #[derive(Debug)]
     pub struct MockIntercept {

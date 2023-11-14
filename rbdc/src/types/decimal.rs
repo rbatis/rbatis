@@ -151,8 +151,8 @@ impl SubAssign for Decimal {
 #[cfg(test)]
 mod test {
     use crate::decimal::Decimal;
-    use std::str::FromStr;
     use rbs::{from_value, to_value};
+    use std::str::FromStr;
 
     #[test]
     fn test_big_decimal() {
@@ -165,14 +165,14 @@ mod test {
     #[test]
     fn test_ser() {
         let v1 = Decimal::from_str("1").unwrap();
-        let rv:Decimal = from_value(to_value!(v1)).unwrap();
-        assert_eq!(rv,Decimal::from_str("1").unwrap());
+        let rv: Decimal = from_value(to_value!(v1)).unwrap();
+        assert_eq!(rv, Decimal::from_str("1").unwrap());
     }
 
     #[test]
     fn test_ser2() {
         let v1 = Decimal::from_str("1").unwrap();
-        let rv:Decimal = serde_json::from_value(serde_json::to_value(v1).unwrap()).unwrap();
-        assert_eq!(rv,Decimal::from_str("1").unwrap());
+        let rv: Decimal = serde_json::from_value(serde_json::to_value(v1).unwrap()).unwrap();
+        assert_eq!(rv, Decimal::from_str("1").unwrap());
     }
 }

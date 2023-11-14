@@ -191,9 +191,7 @@ impl Connection for MssqlConnection {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     #[test]
-    fn test_datetime(){
-
-    }
+    fn test_datetime() {}
 }

@@ -37,6 +37,5 @@ pub mod type_info;
 pub mod types;
 pub mod value;
 
-
 pub use driver::SqliteDriver;
 pub use driver::SqliteDriver as Driver;

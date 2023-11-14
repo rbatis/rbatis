@@ -23,8 +23,8 @@ impl Timestamp {
 
 impl<'de> serde::Deserialize<'de> for Timestamp {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         use serde::de::Error;
         match Value::deserialize(deserializer)?.as_i64() {
@@ -92,7 +92,7 @@ impl From<DateTime> for Timestamp {
     }
 }
 
-impl Into<DateTime> for Timestamp{
+impl Into<DateTime> for Timestamp {
     fn into(self) -> DateTime {
         DateTime::from_timestamp_millis(self.0)
     }

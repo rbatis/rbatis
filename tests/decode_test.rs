@@ -22,7 +22,7 @@ mod test {
         };
         let v: rbdc::types::datetime::DateTime = rbatis::decode(Value::Array(vec![m])).unwrap();
         assert_eq!(v.to_string(), date.to_string());
-        println!("{}",v.offset());
+        println!("{}", v.offset());
     }
 
     #[test]

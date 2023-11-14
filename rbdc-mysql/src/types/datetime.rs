@@ -2,16 +2,20 @@ use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
+use fastdate::offset_sec;
 use rbdc::datetime::DateTime;
 use rbdc::Error;
 use std::str::FromStr;
-use fastdate::offset_sec;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
         let datetime = self.0;
-        let datetime_size =
-            date_time_size_hint(datetime.hour(), datetime.minute(), datetime.sec(), datetime.nano());
+        let datetime_size = date_time_size_hint(
+            datetime.hour(),
+            datetime.minute(),
+            datetime.sec(),
+            datetime.nano(),
+        );
         buf.push(datetime_size as u8);
         let date = rbdc::date::Date(fastdate::Date {
             day: datetime.day(),

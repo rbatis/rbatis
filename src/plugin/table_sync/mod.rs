@@ -1,21 +1,19 @@
-pub mod sqlite_mapper;
+pub mod mssql_mapper;
 pub mod mysql_mapper;
 pub mod pg_mapper;
-pub mod mssql_mapper;
+pub mod sqlite_mapper;
 
-use crate::executor::{Executor};
+use crate::executor::Executor;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use log::debug;
-use rbs::Value;
-pub use sqlite_mapper::*;
+pub use mssql_mapper::*;
 pub use mysql_mapper::*;
 pub use pg_mapper::*;
-pub use mssql_mapper::*;
-
+use rbs::Value;
+pub use sqlite_mapper::*;
 
 const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
-
 
 /// create table if not exists, add column if not exists
 /// ```rust
@@ -96,7 +94,7 @@ pub fn sync<'a>(
                                 {
                                     Ok(_) => {}
                                     Err(e) => {
-                                        debug!("ADD COLUMN fail={}",e);
+                                        debug!("ADD COLUMN fail={}", e);
                                         continue;
                                     }
                                 }
@@ -114,5 +112,5 @@ pub fn sync<'a>(
 }
 
 pub trait ColumMapper: Sync + Send {
-    fn get_column(&self, column:&str, v: &Value) -> String;
+    fn get_column(&self, column: &str, v: &Value) -> String;
 }

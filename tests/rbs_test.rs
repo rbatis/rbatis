@@ -2,10 +2,10 @@
 mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbdc::datetime::DateTime;
-    use rbs::Value;
-    use std::cmp::Ordering;
-    use serde::{Deserialize, Serialize};
     use rbdc::Timestamp;
+    use rbs::Value;
+    use serde::{Deserialize, Serialize};
+    use std::cmp::Ordering;
 
     #[test]
     fn test_ser_i32() {
@@ -176,7 +176,7 @@ mod test {
     fn test_ser_variant() {
         #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
         pub enum A {
-            BB(i32) //{"BB":2}
+            BB(i32), //{"BB":2}
         }
         let v = rbs::to_value!(A::BB(2));
         println!("{:?}", v);
@@ -188,7 +188,7 @@ mod test {
     fn test_ser_variant2() {
         #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
         pub enum A {
-            BB(String)//{"BB":"2"}
+            BB(String), //{"BB":"2"}
         }
         let v = rbs::to_value!(A::BB(2.to_string()));
         println!("{:?}", v);
@@ -208,13 +208,13 @@ mod test {
         #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
         pub struct A(i32);
         let v = rbs::to_value!(A(1));
-        assert_eq!(v, Value::Ext("A",Box::new(Value::I32(1))));
+        assert_eq!(v, Value::Ext("A", Box::new(Value::I32(1))));
     }
 
     #[test]
     fn test_ser_newtype_struct_timestamp() {
         let v = rbs::to_value!(Timestamp(1));
-        assert_eq!(v, Value::Ext("Timestamp",Box::new(Value::I64(1))));
+        assert_eq!(v, Value::Ext("Timestamp", Box::new(Value::I64(1))));
     }
 
     #[test]
@@ -223,18 +223,24 @@ mod test {
         #[serde(rename = "Timestamptz")]
         pub struct Timestamptz(pub i64, pub i32);
 
-        let v = rbs::to_value!(Timestamptz(1,1));
-        assert_eq!(v, Value::Ext("Timestamptz",Box::new(Value::Array(vec![Value::I64(1),Value::I32(1)]))));
+        let v = rbs::to_value!(Timestamptz(1, 1));
+        assert_eq!(
+            v,
+            Value::Ext(
+                "Timestamptz",
+                Box::new(Value::Array(vec![Value::I64(1), Value::I32(1)]))
+            )
+        );
     }
 
     #[test]
-    fn test_de_null(){
+    fn test_de_null() {
         #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
         struct MockTable {
             pub id: Option<String>,
             pub name: Option<String>,
         }
-        let v:Option<MockTable>=rbs::from_value(Value::Null).unwrap();
-        assert_eq!(v.is_none(),true);
+        let v: Option<MockTable> = rbs::from_value(Value::Null).unwrap();
+        assert_eq!(v.is_none(), true);
     }
 }

@@ -256,17 +256,17 @@ impl_str_eq! {
 
 #[cfg(test)]
 mod test {
-    use rbs::{to_value, Value};
     use crate::ops::Add;
+    use rbs::{to_value, Value};
 
     #[test]
     fn test_eq() {
         let i: i64 = 1;
         let v = to_value!(1);
         let r = Value::from(v.op_add(&i));
-        if r == Value::from(2){
+        if r == Value::from(2) {
             assert!(true);
-        }else{
+        } else {
             assert!(false);
         }
     }

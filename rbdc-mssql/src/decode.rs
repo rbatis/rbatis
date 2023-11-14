@@ -80,7 +80,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
+                            Some(v) => to_value!(DateTime(
+                                <fastdate::DateTime as DateTimeFromNativeDatetime>::from(v)
+                            )),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -96,7 +98,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
+                            Some(v) => to_value!(DateTime(
+                                <fastdate::DateTime as DateTimeFromNativeDatetime>::from(v)
+                            )),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -144,7 +148,9 @@ impl Decode for Value {
                     match v {
                         Ok(v) => match v {
                             None => Value::Null,
-                            Some(v) => to_value!(DateTime(<fastdate::DateTime as DateTimeFromNativeDatetime>::from(v))),
+                            Some(v) => to_value!(DateTime(
+                                <fastdate::DateTime as DateTimeFromNativeDatetime>::from(v)
+                            )),
                         },
                         Err(e) => {
                             return Err(Error::from(e.to_string()));
@@ -189,8 +195,11 @@ impl DateTimeFromNativeDatetime for fastdate::DateTime {
     fn from(arg: NaiveDateTime) -> Self {
         fastdate::DateTime::from_timestamp_nano(
             arg.timestamp_nanos_opt()
-                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-        ).set_offset(offset_sec()).add_sub_sec(-offset_sec() as i64)
+                .expect("value can not be represented in a timestamp with nanosecond precision.")
+                as i128,
+        )
+        .set_offset(offset_sec())
+        .add_sub_sec(-offset_sec() as i64)
     }
 }
 
@@ -198,26 +207,33 @@ impl DateTimeFromDateTimeFixedOffset for fastdate::DateTime {
     fn from(arg: chrono::DateTime<FixedOffset>) -> Self {
         fastdate::DateTime::from_timestamp_nano(
             arg.timestamp_nanos_opt()
-                .expect("value can not be represented in a timestamp with nanosecond precision.") as i128,
-        ).set_offset(offset_sec())
+                .expect("value can not be represented in a timestamp with nanosecond precision.")
+                as i128,
+        )
+        .set_offset(offset_sec())
     }
 }
 
 #[cfg(test)]
 mod test {
+    use crate::decode::{DateTimeFromDateTimeFixedOffset, DateTimeFromNativeDatetime};
     use chrono::{FixedOffset, NaiveDateTime};
     use fastdate::DateTime;
-    use crate::decode::{DateTimeFromDateTimeFixedOffset, DateTimeFromNativeDatetime};
-
 
     #[test]
     fn test_decode_time_zone() {
         let offset = FixedOffset::east_opt(8 * 60 * 60).unwrap();
-        let dt: chrono::DateTime<FixedOffset> = chrono::DateTime::from_naive_utc_and_offset(NaiveDateTime::from_timestamp_opt(1697801035, 0).unwrap(), offset);
+        let dt: chrono::DateTime<FixedOffset> = chrono::DateTime::from_naive_utc_and_offset(
+            NaiveDateTime::from_timestamp_opt(1697801035, 0).unwrap(),
+            offset,
+        );
         println!("{}", dt.to_string());
         let de = <DateTime as DateTimeFromDateTimeFixedOffset>::from(dt);
         println!("{}", de.to_string());
-        assert_eq!(dt.to_string().replacen(" ", "T", 1).replace(" ", ""), de.display(true));
+        assert_eq!(
+            dt.to_string().replacen(" ", "T", 1).replace(" ", ""),
+            de.display(true)
+        );
     }
 
     #[test]

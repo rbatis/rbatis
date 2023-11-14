@@ -13,7 +13,6 @@ pub trait IPageRequest: Send + Sync {
     ///Control whether to execute count statements to count the total number
     fn do_count(&self) -> bool;
 
-
     ///sum pages
     fn pages(&self) -> u64 {
         if self.page_size() == 0 {
@@ -44,7 +43,6 @@ pub trait IPageRequest: Send + Sync {
         v
     }
 
-
     fn set_total(&mut self, arg: u64);
     fn set_page_size(&mut self, arg: u64);
     fn set_page_no(&mut self, arg: u64);
@@ -57,7 +55,7 @@ pub trait IPageRequest: Send + Sync {
         self.do_count()
     }
     #[deprecated(note = "please use set_do_count()")]
-    fn set_search_count(&mut self, arg: bool){
+    fn set_search_count(&mut self, arg: bool) {
         self.set_do_count(arg)
     }
 }
@@ -117,7 +115,6 @@ impl PageRequest {
         }
     }
 
-
     pub fn set_total(mut self, total: u64) -> Self {
         self.total = total;
         self
@@ -168,7 +165,7 @@ impl IPageRequest for PageRequest {
         self.do_count
     }
 
-    fn set_total(&mut self, total: u64)  {
+    fn set_total(&mut self, total: u64) {
         self.total = total;
     }
 
@@ -242,7 +239,6 @@ impl<T: Send + Sync> Page<T> {
         result
     }
 
-
     pub fn set_total(mut self, total: u64) -> Self {
         self.total = total;
         self
@@ -293,7 +289,7 @@ impl<T: Send + Sync> IPageRequest for Page<T> {
         self.do_count
     }
 
-    fn set_total(&mut self, arg: u64)  {
+    fn set_total(&mut self, arg: u64) {
         self.total = arg;
     }
 
@@ -339,8 +335,8 @@ impl<T: Display + Debug + Send + Sync> Display for Page<T> {
 
 impl<V: Send + Sync> Page<V> {
     pub fn from<T: Send + Sync>(arg: Page<T>) -> Self
-        where
-            V: From<T>,
+    where
+        V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.page_no = arg.page_no;
@@ -361,7 +357,6 @@ impl<V: Send + Sync> Page<V> {
 #[cfg(test)]
 mod test {
     use crate::sql::page::Page;
-
 
     #[test]
     fn test_page_into_range() {
@@ -417,7 +412,6 @@ mod test {
         }
         assert_eq!(v, new_v);
     }
-
 
     #[test]
     fn test_page_into_pages_8() {

@@ -1,5 +1,5 @@
-use std::num::NonZeroUsize;
 use lru::LruCache;
+use std::num::NonZeroUsize;
 
 /// A cache for prepared statements. When full, the least recently used
 /// statement gets removed.
@@ -31,7 +31,7 @@ impl<T> StatementCache<T> {
         if self.capacity() == self.len() && !self.contains_key(k) {
             lru_item = self.remove_lru();
         } else if self.contains_key(k) {
-           let entry = self.inner.pop_entry(k);
+            let entry = self.inner.pop_entry(k);
             match entry {
                 None => {}
                 Some(v) => {
@@ -52,7 +52,7 @@ impl<T> StatementCache<T> {
 
     /// Removes the least recently used item from the cache.
     pub fn remove_lru(&mut self) -> Option<T> {
-        self.inner.pop_lru().map(|v|v.1)
+        self.inner.pop_lru().map(|v| v.1)
     }
 
     /// Clear all cached statements from the cache.

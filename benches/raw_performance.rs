@@ -12,11 +12,11 @@ use futures_core::future::BoxFuture;
 use rbatis::rbatis::RBatis;
 use rbatis::{impl_insert, impl_select};
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
-use rbdc::{Error};
+use rbdc::rt::block_on;
+use rbdc::Error;
 use rbs::Value;
 use std::any::Any;
 use test::Bencher;
-use rbdc::rt::block_on;
 
 pub trait QPS {
     fn qps(&self, total: u64);

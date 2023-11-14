@@ -430,8 +430,6 @@ macro_rules! htmlsql_select_page {
     }
 }
 
-
-
 /// impl py_sql select page.
 ///
 /// you must deal with 3 param:
@@ -517,7 +515,6 @@ macro_rules! pysql {
        }
     }
 }
-
 
 /// use macro wrapper #[html_sql]
 /// for example:

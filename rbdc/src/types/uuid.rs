@@ -56,14 +56,13 @@ impl Uuid {
 }
 
 /// '00000000-0000-0000-0000-000000000000'
-impl Default for Uuid{
+impl Default for Uuid {
     fn default() -> Self {
         Uuid(uuid::Uuid::default().to_string())
     }
 }
 
-
-impl Deref for Uuid{
+impl Deref for Uuid {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -71,7 +70,7 @@ impl Deref for Uuid{
     }
 }
 
-impl DerefMut for Uuid{
+impl DerefMut for Uuid {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -84,6 +83,6 @@ mod test {
     #[test]
     fn test_default() {
         let u = Uuid::default();
-        println!("{}",u);
+        println!("{}", u);
     }
 }

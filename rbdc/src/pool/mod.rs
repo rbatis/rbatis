@@ -1,19 +1,20 @@
-pub mod conn_manager;
 pub mod conn_box;
+pub mod conn_manager;
 
-use std::fmt::Debug;
 use crate::db::Connection;
-use crate::Error;
 use crate::pool::conn_manager::ConnManager;
-use std::time::Duration;
+use crate::Error;
 use async_trait::async_trait;
 use rbs::Value;
+use std::fmt::Debug;
+use std::time::Duration;
 
 #[async_trait]
 pub trait Pool: Sync + Send + Debug {
-
     /// create an Pool,use ConnManager
-    fn new(manager: ConnManager) -> Result<Self, Error> where Self: Sized;
+    fn new(manager: ConnManager) -> Result<Self, Error>
+    where
+        Self: Sized;
 
     /// get an connection from pool
     async fn get(&self) -> Result<Box<dyn Connection>, Error>;
@@ -28,7 +29,9 @@ pub trait Pool: Sync + Send + Debug {
     async fn set_max_open_conns(&self, n: u64);
 
     ///return state
-    async fn state(&self) -> Value{ Value::Null  }
+    async fn state(&self) -> Value {
+        Value::Null
+    }
 
     /// get driver_type from manager: ConnManager
     fn driver_type(&self) -> &str;

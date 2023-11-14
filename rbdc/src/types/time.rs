@@ -33,22 +33,21 @@ impl FromStr for Time {
     }
 }
 
-
-impl From<Time> for fastdate::Time{
+impl From<Time> for fastdate::Time {
     fn from(value: Time) -> Self {
         value.0
     }
 }
 
-impl From<DateTime> for Time{
+impl From<DateTime> for Time {
     fn from(value: DateTime) -> Self {
         Self(fastdate::Time::from(value.0))
     }
 }
 
-impl Default for Time{
+impl Default for Time {
     fn default() -> Self {
-        Time(fastdate::Time{
+        Time(fastdate::Time {
             nano: 0,
             sec: 0,
             minute: 0,

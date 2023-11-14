@@ -62,65 +62,65 @@ impl AsProxy for Value {
 
 macro_rules! as_number {
     ($ty:ty,$bool_expr:expr) => {
-impl AsProxy for $ty{
-    fn i32(&self) -> i32 {
-        *self as i32
-    }
+        impl AsProxy for $ty {
+            fn i32(&self) -> i32 {
+                *self as i32
+            }
 
-    fn i64(&self) -> i64 {
-        *self as i64
-    }
+            fn i64(&self) -> i64 {
+                *self as i64
+            }
 
-    fn u32(&self) -> u32 {
-        *self as u32
-    }
+            fn u32(&self) -> u32 {
+                *self as u32
+            }
 
-    fn u64(&self) -> u64 {
-        *self as u64
-    }
+            fn u64(&self) -> u64 {
+                *self as u64
+            }
 
-    fn f64(&self) -> f64 {
-        *self as f64
-    }
+            fn f64(&self) -> f64 {
+                *self as f64
+            }
 
-    fn string(self) -> String {
-        self.to_string()
-    }
+            fn string(self) -> String {
+                self.to_string()
+            }
 
-    fn bool(&self) -> bool {
-       //*self==1
-       if *self == $bool_expr{
-           true
-       }else{
-           false
-       }
-    }
+            fn bool(&self) -> bool {
+                //*self==1
+                if *self == $bool_expr {
+                    true
+                } else {
+                    false
+                }
+            }
 
-    fn as_sql(&self) -> String {
-        self.to_string()
-    }
+            fn as_sql(&self) -> String {
+                self.to_string()
+            }
 
-    fn as_binary(&self) -> Vec<u8> {
-        self.to_string().into_bytes()
-    }
-}
+            fn as_binary(&self) -> Vec<u8> {
+                self.to_string().into_bytes()
+            }
+        }
     };
 }
 
-as_number!(i8,1i8);
-as_number!(i16,1i16);
-as_number!(i32,1i32);
-as_number!(i64,1i64);
-as_number!(isize,1isize);
+as_number!(i8, 1i8);
+as_number!(i16, 1i16);
+as_number!(i32, 1i32);
+as_number!(i64, 1i64);
+as_number!(isize, 1isize);
 
-as_number!(u8,1u8);
-as_number!(u16,1u16);
-as_number!(u32,1u32);
-as_number!(u64,1u64);
-as_number!(usize,1usize);
+as_number!(u8, 1u8);
+as_number!(u16, 1u16);
+as_number!(u32, 1u32);
+as_number!(u64, 1u64);
+as_number!(usize, 1usize);
 
-as_number!(f32,1.0);
-as_number!(f64,1.0);
+as_number!(f32, 1.0);
+as_number!(f64, 1.0);
 
 pub trait PartialEq<Rhs: ?Sized = Self> {
     /// This method tests for `self` and `other` values to be equal, and is used

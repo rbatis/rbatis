@@ -4,12 +4,12 @@ use crate::intercept::{Intercept, ResultType};
 use crate::{Error, RBatis};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
+use rbatis_codegen::ops::AsProxy;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use rbatis_codegen::ops::AsProxy;
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
@@ -17,9 +17,7 @@ struct RbsValueDisplay<'a> {
 
 impl<'a> RbsValueDisplay<'a> {
     pub fn new(v: &'a Vec<Value>) -> Self {
-        Self {
-            inner: v
-        }
+        Self { inner: v }
     }
 }
 
@@ -134,9 +132,7 @@ impl From<&RBatis> for Option<&LogInterceptor> {
         let name = std::any::type_name::<LogInterceptor>();
         let r = value.get_intercept_dyn(name);
         match r {
-            None => {
-                None
-            }
+            None => None,
             Some(r) => {
                 let call: &LogInterceptor = unsafe { std::mem::transmute_copy(&r) };
                 Some(call)
@@ -171,9 +167,23 @@ impl Intercept for LogInterceptor {
             for x in &*args {
                 sql = sql.replacen('?', &x.as_sql(), 1);
             }
-            log!(level, "[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueDisplay::new(args));
+            log!(
+                level,
+                "[rbatis] [{}] {} => `{}` {}",
+                task_id,
+                op,
+                &sql,
+                RbsValueDisplay::new(args)
+            );
         } else {
-            log!(level, "[rbatis] [{}] {} => `{}` {}",task_id,op,&sql,RbsValueDisplay::new(args));
+            log!(
+                level,
+                "[rbatis] [{}] {} => `{}` {}",
+                task_id,
+                op,
+                &sql,
+                RbsValueDisplay::new(args)
+            );
         }
         return Ok(true);
     }
@@ -237,19 +247,19 @@ impl Intercept for LogInterceptor {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
-    use log::LevelFilter;
     use crate::intercept::Intercept;
     use crate::intercept_log::LogInterceptor;
     use crate::RBatis;
+    use log::LevelFilter;
+    use std::sync::Arc;
 
     #[test]
     fn test_get() {
         let rb = RBatis::new();
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
+        rb.intercepts
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
         let intercept = Option::<&LogInterceptor>::from(&rb);
         assert_eq!(intercept.is_some(), true);
         println!("{}", intercept.unwrap().name());
