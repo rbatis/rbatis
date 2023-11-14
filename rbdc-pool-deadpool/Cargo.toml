@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-pool-deadpool"
-version = "4.5.3"
+version = "4.5.6"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -17,5 +17,5 @@ homepage = "https://rbatis.github.io/rbatis.io"
 async-trait = "0.1"
 futures-core = { version = "0.3" }
 rbs = { version = "4.5", path = "../rbs" }
-rbdc = { version = "4.5", path = "../rbdc" }
+rbdc = { version = "4.5", path = "../rbdc",default-features = false }
 deadpool = { version = "0.10" }
