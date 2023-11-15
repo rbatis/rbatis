@@ -150,11 +150,9 @@ impl DateTime {
 
     /// format support token = ["YYYY","MM","DD","hh","mm","ss",".000000","+00:00"]
     /// ```
-    ///  use rbdc::DateTime;
-    ///   let dt = DateTime::now();
+    ///   let dt = rbdc::DateTime::now();
     ///   println!("{}",dt.format("YYYY/MM/DD/hh/mm/ss/.000000/+00:00"));
     ///   println!("{}",dt.format("YYYY-MM-DD/hh/mm/ss"));
-    ///
     /// ```
     pub fn format(&self, fmt: &str) -> String {
         self.0.format(fmt)
