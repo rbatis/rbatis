@@ -147,6 +147,19 @@ impl DateTime {
         DateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 
+
+    /// format support token = ["YYYY","MM","DD","hh","mm","ss",".000000","+00:00"]
+    /// ```
+    ///  use rbdc::DateTime;
+    ///   let dt = DateTime::now();
+    ///   println!("{}",dt.format("YYYY/MM/DD/hh/mm/ss/.000000/+00:00"));
+    ///   println!("{}",dt.format("YYYY-MM-DD/hh/mm/ss"));
+    ///
+    /// ```
+    pub fn format(&self, fmt: &str) -> String {
+        self.0.format(fmt)
+    }
+
     /// parse an string by format.
     /// format str must be:
     /// ```rust
