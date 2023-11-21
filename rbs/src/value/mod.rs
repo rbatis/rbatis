@@ -7,6 +7,7 @@
 use crate::value::map::ValueMap;
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
+use std::hash::{Hash, Hasher};
 use std::iter::FromIterator;
 use std::ops::Deref;
 
@@ -802,8 +803,6 @@ impl From<&Value> for String {
 
 impl Eq for Value {}
 
-use std::hash::{Hash, Hasher};
-
 impl Hash for Value {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
@@ -868,11 +867,10 @@ impl Hash for Value {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
     use crate::Value;
+    use std::collections::HashMap;
 
     #[test]
     fn test_iter() {
@@ -893,8 +891,8 @@ mod test {
     #[test]
     fn test_hashmap() {
         let mut v = HashMap::new();
-        v.insert(Value::F32(1.1),Value::I32(1));
-        v.insert(Value::F32(1.2),Value::I32(2));
+        v.insert(Value::F32(1.1), Value::I32(1));
+        v.insert(Value::F32(1.2), Value::I32(2));
         assert_eq!(v.get(&Value::F32(1.1)).unwrap(), &Value::I32(1));
     }
 }
