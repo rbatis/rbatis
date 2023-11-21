@@ -802,8 +802,76 @@ impl From<&Value> for String {
 
 impl Eq for Value {}
 
+use std::hash::{Hash, Hasher};
+
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Value::Null => {
+                state.write_u8(0);
+            }
+            Value::Bool(b) => {
+                state.write_u8(1);
+                b.hash(state);
+            }
+            Value::I32(i) => {
+                state.write_u8(2);
+                i.hash(state);
+            }
+            Value::I64(i) => {
+                state.write_u8(3);
+                i.hash(state);
+            }
+            Value::U32(u) => {
+                state.write_u8(4);
+                u.hash(state);
+            }
+            Value::U64(u) => {
+                state.write_u8(5);
+                u.hash(state);
+            }
+            Value::F32(f) => {
+                state.write_u8(6);
+                f.to_bits().hash(state);
+            }
+            Value::F64(f) => {
+                state.write_u8(7);
+                f.to_bits().hash(state);
+            }
+            Value::String(s) => {
+                state.write_u8(8);
+                s.hash(state);
+            }
+            Value::Binary(b) => {
+                state.write_u8(9);
+                b.hash(state);
+            }
+            Value::Array(a) => {
+                state.write_u8(10);
+                for v in a {
+                    v.hash(state);
+                }
+            }
+            Value::Map(m) => {
+                state.write_u8(11);
+                for (k, v) in m {
+                    k.hash(state);
+                    v.hash(state);
+                }
+            }
+            Value::Ext(s, v) => {
+                state.write_u8(12);
+                s.hash(state);
+                v.hash(state);
+            }
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use crate::Value;
 
     #[test]
@@ -820,5 +888,13 @@ mod test {
                 assert_eq!(&Value::U32(2), k.as_ref());
             }
         }
+    }
+
+    #[test]
+    fn test_hashmap() {
+        let mut v = HashMap::new();
+        v.insert(Value::F32(1.1),Value::I32(1));
+        v.insert(Value::F32(1.2),Value::I32(2));
+        assert_eq!(v.get(&Value::F32(1.1)).unwrap(), &Value::I32(1));
     }
 }
