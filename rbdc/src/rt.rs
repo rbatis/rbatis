@@ -13,7 +13,7 @@ where
     T::Output: Send + 'static,
 {
     tokio::task::block_in_place(|| {
-        tokio::runtime::Builder::new_current_thread()
+        tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
             .expect("tokio block_on fail")
