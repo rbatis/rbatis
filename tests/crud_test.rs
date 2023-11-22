@@ -1069,13 +1069,13 @@ mod test {
         pub name: String,
     }
 
-    rbatis::pysql_select_page!(pysql_select_page(item: PySqlSelectPageArg) -> MockTable =>
+    rbatis::pysql_select_page!(pysql_select_page(item: PySqlSelectPageArg,var1:&str) -> MockTable =>
     r#"`select `
       if do_count == true:
         ` count(1) as count `
       if do_count == false:
          ` * `
-      `from activity where delete_flag = 0`
+      `from activity where delete_flag = 0 and var1 = #{var1}`
         if item.name != '':
            ` and name=#{item.name}`"#);
 
@@ -1092,6 +1092,7 @@ mod test {
                 PySqlSelectPageArg {
                     name: "aaa".to_string(),
                 },
+                "test",
             )
             .await
             .unwrap();
@@ -1099,13 +1100,13 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "select  * from activity where delete_flag = 0 and name=?"
+                "select  * from activity where delete_flag = 0 and var1 = ? and name=?"
             );
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "select  count(1) as count from activity where delete_flag = 0 and name=?"
+                "select  count(1) as count from activity where delete_flag = 0 and var1 = ? and name=?"
             );
         };
         block_on(f);
