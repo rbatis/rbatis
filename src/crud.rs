@@ -331,7 +331,7 @@ macro_rules! impl_delete {
 macro_rules! impl_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
         $crate::impl_select_page!(
-            $table{$fn_name($($param_key:$param_type)*)=> $where_sql},
+            $table{$fn_name($($param_key:$param_type,)*)=> $where_sql},
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
