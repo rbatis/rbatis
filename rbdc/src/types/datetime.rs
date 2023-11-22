@@ -147,6 +147,17 @@ impl DateTime {
         DateTime(fastdate::DateTime::from_timestamp_nano(nano))
     }
 
+
+    /// format support token = ["YYYY","MM","DD","hh","mm","ss",".000000","+00:00"]
+    /// ```
+    ///   let dt = rbdc::DateTime::now();
+    ///   println!("{}",dt.format("YYYY/MM/DD/hh/mm/ss/.000000/+00:00"));
+    ///   println!("{}",dt.format("YYYY-MM-DD/hh/mm/ss"));
+    /// ```
+    pub fn format(&self, fmt: &str) -> String {
+        self.0.format(fmt)
+    }
+
     /// parse an string by format.
     /// format str must be:
     /// ```rust
@@ -426,5 +437,14 @@ mod test {
     fn test_default() {
         let dt = DateTime::default();
         println!("{}", dt);
+        assert_eq!(dt.to_string(),"DateTime(1970-01-01T00:00:00Z)");
+    }
+
+    #[test]
+    fn test_format() {
+        let dt = DateTime::default();
+        let s=dt.format("YYYY-MM-DD/hh/mm/ss");
+        println!("{}", s);
+        assert_eq!(s,"1970-1-1/0/0/0");
     }
 }
