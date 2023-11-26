@@ -54,12 +54,12 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// }
 /// ```
 pub fn sync<'a>(
-    conn: &'a dyn Executor,
+    executor: &'a dyn Executor,
     mapper: &'a dyn ColumMapper,
     table: Value,
-    name: &str,
+    table_name: &str,
 ) -> BoxFuture<'a, Result<(), Error>> {
-    let name = name.to_owned();
+    let name = table_name.to_owned();
     Box::pin(async move {
         match table {
             Value::Map(m) => {
@@ -79,7 +79,7 @@ pub fn sync<'a>(
                     sql_column = sql_column.trim_end_matches(",").to_string();
                 }
                 sql_create = sql_create + &format!("({});", sql_column);
-                let result_create = conn.exec(&sql_create, vec![]).await;
+                let result_create = executor.exec(&sql_create, vec![]).await;
                 match result_create {
                     Ok(_) => {}
                     Err(e) => {
@@ -91,7 +91,7 @@ pub fn sync<'a>(
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = &PRIMARY_KEY;
                                 }
-                                match conn
+                                match executor
                                     .exec(
                                         &format!(
                                             "alter table {} add {} {} {};",
