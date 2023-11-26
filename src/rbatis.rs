@@ -1,4 +1,4 @@
-use crate::executor::{RBatisConnExecutor, RBatisTxExecutor};
+use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
@@ -309,7 +309,7 @@ impl RBatis {
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table(rb: &RBatis){
     ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-    ///      rb.sync(&SqliteTableMapper{},&table,"user").await;
+    ///      RBatis::sync(&rb,&SqliteTableMapper{},&table,"user").await;
     /// }
     /// ```
     /// ```rust
@@ -326,10 +326,10 @@ impl RBatis {
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table_mysql(rb: &RBatis){
     ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-    ///      rb.sync(&MysqlTableMapper{},&table,"user").await;
+    ///      RBatis::sync(&rb,&MysqlTableMapper{},&table,"user").await;
     /// }
     /// ```
-    pub async fn sync<T: Serialize>(&self, column_mapper: &dyn ColumMapper, table: &T, table_name: &str) -> Result<(), Error> {
-        sync(self, column_mapper, to_value!(table), table_name).await
+    pub async fn sync<T: Serialize>(executor: &dyn Executor, column_mapper: &dyn ColumMapper, table: &T, table_name: &str) -> Result<(), Error> {
+        sync(executor, column_mapper, to_value!(table), table_name).await
     }
 }
