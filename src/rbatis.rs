@@ -13,6 +13,9 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use serde::Serialize;
+use rbs::to_value;
+use crate::table_sync::{ColumMapper, sync};
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -289,5 +292,44 @@ impl RBatis {
             }
         }
         return None;
+    }
+
+    /// create table if not exists, add column if not exists
+    /// ```rust
+    /// use rbatis::RBatis;
+    /// use rbatis::table_sync::{SqliteTableMapper};
+    ///
+    /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    /// pub struct User{
+    ///   pub id:String,
+    ///   pub name: Option<String>
+    /// }
+    ///
+    /// /// let rb = RBatis::new();
+    /// /// let conn = rb.acquire().await;
+    /// pub async fn do_sync_table(rb: &RBatis){
+    ///      let table = User{id: "".to_string(), name: Some("".to_string())};
+    ///      rb.sync(&SqliteTableMapper{},&table,"user").await;
+    /// }
+    /// ```
+    /// ```rust
+    /// use rbatis::RBatis;
+    /// use rbatis::table_sync::{MysqlTableMapper};
+    ///
+    /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    /// pub struct User{
+    ///   pub id:String,
+    ///   pub name: Option<String>
+    /// }
+    ///
+    /// /// let rb = RBatis::new();
+    /// /// let conn = rb.acquire().await;
+    /// pub async fn do_sync_table_mysql(rb: &RBatis){
+    ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
+    ///      rb.sync(&MysqlTableMapper{},&table,"user").await;
+    /// }
+    /// ```
+    pub async fn sync<T: Serialize>(&self, column_mapper: &dyn ColumMapper, table: &T, table_name: &str) -> Result<(), Error> {
+        sync(self, column_mapper, to_value!(table), table_name).await
     }
 }
