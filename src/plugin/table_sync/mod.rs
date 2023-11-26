@@ -17,10 +17,9 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 
 /// create table if not exists, add column if not exists
 /// ```rust
-/// use rbatis::Error;
 /// use rbatis::executor::RBatisConnExecutor;
 /// use rbatis::RBatis;
-/// use rbatis::table_sync::{SqliteTableMapper, sync};
+/// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
 /// use rbs::to_value;
 ///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -36,9 +35,22 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
 /// }
 ///
+/// ```
+/// ```rust
+/// use rbatis::executor::RBatisConnExecutor;
+/// use rbatis::RBatis;
+/// use rbatis::table_sync::{MysqlTableMapper, sync};
+/// use rbs::to_value;
+///
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct User{
+///   pub id:String,
+///   pub name: Option<String>
+/// }
+///
 /// pub async fn do_sync_table_mysql(conn: &RBatisConnExecutor){
 ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
+///      sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
 /// }
 /// ```
 pub fn sync<'a>(
