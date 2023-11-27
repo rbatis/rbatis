@@ -2,6 +2,7 @@ use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
+use crate::table_sync::{sync, ColumMapper};
 use crate::Error;
 use dark_std::sync::SyncVec;
 use log::LevelFilter;
@@ -9,13 +10,12 @@ use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
 use rbdc::rt::tokio::sync::Mutex;
 use rbdc_pool_mobc::MobcPool;
+use rbs::to_value;
+use serde::Serialize;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use serde::Serialize;
-use rbs::to_value;
-use crate::table_sync::{ColumMapper, sync};
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -329,7 +329,12 @@ impl RBatis {
     ///      RBatis::sync(&rb,&MysqlTableMapper{},&table,"user").await;
     /// }
     /// ```
-    pub async fn sync<T: Serialize>(executor: &dyn Executor, column_mapper: &dyn ColumMapper, table: &T, table_name: &str) -> Result<(), Error> {
+    pub async fn sync<T: Serialize>(
+        executor: &dyn Executor,
+        column_mapper: &dyn ColumMapper,
+        table: &T,
+        table_name: &str,
+    ) -> Result<(), Error> {
         sync(executor, column_mapper, to_value!(table), table_name).await
     }
 }

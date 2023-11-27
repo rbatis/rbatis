@@ -2,6 +2,7 @@ use crate::protocol::text::ColumnType;
 use crate::result_set::{MySqlColumn, MySqlTypeInfo};
 use crate::types::{Encode, TypeInfo};
 use rbdc::ext::ustr::UStr;
+use rbdc::Error;
 use rbs::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -27,16 +28,17 @@ pub struct MySqlArguments {
 }
 
 impl MySqlArguments {
-    pub fn add(&mut self, arg: Value) {
+    pub fn add(&mut self, arg: Value) -> Result<(), Error> {
         let index = self.types.len();
         let ty = arg.type_info();
-        arg.encode(&mut self.values).unwrap();
+        arg.encode(&mut self.values)?;
         let is_null = ty.r#type.eq(&ColumnType::Null);
         self.types.push(ty);
         self.null_bitmap.resize((index / 8) + 1, 0);
         if is_null {
             self.null_bitmap[index / 8] |= (1 << (index % 8)) as u8;
         }
+        Ok(())
     }
 
     #[doc(hidden)]
@@ -45,12 +47,12 @@ impl MySqlArguments {
     }
 }
 
-impl From<Vec<Value>> for MySqlArguments {
-    fn from(args: Vec<Value>) -> Self {
+impl MySqlArguments {
+    pub fn from_args(args: Vec<Value>) -> Result<MySqlArguments, Error> {
         let mut arg = MySqlArguments::default();
         for x in args {
-            arg.add(x);
+            arg.add(x)?;
         }
-        arg
+        Ok(arg)
     }
 }

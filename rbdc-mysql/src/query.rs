@@ -1,5 +1,6 @@
 use crate::stmt::{MySqlArguments, MySqlStatement};
 use either::Either;
+use rbdc::Error;
 
 #[must_use = "query must be executed to affect database"]
 pub struct MysqlQuery {
@@ -24,12 +25,12 @@ impl MysqlQuery {
     }
 
     #[inline]
-    pub fn take_arguments(self) -> Option<MySqlArguments> {
+    pub fn take_arguments(self) -> Result<Option<MySqlArguments>, Error> {
         if self.arguments.is_empty() {
-            return None;
+            return Ok(None);
         }
         //Value to MysqlArguments
-        return Some(MySqlArguments::from(self.arguments));
+        return Ok(Some(MySqlArguments::from_args(self.arguments)?));
     }
 
     #[inline]
