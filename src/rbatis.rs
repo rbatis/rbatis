@@ -297,22 +297,24 @@ impl RBatis {
     /// create table if not exists, add column if not exists
     ///
     /// ```rust
+    /// use rbatis::executor::Executor;
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{SqliteTableMapper};
     ///
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
-    /// pub async fn do_sync_table(rb: &RBatis){
+    /// pub async fn do_sync_table(conn: &dyn Executor){
     ///       let map = rbs::to_value!{
     ///             "id":"INT",
     ///             "name":"TEXT",
     ///      };
-    ///      let _ = RBatis::sync(&rb,&SqliteTableMapper{},&map,"user").await;
+    ///      let _ = RBatis::sync(conn,&SqliteTableMapper{},&map,"user").await;
     /// }
     /// ```
     ///
     /// sync table struct
     /// ```rust
+    /// use rbatis::executor::Executor;
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{SqliteTableMapper};
     ///
@@ -324,14 +326,15 @@ impl RBatis {
     ///
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
-    /// pub async fn do_sync_table(rb: &RBatis){
+    /// pub async fn do_sync_table(conn: &dyn Executor){
     ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-    ///      let _ = RBatis::sync(&rb,&SqliteTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(conn,&SqliteTableMapper{},&table,"user").await;
     /// }
     /// ```
     ///
     /// sync table struct (custom string column type)
     /// ```rust
+    /// use rbatis::executor::Executor;
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{MysqlTableMapper};
     ///
@@ -343,9 +346,9 @@ impl RBatis {
     ///
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
-    /// pub async fn do_sync_table_mysql(rb: &RBatis){
+    /// pub async fn do_sync_table_mysql(conn: &dyn Executor){
     ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-    ///      let _ = RBatis::sync(&rb,&MysqlTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(conn,&MysqlTableMapper{},&table,"user").await;
     /// }
     /// ```
     pub async fn sync<T: Serialize>(
