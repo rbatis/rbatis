@@ -33,6 +33,8 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// }
 ///
 /// ```
+///
+/// sync table struct
 /// ```rust
 /// use rbatis::executor::{Executor, RBatisConnExecutor};
 /// use rbatis::RBatis;
@@ -53,6 +55,8 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// }
 ///
 /// ```
+///
+/// sync table struct (custom string column type)
 /// ```rust
 /// use rbatis::executor::Executor;
 /// use rbatis::RBatis;
