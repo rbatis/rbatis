@@ -11,15 +11,15 @@ pub trait Encode {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>;
 }
 
-impl From<Vec<Value>> for PgArguments {
-    fn from(args: Vec<Value>) -> Self {
+impl PgArguments{
+    pub fn from_args(args: Vec<Value>) -> Result<Self,Error>{
         let mut arg = PgArguments {
             types: Vec::with_capacity(args.len()),
             buffer: PgArgumentBuffer::default(),
         };
         for x in args {
-            arg.add(x).unwrap();
+            arg.add(x)?;
         }
-        arg
+        Ok(arg)
     }
 }

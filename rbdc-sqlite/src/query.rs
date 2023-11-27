@@ -1,5 +1,6 @@
 use crate::{SqliteArguments, SqliteStatement};
 use either::Either;
+use rbdc::Error;
 
 pub struct SqliteQuery {
     pub statement: Either<String, SqliteStatement>,
@@ -24,11 +25,11 @@ impl SqliteQuery {
     }
 
     #[inline]
-    pub fn take_arguments(self) -> Option<SqliteArguments> {
+    pub fn take_arguments(self) -> Result<Option<SqliteArguments>,Error> {
         if self.arguments.is_empty() {
-            return None;
+            return Ok(None);
         }
-        return Some(SqliteArguments::from(self.arguments));
+        return Ok(Some(SqliteArguments::from_args(self.arguments)?));
     }
 
     #[inline]

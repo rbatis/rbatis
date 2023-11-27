@@ -5,6 +5,8 @@ use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
 use futures_util::{TryFutureExt, TryStreamExt};
 use rbdc::error::Error;
+use rbdc::try_stream;
+use futures_util::pin_mut;
 
 impl SqliteConnection {
     pub fn fetch_many(
@@ -13,13 +15,18 @@ impl SqliteConnection {
     ) -> BoxStream<'_, Result<Either<SqliteQueryResult, SqliteRow>, Error>> {
         let sql = query.sql().to_string();
         let persistent = query.persistent() && !query.arguments.is_empty();
-        let arguments = query.take_arguments();
-        Box::pin(
-            self.worker
+        Box::pin(try_stream! {
+            let arguments = query.take_arguments()?;
+            let s=self.worker
                 .execute(sql, arguments, self.row_channel_size, persistent)
                 .map_ok(flume::Receiver::into_stream)
-                .try_flatten_stream(),
-        )
+                .try_flatten_stream();
+            pin_mut!(s);
+            while let Some(v) = s.try_next().await? {
+                r#yield!(v);
+            }
+            Ok(())
+        })
     }
 
     pub fn fetch_optional(
@@ -28,22 +35,19 @@ impl SqliteConnection {
     ) -> BoxFuture<'_, Result<Option<SqliteRow>, Error>> {
         let sql = query.sql().to_owned();
         let persistent = query.persistent() && !query.arguments.is_empty();
-        let arguments = query.take_arguments();
         Box::pin(async move {
+            let arguments = query.take_arguments()?;
             let stream = self
                 .worker
                 .execute(sql, arguments, self.row_channel_size, persistent)
                 .map_ok(flume::Receiver::into_stream)
                 .try_flatten_stream();
-
-            futures_util::pin_mut!(stream);
-
+            pin_mut!(stream);
             while let Some(res) = stream.try_next().await? {
                 if let Either::Right(row) = res {
                     return Ok(Some(row));
                 }
             }
-
             Ok(None)
         })
     }
