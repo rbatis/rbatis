@@ -309,7 +309,7 @@ impl RBatis {
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table(rb: &RBatis){
     ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-    ///      RBatis::sync(&rb,&SqliteTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(&rb,&SqliteTableMapper{},&table,"user").await;
     /// }
     /// ```
     /// ```rust
@@ -326,7 +326,7 @@ impl RBatis {
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table_mysql(rb: &RBatis){
     ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-    ///      RBatis::sync(&rb,&MysqlTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(&rb,&MysqlTableMapper{},&table,"user").await;
     /// }
     /// ```
     pub async fn sync<T: Serialize>(

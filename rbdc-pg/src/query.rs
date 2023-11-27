@@ -28,7 +28,7 @@ impl PgQuery {
     }
 
     #[inline]
-    pub fn take_arguments(self) -> Result<Option<PgArguments>,Error> {
+    pub fn take_arguments(self) -> Result<Option<PgArguments>, Error> {
         if self.arguments.is_empty() {
             return Ok(None);
         }

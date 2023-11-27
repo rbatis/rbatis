@@ -25,7 +25,7 @@ impl SqliteQuery {
     }
 
     #[inline]
-    pub fn take_arguments(self) -> Result<Option<SqliteArguments>,Error> {
+    pub fn take_arguments(self) -> Result<Option<SqliteArguments>, Error> {
         if self.arguments.is_empty() {
             return Ok(None);
         }
