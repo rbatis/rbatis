@@ -220,8 +220,8 @@ impl MySqlConnection {
     ) -> BoxStream<'_, Result<Either<MySqlQueryResult, MySqlRow>, Error>> {
         let sql = query.sql().to_owned();
         let persistent = query.persistent();
-        let arguments = query.take_arguments();
         Box::pin(try_stream! {
+            let arguments = query.take_arguments()?;
             let s = self.run(&sql, arguments, persistent).await?;
             pin_mut!(s);
 

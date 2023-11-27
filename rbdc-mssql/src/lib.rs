@@ -30,7 +30,7 @@ impl MssqlConnection {
         let tcp = TcpStream::connect(cfg.get_addr())
             .await
             .map_err(|e| Error::from(e.to_string()))?;
-        tcp.set_nodelay(true).unwrap();
+        tcp.set_nodelay(true)?;
         let c = Client::connect(cfg.clone(), tcp.compat_write())
             .await
             .map_err(|e| Error::from(e.to_string()))?;
