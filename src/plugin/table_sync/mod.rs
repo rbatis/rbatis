@@ -22,6 +22,23 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
 /// use rbs::to_value;
 ///
+/// /// let rb = RBatis::new();
+/// /// let conn = rb.acquire().await;
+/// pub async fn do_sync_table(conn: &RBatisConnExecutor){
+///     let map = rbs::to_value!{
+///             "id":"TEXT",
+///             "name":"TEXT",
+///      };
+///      let _ = sync(conn, &SqliteTableMapper{},map,"user").await;
+/// }
+///
+/// ```
+/// ```rust
+/// use rbatis::executor::RBatisConnExecutor;
+/// use rbatis::RBatis;
+/// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
+/// use rbs::to_value;
+///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct User{
 ///   pub id:String,

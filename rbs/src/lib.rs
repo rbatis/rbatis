@@ -56,6 +56,18 @@ impl Value {
     }
 }
 
+
+/// to_value macro
+///
+/// to_value! map
+///```rust
+/// let v=  rbs::to_value! {"1":"1",};
+///```
+/// to_value! expr
+///```rust
+/// let arg="1";
+/// let v =  rbs::to_value!(arg);
+///```
 #[macro_export]
 macro_rules! to_value {
     {$($k:tt:$v:expr $(,)+ )*} => {

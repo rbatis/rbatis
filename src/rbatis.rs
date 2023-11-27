@@ -299,6 +299,21 @@ impl RBatis {
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{SqliteTableMapper};
     ///
+    /// /// let rb = RBatis::new();
+    /// /// let conn = rb.acquire().await;
+    /// pub async fn do_sync_table(rb: &RBatis){
+    ///       let map = rbs::to_value!{
+    ///             "id":"INT",
+    ///             "name":"TEXT",
+    ///      };
+    ///      let _ = RBatis::sync(&rb,&SqliteTableMapper{},&map,"user").await;
+    /// }
+    /// ```
+    ///
+    /// ```rust
+    /// use rbatis::RBatis;
+    /// use rbatis::table_sync::{SqliteTableMapper};
+    ///
     /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     /// pub struct User{
     ///   pub id:String,
