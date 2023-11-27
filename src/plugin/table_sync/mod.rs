@@ -17,14 +17,14 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 
 /// create table if not exists, add column if not exists
 /// ```rust
-/// use rbatis::executor::RBatisConnExecutor;
+/// use rbatis::executor::{Executor, RBatisConnExecutor};
 /// use rbatis::RBatis;
 /// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
 /// use rbs::to_value;
 ///
 /// /// let rb = RBatis::new();
 /// /// let conn = rb.acquire().await;
-/// pub async fn do_sync_table(conn: &RBatisConnExecutor){
+/// pub async fn do_sync_table(conn: &dyn Executor){
 ///     let map = rbs::to_value!{
 ///             "id":"TEXT",
 ///             "name":"TEXT",
@@ -34,7 +34,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///
 /// ```
 /// ```rust
-/// use rbatis::executor::RBatisConnExecutor;
+/// use rbatis::executor::{Executor, RBatisConnExecutor};
 /// use rbatis::RBatis;
 /// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
 /// use rbs::to_value;
@@ -47,14 +47,14 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///
 /// /// let rb = RBatis::new();
 /// /// let conn = rb.acquire().await;
-/// pub async fn do_sync_table(conn: &RBatisConnExecutor){
+/// pub async fn do_sync_table(conn: &dyn Executor){
 ///      let table = User{id: "".to_string(), name: Some("".to_string())};
 ///      let _ = sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
 /// }
 ///
 /// ```
 /// ```rust
-/// use rbatis::executor::RBatisConnExecutor;
+/// use rbatis::executor::Executor;
 /// use rbatis::RBatis;
 /// use rbatis::table_sync::{MysqlTableMapper, sync};
 /// use rbs::to_value;
@@ -65,7 +65,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///   pub name: Option<String>
 /// }
 ///
-/// pub async fn do_sync_table_mysql(conn: &RBatisConnExecutor){
+/// pub async fn do_sync_table_mysql(conn: &dyn Executor){
 ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
 ///      let _ = sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
 /// }
