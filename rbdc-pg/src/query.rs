@@ -1,6 +1,7 @@
 use crate::arguments::PgArguments;
 use crate::statement::PgStatement;
 use either::Either;
+use rbdc::Error;
 
 /// Raw SQL query with bind parameters. Returned by [`query`][crate::query::query].
 #[must_use = "query must be executed to affect database"]
@@ -27,11 +28,11 @@ impl PgQuery {
     }
 
     #[inline]
-    pub fn take_arguments(self) -> Option<PgArguments> {
+    pub fn take_arguments(self) -> Result<Option<PgArguments>,Error> {
         if self.arguments.is_empty() {
-            return None;
+            return Ok(None);
         }
-        return Some(PgArguments::from(self.arguments));
+        return Ok(Some(PgArguments::from_args(self.arguments)?));
     }
 
     #[inline]

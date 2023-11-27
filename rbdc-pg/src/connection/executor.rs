@@ -339,8 +339,8 @@ impl PgConnection {
         let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));
         let persistent = query.persistent();
-        let arguments = query.take_arguments();
         Box::pin(try_stream! {
+            let arguments = query.take_arguments()?;
             let s = self.run(&sql, arguments, 0, persistent, metadata).await?;
             pin_mut!(s);
 
@@ -359,17 +359,15 @@ impl PgConnection {
         let sql = query.sql().to_string();
         let metadata = query.statement().map(|s| Arc::clone(&s.metadata));
         let persistent = query.persistent();
-        let arguments = query.take_arguments();
         Box::pin(async move {
+            let arguments = query.take_arguments()?;
             let s = self.run(&sql, arguments, 1, persistent, metadata).await?;
             pin_mut!(s);
-
             while let Some(s) = s.try_next().await? {
                 if let Either::Right(r) = s {
                     return Ok(Some(r));
                 }
             }
-
             Ok(None)
         })
     }
