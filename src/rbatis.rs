@@ -295,6 +295,7 @@ impl RBatis {
     }
 
     /// create table if not exists, add column if not exists
+    ///
     /// ```rust
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{SqliteTableMapper};
@@ -310,6 +311,7 @@ impl RBatis {
     /// }
     /// ```
     ///
+    /// sync table struct
     /// ```rust
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{SqliteTableMapper};
@@ -327,6 +329,8 @@ impl RBatis {
     ///      let _ = RBatis::sync(&rb,&SqliteTableMapper{},&table,"user").await;
     /// }
     /// ```
+    ///
+    /// sync table struct (custom string column type)
     /// ```rust
     /// use rbatis::RBatis;
     /// use rbatis::table_sync::{MysqlTableMapper};
