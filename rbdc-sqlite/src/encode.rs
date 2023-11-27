@@ -17,8 +17,8 @@ pub enum IsNull {
     No,
 }
 
-impl SqliteArguments{
-    pub fn from_args(args: Vec<Value>) -> Result<Self,Error>{
+impl SqliteArguments {
+    pub fn from_args(args: Vec<Value>) -> Result<Self, Error> {
         let mut arg = SqliteArguments {
             values: Vec::with_capacity(args.len()),
         };

@@ -32,7 +32,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// /// let conn = rb.acquire().await;
 /// pub async fn do_sync_table(conn: &RBatisConnExecutor){
 ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-///      sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
+///      let _ = sync(conn, &SqliteTableMapper{},to_value!(table),"user").await;
 /// }
 ///
 /// ```
@@ -50,7 +50,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///
 /// pub async fn do_sync_table_mysql(conn: &RBatisConnExecutor){
 ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-///      sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
+///      let _ = sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
 /// }
 /// ```
 pub fn sync<'a>(

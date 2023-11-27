@@ -3,10 +3,10 @@ use crate::{SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, Sql
 use either::Either;
 use futures_core::future::BoxFuture;
 use futures_core::stream::BoxStream;
+use futures_util::pin_mut;
 use futures_util::{TryFutureExt, TryStreamExt};
 use rbdc::error::Error;
 use rbdc::try_stream;
-use futures_util::pin_mut;
 
 impl SqliteConnection {
     pub fn fetch_many(
