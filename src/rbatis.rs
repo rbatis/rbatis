@@ -105,13 +105,12 @@ impl RBatis {
     /// init pool by DBPoolOptions and Pool
     /// for example:
     ///```
-    /// use rbatis::RBatis;
-    /// use rbdc_pool_mobc::MobcPool;
+    /// use rbatis::{DefaultPool, RBatis};
     /// use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
     /// let rb=RBatis::new();
     ///
     /// let opts=SqliteConnectOptions::new();
-    /// let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, MobcPool>(SqliteDriver{},opts);
+    /// let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, DefaultPool>(SqliteDriver{},opts);
     /// ```
     ///
     pub fn init_option<
