@@ -23,3 +23,4 @@ pub use decode::*;
 pub use error::*;
 pub use plugin::*;
 pub use rbatis::*;
+pub use rbdc_pool_mobc::MobcPool as DefaultPool;
