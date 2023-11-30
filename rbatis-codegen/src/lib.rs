@@ -1,3 +1,5 @@
+pub mod into_sql;
+pub use into_sql::IntoSql;
 pub mod codegen;
 pub mod error;
 pub mod from_bool;
@@ -14,4 +16,5 @@ pub mod ops_not;
 pub mod ops_rem;
 pub mod ops_sub;
 pub mod ops_xor;
+
 pub use codegen::{rb_html, rb_py};

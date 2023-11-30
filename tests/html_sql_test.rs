@@ -244,4 +244,92 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_test_if() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_if(rb: &RBatis, id: &u64)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_if(&mut rb, &1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from table where id = 1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_test_null() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_null(rb: &RBatis, id: Option<i32>)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_null(&mut rb, None).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from table where id = 1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_method_call() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                 fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_method_call(rb: &RBatis, id: Option<i32>)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_method_call(&mut rb, None).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from table where id = 1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_binary() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_binary(rb: &RBatis, id: i32, b:bool)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_binary(&mut rb, 1,true).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
 }

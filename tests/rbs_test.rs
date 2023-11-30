@@ -3,7 +3,7 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbdc::datetime::DateTime;
     use rbdc::Timestamp;
-    use rbs::{to_value, Value};
+    use rbs::{Value};
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
 

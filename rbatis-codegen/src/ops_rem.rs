@@ -116,6 +116,20 @@ macro_rules! impl_numeric_rem {
                 }
             }
 
+            impl<'a> Rem<$ty> for &'a Value {
+                type Output = $return_ty;
+                fn op_rem(self, other: $ty) -> Self::Output {
+                    $rem(self, other as _)
+                }
+            }
+
+            impl<'a> Rem<&$ty> for &'a Value {
+                type Output = $return_ty;
+                fn op_rem(self, other: &$ty) -> Self::Output {
+                    $rem(self, *other as _)
+                }
+            }
+
             impl Rem<Value> for $ty {
                 type Output = $return_ty;
                 fn op_rem(self, other: Value) -> Self::Output {
@@ -127,20 +141,6 @@ macro_rules! impl_numeric_rem {
                 type Output = $return_ty;
                 fn op_rem(self, other: &Value) -> Self::Output {
                     $rem_value(other, self as _)
-                }
-            }
-
-           impl Rem<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: &&Value) -> Self::Output {
-                    $rem_value(*other, self as _)
-                }
-            }
-
-            impl<'a> Rem<$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_rem(self, other: $ty) -> Self::Output {
-                    $rem(self, other as _)
                 }
             }
         )*)*

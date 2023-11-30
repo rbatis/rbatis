@@ -104,27 +104,6 @@ macro_rules! impl_numeric_mul {
                 }
             }
 
-            impl Mul<Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: Value) -> Self::Output {
-                    $mul(&other, self as _)
-                }
-            }
-
-            impl Mul<&Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: &Value) -> Self::Output {
-                    $mul(other, self as _)
-                }
-            }
-
-            impl Mul<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: &&Value) -> Self::Output {
-                    $mul(*other, self as _)
-                }
-            }
-
             impl<'a> Mul<$ty> for &'a Value {
                 type Output = $return_ty;
                 fn op_mul(self, other: $ty) -> Self::Output {
@@ -136,6 +115,20 @@ macro_rules! impl_numeric_mul {
                 type Output = $return_ty;
                 fn op_mul(self, other: &$ty) -> Self::Output {
                     $mul(self, *other as _)
+                }
+            }
+
+            impl Mul<Value> for $ty {
+                type Output = $return_ty;
+                fn op_mul(self, other: Value) -> Self::Output {
+                    $mul(&other, self as _)
+                }
+            }
+
+            impl Mul<&Value> for $ty {
+                type Output = $return_ty;
+                fn op_mul(self, other: &Value) -> Self::Output {
+                    $mul(other, self as _)
                 }
             }
         )*)*

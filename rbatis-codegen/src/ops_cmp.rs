@@ -149,6 +149,18 @@ macro_rules! impl_numeric_cmp {
                 }
             }
 
+            impl<'a> PartialOrd<$ty> for &'a Value {
+                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
+                    $eq(*self, *rhs as _)
+                }
+            }
+
+            impl<'a> PartialOrd<&$ty> for &'a Value {
+                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
+                    $eq(*self, **rhs as _)
+                }
+            }
+
             impl PartialOrd<Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
                     $eq(rhs, *self as _)
@@ -158,18 +170,6 @@ macro_rules! impl_numeric_cmp {
             impl PartialOrd<&Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
                     $eq(*rhs, *self as _)
-                }
-            }
-
-            impl PartialOrd<&&Value> for $ty {
-                fn op_partial_cmp(&self, rhs: &&&Value)  -> Option<Ordering> {
-                    $eq(**rhs, *self as _)
-                }
-            }
-
-            impl<'a> PartialOrd<$ty> for &'a Value {
-                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
-                    $eq(*self, *rhs as _)
                 }
             }
         )*)*

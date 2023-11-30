@@ -165,7 +165,7 @@ impl Intercept for LogInterceptor {
         if self.replace_holder.load(Ordering::Relaxed) {
             let mut sql = sql.to_string();
             for x in &*args {
-                sql = sql.replacen('?', &x.as_sql(), 1);
+                sql = sql.replacen('?', &x.string(), 1);
             }
             log!(
                 level,
