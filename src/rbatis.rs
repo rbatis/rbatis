@@ -159,8 +159,8 @@ impl RBatis {
     /// ```rust
     /// use rbatis::RBatis;
     /// let rb = RBatis::new();
-    /// //rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db");
-    /// //rb.get_pool().unwrap().resize(10);
+    /// //rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db").unwrap();
+    /// //rb.get_pool().unwrap().set_max_open_conns(10).await;
     /// ```
     pub fn get_pool(&self) -> Result<&dyn Pool, Error> {
         let p = self
