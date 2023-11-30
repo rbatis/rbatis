@@ -9,10 +9,9 @@ pub trait AsProxy {
     fn u32(&self) -> u32;
     fn u64(&self) -> u64;
     fn f64(&self) -> f64;
-    // fn str(&self) -> &str;
-    fn string(self) -> String;
     fn bool(&self) -> bool;
-    fn as_sql(&self) -> String;
+
+    fn string(&self) -> String;
     fn as_binary(&self) -> Vec<u8>;
 }
 
@@ -37,19 +36,16 @@ impl AsProxy for Value {
         self.as_f64().unwrap_or_default()
     }
 
-    fn string(self) -> String {
-        self.into_string().unwrap_or_default()
+    fn string(&self) -> String {
+        if self.is_str() {
+            self.as_string().unwrap_or_default()
+        } else {
+            self.to_string()
+        }
     }
 
     fn bool(&self) -> bool {
         self.as_bool().unwrap_or_default()
-    }
-
-    fn as_sql(&self) -> String {
-        match self {
-            Value::String(s) => s.to_string(),
-            _ => self.to_string(),
-        }
     }
 
     fn as_binary(&self) -> Vec<u8> {
@@ -59,6 +55,65 @@ impl AsProxy for Value {
         }
     }
 }
+
+impl AsProxy for bool {
+    fn i32(&self) -> i32 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn i64(&self) -> i64 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn u32(&self) -> u32 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn u64(&self) -> u64 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn f64(&self) -> f64 {
+        if *self {
+            1.0
+        } else {
+            0.0
+        }
+    }
+
+    fn bool(&self) -> bool {
+        *self
+    }
+
+    fn string(&self) -> String {
+        self.to_string()
+    }
+
+    fn as_binary(&self) -> Vec<u8> {
+        if *self {
+            vec![1u8]
+        } else {
+            vec![0u8]
+        }
+    }
+}
+
 
 macro_rules! as_number {
     ($ty:ty,$bool_expr:expr) => {
@@ -83,7 +138,7 @@ macro_rules! as_number {
                 *self as f64
             }
 
-            fn string(self) -> String {
+            fn string(&self) -> String {
                 self.to_string()
             }
 
@@ -94,10 +149,6 @@ macro_rules! as_number {
                 } else {
                     false
                 }
-            }
-
-            fn as_sql(&self) -> String {
-                self.to_string()
             }
 
             fn as_binary(&self) -> Vec<u8> {

@@ -72,4 +72,26 @@
             </if>
         </where>
     </select>
+
+    <select id="test_if">
+        `select * from table `
+        <if test="id == 1">
+            `where id = 1`
+        </if>
+    </select>
+
+    <select id="test_null">
+        `select * from table `
+        <if test="id == null">
+            `where id = 1`
+        </if>
+    </select>
+
+    <select id="test_method_call">
+        `select * from table where id = ${id.method()}`
+    </select>
+
+    <select id="test_binary">
+        `${id + 1},${id - 1},${id * 1},${id / 1},${id % 1},${id & 1},${id | 1},${id == 1},${id < 1},${id <= 1},${id != 1},${id >= 1},${id > 1},${id ^ 1},${b && true},${b || true}`
+    </select>
 </mapper>

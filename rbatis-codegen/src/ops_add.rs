@@ -30,27 +30,6 @@ macro_rules! impl_numeric_add {
                 }
             }
 
-            impl Add<Value> for $ty {
-                type Output = $return_ty;
-                fn op_add(self, other: Value) -> Self::Output {
-                    $eq(&other, self as _)
-                }
-            }
-
-            impl Add<&Value> for $ty {
-                type Output = $return_ty;
-                fn op_add(self, other: &Value) -> Self::Output {
-                    $eq(other, self as _)
-                }
-            }
-
-            impl Add<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_add(self, other: &&Value) -> Self::Output {
-                    $eq(*other, self as _)
-                }
-            }
-
             impl<'a> Add<$ty> for &'a Value {
                 type Output = $return_ty;
                 fn op_add(self, other: $ty) -> Self::Output {
@@ -62,6 +41,20 @@ macro_rules! impl_numeric_add {
                 type Output = $return_ty;
                 fn op_add(self, other: &$ty) -> Self::Output {
                     $eq(self, *other as _)
+                }
+            }
+
+            impl Add<Value> for $ty {
+                type Output = $return_ty;
+                fn op_add(self, other: Value) -> Self::Output {
+                    $eq(&other, self as _)
+                }
+            }
+
+            impl Add<&Value> for $ty {
+                type Output = $return_ty;
+                fn op_add(self, other: &Value) -> Self::Output {
+                    $eq(other, self as _)
                 }
             }
         )*)*

@@ -99,6 +99,20 @@ macro_rules! impl_numeric_sub {
                 }
             }
 
+            impl<'a> Sub<$ty> for &'a Value {
+                type Output = $return_ty;
+                fn op_sub(self, other: $ty) -> Self::Output {
+                    $sub(self, other as _)
+                }
+            }
+
+            impl<'a> Sub<&$ty> for &'a Value {
+                type Output = $return_ty;
+                fn op_sub(self, other: &$ty) -> Self::Output {
+                    $sub(self, *other as _)
+                }
+            }
+
             impl Sub<Value> for $ty {
                 type Output = $return_ty;
                 fn op_sub(self, other: Value) -> Self::Output {
@@ -110,19 +124,6 @@ macro_rules! impl_numeric_sub {
                 type Output = $return_ty;
                 fn op_sub(self, other: &Value) -> Self::Output {
                     $sub_value(other, self as _)
-                }
-            }
-            impl Sub<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: &&Value) -> Self::Output {
-                    $sub_value(*other, self as _)
-                }
-            }
-
-            impl<'a> Sub<$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_sub(self, other: $ty) -> Self::Output {
-                    $sub(self, other as _)
                 }
             }
         )*)*
