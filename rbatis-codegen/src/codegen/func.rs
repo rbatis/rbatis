@@ -305,7 +305,7 @@ pub fn impl_fn(
         )
     }
     let mut t = t.expect("codegen_func fail");
-    t = translate(context, t, ignore).expect("gen func fail");
+    t = translate(context, t, ignore).expect("translate fail");
     string_data = t.to_token_stream().to_string();
     string_data = string_data.replace(" . ", ".");
     let t = syn::parse_str::<Expr>(&string_data);
