@@ -332,4 +332,188 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_unary() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_unary(rb: &RBatis, id: i32)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_unary(&mut rb, 1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "-1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_paren() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_paren(rb: &RBatis, id: i32)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_paren(&mut rb, 1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "-1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_field() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_field(rb: &RBatis, t: MockTable)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_field(&mut rb, MockTable{
+                id: None,
+                name: Some("aaa".to_string()),
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: None,
+                remark: None,
+                create_time: None,
+                version: None,
+                delete_flag: None,
+                count: 0,
+            }).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "aaa");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_reference() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_reference(rb: &RBatis, t: MockTable)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_reference(&mut rb, MockTable{
+                id: None,
+                name: Some("aaa".to_string()),
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: None,
+                remark: None,
+                create_time: None,
+                version: None,
+                delete_flag: None,
+                count: 0,
+            }).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "aaa");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_index() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_index(rb: &RBatis, arr: Vec<i32>)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_index(& rb, vec![1]).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_lit() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Methods{
+                fn method(&self)->Value;
+            }
+            impl Methods for Value{
+                fn method(&self) -> Value {
+                    Value::I32(1)
+                }
+            }
+            htmlsql!(test_lit(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
+
+            let r = test_lit(& rb,).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "aaaa");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
 }

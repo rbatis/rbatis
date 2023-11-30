@@ -126,6 +126,12 @@ macro_rules! impl_numeric_sub {
                     $sub_value(other, self as _)
                 }
             }
+            impl Sub<&&Value> for $ty {
+                type Output = $return_ty;
+                fn op_sub(self, other: &&Value) -> Self::Output {
+                    $sub_value(*other, self as _)
+                }
+            }
         )*)*
     }
 }
@@ -169,3 +175,17 @@ impl Sub<&$ty> for &$ty{
 
 sub_self!([i8 i16 i32 i64 isize]);
 sub_self!([f32 f64]);
+
+
+#[cfg(test)]
+mod test {
+    use rbs::Value;
+    use crate::ops::Sub;
+
+    #[test]
+    fn test_sub() {
+        let v = 0.op_sub(&&Value::I32(-1));
+        println!("{}", v);
+        assert_eq!(v, 1i64);
+    }
+}

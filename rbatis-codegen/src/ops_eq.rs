@@ -141,6 +141,11 @@ macro_rules! impl_numeric_eq {
                     $eq(*other, *self as _)
                 }
             }
+            impl PartialEq<&&Value> for $ty {
+               fn op_eq(&self, other: &&&Value)  -> bool {
+                    $eq(*other, *self as _)
+                }
+            }
         )*)*
     }
 }

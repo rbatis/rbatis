@@ -220,17 +220,19 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
             b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             if b.op.to_token_stream().to_string().trim() == "-" {
                 return syn::parse_str::<Expr>(&format!(
-                    " (0.op_sub(&{}))",
+                    "0i64.op_sub({})",
                     b.expr.to_token_stream().to_string().trim()
                 ))
                 .expect("codegen_func fail");
             }
             return Expr::Unary(b);
         }
+        //(a-b)
         Expr::Paren(mut b) => {
             b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
             return Expr::Paren(b);
         }
+        //
         Expr::Field(mut b) => {
             b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), ignore));
             match b.member {
@@ -260,9 +262,8 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
             ))
             .expect("codegen_func fail");
         }
-        Expr::Let(mut let_expr) => {
-            let_expr.expr = Box::new(convert_to_arg_access(context, *let_expr.expr, ignore));
-            return Expr::Let(let_expr);
+        Expr::Let(_let_expr) => {
+            panic!("unsupport token `let`");
         }
         Expr::Lit(b) => {
             match b.lit.clone() {

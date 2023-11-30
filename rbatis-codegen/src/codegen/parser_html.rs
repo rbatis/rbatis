@@ -230,7 +230,9 @@ fn parse(
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
                         };
                     } else {
-                        replaces = quote! {#replaces.replacen(#v, &#method_impl.string(), 1)};
+                        replaces = quote! {
+                            #replaces.replacen(#v, &#method_impl.string(), 1)
+                        };
                     }
                 }
                 if !replaces.is_empty() {
