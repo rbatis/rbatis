@@ -136,6 +136,12 @@ macro_rules! impl_numeric_bitor {
                     $eq(other, self as _)
                 }
             }
+            impl BitOr<&&Value> for $ty {
+                type Output = $return_ty;
+                fn op_bitor(self, other: &&Value) -> Self::Output {
+                    $eq(other, self as _)
+                }
+            }
         )*)*
     }
 }

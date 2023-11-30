@@ -21,4 +21,28 @@
     <select id="test_binary">
         `${id + 1},${id - 1},${id * 1},${id / 1},${id % 1},${id & 1},${id | 1},${id == 1},${id < 1},${id <= 1},${id != 1},${id >= 1},${id > 1},${id ^ 1},${b && true},${b || true}`
     </select>
+
+    <select id="test_unary">
+        `${-id}`
+    </select>
+
+    <select id="test_paren">
+        `${(-id)}`
+    </select>
+
+    <select id="test_field">
+        `${t.name}`
+    </select>
+
+    <select id="test_reference">
+        `${&t.name}`
+    </select>
+
+    <select id="test_index">
+        `${arr[0]}`
+    </select>
+
+    <select id="test_lit">
+        `${'aaaa'}`
+    </select>
 </mapper>

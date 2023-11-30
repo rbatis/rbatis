@@ -149,6 +149,41 @@ impl AsProxy for String {
 }
 
 
+impl AsProxy for str {
+    fn i32(&self) -> i32 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn i64(&self) -> i64 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn u32(&self) -> u32 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn u64(&self) -> u64 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn f64(&self) -> f64 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn bool(&self) -> bool {
+        self.parse().unwrap_or_default()
+    }
+
+    fn string(&self) -> String {
+        self.to_string()
+    }
+
+    fn as_binary(&self) -> Vec<u8> {
+        self.to_string().into_bytes()
+    }
+}
+
+
 macro_rules! as_number {
     ($ty:ty,$bool_expr:expr) => {
         impl AsProxy for $ty {
