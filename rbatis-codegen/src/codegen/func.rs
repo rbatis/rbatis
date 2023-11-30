@@ -5,7 +5,9 @@ use syn;
 use syn::{BinOp, Expr, Lit, Member};
 use crate::error::Error;
 
-fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr,Error> {
+
+///translate like `#{a + b}` Expr to rust code Expr
+fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr,Error> {
     match arg {
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
@@ -30,12 +32,12 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<
         }
         Expr::MethodCall(mut b) => {
             //receiver is named need to convert to arg["xxx"]
-            b.receiver = Box::new(convert_to_arg_access(context, *b.receiver.clone(), ignore)?);
+            b.receiver = Box::new(translate(context, *b.receiver.clone(), ignore)?);
             return Ok(Expr::MethodCall(b));
         }
         Expr::Binary(mut b) => {
-            b.left = Box::new(convert_to_arg_access(context, *b.left.clone(), ignore)?);
-            b.right = Box::new(convert_to_arg_access(context, *b.right.clone(), ignore)?);
+            b.left = Box::new(translate(context, *b.left.clone(), ignore)?);
+            b.right = Box::new(translate(context, *b.right.clone(), ignore)?);
             match b.op {
                 BinOp::Add(_) => {
                     let left_token = b.left.to_token_stream().to_string();
@@ -198,7 +200,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<
             return Ok(Expr::Binary(b));
         }
         Expr::Unary(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
+            b.expr = Box::new(translate(context, *b.expr, ignore)?);
             if b.op.to_token_stream().to_string().trim() == "-" {
                 return syn::parse_str::<Expr>(&format!(
                     "0i64.op_sub({})",
@@ -209,12 +211,12 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<
         }
         //(a-b)
         Expr::Paren(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
+            b.expr = Box::new(translate(context, *b.expr, ignore)?);
             return Ok(Expr::Paren(b));
         }
         //
         Expr::Field(mut b) => {
-            b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), ignore)?);
+            b.base = Box::new(translate(context, *b.base.clone(), ignore)?);
             match b.member {
                 Member::Named(named) => {
                     return syn::parse_str::<Expr>(&format!(
@@ -228,12 +230,12 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<
             return Ok(Expr::Field(b));
         }
         Expr::Reference(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
+            b.expr = Box::new(translate(context, *b.expr, ignore)?);
             let result = Expr::Reference(b);
             return Ok(result);
         }
         Expr::Index(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
+            b.expr = Box::new(translate(context, *b.expr, ignore)?);
             return syn::parse_str::<Expr>(&format!(
                 "{}[{}]",
                 b.expr.to_token_stream(),
@@ -303,7 +305,7 @@ pub fn impl_fn(
         )
     }
     let mut t = t.expect("codegen_func fail");
-    t = convert_to_arg_access(context, t, ignore).expect("gen func fail");
+    t = translate(context, t, ignore).expect("gen func fail");
     string_data = t.to_token_stream().to_string();
     string_data = string_data.replace(" . ", ".");
     let t = syn::parse_str::<Expr>(&string_data);
