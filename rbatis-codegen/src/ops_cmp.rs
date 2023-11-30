@@ -172,6 +172,7 @@ macro_rules! impl_numeric_cmp {
                     $eq(*rhs, *self as _)
                 }
             }
+            // for unary
             impl PartialOrd<&&Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &&&Value)  -> Option<Ordering> {
                     $eq(*rhs, *self as _)

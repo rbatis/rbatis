@@ -129,6 +129,7 @@ macro_rules! impl_numeric_sub {
                 }
             }
 
+            // for unary
             impl BitXor<&&Value> for $ty {
                 type Output = $return_ty;
                 fn op_bitxor(self, other: &&Value) -> Self::Output {
