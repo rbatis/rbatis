@@ -92,7 +92,7 @@ fn op_bit_or_i64(v: &Value, other: i64) -> i64 {
 }
 
 
-macro_rules! impl_numeric_bitand {
+macro_rules! impl_numeric_bitor {
     ($($eq:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
         $($(
             impl BitOr<$ty> for Value {
@@ -140,7 +140,7 @@ macro_rules! impl_numeric_bitand {
     }
 }
 
-impl_numeric_bitand! {
+impl_numeric_bitor! {
     op_bit_or_u64[u8 u16 u32 u64] -> u64
     op_bit_or_i64[i8 i16 i32 i64 isize] -> i64
 }
