@@ -143,6 +143,8 @@ macro_rules! impl_numeric_rem {
                     $rem_value(other, self as _)
                 }
             }
+
+            // for unary
             impl Rem<&&Value> for $ty {
                 type Output = $return_ty;
                 fn op_rem(self, other: &&Value) -> Self::Output {

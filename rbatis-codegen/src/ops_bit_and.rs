@@ -137,6 +137,7 @@ macro_rules! impl_numeric_bitand {
                     $eq(other, self as _)
                 }
             }
+            // for unary
             impl BitAnd<&&Value> for $ty {
                 type Output = $return_ty;
                 fn op_bitand(self, other: &&Value) -> Self::Output {

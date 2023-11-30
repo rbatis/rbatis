@@ -126,6 +126,8 @@ macro_rules! impl_numeric_sub {
                     $sub_value(other, self as _)
                 }
             }
+
+            // for unary
             impl Sub<&&Value> for $ty {
                 type Output = $return_ty;
                 fn op_sub(self, other: &&Value) -> Self::Output {
