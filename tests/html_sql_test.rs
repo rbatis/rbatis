@@ -481,11 +481,12 @@ mod test {
                     Value::I32(1)
                 }
             }
-            htmlsql!(test_index(rb: &RBatis, arr: Vec<i32>)  -> Result<Value, Error> => "tests/test.html");
-
-            let r = test_index(& rb, vec![1]).await.unwrap();
+            htmlsql!(test_index(rb: &RBatis, arr: Vec<i32>, map:HashMap<String,String>)  -> Result<Value, Error> => "tests/test.html");
+            let mut m = HashMap::new();
+            m.insert("0".to_string(),"1".to_string());
+            let r = test_index(& rb, vec![1], m).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql, "1");
+            assert_eq!(sql, "11");
             assert_eq!(args, vec![]);
         };
         block_on(f);
