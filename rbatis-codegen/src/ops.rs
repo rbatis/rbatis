@@ -37,10 +37,10 @@ impl AsProxy for Value {
     }
 
     fn string(&self) -> String {
-        if self.is_str() {
-            self.as_string().unwrap_or_default()
-        } else {
-            self.to_string()
+        match self {
+            Value::String(v) => v.to_string(),
+            Value::Ext(_, ext) => ext.as_string().unwrap_or_default(),
+            _ => self.to_string(),
         }
     }
 
