@@ -129,6 +129,19 @@ macro_rules! impl_numeric_sub {
                 }
             }
 
+            impl BitXor<Value> for &$ty {
+                type Output = $return_ty;
+                fn op_bitxor(self, other: Value) -> Self::Output {
+                    $sub_value(&other, *self as _)
+                }
+            }
+
+            impl BitXor<&Value> for &$ty {
+                type Output = $return_ty;
+                fn op_bitxor(self, other: &Value) -> Self::Output {
+                    $sub_value(other, *self as _)
+                }
+            }
             // for unary
             impl BitXor<&&Value> for $ty {
                 type Output = $return_ty;
@@ -176,5 +189,6 @@ impl BitXor<&$ty> for &$ty{
     };
 }
 
+xor_self!([u8 u16 u32 u64]);
 xor_self!([i8 i16 i32 i64 isize]);
 // unsupported! xor_self!([f32 f64]);

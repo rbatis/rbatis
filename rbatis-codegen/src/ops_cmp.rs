@@ -172,6 +172,19 @@ macro_rules! impl_numeric_cmp {
                     $eq(*rhs, *self as _)
                 }
             }
+
+            impl PartialOrd<Value> for &$ty {
+                fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
+                    $eq(rhs, **self as _)
+                }
+            }
+
+            impl PartialOrd<&Value> for &$ty {
+                fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
+                    $eq(*rhs, **self as _)
+                }
+            }
+
             // for unary
             impl PartialOrd<&&Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &&&Value)  -> Option<Ordering> {
@@ -190,7 +203,7 @@ impl_numeric_cmp! {
     eq_str[&str]
 }
 
-macro_rules! cmp_self {
+macro_rules! self_cmp {
     ($eq:ident[$($ty:ty)*]) => {
         $(
 impl PartialOrd<$ty> for $ty{
@@ -217,9 +230,9 @@ impl PartialOrd<&$ty> for &$ty{
     };
 }
 
-cmp_self!(cmp_u64[u8 u16 u32 u64]);
-cmp_self!(cmp_i64[i8 i16 i32 i64 isize]);
-cmp_self!(cmp_f64[f32 f64]);
+self_cmp!(cmp_u64[u8 u16 u32 u64]);
+self_cmp!(cmp_i64[i8 i16 i32 i64 isize]);
+self_cmp!(cmp_f64[f32 f64]);
 
 impl PartialOrd<&str> for &str {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {

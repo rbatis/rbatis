@@ -148,7 +148,6 @@ impl AsProxy for String {
     }
 }
 
-
 impl AsProxy for str {
     fn i32(&self) -> i32 {
         self.parse().unwrap_or_default()
@@ -182,7 +181,6 @@ impl AsProxy for str {
         self.to_string().into_bytes()
     }
 }
-
 
 macro_rules! as_number {
     ($ty:ty,$bool_expr:expr) => {

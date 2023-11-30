@@ -327,7 +327,7 @@ mod test {
 
             let r = test_binary(&mut rb, 1,true).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql.replace("\r\n","").replace("\n",""), "2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true");
+            assert_eq!(sql.replace("\r\n","").replace("\n",""), "2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true,2,0,1,1,0,false,false,true,false,true,false,true,false,0,true,true,2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true");
             assert_eq!(args, vec![]);
         };
         block_on(f);

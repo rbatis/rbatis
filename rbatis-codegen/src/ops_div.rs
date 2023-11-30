@@ -93,6 +93,21 @@ macro_rules! impl_numeric_div {
                     $div_value(other, self as _)
                 }
             }
+
+            impl Div<Value> for &$ty {
+                type Output = $return_ty;
+                fn op_div(self, other: Value) -> Self::Output {
+                    $div_value(&other, *self as _)
+                }
+            }
+
+            impl Div<&Value> for &$ty {
+                type Output = $return_ty;
+                fn op_div(self, other: &Value) -> Self::Output {
+                    $div_value(other, *self as _)
+                }
+            }
+
             // for unary
             impl Div<&&Value> for $ty {
                 type Output = $return_ty;
@@ -202,7 +217,7 @@ impl Div<&&Value> for &Value {
     }
 }
 
-macro_rules! div_self {
+macro_rules! self_div {
     ([$($ty:ty)*]) => {
         $(
 impl Div<$ty> for $ty{
@@ -232,6 +247,6 @@ impl Div<&$ty> for &$ty{
         )*
     };
 }
-div_self!([u8 u16 u32 u64]);
-div_self!([i8 i16 i32 i64 isize]);
-div_self!([f32 f64]);
+self_div!([u8 u16 u32 u64]);
+self_div!([i8 i16 i32 i64 isize]);
+self_div!([f32 f64]);

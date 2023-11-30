@@ -144,6 +144,19 @@ macro_rules! impl_numeric_rem {
                 }
             }
 
+            impl Rem<Value> for &$ty {
+                type Output = $return_ty;
+                fn op_rem(self, other: Value) -> Self::Output {
+                    $rem_value(&other, *self as _)
+                }
+            }
+
+            impl Rem<&Value> for &$ty {
+                type Output = $return_ty;
+                fn op_rem(self, other: &Value) -> Self::Output {
+                    $rem_value(other, *self as _)
+                }
+            }
             // for unary
             impl Rem<&&Value> for $ty {
                 type Output = $return_ty;
@@ -161,7 +174,7 @@ impl_numeric_rem! {
     op_rem_f64,op_rem_f64_value[f32 f64] -> f64
 }
 
-macro_rules! rem_self {
+macro_rules! self_rem {
     ([$($ty:ty)*]) => {
         $(
 impl Rem<$ty> for $ty{
@@ -191,6 +204,6 @@ impl Rem<&$ty> for &$ty{
         )*
     };
 }
-rem_self!([u8 u16 u32 u64]);
-rem_self!([i8 i16 i32 i64 isize]);
-rem_self!([f32 f64]);
+self_rem!([u8 u16 u32 u64]);
+self_rem!([i8 i16 i32 i64 isize]);
+self_rem!([f32 f64]);

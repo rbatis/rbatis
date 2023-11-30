@@ -1,59 +1,59 @@
-use std::borrow::Cow;
-use rbs::Value;
 use crate::ops::AsProxy;
+use rbs::Value;
+use std::borrow::Cow;
 
 pub trait IntoSql {
     fn sql(&self) -> String;
 }
 
-impl IntoSql for bool{
+impl IntoSql for bool {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for String{
+impl IntoSql for String {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for &str{
+impl IntoSql for &str {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
-impl IntoSql for i32{
-    fn sql(&self) -> String {
-        self.to_string()
-    }
-}
-
-impl IntoSql for i64{
+impl IntoSql for i32 {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for f32{
+impl IntoSql for i64 {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for f64{
+impl IntoSql for f32 {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for u32{
+impl IntoSql for f64 {
     fn sql(&self) -> String {
         self.to_string()
     }
 }
 
-impl IntoSql for u64{
+impl IntoSql for u32 {
+    fn sql(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl IntoSql for u64 {
     fn sql(&self) -> String {
         self.to_string()
     }
@@ -167,8 +167,7 @@ impl IntoSql for &Value {
     }
 }
 
-
-impl IntoSql for Cow<'_,Value>{
+impl IntoSql for Cow<'_, Value> {
     fn sql(&self) -> String {
         self.as_ref().sql()
     }

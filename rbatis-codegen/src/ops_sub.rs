@@ -127,6 +127,19 @@ macro_rules! impl_numeric_sub {
                 }
             }
 
+            impl Sub<Value> for &$ty {
+                type Output = $return_ty;
+                fn op_sub(self, other: Value) -> Self::Output {
+                    $sub_value(&other, *self as _)
+                }
+            }
+
+            impl Sub<&Value> for &$ty {
+                type Output = $return_ty;
+                fn op_sub(self, other: &Value) -> Self::Output {
+                    $sub_value(other, *self as _)
+                }
+            }
             // for unary
             impl Sub<&&Value> for $ty {
                 type Output = $return_ty;
@@ -144,7 +157,7 @@ impl_numeric_sub! {
     op_sub_f64,op_sub_f64_value[f32 f64] -> f64
 }
 
-macro_rules! sub_self {
+macro_rules! self_sub {
     ([$($ty:ty)*]) => {
         $(
 impl Sub<$ty> for $ty{
@@ -175,14 +188,14 @@ impl Sub<&$ty> for &$ty{
     };
 }
 
-sub_self!([i8 i16 i32 i64 isize]);
-sub_self!([f32 f64]);
-
+self_sub!([u8 u16 u32 u64]);
+self_sub!([i8 i16 i32 i64 isize]);
+self_sub!([f32 f64]);
 
 #[cfg(test)]
 mod test {
-    use rbs::Value;
     use crate::ops::Sub;
+    use rbs::Value;
 
     #[test]
     fn test_sub() {
