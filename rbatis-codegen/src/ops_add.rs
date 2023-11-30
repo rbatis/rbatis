@@ -57,6 +57,21 @@ macro_rules! impl_numeric_add {
                     $eq(other, self as _)
                 }
             }
+
+            impl Add<Value> for &$ty {
+                type Output = $return_ty;
+                fn op_add(self, other: Value) -> Self::Output {
+                    $eq(&other, *self as _)
+                }
+            }
+
+            impl Add<&Value> for &$ty {
+                type Output = $return_ty;
+                fn op_add(self, other: &Value) -> Self::Output {
+                    $eq(other, *self as _)
+                }
+            }
+
             // for unary
             impl Add<&&Value> for $ty {
                 type Output = $return_ty;
@@ -230,39 +245,39 @@ impl Add<&Value> for String {
     }
 }
 
-macro_rules! add_self {
+macro_rules! self_add {
     ([$($ty:ty)*]) => {
         $(
-impl Add<$ty> for $ty{
+    impl Add<$ty> for $ty{
          type Output = $ty;
       fn op_add(self, rhs: $ty) -> Self::Output {
         self+rhs
       }
     }
-impl Add<&$ty> for $ty{
+    impl Add<&$ty> for $ty{
          type Output = $ty;
       fn op_add(self, rhs: &$ty) -> Self::Output {
         self+*rhs
       }
     }
-impl Add<$ty> for &$ty{
+    impl Add<$ty> for &$ty{
          type Output = $ty;
       fn op_add(self, rhs: $ty) -> Self::Output {
         *self+rhs
       }
     }
-impl Add<&$ty> for &$ty{
+    impl Add<&$ty> for &$ty{
          type Output = $ty;
       fn op_add(self, rhs: &$ty) -> Self::Output {
         *self+*rhs
       }
-}
+    }
         )*
     };
 }
-add_self!([u8 u16 u32 u64]);
-add_self!([i8 i16 i32 i64 isize]);
-add_self!([f32 f64]);
+self_add!([u8 u16 u32 u64]);
+self_add!([i8 i16 i32 i64 isize]);
+self_add!([f32 f64]);
 
 impl Add<String> for String {
     type Output = String;

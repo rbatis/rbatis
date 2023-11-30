@@ -24,7 +24,7 @@ impl Display for Error {
     }
 }
 
-impl From<syn::Error> for Error{
+impl From<syn::Error> for Error {
     fn from(value: syn::Error) -> Self {
         Error::E(value.to_string())
     }

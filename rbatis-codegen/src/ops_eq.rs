@@ -141,6 +141,18 @@ macro_rules! impl_numeric_eq {
                     $eq(*other, *self as _)
                 }
             }
+
+            impl PartialEq<Value> for &$ty {
+               fn op_eq(&self, other: &Value) -> bool {
+                    $eq(other, **self as _)
+                }
+            }
+
+            impl PartialEq<&Value> for &$ty {
+               fn op_eq(&self, other: &&Value)  -> bool {
+                    $eq(*other, **self as _)
+                }
+            }
             // for unary
             impl PartialEq<&&Value> for $ty {
                fn op_eq(&self, other: &&&Value)  -> bool {
@@ -158,7 +170,7 @@ impl_numeric_eq! {
     eq_bool[bool]
 }
 
-macro_rules! eq_self {
+macro_rules! self_eq {
     ([$($ty:ty)*]) => {
         $(
 impl PartialEq<$ty> for $ty{
@@ -185,10 +197,10 @@ impl PartialEq<&$ty> for &$ty{
     };
 }
 
-eq_self!([u8 u16 u32 u64]);
-eq_self!([i8 i16 i32 i64 isize]);
-eq_self!([f32 f64]);
-eq_self!([String & str]);
+self_eq!([u8 u16 u32 u64]);
+self_eq!([i8 i16 i32 i64 isize]);
+self_eq!([f32 f64]);
+self_eq!([String & str]);
 
 macro_rules! impl_str_eq {
     ($($eq:ident [$($ty:ty)*])*) => {
