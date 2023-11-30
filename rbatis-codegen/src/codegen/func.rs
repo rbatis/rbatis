@@ -3,22 +3,19 @@ use quote::quote;
 use quote::ToTokens;
 use syn;
 use syn::{BinOp, Expr, Lit, Member};
+use crate::error::Error;
 
-fn token_steam_string(arg: proc_macro2::TokenStream) -> String {
-    arg.to_token_stream().to_string().trim().to_string()
-}
-
-fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
+fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr,Error> {
     match arg {
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
             if token == "null" {
-                return syn::parse_str::<Expr>("rbs::Value::Null").expect("codegen_func fail");
+                return syn::parse_str::<Expr>("rbs::Value::Null").map_err(|e|Error::from(e));
             }
             if token == "sql" {
-                return Expr::Path(b);
+                return Ok(Expr::Path(b));
             }
-            let param = token_steam_string(b.to_token_stream());
+            let param = b.to_token_stream().to_string().trim().to_string();
             let mut fetch_from_arg = true;
             for x in ignore {
                 if param.eq(x) {
@@ -26,20 +23,19 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param))
-                    .expect("codegen_func fail");
+                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).map_err(|e|Error::from(e));
             } else {
-                return syn::parse_str::<Expr>(&format!("{}", param)).expect("codegen_func fail");
+                return syn::parse_str::<Expr>(&format!("{}", param)).map_err(|e|Error::from(e));
             }
         }
         Expr::MethodCall(mut b) => {
             //receiver is named need to convert to arg["xxx"]
-            b.receiver = Box::new(convert_to_arg_access(context, *b.receiver.clone(), ignore));
-            return Expr::MethodCall(b);
+            b.receiver = Box::new(convert_to_arg_access(context, *b.receiver.clone(), ignore)?);
+            return Ok(Expr::MethodCall(b));
         }
         Expr::Binary(mut b) => {
-            b.left = Box::new(convert_to_arg_access(context, *b.left.clone(), ignore));
-            b.right = Box::new(convert_to_arg_access(context, *b.right.clone(), ignore));
+            b.left = Box::new(convert_to_arg_access(context, *b.left.clone(), ignore)?);
+            b.right = Box::new(convert_to_arg_access(context, *b.right.clone(), ignore)?);
             match b.op {
                 BinOp::Add(_) => {
                     let left_token = b.left.to_token_stream().to_string();
@@ -48,15 +44,13 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                             "(String::from({})).op_add({})",
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
-                        ))
-                        .expect("codegen_func fail");
+                        )).map_err(|e|Error::from(e));
                     } else {
                         return syn::parse_str::<Expr>(&format!(
                             "({}).op_add(&{})",
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
-                        ))
-                        .expect("codegen_func fail");
+                        )).map_err(|e|Error::from(e));
                     }
                 }
                 BinOp::And(_) => {
@@ -98,8 +92,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_sub(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `*` operator (multiplication)
                 BinOp::Mul(_) => {
@@ -107,8 +100,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_mul(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `/` operator (division)
                 BinOp::Div(_) => {
@@ -116,8 +108,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_div(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `%` operator (modulus)
                 BinOp::Rem(_) => {
@@ -125,8 +116,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_rem(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `&` operator (bitwise and)
                 BinOp::BitAnd(_) => {
@@ -134,8 +124,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_bitand(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `|` operator (bitwise or)
                 BinOp::BitOr(_) => {
@@ -143,8 +132,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_bitor(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `==` operator (equality)
                 BinOp::Eq(_) => {
@@ -152,8 +140,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_eq(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `<` operator (less than)
                 BinOp::Lt(_) => {
@@ -161,8 +148,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_lt(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `<=` operator (less than or equal to)
                 BinOp::Le(_) => {
@@ -170,8 +156,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_le(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `!=` operator (not equal to)
                 BinOp::Ne(_) => {
@@ -179,8 +164,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_ne(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `>=` operator (greater than or equal to)
                 BinOp::Ge(_) => {
@@ -188,8 +172,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_ge(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `>` operator (greater than)
                 BinOp::Gt(_) => {
@@ -197,8 +180,7 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_gt(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `^` operator (bitwise xor)
                 BinOp::BitXor(_) => {
@@ -206,64 +188,60 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                         "({}).op_bitxor(&{})",
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 // The `<<` operator (shift left)
                 _ => {
-                    panic!("unsupported token {}", b.op.to_token_stream())
+                    return Err(Error::from(format!("unsupported token {}", b.op.to_token_stream())))
                 }
             }
-            return Expr::Binary(b);
+            return Ok(Expr::Binary(b));
         }
         Expr::Unary(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
             if b.op.to_token_stream().to_string().trim() == "-" {
                 return syn::parse_str::<Expr>(&format!(
                     "0i64.op_sub({})",
                     b.expr.to_token_stream().to_string().trim()
-                ))
-                .expect("codegen_func fail");
+                )).map_err(|e|Error::from(e));
             }
-            return Expr::Unary(b);
+            return Ok(Expr::Unary(b));
         }
         //(a-b)
         Expr::Paren(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
-            return Expr::Paren(b);
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
+            return Ok(Expr::Paren(b));
         }
         //
         Expr::Field(mut b) => {
-            b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), ignore));
+            b.base = Box::new(convert_to_arg_access(context, *b.base.clone(), ignore)?);
             match b.member {
                 Member::Named(named) => {
                     return syn::parse_str::<Expr>(&format!(
                         "({}[\"{}\"])",
                         b.base.to_token_stream(),
                         named.to_token_stream()
-                    ))
-                    .expect("codegen_func fail");
+                    )).map_err(|e|Error::from(e));
                 }
                 Member::Unnamed(_) => {}
             }
-            return Expr::Field(b);
+            return Ok(Expr::Field(b));
         }
         Expr::Reference(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
             let result = Expr::Reference(b);
-            return result;
+            return Ok(result);
         }
         Expr::Index(mut b) => {
-            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore));
+            b.expr = Box::new(convert_to_arg_access(context, *b.expr, ignore)?);
             return syn::parse_str::<Expr>(&format!(
                 "{}[{}]",
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
-            ))
-            .expect("codegen_func fail");
+            )).map_err(|e|Error::from(e));
         }
         Expr::Let(_let_expr) => {
-            panic!("unsupport token `let`");
+            return Err(Error::from("unsupport token `let`"));
         }
         Expr::Lit(b) => {
             match b.lit.clone() {
@@ -274,21 +252,21 @@ fn convert_to_arg_access(context: &str, arg: Expr, ignore: &[String]) -> Expr {
                 Lit::Int(i) => {
                     //cast int to i64
                     return syn::parse_str::<Expr>(&format!("{}i64", i))
-                        .expect("codegen_func fail");
+                        .map_err(|e|Error::from(e));
                 }
                 Lit::Float(f) => {
                     //cast int to f64
                     return syn::parse_str::<Expr>(&format!("{}f64", f))
-                        .expect("codegen_func fail");
+                        .map_err(|e|Error::from(e));
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}
                 _ => {}
             }
-            return Expr::Lit(b);
+            return Ok(Expr::Lit(b));
         }
         _ => {
-            return arg;
+            return Ok(arg);
         }
     }
 }
@@ -325,7 +303,7 @@ pub fn impl_fn(
         )
     }
     let mut t = t.expect("codegen_func fail");
-    t = convert_to_arg_access(context, t, ignore);
+    t = convert_to_arg_access(context, t, ignore).expect("gen func fail");
     string_data = t.to_token_stream().to_string();
     string_data = string_data.replace(" . ", ".");
     let t = syn::parse_str::<Expr>(&string_data);
