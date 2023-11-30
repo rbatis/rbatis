@@ -283,7 +283,6 @@ pub fn impl_fn(
 ) -> proc_macro2::TokenStream {
     let mut string_data = args.to_string();
     string_data = string_data[1..string_data.len() - 1].to_string();
-    string_data = string_data.replace(".string()", ".to_string()");
     //convert string define
     let mut last_char = '_';
     let mut string_data_new = String::new();
@@ -307,7 +306,6 @@ pub fn impl_fn(
     let mut t = t.expect("codegen_func fail");
     t = translate(context, t, ignore).expect("translate fail");
     string_data = t.to_token_stream().to_string();
-    string_data = string_data.replace(" . ", ".");
     let t = syn::parse_str::<Expr>(&string_data);
     if t.is_err() {
         panic!(
