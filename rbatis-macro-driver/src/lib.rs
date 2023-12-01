@@ -33,10 +33,10 @@ impl Parse for ParseArgs {
 ///     use rbatis::sql;
 ///     use rbatis::executor::Executor;
 ///     #[derive(serde::Serialize,serde::Deserialize)]
-///     pub struct BizActivity{}
+///     pub struct MockTable{}
 ///
 ///     #[sql("select * from biz_activity where id = ?")]
-///     async fn select(rb:&dyn Executor, name: &str) -> BizActivity {}
+///     async fn select(rb:&dyn Executor, name: &str) -> MockTable {}
 ///```
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
@@ -57,17 +57,17 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// use rbatis::executor::Executor;
 /// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
-/// pub struct BizActivity{}
+/// pub struct MockTable{}
 ///
 /// #[py_sql("select * from biz_activity where delete_flag = 0")]
-/// async fn py_select_page(rb: &dyn Executor, name: &str) -> Vec<BizActivity> { }
+/// async fn py_select_page(rb: &dyn Executor, name: &str) -> Vec<MockTable> { }
 ///```
 ///  or more example:
 ///```log
 /// use rbatis::executor::Executor;
 /// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
-/// pub struct BizActivity{}
+/// pub struct MockTable{}
 ///
 /// #[py_sql("
 ///     SELECT * FROM biz_activity
@@ -95,7 +95,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///         otherwise:
 ///           AND age = 0
 ///     WHERE id  = '2'")]
-///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<BizActivity> {}
+///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
 /// or read from file
 /// ```rust
@@ -126,7 +126,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// use rbatis::executor::Executor;
 /// use rbatis::html_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
-/// pub struct BizActivity{}
+/// pub struct MockTable{}
 ///
 /// #[html_sql(r#"
 /// <select id="select_by_condition">
@@ -150,12 +150,12 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///             </trim>
 ///         </where>
 ///   </select>"#)]
-/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
 /// or from file
 /// ```log
 /// #[html_sql("xxxx.html")]
-/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<BizActivity> {}
+/// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
