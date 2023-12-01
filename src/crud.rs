@@ -45,10 +45,19 @@ macro_rules! crud {
 ///PySql: gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
 ///
 /// example:
-/// ```rust
+///```rust
+/// use rbatis::{Error, RBatis};
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// rbatis::impl_insert!(MockTable{});
+///
+/// //use
+/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
+///  let table = MockTable{id: Some("1".to_string())};
+///  let r = MockTable::insert(rb, &table).await;
+///  let r = MockTable::insert_batch(rb, &vec![table.clone()],10).await;
+///  Ok(())
+/// }
 /// ```
 ///
 #[macro_export]
@@ -190,9 +199,16 @@ macro_rules! impl_select {
 
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
+/// use rbatis::{Error, RBatis};
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// rbatis::impl_update!(MockTable{});
+/// //use
+/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
+///  let table = MockTable{id: Some("1".to_string())};
+///  let r = MockTable::update_by_column(rb, &table,"id").await;
+///  Ok(())
+/// }
 /// ```
 #[macro_export]
 macro_rules! impl_update {
@@ -275,9 +291,17 @@ macro_rules! impl_update {
 /// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
 /// ```rust
+/// use rbatis::{Error, RBatis};
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::impl_delete!(MockTable{});
+///
+/// //use
+/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
+///  let r = MockTable::delete_by_column(rb, "id","1").await;
+///  //... and more
+///  Ok(())
+/// }
 /// ```
 #[macro_export]
 macro_rules! impl_delete {
