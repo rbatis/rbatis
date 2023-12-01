@@ -24,9 +24,9 @@ pub async fn configure_tls_connector(
         let mut cert_store = RootCertStore::empty();
         cert_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
             OwnedTrustAnchor::from_subject_spki_name_constraints(
-                ta.subject,
-                ta.spki,
-                ta.name_constraints,
+                ta.subject.to_vec(),
+                ta.subject_public_key_info.to_vec(),
+                ta.name_constraints.clone().map(|v| v.to_vec()),
             )
         }));
 
@@ -34,11 +34,11 @@ pub async fn configure_tls_connector(
             let data = ca.data().await?;
             let mut cursor = Cursor::new(data);
 
-            for cert in rustls_pemfile::certs(&mut cursor)
-                .map_err(|_| Error::E(format!("Invalid certificate {}", ca)))?
+            for cert_result in rustls_pemfile::certs(&mut cursor)
             {
+                let cert = cert_result.map_err(|_| Error::E(format!("Invalid certificate {}", ca)))?;
                 cert_store
-                    .add(&rustls::Certificate(cert))
+                    .add(&rustls::Certificate(cert.as_ref().to_vec()))
                     .map_err(|err| Error::E(err.to_string()))?;
             }
         }
@@ -67,7 +67,7 @@ impl ServerCertVerifier for DummyTlsVerifier {
         _end_entity: &rustls::Certificate,
         _intermediates: &[rustls::Certificate],
         _server_name: &ServerName,
-        _scts: &mut dyn Iterator<Item = &[u8]>,
+        _scts: &mut dyn Iterator<Item=&[u8]>,
         _ocsp_response: &[u8],
         _now: SystemTime,
     ) -> Result<ServerCertVerified, TlsError> {
@@ -85,7 +85,7 @@ impl ServerCertVerifier for NoHostnameTlsVerifier {
         end_entity: &rustls::Certificate,
         intermediates: &[rustls::Certificate],
         server_name: &ServerName,
-        scts: &mut dyn Iterator<Item = &[u8]>,
+        scts: &mut dyn Iterator<Item=&[u8]>,
         ocsp_response: &[u8],
         now: SystemTime,
     ) -> Result<ServerCertVerified, TlsError> {
@@ -98,10 +98,10 @@ impl ServerCertVerifier for NoHostnameTlsVerifier {
             now,
         ) {
             Err(TlsError::InvalidCertificate(reason))
-                if reason == CertificateError::NotValidForName =>
-            {
-                Ok(ServerCertVerified::assertion())
-            }
+            if reason == CertificateError::NotValidForName =>
+                {
+                    Ok(ServerCertVerified::assertion())
+                }
             res => res,
         }
     }
