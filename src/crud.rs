@@ -1,4 +1,24 @@
 ///PySql: gen select*,update*,insert*,delete* ... methods
+///```rust
+/// use rbatis::{Error, RBatis};
+///
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct BizActivity{ pub id: Option<String> }
+///
+/// rbatis::crud!(BizActivity{});
+///
+/// //use
+/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
+///  let table = BizActivity{id: Some("1".to_string())};
+///  let r = BizActivity::insert(rb, &table).await;
+///  let tables = BizActivity::select_by_column(rb,"id","1").await;
+///  let r = BizActivity::update_by_column(rb, &table,"id").await;
+///  let r = BizActivity::delete_by_column(rb, "id","1").await;
+///  Ok(())
+/// }
+///
+///
+/// ```
 #[macro_export]
 macro_rules! crud {
     ($table:ty{}) => {
