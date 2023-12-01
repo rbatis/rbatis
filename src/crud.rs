@@ -11,10 +11,13 @@
 ///  let table = BizActivity{id: Some("1".to_string())};
 ///  let r = BizActivity::insert(rb, &table).await;
 ///  let r = BizActivity::insert_batch(rb, &vec![table.clone()],10).await;
+///
 ///  let tables = BizActivity::select_by_column(rb,"id","1").await;
 ///  let tables = BizActivity::select_all(rb).await;
 ///  let tables = BizActivity::select_in_column(rb,"id", &vec!["1","2","3"]).await;
+///
 ///  let r = BizActivity::update_by_column(rb, &table,"id").await;
+///
 ///  let r = BizActivity::delete_by_column(rb, "id","1").await;
 ///  //... and more
 ///  Ok(())
