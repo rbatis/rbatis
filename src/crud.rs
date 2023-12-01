@@ -4,6 +4,7 @@
 ///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
+/// //crud!(MockTable{},"mock_table");
 /// crud!(MockTable{});
 ///
 /// //use
