@@ -3,22 +3,22 @@
 /// use rbatis::{crud, Error, RBatis};
 ///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{ pub id: Option<String> }
-/// crud!(BizActivity{});
+/// pub struct MockTable{ pub id: Option<String> }
+/// crud!(MockTable{});
 ///
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let table = BizActivity{id: Some("1".to_string())};
-///  let r = BizActivity::insert(rb, &table).await;
-///  let r = BizActivity::insert_batch(rb, &vec![table.clone()],10).await;
+///  let table = MockTable{id: Some("1".to_string())};
+///  let r = MockTable::insert(rb, &table).await;
+///  let r = MockTable::insert_batch(rb, &vec![table.clone()],10).await;
 ///
-///  let tables = BizActivity::select_by_column(rb,"id","1").await;
-///  let tables = BizActivity::select_all(rb).await;
-///  let tables = BizActivity::select_in_column(rb,"id", &vec!["1","2","3"]).await;
+///  let tables = MockTable::select_by_column(rb,"id","1").await;
+///  let tables = MockTable::select_all(rb).await;
+///  let tables = MockTable::select_in_column(rb,"id", &vec!["1","2","3"]).await;
 ///
-///  let r = BizActivity::update_by_column(rb, &table,"id").await;
+///  let r = MockTable::update_by_column(rb, &table,"id").await;
 ///
-///  let r = BizActivity::delete_by_column(rb, "id","1").await;
+///  let r = MockTable::delete_by_column(rb, "id","1").await;
 ///  //... and more
 ///  Ok(())
 /// }
@@ -46,8 +46,8 @@ macro_rules! crud {
 /// example:
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{ pub id: Option<String> }
-/// rbatis::impl_insert!(BizActivity{});
+/// pub struct MockTable{ pub id: Option<String> }
+/// rbatis::impl_insert!(MockTable{});
 /// ```
 ///
 #[macro_export]
@@ -134,20 +134,20 @@ macro_rules! impl_insert {
 ///```rust
 /// use rbatis::{Error, RBatis};
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{ pub id: Option<String> }
+/// pub struct MockTable{ pub id: Option<String> }
 /// /// default
-///rbatis::impl_select!(BizActivity{});
-///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "where id = #{id} and name = #{name}"});
+///rbatis::impl_select!(MockTable{});
+///rbatis::impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "where id = #{id} and name = #{name}"});
 /// /// container result
-///rbatis::impl_select!(BizActivity{select_by_id(id:String) -> Option => "where id = #{id} limit 1"});
-///rbatis::impl_select!(BizActivity{select_by_id2(id:String) -> Vec => "where id = #{id} limit 1"});
+///rbatis::impl_select!(MockTable{select_by_id(id:String) -> Option => "where id = #{id} limit 1"});
+///rbatis::impl_select!(MockTable{select_by_id2(id:String) -> Vec => "where id = #{id} limit 1"});
 ///
 /// //usage
 /// async fn test_select(rb:&RBatis) -> Result<(),Error>{
-///    let r = BizActivity::select_by_column(rb,"id","1").await?;
-///    let r = BizActivity::select_all_by_id(rb,"1","xxx").await?;
-///    let r:Option<BizActivity> = BizActivity::select_by_id(rb,"1".to_string()).await?;
-///    let r:Vec<BizActivity> = BizActivity::select_by_id2(rb,"1".to_string()).await?;
+///    let r = MockTable::select_by_column(rb,"id","1").await?;
+///    let r = MockTable::select_all_by_id(rb,"1","xxx").await?;
+///    let r:Option<MockTable> = MockTable::select_by_id(rb,"1".to_string()).await?;
+///    let r:Vec<MockTable> = MockTable::select_by_id2(rb,"1".to_string()).await?;
 ///    Ok(())
 /// }
 /// ```
@@ -190,8 +190,8 @@ macro_rules! impl_select {
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{ pub id: Option<String> }
-/// rbatis::impl_update!(BizActivity{});
+/// pub struct MockTable{ pub id: Option<String> }
+/// rbatis::impl_update!(MockTable{});
 /// ```
 #[macro_export]
 macro_rules! impl_update {
@@ -275,8 +275,8 @@ macro_rules! impl_update {
 ///
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{}
-/// rbatis::impl_delete!(BizActivity{});
+/// pub struct MockTable{}
+/// rbatis::impl_delete!(MockTable{});
 /// ```
 #[macro_export]
 macro_rules! impl_delete {
@@ -347,8 +347,8 @@ macro_rules! impl_delete {
 ///
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{}
-/// rbatis::impl_select_page!(BizActivity{select_page() =>"
+/// pub struct MockTable{}
+/// rbatis::impl_select_page!(MockTable{select_page() =>"
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
@@ -356,8 +356,8 @@ macro_rules! impl_delete {
 /// limit_sql: If the database does not support the statement `limit ${page_no},${page_size}`,You should add param 'limit_sql:&str'
 /// ```rust
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{}
-/// rbatis::impl_select_page!(BizActivity{select_page(limit_sql:&str) =>"
+/// pub struct MockTable{}
+/// rbatis::impl_select_page!(MockTable{select_page(limit_sql:&str) =>"
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
@@ -438,9 +438,9 @@ macro_rules! impl_select_page {
 /// ```
 /// ```
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-/// pub struct BizActivity{}
-/// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> BizActivity => "example.html");
-/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> BizActivity => r#"<select id="select_page_data">`select `<if test="do_count == true">`count(1) from table`</if><if test="do_count == false">`* from table limit ${page_no},${page_size}`</if></select>"#);
+/// pub struct MockTable{}
+/// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
+/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"<select id="select_page_data">`select `<if test="do_count == true">`count(1) from table`</if><if test="do_count == false">`* from table limit ${page_no},${page_size}`</if></select>"#);
 /// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {

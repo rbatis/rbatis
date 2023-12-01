@@ -2,11 +2,11 @@
 ///
 /// step1:  impl Default
 /// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
-/// BizActivity{
+/// MockTable{
 /// }
 ///
 /// //step2: make struct
-/// let activity = rbatis::make_table!(BizActivity{
+/// let activity = rbatis::make_table!(MockTable{
 ///             id : "12312".to_string(),
 ///             delete_flag : 1,
 ///             name:  None,
@@ -114,7 +114,7 @@ macro_rules! make_table_field_map_btree {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=field_name!(BizActivity.id);
+/// let name=field_name!(MockTable.id);
 ///
 #[allow(unused_macros)]
 #[macro_export]
@@ -142,7 +142,7 @@ macro_rules! field_name {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=field_key!(BizActivity::id);
+/// let name=field_key!(MockTable::id);
 ///
 #[allow(unused_macros)]
 #[macro_export]
