@@ -106,14 +106,24 @@ macro_rules! impl_insert {
 ///
 /// example:
 ///```rust
+/// use rbatis::{Error, RBatis};
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct BizActivity{ pub id: Option<String> }
+/// /// default
 ///rbatis::impl_select!(BizActivity{});
 ///rbatis::impl_select!(BizActivity{select_all_by_id(id:&str,name:&str) => "where id = #{id} and name = #{name}"});
+/// /// container result
 ///rbatis::impl_select!(BizActivity{select_by_id(id:String) -> Option => "where id = #{id} limit 1"});
+///rbatis::impl_select!(BizActivity{select_by_id2(id:String) -> Vec => "where id = #{id} limit 1"});
 ///
-/// //use
-/// //BizActivity::select**()
+/// //usage
+/// async fn test_select(rb:&RBatis) -> Result<(),Error>{
+///    let r = BizActivity::select_by_column(rb,"id","1").await?;
+///    let r = BizActivity::select_all_by_id(rb,"1","xxx").await?;
+///    let r:Option<BizActivity> = BizActivity::select_by_id(rb,"1".to_string()).await?;
+///    let r:Vec<BizActivity> = BizActivity::select_by_id2(rb,"1".to_string()).await?;
+///    Ok(())
+/// }
 /// ```
 ///
 #[macro_export]
