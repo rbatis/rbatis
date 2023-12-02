@@ -161,11 +161,35 @@ mod test {
     use std::str::FromStr;
 
     #[test]
-    fn test_big_decimal() {
+    fn test_add() {
         let v1 = Decimal::from_str("1").unwrap();
         let v2 = Decimal::from_str("1.1").unwrap();
         let v = v1 + v2;
         assert_eq!(v, Decimal::from_str("2.1").unwrap());
+    }
+
+    #[test]
+    fn test_sub() {
+        let v1 = Decimal::new("1").unwrap();
+        let v2 = Decimal::new("1.1").unwrap();
+        let v = v1 - v2;
+        assert_eq!(v, Decimal::new("-0.1").unwrap());
+    }
+
+    #[test]
+    fn test_mul() {
+        let v1 = Decimal::new("1").unwrap();
+        let v2 = Decimal::new("1.1").unwrap();
+        let v = v1 * v2;
+        assert_eq!(v, Decimal::new("1.1").unwrap());
+    }
+
+    #[test]
+    fn test_div() {
+        let v1 = Decimal::new("1").unwrap();
+        let v2 = Decimal::new("1.1").unwrap();
+        let v = v2 / v1;
+        assert_eq!(v, Decimal::new("1.1").unwrap());
     }
 
     #[test]
