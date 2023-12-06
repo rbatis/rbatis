@@ -552,7 +552,7 @@ macro_rules! pysql_select_page {
 }
 
 
-/// use macro wrapper #[py_sql]
+/// use macro wrapper #[sql]
 /// for example:
 /// ```rust
 /// use rbatis::executor::Executor;
