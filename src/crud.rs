@@ -562,11 +562,11 @@ macro_rules! pysql_select_page {
 /// ```
 #[macro_export]
 macro_rules! raw_sql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
            pub struct Inner{};
            impl Inner{
-               #[$crate::sql($py_file)]
+               #[$crate::sql($sql_file)]
                pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
                  impled!()
                }
