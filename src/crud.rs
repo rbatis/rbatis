@@ -551,6 +551,31 @@ macro_rules! pysql_select_page {
     }
 }
 
+
+/// use macro wrapper #[py_sql]
+/// for example:
+/// ```rust
+/// use rbatis::executor::Executor;
+/// rbatis::raw_sql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> =>
+/// "select * from table where id = ?"
+/// );
+/// ```
+#[macro_export]
+macro_rules! raw_sql {
+    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+           pub struct Inner{};
+           impl Inner{
+               #[$crate::sql($py_file)]
+               pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+                 impled!()
+               }
+           }
+           Inner::$fn_name($($param_key,)*).await
+       }
+    }
+}
+
 /// use macro wrapper #[py_sql]
 /// for example:
 /// ```rust
