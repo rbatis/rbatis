@@ -23,11 +23,6 @@ pub trait Executor: RBatisRef + Send + Sync {
 }
 
 pub trait RBatisRef: Send + Sync {
-    #[deprecated(note = "use rb_ref()")]
-    fn rbatis_ref(&self) -> &RBatis {
-        self.rb_ref()
-    }
-
     fn rb_ref(&self) -> &RBatis;
 
     fn driver_type(&self) -> crate::Result<&str> {
