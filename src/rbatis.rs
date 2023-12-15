@@ -3,13 +3,12 @@ use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
 use crate::table_sync::{sync, ColumMapper};
-use crate::Error;
+use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
 use log::LevelFilter;
 use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
 use rbdc::rt::tokio::sync::Mutex;
-use rbdc_pool_mobc::MobcPool;
 use rbs::to_value;
 use serde::Serialize;
 use std::fmt::Debug;
@@ -72,7 +71,7 @@ impl RBatis {
     }
 
     /// self.init(driver, url)? and self.try_acquire().await? a connection.
-    /// default use MobcPool
+    /// DefaultPool use MobcPool
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -84,7 +83,7 @@ impl RBatis {
     }
 
     /// init pool.
-    /// default is MobcPool,if you want other pool please use init_option
+    /// DefaultPool is MobcPool,if you want other pool please use init_option
     pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -95,7 +94,7 @@ impl RBatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = MobcPool::new(ConnManager::new_opt_box(Box::new(driver), option))?;
+        let pool = DefaultPool::new(ConnManager::new_opt_box(Box::new(driver), option))?;
         self.pool
             .set(Box::new(pool))
             .map_err(|_e| Error::from("pool set fail!"))?;
@@ -145,7 +144,7 @@ impl RBatis {
         driver: Driver,
         options: ConnectOptions,
     ) -> Result<(), Error> {
-        self.init_option::<Driver, ConnectOptions, MobcPool>(driver, options)
+        self.init_option::<Driver, ConnectOptions, DefaultPool>(driver, options)
     }
 
     /// set_intercepts for many
