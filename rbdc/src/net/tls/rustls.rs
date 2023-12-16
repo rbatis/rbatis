@@ -5,7 +5,7 @@ use rustls::client::danger::ServerCertVerifier;
 use rustls::pki_types::ServerName;
 use rustls::client::WebPkiServerVerifier as WebPkiVerifier;
 use rustls::{CertificateError, ClientConfig, DigitallySignedStruct, RootCertStore};
-use rustls_pki_types::{CertificateDer, UnixTime};
+use rustls::pki_types::{CertificateDer, UnixTime, TrustAnchor};
 use std::io::Cursor;
 use std::sync::Arc;
 use rustls::crypto::{verify_tls12_signature, verify_tls13_signature};
@@ -24,7 +24,7 @@ pub async fn configure_tls_connector(
     } else {
         let mut cert_store = RootCertStore::empty();
         cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-            rustls_pki_types::TrustAnchor {
+            TrustAnchor {
                 subject: ta.subject.clone(),
                 subject_public_key_info: ta.subject_public_key_info.clone(),
                 name_constraints: ta.name_constraints.clone(),
