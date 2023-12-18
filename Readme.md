@@ -74,6 +74,30 @@ QPS: 885486 QPS/s
 | [TDengine](https://crates.io/crates/rbdc-tdengine)  | [tdcare/rbdc-tdengine](https://github.com/tdcare/rbdc-tdengine)                |
 
 
+> how to support other Driver for RBatis?
+* first. define your driver project ,add Cargo.toml deps
+```toml
+[features]
+default = ["tls-rustls"]
+tls-rustls=["rbdc/tls-rustls"]
+tls-native-tls=["rbdc/tls-native-tls"]
+[dependencies]
+rbs = { version = "4.5"}
+rbdc = { version = "4.5", default-features = false,  optional = true }
+fastdate = { version = "0.3" }
+tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+```
+* then. you should impl `rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row}` trait
+* finish. your driver is finish (you just need call RB.init() methods). it's support RBatis Connection Pool/tls(native,rustls)
+```rust
+#[tokio::main]
+async fn main(){
+  let rb = rbatis::RBatis::new();
+  rb.init(YourDriver {}, "YourDriver://****").unwrap();
+}
+```
+
+
 ### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
 
 | platform                | is supported |
