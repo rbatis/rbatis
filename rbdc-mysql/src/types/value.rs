@@ -68,7 +68,7 @@ impl Encode for Value {
         match self {
             Value::Null => Ok(0),
             Value::Bool(v) => {
-                buf.extend(&(v as u8).to_le_bytes());
+                buf.extend(&(v as i8).to_le_bytes());
                 Ok(1)
             }
             Value::I32(v) => {
@@ -154,7 +154,7 @@ impl Decode for Value {
         Self: Sized,
     {
         Ok(match v.type_info().r#type {
-            ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
+            ColumnType::Tiny => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
