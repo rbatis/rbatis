@@ -3,7 +3,7 @@ use crate::protocol::text::ColumnType;
 use crate::result_set::MySqlTypeInfo;
 use crate::types::decode::{
     decode_date, decode_time, decode_timestamp, decode_year, f32_decode, f64_decode, int_decode,
-    uint_decode,
+    uint_decode, bool_decode
 };
 use crate::types::enums::Enum;
 use crate::types::set::Set;
@@ -154,7 +154,7 @@ impl Decode for Value {
         Self: Sized,
     {
         Ok(match v.type_info().r#type {
-            ColumnType::Tiny => Value::U64(uint_decode(v).unwrap_or_default()),
+            ColumnType::Tiny => Value::Bool(bool_decode(v).unwrap_or_default()),
             ColumnType::Short => Value::I32(int_decode(v).unwrap_or_default() as i32),
             ColumnType::Long => Value::I64(int_decode(v).unwrap_or_default()),
             ColumnType::Float => Value::F32(f32_decode(v).unwrap_or_default()),
