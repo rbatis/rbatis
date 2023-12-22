@@ -46,7 +46,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
         let mut el = Element {
             tag: "".to_string(),
             data: "".to_string(),
-            attrs: HashMap::new(),
+            attrs: HashMap::with_capacity(50),
             childs: vec![],
         };
         match x {

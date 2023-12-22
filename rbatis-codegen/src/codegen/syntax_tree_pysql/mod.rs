@@ -236,7 +236,7 @@ impl From<NodeType> for Element {
                 };
             }
             NodeType::NIf(n) => {
-                let mut m = HashMap::new();
+                let mut m = HashMap::with_capacity(100);
                 m.insert("test".to_string(), n.test);
                 return Element {
                     tag: "if".to_string(),
@@ -246,7 +246,7 @@ impl From<NodeType> for Element {
                 };
             }
             NodeType::NTrim(n) => {
-                let mut m = HashMap::new();
+                let mut m = HashMap::with_capacity(100);
                 m.insert("trim".to_string(), n.trim);
                 return Element {
                     tag: "trim".to_string(),
@@ -256,7 +256,7 @@ impl From<NodeType> for Element {
                 };
             }
             NodeType::NForEach(n) => {
-                let mut m = HashMap::new();
+                let mut m = HashMap::with_capacity(100);
                 m.insert("collection".to_string(), n.collection);
                 m.insert("index".to_string(), n.index);
                 m.insert("item".to_string(), n.item);
@@ -288,7 +288,7 @@ impl From<NodeType> for Element {
                 };
             }
             NodeType::NWhen(n) => {
-                let mut m = HashMap::new();
+                let mut m = HashMap::with_capacity(100);
                 m.insert("test".to_string(), n.test);
                 return Element {
                     tag: "when".to_string(),
@@ -298,7 +298,7 @@ impl From<NodeType> for Element {
                 };
             }
             NodeType::NBind(n) => {
-                let mut m = HashMap::new();
+                let mut m = HashMap::with_capacity(100);
                 m.insert("name".to_string(), n.name);
                 m.insert("value".to_string(), n.value);
                 return Element {
