@@ -95,8 +95,8 @@ impl PgConnection {
         desc: Option<RowDescription>,
         should_fetch: bool,
     ) -> Result<(Vec<PgColumn>, HashMap<UStr, usize>), Error> {
-        let mut columns = Vec::new();
-        let mut column_names = HashMap::new();
+        let mut columns = Vec::with_capacity(100);
+        let mut column_names = HashMap::with_capacity(100);
 
         let desc = if let Some(desc) = desc {
             desc

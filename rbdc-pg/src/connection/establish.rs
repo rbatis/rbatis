@@ -143,8 +143,8 @@ impl PgConnection {
             pending_ready_for_query_count: 0,
             next_statement_id: Oid(1),
             cache_statement: StatementCache::new(options.statement_cache_capacity),
-            cache_type_oid: HashMap::new(),
-            cache_type_info: HashMap::new(),
+            cache_type_oid: HashMap::with_capacity(10),
+            cache_type_info: HashMap::with_capacity(10),
         })
     }
 }

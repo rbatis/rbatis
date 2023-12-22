@@ -183,7 +183,7 @@ impl NodeType {
 
     ///Map<line,space>
     fn create_line_space_map(arg: &str) -> HashMap<i32, i32> {
-        let mut m = HashMap::new();
+        let mut m = HashMap::with_capacity(100);
         let lines = arg.lines();
         let mut line = -1;
         for x in lines {

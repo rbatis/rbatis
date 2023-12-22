@@ -68,7 +68,7 @@ macro_rules! make_table_field_vec {
 #[macro_export]
 macro_rules! make_table_field_map {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
-        let mut ids = std::collections::HashMap::new();
+        let mut ids = std::collections::HashMap::with_capacity($vec_ref.len());
         for item in $vec_ref {
             match item.$($field_name.)+as_ref() {
                 std::option::Option::Some(v) => {
