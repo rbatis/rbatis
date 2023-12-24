@@ -35,7 +35,8 @@ impl Default for RBatis {
 }
 
 impl RBatis {
-    ///create an RBatis
+    /// create an RBatis
+    /// add intercept use LogInterceptor
     pub fn new() -> Self {
         let rb = RBatis::default();
         //default use LogInterceptor
