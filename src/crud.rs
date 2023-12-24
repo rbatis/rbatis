@@ -138,6 +138,91 @@ macro_rules! impl_insert {
     };
 }
 
+#[cfg(not(feature = "ref_model"))]
+#[macro_export]
+macro_rules! impl_insert_ref_exp {}
+
+#[cfg(feature = "ref_model")]
+#[macro_export]
+macro_rules! impl_insert_ref_exp {
+    ($table:ty{}) => {
+        $crate::impl_insert_ref_exp!(
+            $table {},
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
+    };
+    ($table:ty{},$table_name:expr) => {
+        $crate::paste::paste!{
+            impl $table {
+                pub async fn insert_batch_ref<'__ref>(
+                    executor: &dyn $crate::executor::Executor,
+                    tables: &[[<$table Ref>]<'__ref>],
+                    batch_size: u64,
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                    #[$crate::py_sql(
+                        "`insert into ${table_name} `
+                        trim ',':
+                         for idx,table in tables:
+                          if idx == 0:
+                             `(`
+                             trim ',':
+                               for k,v in table:
+                                  if k == 'id' && v== null:
+                                     continue:
+                                  ${k},
+                             `) VALUES `
+                          (
+                          trim ',':
+                           for k,v in table:
+                             if k == 'id' && v== null:
+                                continue:
+                             #{v},
+                          ),
+                        "
+                    )]
+                    async fn inner_insert_batch_ref<'__ref>(
+                        executor: &dyn $crate::executor::Executor,
+                        tables: &[[<$table Ref>]<'__ref>],
+                        table_name: &str,
+                    ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
+                    {
+                        impled!()
+                    }
+                    if tables.is_empty() {
+                        return Err($crate::rbdc::Error::from(
+                            "insert can not insert empty array tables!",
+                        ));
+                    }
+                    let table_name = $table_name.to_string();
+                    let mut result = $crate::rbdc::db::ExecResult {
+                        rows_affected: 0,
+                        last_insert_id: rbs::Value::Null,
+                    };
+                    let ranges = $crate::sql::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                    for (offset, limit) in ranges {
+                        let exec_result = inner_insert_batch_ref(
+                            executor,
+                            &tables[offset as usize..limit as usize],
+                            table_name.as_str(),
+                        )
+                        .await?;
+                        result.rows_affected += exec_result.rows_affected;
+                        result.last_insert_id = exec_result.last_insert_id;
+                    }
+                    Ok(result)
+                }
+
+                pub async fn insert_ref<'__ref>(
+                    executor: &dyn $crate::executor::Executor,
+                    table: &[<$table Ref>]<'__ref>,
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                    <$table>::insert_batch_ref(executor, &[table.clone()], 1).await
+                }
+            }
+        }
+    };
+}
+
 ///PySql: gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
 ///
 /// example:
@@ -176,15 +261,15 @@ macro_rules! impl_select {
              #{item},
           `)`"},$table_name);
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
-        $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
+    ($table:ty{$fn_name:ident $(< $($life_cycle:lifetime $(,)?)* $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
+        $crate::impl_select!($table{$fn_name$(< $($life_cycle,)* $($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(< $($life_cycle:lifetime $(,)?)* $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
         impl $table{
-            pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
-                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     async fn $fn_name$(< $($life_cycle,)* $($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
                      $(table_name = $table_name.to_string();)?
@@ -193,6 +278,45 @@ macro_rules! impl_select {
                      }
                      $fn_name(executor,&table_column,&table_name,$($param_key ,)*).await
             }
+        }
+    };
+}
+
+
+#[cfg(not(feature = "ref_model"))]
+#[macro_export]
+macro_rules! impl_select_ref_exp {
+
+}
+
+#[cfg(feature = "ref_model")]
+#[macro_export]
+macro_rules! impl_select_ref_exp {
+    ($table:ty{}) => {
+        $crate::impl_select_ref_exp!($table{},$crate::utils::string_util::to_snake_name(stringify!($table)));
+    };
+    ($table:ty{},$table_name:expr) => {
+        $crate::paste::paste!{
+            $crate::impl_select!($table{select_list_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) -> Vec => "` where `
+              trim 'and': for k,v in where_data:
+                if v== null:
+                    continue:
+                `and #{k} = #{v} `"},$table_name);
+            $crate::impl_select!($table{select_list_by_refs<'__ref>(where_datas: &[[<$table Ref>]<'__ref>]) -> Vec =>
+             "` where `
+              trim 'or': for _,item in where_datas:
+                `or ( `
+                trim 'and': for k,v in item:
+                  if v== null:
+                    continue:
+                  `and #{k} = #{v} `
+                `) `"},$table_name);
+            $crate::impl_select!($table{select_opt_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) -> Option =>
+             "` where `
+              trim 'and': for k,v in where_data:
+                if v== null:
+                    continue:
+                `and #{k} = #{v} `"},$table_name);
         }
     };
 }
@@ -251,9 +375,9 @@ macro_rules! impl_update {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(< $($life_cycle:lifetime $(,)?)* $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
-            pub async fn $fn_name(
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
                 $($param_key:$param_type,)*
@@ -268,7 +392,7 @@ macro_rules! impl_update {
                                         continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
-                  async fn $fn_name(
+                  async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)?(
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
                       table: &rbs::Value,
@@ -287,6 +411,38 @@ macro_rules! impl_update {
         }
     };
 }
+
+
+#[cfg(feature = "ref_model")]
+#[macro_export]
+macro_rules! impl_update_ref_exp {
+    ($table:ty{}) => {
+        $crate::impl_update_ref_exp!(
+            $table{},
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
+    };
+
+    ($table:ty{},$table_name:expr) => {
+        $crate::paste::paste!{
+            $crate::impl_update!($table{update_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) => "` where `
+                trim 'and': for k,v in where_data:
+                  if v== null:
+                    continue:
+                  `and ${k} = #{v} `"},$table_name);
+            $crate::impl_update!($table{update_by_refs<'__ref>(where_datas: &[[<$table Ref>]<'__ref>]) => "` where `
+                trim 'or': for _,item in where_datas:
+                  `or ( `
+                  trim 'and': for k,v in item:
+                    if v== null:
+                      continue:
+                    `and #{k} = #{v} `
+                  `) `"},$table_name);
+        }
+    };
+
+}
+
 
 /// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
@@ -338,9 +494,9 @@ macro_rules! impl_delete {
             }
         }
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
-            pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
+            pub async fn $fn_name$(< $($life_cycle,)* $($gkey:$gtype,)*>)?(
                 executor: &dyn $crate::executor::Executor,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
@@ -348,7 +504,7 @@ macro_rules! impl_delete {
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
                 #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
-                async fn $fn_name$(<$($gkey: $gtype,)*>)?(
+                async fn $fn_name$(< $($life_cycle,)* $($gkey: $gtype,)*>)?(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
                     $($param_key:$param_type,)*
@@ -365,6 +521,45 @@ macro_rules! impl_delete {
         }
     };
 }
+
+#[cfg(not(feature = "ref_model"))]
+#[macro_export]
+macro_rules! impl_delete_ref_exp {
+
+}
+
+#[cfg(feature = "ref_model")]
+#[macro_export]
+macro_rules! impl_delete_ref_exp {
+    ($table:ty{}) => {
+        $crate::impl_delete_ref_exp!(
+            $table{},
+            $crate::utils::string_util::to_snake_name(stringify!($table))
+        );
+    };
+
+    ($table:ty{},$table_name:expr) => {
+        $crate::paste::paste!{
+            $crate::impl_delete!($table {delete_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) =>
+                "` where `
+                    trim 'and': for k,v in where_data:
+                        if v== null:
+                            continue:
+                        `and #{k} = #{v} `"},$table_name);
+            $crate::impl_delete!($table {delete_by_refs<'__ref>(where_datas: &[[<$table Ref>]<'__ref>]) =>
+                "` where `
+                    trim 'or': for _,item in where_datas:
+                        `or ( `
+                        trim 'and': for k,v in item:
+                            if v== null:
+                                continue:
+                            `and #{k} = #{v} `
+                        `) `"},$table_name);
+        }
+    };
+
+}
+
 
 /// pysql impl_select_page
 ///
@@ -396,9 +591,9 @@ macro_rules! impl_select_page {
             $crate::utils::string_util::to_snake_name(stringify!($table))
         );
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr},$table_name:expr) => {
+    ($table:ty{$fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr},$table_name:expr) => {
         impl $table {
-            pub async fn $fn_name(
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (
                 executor: &dyn $crate::executor::Executor,
                 page_request: &dyn $crate::sql::IPageRequest,
                 $($param_key:$param_type,)*
@@ -421,7 +616,7 @@ macro_rules! impl_select_page {
                     ` from ${table_name} `\n",$where_sql,"\n
                     if do_count == false:
                         `${limit_sql}`")]
-                   async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                   async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
                 let mut total = 0;
                 if page_request.do_count() {
@@ -469,12 +664,12 @@ macro_rules! impl_select_page {
 /// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
-            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::sql::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
+    ($fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::sql::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
             struct Inner{}
             impl Inner{
               #[$crate::html_sql($html_file)]
-              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+              pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
             }
@@ -529,12 +724,12 @@ macro_rules! htmlsql_select_page {
 /// ```
 #[macro_export]
 macro_rules! pysql_select_page {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
-            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::sql::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
+    ($fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::sql::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::sql::Page<$table>, $crate::rbdc::Error> {
             struct Inner{}
             impl Inner{
               #[$crate::py_sql($py_file)]
-              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+              pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? (executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
             }
@@ -551,7 +746,6 @@ macro_rules! pysql_select_page {
     }
 }
 
-
 /// use macro wrapper #[sql]
 /// for example:
 /// ```rust
@@ -562,12 +756,12 @@ macro_rules! pysql_select_page {
 /// ```
 #[macro_export]
 macro_rules! raw_sql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
-       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+    ($fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
+       pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
            pub struct Inner{};
            impl Inner{
                #[$crate::sql($sql_file)]
-               pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+               pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
                  impled!()
                }
            }
@@ -588,12 +782,12 @@ macro_rules! raw_sql {
 /// ```
 #[macro_export]
 macro_rules! pysql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
-       pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+    ($fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+       pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
            pub struct Inner{};
            impl Inner{
                #[$crate::py_sql($py_file)]
-               pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+               pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
                  impled!()
                }
            }
@@ -619,12 +813,12 @@ macro_rules! pysql {
 /// ```
 #[macro_export]
 macro_rules! htmlsql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
-        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+    ($fn_name:ident $(<$($life_cycle:lifetime $(,)?)*$($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
+        pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
             pub struct Inner{};
             impl Inner{
             #[$crate::html_sql($html_file)]
-            pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+            pub async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)? ($($param_key: $param_type,)*) -> $return_type{
               impled!()
              }
            }
