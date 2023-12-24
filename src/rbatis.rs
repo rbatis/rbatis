@@ -27,25 +27,9 @@ pub struct RBatis {
 
 impl Default for RBatis {
     fn default() -> RBatis {
-        RBatis::new()
-    }
-}
-
-///RBatis Options
-pub struct RBatisOption {
-    /// sql intercept vec chain(will move to RBatis)
-    pub intercepts: SyncVec<Arc<dyn Intercept>>,
-}
-
-impl Default for RBatisOption {
-    fn default() -> Self {
-        Self {
-            intercepts: {
-                let intercepts = SyncVec::new();
-                intercepts
-                    .push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
-                intercepts
-            },
+        RBatis{
+            pool: Arc::new(Default::default()),
+            intercepts: Arc::new(SyncVec::new()),
         }
     }
 }
@@ -53,21 +37,10 @@ impl Default for RBatisOption {
 impl RBatis {
     ///create an RBatis
     pub fn new() -> Self {
-        return Self::new_with_opt(RBatisOption::default());
-    }
-
-    ///new RBatis from RBatisOption
-    pub fn new_with_opt(option: RBatisOption) -> Self {
-        return Self {
-            pool: Arc::new(OnceLock::new()),
-            intercepts: Arc::new({
-                let result = SyncVec::new();
-                for x in option.intercepts {
-                    result.push(x);
-                }
-                result
-            }),
-        };
+        let rb = RBatis::default();
+        //default use LogInterceptor
+        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
+        return rb;
     }
 
     /// self.init(driver, url)? and self.try_acquire().await? a connection.
