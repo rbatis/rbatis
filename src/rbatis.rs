@@ -40,7 +40,7 @@ impl RBatis {
     pub fn new() -> Self {
         let rb = RBatis::default();
         //default use LogInterceptor
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)) as Arc<dyn Intercept>);
+        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)));
         return rb;
     }
 
