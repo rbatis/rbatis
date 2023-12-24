@@ -96,6 +96,7 @@ impl Encode for Value {
                 }
                 _ => Err(Error::from("unimplemented")),
             },
+            Value::Some(d) => d.encode(q),
         }
     }
 }

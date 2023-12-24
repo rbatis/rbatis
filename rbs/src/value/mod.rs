@@ -19,6 +19,8 @@ pub mod map;
 pub enum Value {
     /// Nil represents nil.
     Null,
+    /// Nestable optional types
+    Some(Box<Self>),
     /// Bool represents true or false.
     Bool(bool),
     /// Int32
@@ -207,6 +209,21 @@ impl Value {
         self.as_map().is_some()
     }
 
+    /// Returns true if the `Value` is an Some. Returns false otherwise.
+    #[inline]
+    pub fn is_some(&self) -> bool {
+        self.as_some().is_some()
+    }
+
+    /// Returns true if `Value` is set Some(None). otherwise returns false.
+    #[inline]
+    pub fn is_some_null(&self) -> bool {
+        match self.as_some() {
+            None => false,
+            Some(d) => d.is_null(),
+        }
+    }
+
     /// Returns true if the `Value` is an Ext. Returns false otherwise.
     #[inline]
     pub fn is_ext(&self) -> bool {
@@ -230,6 +247,7 @@ impl Value {
         match self {
             Value::Bool(v) => Some(*v),
             Value::Ext(_, e) => e.as_bool(),
+            Value::Some(d) => d.as_bool(),
             _ => None,
         }
     }
@@ -247,6 +265,7 @@ impl Value {
             Value::I64(ref n) => Some(n.to_owned()),
             Value::I32(ref n) => Some(n.to_owned() as i64),
             Value::Ext(_, ref e) => e.as_i64(),
+            Value::Some(ref d) => d.as_i64(),
             _ => None,
         }
     }
@@ -264,6 +283,7 @@ impl Value {
             Value::U64(ref n) => Some(n.to_owned()),
             Value::U32(ref n) => Some(n.to_owned() as u64),
             Value::Ext(_, ref e) => e.as_u64(),
+            Value::Some(ref d) => d.as_u64(),
             _ => None,
         }
     }
@@ -293,6 +313,7 @@ impl Value {
             Value::F32(n) => Some(From::from(n)),
             Value::F64(n) => Some(n),
             Value::Ext(_, ref e) => e.as_f64(),
+            Value::Some(ref d) => d.as_f64(),
             _ => None,
         }
     }
@@ -314,6 +335,7 @@ impl Value {
         match self {
             Value::String(s) => Some(s),
             Value::Ext(_, s) => s.as_str(),
+            Value::Some(ref d) => d.as_str(),
             _ => None,
         }
     }
@@ -323,6 +345,7 @@ impl Value {
         match self {
             Value::String(v) => Some(v.to_string()),
             Value::Ext(_, ext) => ext.as_string(),
+            Value::Some(ref d) => d.as_string(),
             _ => None,
         }
     }
@@ -332,6 +355,7 @@ impl Value {
         match self {
             Value::String(v) => Some(v),
             Value::Ext(_, ext) => ext.into_string(),
+            Value::Some(d) => d.into_string(),
             _ => None,
         }
     }
@@ -342,6 +366,7 @@ impl Value {
         match self {
             Value::Binary(v) => Some(v),
             Value::Ext(_, ext) => ext.into_bytes(),
+            Value::Some(d) => d.into_bytes(),
             Value::Null => Some(vec![]),
             Value::Bool(v) => Some(v.to_string().into_bytes()),
             Value::I32(v) => Some(v.to_string().into_bytes()),
@@ -375,6 +400,8 @@ impl Value {
             Some(val.as_bytes())
         } else if let Value::Ext(_, ref val) = *self {
             val.as_slice()
+        } else if let Value::Some(ref d) = *self {
+            d.as_slice()
         } else {
             None
         }
@@ -400,6 +427,8 @@ impl Value {
             Some(&*array)
         } else if let Value::Ext(_, ref ext) = *self {
             ext.as_array()
+        } else if let Value::Some(ref d) = *self {
+            d.as_array()
         } else {
             None
         }
@@ -414,6 +443,20 @@ impl Value {
             Some(map)
         } else if let Value::Ext(_, ref map) = *self {
             map.as_map()
+        } else if let Value::Some(ref val) = *self {
+            val.as_map()
+        } else {
+            None
+        }
+    }
+
+    /// If the `Value` is an Option, returns the associated tuple with a ty and slice.
+    /// Returns None otherwise.
+    ///
+    #[inline]
+    pub fn as_some(&self) -> Option<&Box<Value>> {
+        if let Value::Some(ref data) = *self {
+            Some(data)
         } else {
             None
         }
@@ -426,6 +469,8 @@ impl Value {
     pub fn as_ext(&self) -> Option<(&str, &Box<Value>)> {
         if let Value::Ext(ref ty, ref buf) = *self {
             Some((ty, buf))
+        } else if let Value::Some(ref val) = *self {
+            val.as_ext()
         } else {
             None
         }
@@ -437,6 +482,8 @@ impl Value {
             Some(map)
         } else if let Value::Ext(_, map) = self {
             map.into_map()
+        } else if let Value::Some(val) = self {
+            val.into_map()
         } else {
             None
         }
@@ -448,6 +495,8 @@ impl Value {
             Some(array)
         } else if let Value::Ext(_, ext) = self {
             ext.into_array()
+        } else if let Value::Some(val) = self {
+            val.into_array()
         } else {
             None
         }
@@ -618,6 +667,32 @@ impl Into<Vec<Value>> for Value {
     }
 }
 
+// impl From<Option<Value>> for Value {
+//     #[inline]
+//     fn from(v: Option<Value>) -> Self {
+//         match v {
+//             None => {
+//                 Value::Null
+//             }
+//             Some(data) => {
+//                 Value::Opt(Some(data.into()))
+//             }
+//         }
+//     }
+// }
+
+impl<T> From<Option<T>> for Value
+where
+    T: Into<Value>,
+{
+    fn from(value: Option<T>) -> Self {
+        match value {
+            None => Value::Null,
+            Some(data) => Value::Some(Box::new(data.into())),
+        }
+    }
+}
+
 impl Into<ValueMap> for Value {
     fn into(self) -> ValueMap {
         match self {
@@ -672,6 +747,10 @@ impl Display for Value {
                 Ok(())
             }
             Value::Map(ref vec) => Display::fmt(vec, f),
+            Value::Some(ref data) => {
+                Display::fmt(data, f)?;
+                Ok(())
+            }
             Value::Ext(_, ref data) => {
                 write!(f, "{}", data.deref())
             }
@@ -733,6 +812,7 @@ impl<'a> IntoIterator for &'a Value {
                 v.into_iter()
             }
             Value::Ext(_, e) => e.deref().into_iter(),
+            Value::Some(v) => v.deref().into_iter(),
             _ => {
                 let v = Vec::with_capacity(0);
                 v.into_iter()
@@ -861,6 +941,10 @@ impl Hash for Value {
             Value::Ext(s, v) => {
                 state.write_u8(12);
                 s.hash(state);
+                v.hash(state);
+            }
+            Value::Some(v) => {
+                state.write_u8(13);
                 v.hash(state);
             }
         }

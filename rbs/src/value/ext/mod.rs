@@ -49,6 +49,7 @@ impl ValueExt for Value {
             Value::Array(..) => Unexpected::Seq,
             Value::Map(..) => Unexpected::Map,
             Value::Ext(..) => Unexpected::Seq,
+            Value::Some(..) => Unexpected::Option,
         }
     }
 }

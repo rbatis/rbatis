@@ -34,6 +34,7 @@ impl ColumMapper for SqliteTableMapper {
                 "Uuid" => "TEXT".to_string(),
                 _ => "NULL".to_string(),
             },
+            Value::Some(d) => self.get_column(_column, &*d),
         }
     }
 }

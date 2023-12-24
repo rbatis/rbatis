@@ -57,7 +57,7 @@ impl<'de> Deserialize<'de> for Value {
             where
                 D: de::Deserializer<'de>,
             {
-                Deserialize::deserialize(de)
+                Ok(Value::Some(Box::new(Deserialize::deserialize(de)?)))
             }
 
             #[inline]
@@ -229,6 +229,7 @@ impl<'de> Deserializer<'de> for Value {
                 }
             }
             Value::Ext(_tag, data) => Deserializer::deserialize_any(*data, visitor),
+            Value::Some(d) => Deserializer::deserialize_any(*d, visitor),
         }
     }
 

@@ -45,6 +45,7 @@ impl ColumMapper for MysqlTableMapper {
                 "Uuid" => "TEXT".to_string(),
                 _ => "NULL".to_string(),
             },
+            Value::Some(d) => self.get_column(column, &*d),
         }
     }
 }

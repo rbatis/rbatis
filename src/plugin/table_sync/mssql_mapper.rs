@@ -2,6 +2,7 @@ use crate::table_sync::ColumMapper;
 use rbs::Value;
 
 pub struct MssqlTableMapper {}
+
 impl ColumMapper for MssqlTableMapper {
     fn get_column(&self, _column: &str, v: &Value) -> String {
         match v {
@@ -33,6 +34,7 @@ impl ColumMapper for MssqlTableMapper {
                 "Uuid" => "NVARCHAR(36)".to_string(),
                 _ => "NULL".to_string(),
             },
+            Value::Some(d) => self.get_column(_column, &*d),
         }
     }
 }

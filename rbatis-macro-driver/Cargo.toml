@@ -17,6 +17,8 @@ homepage = "https://rbatis.github.io/rbatis.io"
 [features]
 default = ["rbatis-codegen"]
 debug_mode = ["rust-format","rbatis-codegen"]
+ref_model = []
+
 [lib]
 proc-macro = true
 [dependencies]

@@ -119,6 +119,10 @@ impl Encode for Value {
                 }
                 _ => Ok(IsNull::Yes),
             },
+            Value::Some(d) => {
+                d.encode(args)?;
+                Ok(IsNull::No)
+            }
         }
     }
 }

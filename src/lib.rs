@@ -5,6 +5,11 @@ pub extern crate rbdc;
 
 pub use rbatis_macro_driver::{html_sql, py_sql, sql};
 
+#[cfg(feature = "ref_model")]
+pub use rbatis_macro_driver::{RefModel};
+
+#[cfg(feature = "ref_model")]
+pub use paste;
 pub mod plugin;
 
 pub mod rbatis;

@@ -444,6 +444,6 @@ mod test {
         let dt = DateTime::default();
         let s = dt.format("YYYY-MM-DD/hh/mm/ss");
         println!("{}", s);
-        assert_eq!(s, "1970-1-1/0/0/0");
+        assert_eq!(s, "1970-01-01/00/00/00");
     }
 }

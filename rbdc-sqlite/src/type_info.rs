@@ -151,6 +151,7 @@ impl Type for Value {
                 "Uuid" => SqliteTypeInfo(DataType::Text),
                 _ => SqliteTypeInfo(DataType::Null),
             },
+            Value::Some(d) => d.type_info(),
         }
     }
 }

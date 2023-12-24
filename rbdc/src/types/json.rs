@@ -62,6 +62,7 @@ impl From<Value> for Json {
             Value::Array(_) => Json(v.to_string()),
             Value::Map(v) => Json(v.to_string()),
             Value::Ext(_name, v) => Json::from(*v),
+            Value::Some(d) => Json::from(*d),
         }
     }
 }

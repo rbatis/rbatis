@@ -59,6 +59,7 @@ impl TypeInfo for Value {
                     _ => MySqlTypeInfo::null(),
                 }
             }
+            Value::Some(d) => d.type_info(),
         }
     }
 }
@@ -144,6 +145,7 @@ impl Encode for Value {
                     }
                 }
             }
+            Value::Some(d) => d.encode(buf),
         }
     }
 }

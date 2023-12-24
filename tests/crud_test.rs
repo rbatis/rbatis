@@ -486,19 +486,19 @@ mod test {
                 assert_eq!(
                     args,
                     &[
-                        Value::String(num.to_string()),
-                        Value::String(num.to_string()),
-                        Value::String(num.to_string()),
-                        Value::I32(num),
-                        Value::String(num.to_string()),
-                        Value::Ext(
+                        Value::Some(Box::new(Value::String(num.to_string()))),
+                        Value::Some(Box::new(Value::String(num.to_string()))),
+                        Value::Some(Box::new(Value::String(num.to_string()))),
+                        Value::Some(Box::new(Value::I32(num))),
+                        Value::Some(Box::new(Value::String(num.to_string()))),
+                        Value::Some(Box::new(Value::Ext(
                             "DateTime",
                             Box::new(Value::String("2023-10-10T00:00:00+08:00".to_string()))
-                        ),
-                        Value::I64(num as i64),
-                        Value::I32(num),
+                        ))),
+                        Value::Some(Box::new(Value::I64(num as i64))),
+                        Value::Some(Box::new(Value::I32(num))),
                         Value::U64(num as u64),
-                        Value::String(num.to_string())
+                        Value::Some(Box::new(Value::String(num.to_string())))
                     ]
                 );
                 self.num.fetch_add(1, Ordering::Relaxed);

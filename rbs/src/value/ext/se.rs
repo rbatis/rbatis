@@ -39,6 +39,7 @@ impl Serialize for Value {
                 state.end()
             }
             Value::Ext(ref ty, ref value) => s.serialize_newtype_struct(ty, value),
+            Value::Some(ref d) => s.serialize_some(d),
         }
     }
 }
@@ -227,7 +228,7 @@ impl ser::Serializer for Serializer {
     where
         T: Serialize,
     {
-        value.serialize(self)
+        Ok(Value::Some(Box::new(value.serialize(self)?)))
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {

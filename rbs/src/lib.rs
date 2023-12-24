@@ -33,6 +33,7 @@ impl Value {
             Value::Array(v) => v.is_empty(),
             Value::Map(v) => v.is_empty(),
             Value::Ext(_, v) => v.is_empty(),
+            Value::Some(..) => false,
         }
     }
 
@@ -52,10 +53,10 @@ impl Value {
             Value::Array(v) => v.len(),
             Value::Map(v) => v.len(),
             Value::Ext(_, v) => v.len(),
+            Value::Some(d) => d.len(),
         }
     }
 }
-
 
 /// to_value macro
 ///

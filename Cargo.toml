@@ -32,6 +32,7 @@ debug_mode = ["rbatis-macro-driver/debug_mode"]
 default_mode = ["rbatis-macro-driver/default"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
+ref_model = ["rbatis-macro-driver/ref_model","paste"]
 
 [dependencies]
 rbatis-codegen = { version = "4.5", path = "rbatis-codegen" }
@@ -50,6 +51,9 @@ dark-std = "0.2"
 async-trait = "0.1.68"
 
 rbdc-pool-mobc = { version = "4.5", path = "rbdc-pool-mobc" }
+
+paste = {version = "1", optional = true}
+
 
 [dev-dependencies]
 serde_json = "1"

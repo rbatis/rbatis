@@ -40,6 +40,7 @@ impl AsProxy for Value {
         match self {
             Value::String(v) => v.to_string(),
             Value::Ext(_, ext) => ext.as_string().unwrap_or_default(),
+            Value::Some(d) => d.string(),
             _ => self.to_string(),
         }
     }

@@ -106,6 +106,7 @@ impl TypeInfo for Value {
                     _ => PgTypeInfo::UNKNOWN,
                 }
             }
+            Value::Some(d) => d.type_info(),
         }
     }
 }
@@ -543,6 +544,10 @@ impl Encode for Value {
                     "DeclareWithOid" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     _ => IsNull::Yes,
                 }
+            }
+            Value::Some(d) => {
+                d.encode(buf)?;
+                IsNull::No
             }
         })
     }
