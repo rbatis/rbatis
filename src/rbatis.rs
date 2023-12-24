@@ -83,6 +83,7 @@ impl RBatis {
     }
 
     /// init pool.
+    /// The default connection pool only binds one type of database driver, please use separate RBatis for different database drivers
     /// DefaultPool is MobcPool,if you want other pool please use init_option
     pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
