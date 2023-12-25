@@ -9,7 +9,7 @@ members = [
     "rbdc-mssql",
     "rbatis-macro-driver",
     "rbdc-pool-mobc",
-    "rbdc-pool-deadpool"]
+    "rbdc-pool-deadpool", "rbdc-pool-bb8"]
 
 [package]
 name = "rbatis"
