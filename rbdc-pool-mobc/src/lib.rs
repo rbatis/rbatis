@@ -39,8 +39,8 @@ impl From<ConnManager> for ConnManagerProxy {
 #[async_trait]
 impl Pool for MobcPool {
     fn new(manager: ConnManager) -> Result<Self, Error>
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         Ok(Self {
             manager: manager.clone().into(),
@@ -131,8 +131,14 @@ impl mobc::Manager for ConnManagerProxy {
         self.inner.connect().await
     }
 
-    async fn check(&self, conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
-        self.inner.check(conn).await
+    async fn check(&self, mut conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
+        let r = self.inner.check(&mut conn).await;
+        match r {
+            Ok(_) => { Ok(conn) }
+            Err(e) => {
+                Err(e)
+            }
+        }
     }
 }
 
