@@ -8,7 +8,6 @@ pub mod io;
 pub mod net;
 pub mod pool;
 pub mod rt;
-pub mod time;
 pub mod types;
 pub mod util;
 pub use error::*;
