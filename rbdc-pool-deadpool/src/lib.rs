@@ -133,9 +133,7 @@ impl deadpool::managed::Manager for ConnManagerProxy {
         if obj.conn.is_none() {
             return Err(RecycleError::StaticMessage("none"));
         }
-        let mut copy: ConnectionBox = unsafe { std::mem::transmute_copy(&*obj) };
-        copy.auto_close = false;
-        self.inner.check(copy).await?;
+        self.inner.check(obj).await?;
         Ok(())
     }
 }
