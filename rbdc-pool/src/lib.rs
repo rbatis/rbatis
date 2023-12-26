@@ -47,6 +47,7 @@ impl<M: RBPoolManager> ChannelPool<M> {
             }
             self.receiver.recv_async().await.map_err(|e| M::Error::from(&e.to_string()))
         };
+        //TODO check connection
         self.in_use.fetch_add(1, Ordering::SeqCst);
         if d.is_zero() {
             Ok(ConnectionBox {
@@ -85,7 +86,7 @@ impl<M: RBPoolManager> ChannelPool<M> {
 }
 
 pub struct ConnectionBox<M: RBPoolManager> {
-    pub inner: Option<M::Connection>,
+    inner: Option<M::Connection>,
     sender: Sender<M::Connection>,
     in_use: Arc<AtomicU64>,
 }
@@ -108,9 +109,8 @@ impl<M: RBPoolManager> Drop for ConnectionBox<M> {
     fn drop(&mut self) {
         if let Some(v) = self.inner.take() {
             _ = self.sender.send(v);
-        } else {
-            self.in_use.fetch_sub(1, Ordering::SeqCst);
         }
+        self.in_use.fetch_sub(1, Ordering::SeqCst);
     }
 }
 
