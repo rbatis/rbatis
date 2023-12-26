@@ -36,10 +36,10 @@ impl<M: RBPoolManager> ChannelPool<M> {
     }
 
     pub async fn get(&self) -> Result<ConnectionBox<M>, M::Error> {
-        self.get_timeout(Duration::from_secs(0)).await
+        self.get_timeout(None).await
     }
 
-    pub async fn get_timeout(&self, d: Duration) -> Result<ConnectionBox<M>, M::Error> {
+    pub async fn get_timeout(&self, d: Option<Duration>) -> Result<ConnectionBox<M>, M::Error> {
         let f = async {
             if self.in_use.load(Ordering::SeqCst) <= self.max_open.load(Ordering::SeqCst) {
                 let conn = self.manager.connect().await?;
@@ -49,14 +49,14 @@ impl<M: RBPoolManager> ChannelPool<M> {
         };
         //TODO check connection
         self.in_use.fetch_add(1, Ordering::SeqCst);
-        if d.is_zero() {
+        if d.is_none() {
             Ok(ConnectionBox {
                 inner: Some(f.await?),
                 sender: self.sender.clone(),
                 in_use: self.in_use.clone(),
             })
         } else {
-            let out = tokio::time::timeout(d, f).await.map_err(|_e| M::Error::from("get timeout"))?;
+            let out = tokio::time::timeout(d.unwrap(), f).await.map_err(|_e| M::Error::from("get timeout"))?;
             Ok(ConnectionBox {
                 inner: Some(out?),
                 sender: self.sender.clone(),
@@ -122,6 +122,7 @@ pub struct State {
 
 #[cfg(test)]
 mod test {
+    use std::time::Duration;
     use async_trait::async_trait;
     use crate::{ChannelPool, RBPoolManager};
 
@@ -151,5 +152,17 @@ mod test {
             println!("{},{}", i, v.inner.unwrap());
             arr.push(v);
         }
+    }
+
+    #[tokio::test]
+    async fn test_pool_get_timeout() {
+        let p = ChannelPool::new(TestManager {});
+        let mut arr = vec![];
+        for i in 0..10 {
+            let v = p.get().await.unwrap();
+            println!("{},{}", i, v.inner.unwrap());
+            arr.push(v);
+        }
+        assert_eq!(p.get_timeout(Some(Duration::from_secs(0))).await.is_err(),true);
     }
 }
