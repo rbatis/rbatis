@@ -41,13 +41,13 @@ impl<M: RBPoolManager> ChannelPool<M> {
 
     pub async fn get_timeout(&self, d: Duration) -> Result<ConnectionBox<M>, M::Error> {
         let f = async {
-            if self.in_use.load(Ordering::Relaxed) <= self.max_open.load(Ordering::Relaxed) {
+            if self.in_use.load(Ordering::SeqCst) <= self.max_open.load(Ordering::SeqCst) {
                 let conn = self.manager.connect().await?;
                 self.sender.send(conn).map_err(|e| M::Error::from(&e.to_string()))?;
             }
             self.receiver.recv_async().await.map_err(|e| M::Error::from(&e.to_string()))
         };
-        self.in_use.fetch_add(1, Ordering::Relaxed);
+        self.in_use.fetch_add(1, Ordering::SeqCst);
         if d.is_zero() {
             Ok(ConnectionBox {
                 inner: Some(f.await?),
