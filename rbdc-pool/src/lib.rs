@@ -65,7 +65,11 @@ impl<M: RBPoolManager> ChannelPool<M> {
     }
 
     pub async fn state(&self) -> State {
-        todo!()
+        State{
+            max_open: self.max_open.load(Ordering::Relaxed),
+            connections: self.sender.len() as u64,
+            in_use: self.in_use.load(Ordering::Relaxed),
+        }
     }
 
     pub async fn set_max_open(&self, n: u64) {
