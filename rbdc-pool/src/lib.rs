@@ -52,12 +52,14 @@ impl<M: RBPoolManager> ChannelPool<M> {
             Ok(ConnectionBox {
                 inner: Some(f.await?),
                 sender: self.sender.clone(),
+                in_use: self.in_use.clone(),
             })
         } else {
             let out = tokio::time::timeout(d, f).await.map_err(|_e| M::Error::from("get timeout"))?;
             Ok(ConnectionBox {
                 inner: Some(out?),
                 sender: self.sender.clone(),
+                in_use: self.in_use.clone(),
             })
         }
     }
@@ -81,6 +83,7 @@ impl<M: RBPoolManager> ChannelPool<M> {
 pub struct ConnectionBox<M: RBPoolManager> {
     pub inner: Option<M::Connection>,
     sender: Sender<M::Connection>,
+    in_use: Arc<AtomicU64>,
 }
 
 impl<M: RBPoolManager> Deref for ConnectionBox<M> {
@@ -101,6 +104,8 @@ impl<M: RBPoolManager> Drop for ConnectionBox<M> {
     fn drop(&mut self) {
         if let Some(v) = self.inner.take() {
             _ = self.sender.send(v);
+        } else {
+            self.in_use.fetch_sub(1, Ordering::SeqCst);
         }
     }
 }
@@ -139,7 +144,7 @@ mod test {
         let mut arr = vec![];
         for i in 0..10 {
             let v = p.get().await.unwrap();
-            println!("{},{}", i,v.inner.unwrap());
+            println!("{},{}", i, v.inner.unwrap());
             arr.push(v);
         }
     }
