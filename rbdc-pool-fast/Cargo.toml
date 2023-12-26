@@ -1,6 +1,6 @@
 [package]
-name = "rbdc-pool"
-version = "0.1.0"
+name = "rbdc-pool-fast"
+version = "4.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,5 +10,4 @@ async-trait = "0.1"
 futures-core = { version = "0.3" }
 rbs = { version ="4.5", path = "../rbs" }
 rbdc = { version ="4.5", path = "../rbdc" ,default-features = false}
-flume = "0.11.0"
-tokio = {version = "1",features = []}
+fast_pool = {version = "0.1"}

@@ -551,7 +551,6 @@ macro_rules! pysql_select_page {
     }
 }
 
-
 /// use macro wrapper #[sql]
 /// for example:
 /// ```rust

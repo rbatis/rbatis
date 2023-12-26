@@ -1,15 +1,15 @@
 use crate::net::CertificateInput;
 
-use rustls::client::danger::{HandshakeSignatureValid};
+use crate::Error;
+use rustls::client::danger::HandshakeSignatureValid;
 use rustls::client::danger::ServerCertVerifier;
-use rustls::pki_types::ServerName;
 use rustls::client::WebPkiServerVerifier as WebPkiVerifier;
+use rustls::crypto::{verify_tls12_signature, verify_tls13_signature};
+use rustls::pki_types::ServerName;
+use rustls::pki_types::{CertificateDer, TrustAnchor, UnixTime};
 use rustls::{CertificateError, ClientConfig, DigitallySignedStruct, RootCertStore};
-use rustls::pki_types::{CertificateDer, UnixTime, TrustAnchor};
 use std::io::Cursor;
 use std::sync::Arc;
-use rustls::crypto::{verify_tls12_signature, verify_tls13_signature};
-use crate::Error;
 
 pub async fn configure_tls_connector(
     accept_invalid_certs: bool,
@@ -23,19 +23,17 @@ pub async fn configure_tls_connector(
             .with_no_client_auth()
     } else {
         let mut cert_store = RootCertStore::empty();
-        cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-            TrustAnchor {
-                subject: ta.subject.clone(),
-                subject_public_key_info: ta.subject_public_key_info.clone(),
-                name_constraints: ta.name_constraints.clone(),
-            }
+        cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| TrustAnchor {
+            subject: ta.subject.clone(),
+            subject_public_key_info: ta.subject_public_key_info.clone(),
+            name_constraints: ta.name_constraints.clone(),
         }));
         if let Some(ca) = root_cert_path {
             let data = ca.data().await?;
             let mut cursor = Cursor::new(data);
-            for cert_result in rustls_pemfile::certs(&mut cursor)
-            {
-                let cert = cert_result.map_err(|_| Error::E(format!("Invalid certificate {}", ca)))?;
+            for cert_result in rustls_pemfile::certs(&mut cursor) {
+                let cert =
+                    cert_result.map_err(|_| Error::E(format!("Invalid certificate {}", ca)))?;
                 cert_store
                     .add(cert)
                     .map_err(|err| Error::E(err.to_string()))?;
@@ -50,7 +48,8 @@ pub async fn configure_tls_connector(
                 .with_no_client_auth()
         } else {
             config
-                .cfg.with_root_certificates(cert_store)
+                .cfg
+                .with_root_certificates(cert_store)
                 .with_no_client_auth()
         }
     };
@@ -122,10 +121,14 @@ impl ServerCertVerifier for NoHostnameTlsVerifier {
         _ocsp: &[u8],
         _now: UnixTime,
     ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
-        match self.verifier.verify_server_cert(_end_entity, _intermediates, _server_name, _ocsp, _now) {
-            Ok(res) => {
-                Ok(res)
-            }
+        match self.verifier.verify_server_cert(
+            _end_entity,
+            _intermediates,
+            _server_name,
+            _ocsp,
+            _now,
+        ) {
+            Ok(res) => Ok(res),
             Err(e) => {
                 return match e {
                     rustls::Error::InvalidCertificate(reason) => {
@@ -135,9 +138,7 @@ impl ServerCertVerifier for NoHostnameTlsVerifier {
                             Err(rustls::Error::InvalidCertificate(reason))
                         }
                     }
-                    _ => {
-                        Err(e)
-                    }
+                    _ => Err(e),
                 }
             }
         }
