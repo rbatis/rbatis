@@ -104,7 +104,8 @@ where
         };
 
         #[cfg(feature = "tls-rustls")]
-        let host = tokio_rustls::rustls::pki_types::ServerName::try_from(host.to_string()).map_err(|err| Error::E(err.to_string()))?;
+        let host = tokio_rustls::rustls::pki_types::ServerName::try_from(host.to_string())
+            .map_err(|err| Error::E(err.to_string()))?;
 
         *self = MaybeTlsStream::Tls(connector.connect(host, stream).await?);
 

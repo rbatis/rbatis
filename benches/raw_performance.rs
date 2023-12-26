@@ -59,6 +59,7 @@ macro_rules! rbench {
         now.qps($total);
     }};
 }
+
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
 // ---- bench_raw stdout ----(windows)
 //Time: 52.4187ms ,each:524 ns/op

@@ -3,7 +3,7 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbdc::datetime::DateTime;
     use rbdc::Timestamp;
-    use rbs::{Value};
+    use rbs::Value;
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
     use rbs::value::map::ValueMap;
@@ -247,11 +247,11 @@ mod test {
 
     #[test]
     fn test_to_value_map() {
-        let v=  rbs::to_value! {
+        let v = rbs::to_value! {
             "1":"1",
             "2":"2",
         };
-        assert_eq!(v.to_string(),"{\"1\":\"1\",\"2\":\"2\"}");
+        assert_eq!(v.to_string(), "{\"1\":\"1\",\"2\":\"2\"}");
     }
 
 

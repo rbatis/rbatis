@@ -7,9 +7,9 @@ pub use tokio::{
     net::TcpStream, runtime::Handle, task::spawn, task::yield_now, time::sleep, time::timeout,
 };
 
-pub fn block_on<T>(task: T)
+pub fn block_on<T, R>(task: T) -> R
 where
-    T: Future + Send + 'static,
+    T: Future<Output = R> + Send + 'static,
     T::Output: Send + 'static,
 {
     tokio::task::block_in_place(|| {
@@ -17,8 +17,8 @@ where
             .enable_all()
             .build()
             .expect("tokio block_on fail")
-            .block_on(task);
-    });
+            .block_on(task)
+    })
 }
 
 //unix

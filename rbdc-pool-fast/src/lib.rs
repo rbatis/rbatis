@@ -6,25 +6,19 @@ use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
 use rbdc::Error;
 use rbs::value::map::ValueMap;
-use rbs::{to_value, Value};
-use std::fmt::Formatter;
+use rbs::Value;
 use std::time::Duration;
 
 #[derive(Debug)]
-pub struct MobcPool {
+pub struct FastPool {
     pub manager: ConnManagerProxy,
-    pub inner: mobc::Pool<ConnManagerProxy>,
+    pub inner: fast_pool::Pool<ConnManagerProxy>,
 }
 
+#[derive(Debug)]
 pub struct ConnManagerProxy {
     inner: ConnManager,
-    conn: Option<mobc::Connection<ConnManagerProxy>>,
-}
-
-impl std::fmt::Debug for ConnManagerProxy {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.inner.fmt(f)
-    }
+    conn: Option<fast_pool::ConnectionBox<ConnManagerProxy>>,
 }
 
 impl From<ConnManager> for ConnManagerProxy {
@@ -37,14 +31,14 @@ impl From<ConnManager> for ConnManagerProxy {
 }
 
 #[async_trait]
-impl Pool for MobcPool {
+impl Pool for FastPool {
     fn new(manager: ConnManager) -> Result<Self, Error>
     where
         Self: Sized,
     {
         Ok(Self {
             manager: manager.clone().into(),
-            inner: mobc::Pool::new(manager.into()),
+            inner: fast_pool::Pool::new(manager.into()),
         })
     }
 
@@ -63,7 +57,7 @@ impl Pool for MobcPool {
 
     async fn get_timeout(&self, mut d: Duration) -> Result<Box<dyn Connection>, Error> {
         if d.is_zero() {
-            let state = self.inner.state().await;
+            let state = self.inner.state();
             if state.in_use < state.max_open {
                 d = Duration::from_secs(10);
             } else {
@@ -72,7 +66,7 @@ impl Pool for MobcPool {
         }
         let v = self
             .inner
-            .get_timeout(d)
+            .get_timeout(Some(d))
             .await
             .map_err(|e| Error::from(e.to_string()))?;
         let proxy = ConnManagerProxy {
@@ -82,16 +76,12 @@ impl Pool for MobcPool {
         Ok(Box::new(proxy))
     }
 
-    async fn set_conn_max_lifetime(&self, max_lifetime: Option<Duration>) {
-        self.inner.set_conn_max_lifetime(max_lifetime).await;
-    }
+    async fn set_conn_max_lifetime(&self, _max_lifetime: Option<Duration>) {}
 
-    async fn set_max_idle_conns(&self, n: u64) {
-        self.inner.set_max_idle_conns(n).await;
-    }
+    async fn set_max_idle_conns(&self, _n: u64) {}
 
     async fn set_max_open_conns(&self, n: u64) {
-        self.inner.set_max_open_conns(n).await;
+        self.inner.set_max_open(n);
     }
 
     fn driver_type(&self) -> &str {
@@ -100,30 +90,30 @@ impl Pool for MobcPool {
 
     async fn state(&self) -> Value {
         let mut m = ValueMap::new();
-        let state = self.inner.state().await;
+        let state = self.inner.state();
         m.insert("max_open".to_string().into(), state.max_open.into());
         m.insert("connections".to_string().into(), state.connections.into());
         m.insert("in_use".to_string().into(), state.in_use.into());
-        m.insert("idle".to_string().into(), state.idle.into());
-        m.insert("wait_count".to_string().into(), state.wait_count.into());
-        m.insert(
-            "wait_duration".to_string().into(),
-            to_value!(state.wait_duration),
-        );
-        m.insert(
-            "max_idle_closed".to_string().into(),
-            state.max_idle_closed.into(),
-        );
-        m.insert(
-            "max_lifetime_closed".to_string().into(),
-            state.max_lifetime_closed.into(),
-        );
+        // m.insert("idle".to_string().into(), state.idle.into());
+        // m.insert("wait_count".to_string().into(), state.wait_count.into());
+        // m.insert(
+        //     "wait_duration".to_string().into(),
+        //     to_value!(state.wait_duration),
+        // );
+        // m.insert(
+        //     "max_idle_closed".to_string().into(),
+        //     state.max_idle_closed.into(),
+        // );
+        // m.insert(
+        //     "max_lifetime_closed".to_string().into(),
+        //     state.max_lifetime_closed.into(),
+        // );
         Value::Map(m)
     }
 }
 
 #[async_trait]
-impl mobc::Manager for ConnManagerProxy {
+impl fast_pool::Manager for ConnManagerProxy {
     type Connection = ConnectionBox;
     type Error = Error;
 

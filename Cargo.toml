@@ -9,11 +9,12 @@ members = [
     "rbdc-mssql",
     "rbatis-macro-driver",
     "rbdc-pool-mobc",
-    "rbdc-pool-deadpool"]
+    "rbdc-pool-deadpool",
+    "rbdc-pool-fast"]
 
 [package]
 name = "rbatis"
-version = "4.5.6"
+version = "4.5.7"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -50,7 +51,7 @@ rbdc = { version = "4.5", path = "rbdc", default-features = false }
 dark-std = "0.2"
 async-trait = "0.1.68"
 
-rbdc-pool-mobc = { version = "4.5", path = "rbdc-pool-mobc" }
+rbdc-pool-fast = { version = "4.5", path = "rbdc-pool-fast" }
 
 paste = {version = "1", optional = true}
 
