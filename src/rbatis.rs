@@ -27,7 +27,7 @@ pub struct RBatis {
 
 impl Default for RBatis {
     fn default() -> RBatis {
-        RBatis{
+        RBatis {
             pool: Arc::new(Default::default()),
             intercepts: Arc::new(SyncVec::new()),
         }
@@ -40,12 +40,13 @@ impl RBatis {
     pub fn new() -> Self {
         let rb = RBatis::default();
         //default use LogInterceptor
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Info)));
+        rb.intercepts
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Info)));
         return rb;
     }
 
     /// self.init(driver, url)? and self.try_acquire().await? a connection.
-    /// DefaultPool use MobcPool
+    /// DefaultPool use FastPool
     pub async fn link<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,
@@ -58,7 +59,7 @@ impl RBatis {
 
     /// init pool.
     /// The default connection pool only binds one type of database driver, please use separate RBatis for different database drivers
-    /// DefaultPool is MobcPool,if you want other pool please use init_option
+    /// DefaultPool is FastPool,if you want other pool please use init_option
     pub fn init<Driver: rbdc::db::Driver + 'static>(
         &self,
         driver: Driver,

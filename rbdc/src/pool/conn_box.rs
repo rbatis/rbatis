@@ -3,12 +3,21 @@ use crate::pool::conn_manager::ConnManager;
 use crate::Error;
 use futures_core::future::BoxFuture;
 use rbs::Value;
+use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
 pub struct ConnectionBox {
     pub conn: Option<Box<dyn Connection>>,
     pub manager_proxy: ConnManager,
     pub auto_close: bool,
+}
+impl Debug for ConnectionBox {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ConnectionBox")
+            .field("manager_proxy", &self.manager_proxy)
+            .field("auto_close", &self.auto_close)
+            .finish()
+    }
 }
 
 unsafe impl Sync for ConnectionBox {}

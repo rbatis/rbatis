@@ -125,40 +125,6 @@ fn bench_select() {
     block_on(f);
 }
 
-
-//cargo test --release --package rbatis --bench raw_performance bench_pool --no-fail-fast --  --exact -Z unstable-options --show-output
-//windows:
-//use Time: 4.0313ms ,each:40 ns/op
-//use QPS: 24749412 QPS/s
-#[test]
-fn bench_pool() {
-    use async_trait::async_trait;
-    use rbdc_pool::{ChannelPool, RBPoolManager};
-
-    pub struct TestManager {}
-
-    #[async_trait]
-    impl RBPoolManager for TestManager {
-        type Connection = i32;
-        type Error = String;
-
-        async fn connect(&self) -> Result<Self::Connection, Self::Error> {
-            Ok(0)
-        }
-
-        async fn check(&self, conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
-            Ok(conn)
-        }
-    }
-    let f = async {
-        let p = ChannelPool::new(TestManager {});
-        rbench!(100000, {
-              let v = p.get().await.unwrap();
-        });
-    };
-    block_on(f);
-}
-
 #[derive(Debug, Clone)]
 struct MockDriver {}
 
