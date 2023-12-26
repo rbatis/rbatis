@@ -16,13 +16,12 @@ mod test {
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::sql::PageRequest;
-    use rbatis::{Error, RBatis};
+    use rbatis::{DefaultPool, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::pool::conn_manager::ConnManager;
     use rbdc::pool::Pool;
     use rbdc::rt::block_on;
-    use rbdc_pool_mobc::MobcPool;
     use rbs::{from_value, to_value, Value};
     use std::any::Any;
     use std::collections::HashMap;
@@ -267,7 +266,7 @@ mod test {
             let mut rb = RBatis::new();
             let mut opts = MockConnectOptions {};
             opts.set_uri("test");
-            rb.init_option::<MockDriver, MockConnectOptions, MobcPool>(MockDriver {}, opts)
+            rb.init_option::<MockDriver, MockConnectOptions, DefaultPool>(MockDriver {}, opts)
                 .unwrap();
             rb.acquire().await.unwrap();
         };
@@ -280,7 +279,7 @@ mod test {
             let mut rb = RBatis::new();
             let mut opts = MockConnectOptions {};
             opts.set_uri("test");
-            let pool: MobcPool = MobcPool::new(ConnManager::new_opt_box(
+            let pool = DefaultPool::new(ConnManager::new_opt_box(
                 Box::new(MockDriver {}),
                 Box::new(opts),
             ))
