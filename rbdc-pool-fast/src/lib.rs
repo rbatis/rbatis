@@ -94,7 +94,7 @@ impl Pool for FastPool {
         m.insert("max_open".to_string().into(), state.max_open.into());
         m.insert("connections".to_string().into(), state.connections.into());
         m.insert("in_use".to_string().into(), state.in_use.into());
-        // m.insert("idle".to_string().into(), state.idle.into());
+        m.insert("idle".to_string().into(), state.idle.into());
         // m.insert("wait_count".to_string().into(), state.wait_count.into());
         // m.insert(
         //     "wait_duration".to_string().into(),
