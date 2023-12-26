@@ -19,3 +19,4 @@ futures-core = { version = "0.3" }
 rbs = { version ="4.5", path = "../rbs" }
 rbdc = { version ="4.5", path = "../rbdc" ,default-features = false}
 mobc = {version = "0.8",features = ["tokio"]}
+parking_lot = "0.12.1"
