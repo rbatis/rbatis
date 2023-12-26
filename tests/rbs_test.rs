@@ -6,6 +6,7 @@ mod test {
     use rbs::{Value};
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
+    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_ser_i32() {
@@ -251,5 +252,27 @@ mod test {
             "2":"2",
         };
         assert_eq!(v.to_string(),"{\"1\":\"1\",\"2\":\"2\"}");
+    }
+
+
+    #[test]
+    fn test_to_value_some() {
+        let v=  rbs::to_value! {
+            "1":"1",
+            "2":Some(2),
+            "3":Some(Value::Null),
+            "4":Some(Some(4)),
+        };
+        println!("{:?}",v);
+
+        let mut v2 = ValueMap::new();
+        v2.insert(Value::String("1".to_owned()),Value::String("1".to_owned()));
+        v2.insert(Value::String("2".to_owned()),Value::Some(Box::new(Value::I32(2))));
+        v2.insert(Value::String("3".to_owned()),Value::Some(Box::new(Value::Null)));
+        v2.insert(Value::String("4".to_owned()),Value::Some(Box::new(Value::Some(Box::new(Value::I32(4))))));
+
+        assert_eq!(v,Value::Map(v2));
+        assert_eq!(v.to_string(),"{\"1\":\"1\",\"2\":2,\"3\":null,\"4\":4}");
+
     }
 }

@@ -25,6 +25,7 @@ mod test {
     use rbdc_pool_mobc::MobcPool;
     use rbs::{from_value, to_value, Value};
     use std::any::Any;
+    use std::borrow::Cow;
     use std::collections::HashMap;
     use std::future::Future;
     use std::pin::Pin;
@@ -54,6 +55,19 @@ mod test {
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
         ) -> Result<bool, Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
+            Ok(true)
+        }
+
+        async fn after(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+        ) -> Result<bool, Error> {
+
+            println!("_result:{:?}", _result);
             Ok(true)
         }
     }
@@ -1111,4 +1125,384 @@ mod test {
         };
         block_on(f);
     }
+
+    #[cfg(feature = "ref_model")]
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq,RefModel)]
+    struct MockTable2 {
+        pub id: String,
+        pub name: Option<String>,
+        pub pc_link: Option<String>,
+        pub h5_link: Option<String>,
+        pub pc_banner_img: String,
+        pub h5_banner_img: String,
+        pub sort: Option<String>,
+        pub status: i32,
+        pub remark: Option<String>,
+        pub create_time: DateTime,
+        pub version: i64,
+        pub delete_flag: Option<i32>,
+        //exec sql
+        pub count: u64, //page count num
+    }
+
+
+    #[test]
+    #[cfg(feature = "ref_model")]
+    fn test_crud_ref_insert() {
+        use std::borrow::Cow;
+        let f = async move {
+
+
+            rbatis::impl_insert_ref_exp!(MockTable2{});
+
+
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable2::insert_batch_ref(
+                &mut rb,
+                &[
+                    table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+                    table_ref!(MockTable2 {
+                        id: Cow::Owned("2".into()),
+                        pc_link: Cow::Owned(Some("2".into())),
+                        h5_link: Cow::Owned(None),
+                        pc_banner_img: Cow::Owned("2".into()),
+                        h5_banner_img: Cow::Owned("2".into()),
+                        status: Cow::Owned(1),
+                        create_time: Cow::Owned(DateTime::now()),
+                        version: Cow::Owned(1),
+                        count: Cow::Owned(1),
+                    }),
+
+                ],
+                2,
+            )
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "insert into mock_table2 (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?)"
+            );
+            // let (sql, args) = queue.pop().unwrap();
+            // println!("{}", sql);
+            // assert_eq!(
+            //     sql,
+            //     "select  count(1) as count from activity where delete_flag = 0 and var1 = ? and name=?"
+            // );
+        };
+        block_on(f);
+    }
+
+
+
+    #[test]
+    #[cfg(feature = "ref_model")]
+    fn test_crud_ref_update() {
+        use std::borrow::Cow;
+        let f = async move {
+
+
+            rbatis::impl_update_ref_exp!(MockTable2{});
+
+
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable2::update_by_ref(
+                &mut rb,
+                &table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                }),
+                &table_ref!(MockTable2 {
+                        id: Cow::Owned("2".into()),
+                        pc_link: Cow::Owned(Some("2".into())),
+                        h5_link: Cow::Owned(None),
+                        pc_banner_img: Cow::Owned("2".into()),
+                        h5_banner_img: Cow::Owned("2".into()),
+                        status: Cow::Owned(1),
+                        create_time: Cow::Owned(DateTime::now()),
+                        version: Cow::Owned(1),
+                        count: Cow::Owned(1),
+                    }),
+            )
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "update mock_table2 set id=?,pc_banner_img=?,h5_banner_img=?,status=?,create_time=?,version=?,count=?  where  id = ? and pc_link = ? and h5_link = ? and pc_banner_img = ? and h5_banner_img = ? and status = ? and create_time = ? and version = ? and count = ? "
+            );
+
+            let r = MockTable2::update_by_refs(
+                &mut rb,
+                &table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                }),
+                &[
+                    table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+                    table_ref!(MockTable2 {
+                        id: Cow::Owned("2".into()),
+                        pc_link: Cow::Owned(Some("2".into())),
+                        h5_link: Cow::Owned(None),
+                        pc_banner_img: Cow::Owned("2".into()),
+                        h5_banner_img: Cow::Owned("2".into()),
+                        status: Cow::Owned(1),
+                        create_time: Cow::Owned(DateTime::now()),
+                        version: Cow::Owned(1),
+                        count: Cow::Owned(1),
+                    }),
+                ],
+            )
+                .await
+                .unwrap();
+
+
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "update mock_table2 set id=?,pc_banner_img=?,h5_banner_img=?,status=?,create_time=?,version=?,count=?  where  (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) or (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) "
+            );
+        };
+        block_on(f);
+    }
+
+
+
+    #[test]
+    #[cfg(feature = "ref_model")]
+    fn test_crud_ref_delete() {
+        use std::borrow::Cow;
+        let f = async move {
+
+
+            rbatis::impl_delete_ref_exp!(MockTable2{});
+
+
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable2::delete_by_ref(
+                &mut rb,
+                &table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+            )
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "delete from mock_table2  where  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? "
+            );
+
+            let r = MockTable2::delete_by_refs(
+                &mut rb,
+                &[
+                    table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+                    table_ref!(MockTable2 {
+                        id: Cow::Owned("2".into()),
+                        pc_link: Cow::Owned(Some("2".into())),
+                        h5_link: Cow::Owned(None),
+                        pc_banner_img: Cow::Owned("2".into()),
+                        h5_banner_img: Cow::Owned("2".into()),
+                        status: Cow::Owned(1),
+                        create_time: Cow::Owned(DateTime::now()),
+                        version: Cow::Owned(1),
+                        count: Cow::Owned(1),
+                    }),
+                    MockTable2Ref{
+                        id: Some(Cow::Owned("2".into())),
+                        name: Some(Cow::Owned(Some("2".into()))),
+                        pc_link:  Some(Cow::Owned(Some("2".into()))),
+                        h5_link:  Some(Cow::Owned(Some("2".into()))),
+                        pc_banner_img:  Some(Cow::Owned("2".into())),
+                        h5_banner_img: Some(Cow::Owned("2".into())),
+                        sort: Some(Cow::Owned(Some("2".into()))),
+                        status: Some(Cow::Owned(43)),
+                        remark: None,
+                        create_time: Some(Cow::Owned(DateTime::now())),
+                        version: Some(Cow::Owned(43)),
+                        delete_flag: None,
+                        count: Some(Cow::Owned(43)), //page count num
+
+                    }
+                ],
+            )
+                .await
+                .unwrap();
+
+
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "delete from mock_table2  where  (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) or (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) or (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) "
+            );
+        };
+        block_on(f);
+    }
+
+
+
+
+    #[test]
+    #[cfg(feature = "ref_model")]
+    fn test_crud_ref_select() {
+        use std::borrow::Cow;
+        let f = async move {
+
+
+
+            rbatis::impl_select_ref_exp!(MockTable2{});
+
+
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable2::select_list_by_ref(
+                &mut rb,
+                &table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+            )
+                .await;
+
+            // Expected error, unlikely if the structure is configured consistently with the nullable configuration of the table structure
+            assert_eq!(
+                r.is_err(),
+                true
+            );
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "select * from mock_table2  where  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? "
+            );
+
+            let r = MockTable2::select_list_by_refs(
+                &mut rb,
+                &[
+                    table_own_ref!(MockTable2 {
+                        id: "1".into(),
+                        pc_banner_img: "2".into(),
+                        h5_banner_img: "3".into(),
+                        status: 1,
+                        create_time: DateTime::now(),
+                        version: 2,
+                        count: 1,
+                    }),
+                    table_ref!(MockTable2 {
+                        id: Cow::Owned("2".into()),
+                        pc_link: Cow::Owned(Some("2".into())),
+                        h5_link: Cow::Owned(None),
+                        pc_banner_img: Cow::Owned("2".into()),
+                        h5_banner_img: Cow::Owned("2".into()),
+                        status: Cow::Owned(1),
+                        create_time: Cow::Owned(DateTime::now()),
+                        version: Cow::Owned(1),
+                        count: Cow::Owned(1),
+                    }),
+                    MockTable2Ref{
+                        id: Some(Cow::Owned("2".into())),
+                        name: Some(Cow::Owned(Some("2".into()))),
+                        pc_link:  Some(Cow::Owned(Some("2".into()))),
+                        h5_link:  Some(Cow::Owned(Some("2".into()))),
+                        pc_banner_img:  Some(Cow::Owned("2".into())),
+                        h5_banner_img: Some(Cow::Owned("2".into())),
+                        sort: Some(Cow::Owned(Some("2".into()))),
+                        status: Some(Cow::Owned(43)),
+                        remark: None,
+                        create_time: Some(Cow::Owned(DateTime::now())),
+                        version: Some(Cow::Owned(43)),
+                        delete_flag: None,
+                        count: Some(Cow::Owned(43)), //page count num
+
+                    }
+                ],
+            )
+                .await;
+
+            // Expected error, unlikely if the structure is configured consistently with the nullable configuration of the table structure
+            assert_eq!(
+                r.is_err(),
+                true
+            );
+
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            println!("{:?}", args);
+            assert_eq!(
+                sql,
+                "select * from mock_table2  where  (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) or (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) or (  ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? and ? = ? ) "
+            );
+        };
+        block_on(f);
+    }
+
+
+
 }

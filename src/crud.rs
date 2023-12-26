@@ -138,9 +138,6 @@ macro_rules! impl_insert {
     };
 }
 
-#[cfg(not(feature = "ref_model"))]
-#[macro_export]
-macro_rules! impl_insert_ref_exp {}
 
 #[cfg(feature = "ref_model")]
 #[macro_export]
@@ -283,11 +280,6 @@ macro_rules! impl_select {
 }
 
 
-#[cfg(not(feature = "ref_model"))]
-#[macro_export]
-macro_rules! impl_select_ref_exp {
-
-}
 
 #[cfg(feature = "ref_model")]
 #[macro_export]
@@ -425,12 +417,12 @@ macro_rules! impl_update_ref_exp {
 
     ($table:ty{},$table_name:expr) => {
         $crate::paste::paste!{
-            $crate::impl_update!($table{update_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) => "` where `
+            $crate::impl_update_ref_exp!($table{update_by_ref<'__ref>(where_data: &[<$table Ref>]<'__ref>) => "` where `
                 trim 'and': for k,v in where_data:
                   if v== null:
                     continue:
                   `and ${k} = #{v} `"},$table_name);
-            $crate::impl_update!($table{update_by_refs<'__ref>(where_datas: &[[<$table Ref>]<'__ref>]) => "` where `
+            $crate::impl_update_ref_exp!($table{update_by_refs<'__ref>(where_datas: &[[<$table Ref>]<'__ref>]) => "` where `
                 trim 'or': for _,item in where_datas:
                   `or ( `
                   trim 'and': for k,v in item:
@@ -438,6 +430,44 @@ macro_rules! impl_update_ref_exp {
                       continue:
                     `and #{k} = #{v} `
                   `) `"},$table_name);
+        }
+    };
+
+    ($table:ty{$fn_name:ident $(< $($life_cycle:lifetime $(,)?)* $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+        $crate::paste::paste!{
+            impl $table {
+                pub async fn $fn_name $(<'__ref1, $($life_cycle,)* $($gkey:$gtype,)*>)? (
+                    executor: &dyn $crate::executor::Executor,
+                    update_data: &[<$table Ref>]<'__ref1>,
+                    $($param_key:$param_type,)*
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                    if $sql_where.is_empty(){
+                        return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
+                    }
+                    #[$crate::py_sql("`update ${table_name} set `
+                                     trim ',':
+                                       for k,v in table:
+                                         if v== null:
+                                            continue:
+                                         `${k}=#{v},`
+                                     ` `",$sql_where)]
+                      async fn $fn_name $(< $($life_cycle,)* $($gkey:$gtype,)*>)?(
+                          executor: &dyn $crate::executor::Executor,
+                          table_name: String,
+                          table: &rbs::Value,
+                          $($param_key:$param_type,)*
+                      ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                          impled!()
+                      }
+                      let mut table_name = String::new();
+                      $(table_name = $table_name.to_string();)?
+                      if table_name.is_empty(){
+                          table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                      }
+                      let table = rbs::to_value!(update_data);
+                      $fn_name(executor, table_name, &table, $($param_key,)*).await
+                }
+            }
         }
     };
 
@@ -522,11 +552,6 @@ macro_rules! impl_delete {
     };
 }
 
-#[cfg(not(feature = "ref_model"))]
-#[macro_export]
-macro_rules! impl_delete_ref_exp {
-
-}
 
 #[cfg(feature = "ref_model")]
 #[macro_export]
