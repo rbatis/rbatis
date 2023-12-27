@@ -15,6 +15,7 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use crate::sql::Tx;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -181,11 +182,11 @@ impl RBatis {
     /// get an DataBase Connection,and call begin method,used for the next step
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let pool = self.get_pool()?;
-        let mut conn = pool.get().await?;
-        conn.exec("begin", vec![]).await?;
+        let conn = pool.get().await?;
+        let tx =  conn.begin().await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
-            conn: Mutex::new(Box::new(conn)),
+            conn: Mutex::new(tx),
             rb: self.clone(),
             done: false,
         });
@@ -194,13 +195,8 @@ impl RBatis {
     /// try get an DataBase Connection,and call begin method,used for the next step
     pub async fn try_acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let conn = self.try_acquire().await?;
-        conn.exec("begin", vec![]).await?;
-        return Ok(RBatisTxExecutor {
-            tx_id: new_snowflake_id(),
-            conn: conn.conn,
-            rb: self.clone(),
-            done: false,
-        });
+        let executor = conn.begin().await?;
+        return Ok(executor);
     }
 
     /// is debug mode
