@@ -100,6 +100,8 @@ async fn main(){
 
 ### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
 
+* Rust compiler version v1.73+ later
+
 | platform                | is supported |
 |-------------------------|--------------|
 | Linux(unbutu laster***) | √            | 
@@ -111,8 +113,6 @@ async fn main(){
 * any web Frameworks just like ntex, actix-web, axum, hyper, rocket, tide, warp, salvo and more.
 
 ##### Quick example: QueryWrapper and common usages (see example/crud_test.rs for details)
-
-* Rust v1.73+ later
 
 * Cargo.toml
 
