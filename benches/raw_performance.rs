@@ -28,7 +28,7 @@ impl QPS for std::time::Instant {
     fn qps(&self, total: u64) {
         let time = self.elapsed();
         println!(
-            "use QPS: {} QPS/s",
+            "QPS: {} QPS/s",
             (total as u128 * 1000000000 as u128 / time.as_nanos() as u128)
         );
     }
@@ -36,7 +36,7 @@ impl QPS for std::time::Instant {
     fn time(&self, total: u64) {
         let time = self.elapsed();
         println!(
-            "use Time: {:?} ,each:{} ns/op",
+            "Time: {:?} ,each:{} ns/op",
             &time,
             time.as_nanos() / (total as u128)
         );
@@ -65,8 +65,8 @@ macro_rules! rbench {
 //Time: 52.4187ms ,each:524 ns/op
 //QPS: 1906435 QPS/s
 //---- bench_raw stdout ----(Apple M1 macos)
-// use Time: 53.474833ms ,each:534 ns/op
-// use QPS: 1869738 QPS/s
+// Time: 53.474833ms ,each:534 ns/op
+// QPS: 1869738 QPS/s
 #[test]
 fn bench_raw() {
     let f = async {
@@ -82,8 +82,8 @@ fn bench_raw() {
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-// use Time: 380.693416ms ,each:3806 ns/op
-// use QPS: 262676 QPS/s
+// Time: 346.576666ms ,each:3465 ns/op
+// QPS: 288531 QPS/s
 #[test]
 fn bench_insert() {
     let f = async {
@@ -113,8 +113,8 @@ fn bench_insert() {
 
 //cargo test --release --color=always --package rbatis --bench raw_performance bench_select --no-fail-fast --  --exact -Z unstable-options --show-output
 // ---- bench_select stdout ----
-// Time: 112.927916ms ,each:1129 ns/op
-// QPS: 885486 QPS/s
+// Time: 111.495375ms ,each:1114 ns/op
+// QPS: 896873 QPS/s
 #[test]
 fn bench_select() {
     let f = async {

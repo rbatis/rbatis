@@ -6,12 +6,12 @@
 ```log
 //windows:
 //---- bench_pool stdout ----
-//use Time: 4.0313ms ,each:40 ns/op
-//use QPS: 24749412 QPS/s
+//Time: 4.0313ms ,each:40 ns/op
+//QPS: 24749412 QPS/s
 //macos:
 //---- bench_pool stdout ----
-// use Time: 6.373708ms ,each:63 ns/op
-// use QPS: 15683710 QPS/s
+// Time: 6.373708ms ,each:63 ns/op
+// QPS: 15683710 QPS/s
 ```
  
 * for example:
