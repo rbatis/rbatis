@@ -40,8 +40,8 @@ Time: 112.927916ms ,each:1129 ns/op
 QPS: 885486 QPS/s
 
 ---- bench_insert stdout ----(macos,cpu-M1Max)
-Time: 378.186333ms ,each:3781 ns/op
-QPS: 264418 QPS/s
+Time: 346.576666ms ,each:3465 ns/op
+QPS: 288531 QPS/s
 ```
 
 ### Supported data structures
