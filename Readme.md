@@ -29,7 +29,7 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * run code ```rbatis.query_decode::<Vec<i32>>("", vec![]).await;``` on benches bench_raw()
 * run code ```MockTable::insert(&rbatis,&t).await;``` on benches bench_insert()
 * run code ```MockTable::select_all(&rbatis).await.unwrap();``` on benches bench_select()
-
+* see bench [code](https://github.com/rbatis/rbatis/blob/master/benches/raw_performance.rs)
 ```
 ---- bench_raw stdout ----(windows)
 Time: 52.4187ms ,each:524 ns/op
