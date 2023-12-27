@@ -64,6 +64,9 @@ macro_rules! rbench {
 // ---- bench_raw stdout ----(windows)
 //Time: 52.4187ms ,each:524 ns/op
 //QPS: 1906435 QPS/s
+//---- bench_raw stdout ----(Apple M1 macos)
+// use Time: 53.474833ms ,each:534 ns/op
+// use QPS: 1869738 QPS/s
 #[test]
 fn bench_raw() {
     let f = async {
