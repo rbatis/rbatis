@@ -214,7 +214,8 @@ fn parse(
             "" => {
                 let mut string_data = remove_extra(&x.data);
                 let convert_list = find_convert_string(&string_data);
-                let mut replaces = quote! {};
+                let mut formats_value = quote! {
+                };
                 for (k, v) in convert_list {
                     let method_impl = crate::codegen::func::impl_fn(
                         &body.to_string(),
@@ -230,20 +231,20 @@ fn parse(
                             args.push(rbs::to_value(#method_impl).unwrap_or_default());
                         };
                     } else {
-                        replaces = quote! {
-                            #replaces.replacen(#v, &#method_impl.string(), 1)
-                        };
-                    }
-                }
-                if !replaces.is_empty() {
-                    replaces = quote! {
-                        #replaces.as_str()
+                        string_data = string_data.replacen(&v, &"{}", 1);
+                        if formats_value.to_string().trim().ends_with(",") == false {
+                            formats_value = quote!(#formats_value,);
+                        }
+                        formats_value = quote!(
+                            #formats_value
+                            &#method_impl.string()
+                        );
                     }
                 }
                 if !string_data.is_empty() {
                     body = quote!(
                      #body
-                      sql.push_str(#string_data #replaces);
+                      sql.push_str(&format!(#string_data #formats_value));
                     );
                 }
             }
