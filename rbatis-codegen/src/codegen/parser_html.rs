@@ -380,7 +380,7 @@ fn parse(
                         impl_otherwise(child_body, &mut inner_body, methods, ignore);
                     }
                 }
-                let cup = x.child_string_cup();
+                let cup = x.child_string_cup() + 1000;
                 body = quote! {
                   #body
                   sql.push_str(&|| -> String {
@@ -479,7 +479,7 @@ fn parse(
             "select" => {
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
-                let cup = x.child_string_cup();
+                let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
@@ -499,7 +499,7 @@ fn parse(
             "update" => {
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
-                let cup = x.child_string_cup();
+                let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
@@ -519,7 +519,7 @@ fn parse(
             "insert" => {
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
-                let cup = x.child_string_cup();
+                let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
@@ -539,7 +539,7 @@ fn parse(
             "delete" => {
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
-                let cup = x.child_string_cup();
+                let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
