@@ -480,11 +480,12 @@ fn parse(
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
+                let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
-                       let mut args = Vec::with_capacity(20);
+                       let mut args = Vec::with_capacity(#push_count);
                        #child_body
                        #fix_sql
                        return (sql,args);
@@ -499,11 +500,12 @@ fn parse(
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
+                let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
-                       let mut args = Vec::with_capacity(20);
+                       let mut args = Vec::with_capacity(#push_count);
                        #child_body
                        #fix_sql
                        return (sql,args);
@@ -518,11 +520,12 @@ fn parse(
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
+                let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
-                       let mut args = Vec::with_capacity(20);
+                       let mut args = Vec::with_capacity(#push_count);
                        #child_body
                        #fix_sql
                        return (sql,args);
@@ -537,11 +540,12 @@ fn parse(
                 let method_name = Ident::new(fn_name, Span::call_site());
                 let child_body = parse(&x.childs, methods, ignore, fn_name);
                 let cup = x.child_string_cup();
+                let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
                     pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
-                       let mut args = Vec::with_capacity(20);
+                       let mut args = Vec::with_capacity(#push_count);
                        #child_body
                        #fix_sql
                        return (sql,args);

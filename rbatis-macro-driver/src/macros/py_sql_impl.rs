@@ -125,10 +125,12 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
 
     let generic = target_fn.sig.generics.clone();
+
+    let push_count = sql_args_gen.to_string().matches("rb_arg_map.insert").count();
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
-         let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(100);
+         let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RBatisRef};
