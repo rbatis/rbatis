@@ -121,10 +121,10 @@ impl fast_pool::Manager for ConnManagerProxy {
         self.inner.connect().await
     }
 
-    async fn check(&self, mut conn: Self::Connection) -> Result<Self::Connection, Self::Error> {
-        let r = self.inner.check(&mut conn).await;
+    async fn check(&self, conn: &mut Self::Connection) -> Result<(), Self::Error> {
+        let r = self.inner.check(conn).await;
         match r {
-            Ok(_) => Ok(conn),
+            Ok(_) => Ok(()),
             Err(e) => Err(e),
         }
     }
