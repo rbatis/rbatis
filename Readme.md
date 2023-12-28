@@ -100,7 +100,7 @@ async fn main(){
 
 ### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
 
-* Rust compiler version v1.73+ later
+* Rust compiler version v1.75+ later
 
 | platform                | is supported |
 |-------------------------|--------------|
