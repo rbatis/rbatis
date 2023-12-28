@@ -234,4 +234,78 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_macro_bench() {
+        pub trait QPS {
+            fn qps(&self, total: u64);
+            fn time(&self, total: u64);
+            fn cost(&self);
+        }
+
+        impl QPS for std::time::Instant {
+            fn qps(&self, total: u64) {
+                let time = self.elapsed();
+                println!(
+                    "QPS: {} QPS/s",
+                    (total as u128 * 1000000000 as u128 / time.as_nanos() as u128)
+                );
+            }
+
+            fn time(&self, total: u64) {
+                let time = self.elapsed();
+                println!(
+                    "Time: {:?} ,each:{} ns/op",
+                    &time,
+                    time.as_nanos() / (total as u128)
+                );
+            }
+
+            fn cost(&self) {
+                let time = self.elapsed();
+                println!("cost:{:?}", time);
+            }
+        }
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            pysql!(test_bench(rb: &RBatis, tables: &[MockTable])  -> Result<Value, Error> =>
+                "`insert into ${table_name} `
+                     for idx,table in tables:
+                      if idx == 0:
+                         `(`
+                           for k,v in table:
+                              if k == 'id' && v == null:
+                                 continue:
+                              ${k},
+                         `) VALUES `
+                    ");
+            let r = test_bench(&mut rb, &vec![]).await.unwrap();
+
+            let mut t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(rbdc::datetime::DateTime::now()),
+                version: Some(1),
+                delete_flag: Some(1),
+                count: 0,
+            };
+
+            let total = 100000;
+            let now = std::time::Instant::now();
+             for _ in 0..total{
+                 let r = test_bench(&mut rb, &vec![t.clone()]).await.unwrap();
+             }
+            now.time(total);
+            now.qps(total);
+        };
+        block_on(f);
+    }
 }
