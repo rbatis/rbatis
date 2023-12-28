@@ -216,6 +216,7 @@ fn parse(
                 let convert_list = find_convert_string(&string_data);
                 let mut formats_value = quote! {
                 };
+                let mut replace_num = 0;
                 for (k, v) in convert_list {
                     let method_impl = crate::codegen::func::impl_fn(
                         &body.to_string(),
@@ -239,13 +240,21 @@ fn parse(
                             #formats_value
                             &#method_impl.string()
                         );
+                        replace_num += 1;
                     }
                 }
                 if !string_data.is_empty() {
-                    body = quote!(
-                     #body
-                      sql.push_str(&format!(#string_data #formats_value));
-                    );
+                    if replace_num == 0 {
+                        body = quote!(
+                           #body
+                           sql.push_str(#string_data);
+                        );
+                    } else {
+                        body = quote!(
+                           #body
+                           sql.push_str(&format!(#string_data #formats_value));
+                        );
+                    }
                 }
             }
             "if" => {
