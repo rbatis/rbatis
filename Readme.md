@@ -31,15 +31,15 @@ It is an ORM, a small compiler, a dynamic SQL languages
 * run code ```MockTable::select_all(&rbatis).await.unwrap();``` on benches bench_select()
 * see bench [code](https://github.com/rbatis/rbatis/blob/master/benches/raw_performance.rs)
 ```
----- bench_raw stdout ----(windows)
+---- bench_raw stdout ----(windows/SingleThread)
 Time: 52.4187ms ,each:524 ns/op
 QPS: 1906435 QPS/s
 
----- bench_select stdout ----(macos,cpu-M1Max)
+---- bench_select stdout ----(macos-M1Cpu/SingleThread)
 Time: 112.927916ms ,each:1129 ns/op
 QPS: 885486 QPS/s
 
----- bench_insert stdout ----(macos,cpu-M1Max)
+---- bench_insert stdout ----(macos-M1Cpu/SingleThread)
 Time: 346.576666ms ,each:3465 ns/op
 QPS: 288531 QPS/s
 ```
