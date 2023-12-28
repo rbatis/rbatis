@@ -99,7 +99,7 @@ impl Pool for MobcPool {
     }
 
     async fn state(&self) -> Value {
-        let mut m = ValueMap::new();
+        let mut m = ValueMap::with_capacity(10);
         let state = self.inner.state().await;
         m.insert("max_open".to_string().into(), state.max_open.into());
         m.insert("connections".to_string().into(), state.connections.into());
