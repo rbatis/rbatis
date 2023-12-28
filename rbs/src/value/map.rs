@@ -231,7 +231,7 @@ impl IntoIterator for ValueMap {
 macro_rules! value_map {
       {$($k:tt:$v:expr $(,)+ )*} => {
         {
-        let mut m  = $crate::value::map::ValueMap::new();
+        let mut m  = $crate::value::map::ValueMap::with_capacity(50);
         $(m.insert($crate::to_value!($k),$crate::to_value!($v));)*
         m
         }

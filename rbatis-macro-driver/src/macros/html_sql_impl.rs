@@ -131,7 +131,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          #include_data
-         let mut rb_arg_map = rbs::value::map::ValueMap::new();
+         let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(100);
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RBatisRef};

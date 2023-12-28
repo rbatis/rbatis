@@ -100,7 +100,7 @@ impl Pool for DeadPool {
     }
 
     async fn state(&self) -> Value {
-        let mut m = ValueMap::new();
+        let mut m = ValueMap::with_capacity(10);
         let state = self.status();
         m.insert(to_value!("max_size"), to_value!(state.max_size));
         m.insert(to_value!("size"), to_value!(state.size));

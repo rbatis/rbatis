@@ -212,7 +212,7 @@ impl ser::Serializer for Serializer {
     where
         T: Serialize,
     {
-        let mut values = ValueMap::new();
+        let mut values = ValueMap::with_capacity(1);
         values.insert(Value::String(variant.to_string()), value.serialize(self)?);
         Ok(Value::Map(values))
     }

@@ -128,7 +128,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     //gen rust code templete
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
-         let mut rb_arg_map = rbs::value::map::ValueMap::new();
+         let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(100);
          #sql_args_gen
          #fn_body
          use rbatis::executor::{RBatisRef};
