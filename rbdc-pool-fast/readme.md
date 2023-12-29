@@ -1,4 +1,4 @@
- init pool by DBPoolOptions and Pool
+## rbdc driver connection pool based on [FastPool](https://crates.io/crates/fast_pool)
 
 ### way fast_pool?
 
