@@ -487,23 +487,6 @@ impl RBatisRef for &RBatis {
     }
 }
 
-impl Executor for &RBatis {
-    fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-        let sql = sql.to_string();
-        Box::pin(async move {
-            let conn = self.acquire().await?;
-            conn.exec(&sql, args).await
-        })
-    }
-
-    fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
-        let sql = sql.to_string();
-        Box::pin(async move {
-            let conn = self.acquire().await?;
-            conn.query(&sql, args).await
-        })
-    }
-}
 
 #[derive(Debug)]
 pub struct TempExecutor<'a> {
