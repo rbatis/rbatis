@@ -44,6 +44,17 @@ Time: 346.576666ms ,each:3465 ns/op
 QPS: 288531 QPS/s
 ```
 
+### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
+
+* Rust compiler version v1.75+ later
+
+| platform                | is supported |
+|-------------------------|--------------|
+| Linux(unbutu laster***) | √            | 
+| Apple/MacOS(laster)     | √            |  
+| Windows(latest)         | √            |
+
+
 ### Supported data structures
 
 | data structure                                                        | is supported |
@@ -96,17 +107,6 @@ async fn main(){
   rb.init(YourDriver {}, "YourDriver://****").unwrap();
 }
 ```
-
-
-### Supported OS/Platforms by [Workflows CI](https://github.com/rbatis/rbatis/actions)
-
-* Rust compiler version v1.75+ later
-
-| platform                | is supported |
-|-------------------------|--------------|
-| Linux(unbutu laster***) | √            | 
-| Apple/MacOS(laster)     | √            |  
-| Windows(latest)         | √            |
 
 ### Supported Web Frameworks
 
