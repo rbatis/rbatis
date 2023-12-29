@@ -33,10 +33,10 @@ impl<A, B> ResultType<A, B> {
 /// use rbs::Value;
 ///
 /// #[derive(Debug)]
-/// pub struct ReturingIdPlugin{}
+/// pub struct ReturningIdPlugin{}
 ///
 /// #[rbatis::async_trait]
-/// impl Intercept for ReturingIdPlugin {
+/// impl Intercept for ReturningIdPlugin {
 ///     async fn before(
 ///         &self,
 ///         _task_id: i64,
