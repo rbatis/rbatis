@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::pool::conn_box::ConnectionBox;
@@ -30,7 +29,7 @@ impl From<ConnManager> for ConnManagerProxy {
     }
 }
 
-#[async_trait]
+#[async_trait::async_trait]
 impl Pool for FastPool {
     fn new(manager: ConnManager) -> Result<Self, Error>
     where
@@ -112,7 +111,6 @@ impl Pool for FastPool {
     }
 }
 
-#[async_trait]
 impl fast_pool::Manager for ConnManagerProxy {
     type Connection = ConnectionBox;
     type Error = Error;
