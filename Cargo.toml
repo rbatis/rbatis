@@ -8,8 +8,6 @@ members = [
     "rbdc-sqlite",
     "rbdc-mssql",
     "rbatis-macro-driver",
-    "rbdc-pool-mobc",
-    "rbdc-pool-deadpool",
     "rbdc-pool-fast"]
 
 [package]

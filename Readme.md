@@ -108,6 +108,14 @@ async fn main(){
 }
 ```
 
+### Supported Connection Pools
+
+| database(crates.io)                                         | github_link                                                                             |
+|-------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| [FastPool-default](https://crates.io/crates/rbdc-pool-fast) | [rbatis/fast_pool](https://github.com/rbatis/rbatis/tree/master/rbdc-pool-fast)         |
+| [Deadpool](https://crates.io/crates/rbdc-pool-deadpool)     | [Deadpool](https://github.com/rbatis/rbdc-pool-deadpool)                                |
+| [MobcPool](https://crates.io/crates/rbdc-pool-mobc)         | [MobcPool](https://github.com/rbatis/rbdc-pool-mobc)                                    |
+
 ### Supported Web Frameworks
 
 * any web Frameworks just like ntex, actix-web, axum, hyper, rocket, tide, warp, salvo and more.
