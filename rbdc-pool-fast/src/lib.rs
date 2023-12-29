@@ -95,18 +95,6 @@ impl Pool for FastPool {
         m.insert("in_use".to_string().into(), state.in_use.into());
         m.insert("idle".to_string().into(), state.idle.into());
         m.insert("waits".to_string().into(), state.waits.into());
-        // m.insert(
-        //     "wait_duration".to_string().into(),
-        //     to_value!(state.wait_duration),
-        // );
-        // m.insert(
-        //     "max_idle_closed".to_string().into(),
-        //     state.max_idle_closed.into(),
-        // );
-        // m.insert(
-        //     "max_lifetime_closed".to_string().into(),
-        //     state.max_lifetime_closed.into(),
-        // );
         Value::Map(m)
     }
 }
