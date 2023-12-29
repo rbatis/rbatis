@@ -18,4 +18,4 @@ async-trait = "0.1"
 futures-core = { version = "0.3" }
 rbs = { version ="4.5", path = "../rbs" }
 rbdc = { version ="4.5", path = "../rbdc" ,default-features = false}
-fast_pool = {version = "0.1"}
+fast_pool = {version = "0.2"}
