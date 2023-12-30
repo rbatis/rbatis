@@ -30,7 +30,7 @@ impl Parse for ParseArgs {
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
 ///```log
-///     use rbatis::sql;
+///     use rbatis::plugin;
 ///     use rbatis::executor::Executor;
 ///     #[derive(serde::Serialize,serde::Deserialize)]
 ///     pub struct MockTable{}
