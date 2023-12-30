@@ -15,7 +15,7 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::sql::Tx;
+use crate::plugin::Tx;
 
 /// RBatis engine
 #[derive(Clone, Debug)]

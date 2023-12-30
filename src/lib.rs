@@ -11,12 +11,13 @@ pub mod rbatis;
 #[macro_use]
 pub mod utils;
 pub mod executor;
-pub mod sql;
 #[macro_use]
 pub mod crud;
 #[macro_use]
 pub mod error;
 pub mod decode;
+
+pub mod sql;
 
 pub use async_trait::async_trait;
 pub use decode::*;

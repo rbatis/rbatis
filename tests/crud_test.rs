@@ -15,7 +15,7 @@ mod test {
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
-    use rbatis::sql::PageRequest;
+    use rbatis::plugin::PageRequest;
     use rbatis::{DefaultPool, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};

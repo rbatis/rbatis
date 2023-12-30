@@ -2,7 +2,7 @@ use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
-use crate::sql::Tx;
+use crate::plugin::Tx;
 use crate::{utils, Error};
 use dark_std::sync::SyncVec;
 use futures::Future;

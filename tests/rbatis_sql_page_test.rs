@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rbatis::sql::{IPageRequest, PageRequest};
+    use rbatis::plugin::{IPageRequest, PageRequest};
 
     fn make_pages() -> Vec<Vec<i32>> {
         vec![

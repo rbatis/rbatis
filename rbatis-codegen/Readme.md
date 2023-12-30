@@ -32,7 +32,7 @@ source code for example:
 ```rust
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::sql::page::{Page, PageRequest};
+use rbatis::plugin::page::{Page, PageRequest};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
     pub id: Option<String>,
