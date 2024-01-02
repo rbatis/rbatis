@@ -23,7 +23,7 @@ pub trait Pool: Sync + Send + Debug {
     async fn get_timeout(&self, d: Duration) -> Result<Box<dyn Connection>, Error>;
 
 
-    async fn set_conn_timeout(&self, _timeout: Option<Duration>){
+    async fn set_timeout(&self, _timeout: Option<Duration>){
 
     }
 
