@@ -80,7 +80,7 @@ impl Pool for FastPool {
         Ok(Box::new(proxy))
     }
 
-    async fn set_conn_timeout(&self, timeout: Option<Duration>) {
+    async fn set_timeout(&self, timeout: Option<Duration>) {
         self.timeout.store(timeout);
     }
 
