@@ -22,7 +22,12 @@ pub trait Pool: Sync + Send + Debug {
     /// get timeout from pool
     async fn get_timeout(&self, d: Duration) -> Result<Box<dyn Connection>, Error>;
 
-    async fn set_conn_max_lifetime(&self, max_lifetime: Option<Duration>);
+
+    async fn set_conn_timeout(&self, _timeout: Option<Duration>){
+
+    }
+
+    async fn set_conn_max_lifetime(&self, _max_lifetime: Option<Duration>){}
 
     async fn set_max_idle_conns(&self, n: u64);
 
