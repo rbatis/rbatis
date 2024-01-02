@@ -1,5 +1,3 @@
-mod atomic_dur;
-
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::pool::conn_box::ConnectionBox;
@@ -9,7 +7,7 @@ use rbdc::Error;
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::time::Duration;
-use crate::atomic_dur::AtomicDuration;
+use dark_std::sync::AtomicDuration;
 
 #[derive(Debug)]
 pub struct FastPool {
