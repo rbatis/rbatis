@@ -1,3 +1,5 @@
+mod atomic_dur;
+
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::pool::conn_box::ConnectionBox;
@@ -7,11 +9,13 @@ use rbdc::Error;
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::time::Duration;
+use crate::atomic_dur::AtomicDuration;
 
 #[derive(Debug)]
 pub struct FastPool {
     pub manager: ConnManagerProxy,
     pub inner: fast_pool::Pool<ConnManagerProxy>,
+    pub timeout: AtomicDuration
 }
 
 #[derive(Debug)]
@@ -38,13 +42,14 @@ impl Pool for FastPool {
         Ok(Self {
             manager: manager.clone().into(),
             inner: fast_pool::Pool::new(manager.into()),
+            timeout: AtomicDuration::new(None),
         })
     }
 
     async fn get(&self) -> Result<Box<dyn Connection>, Error> {
         let v = self
             .inner
-            .get()
+            .get_timeout(self.timeout.get())
             .await
             .map_err(|e| Error::from(e.to_string()))?;
         let proxy = ConnManagerProxy {
@@ -73,6 +78,10 @@ impl Pool for FastPool {
             conn: Some(v),
         };
         Ok(Box::new(proxy))
+    }
+
+    async fn set_conn_timeout(&self, timeout: Option<Duration>) {
+        self.timeout.store(timeout);
     }
 
     async fn set_conn_max_lifetime(&self, _max_lifetime: Option<Duration>) {}
