@@ -1,8 +1,8 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
+use crate::plugin::Tx;
 use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
-use crate::plugin::Tx;
 use crate::{utils, Error};
 use dark_std::sync::SyncVec;
 use futures::Future;
@@ -486,7 +486,6 @@ impl RBatisRef for &RBatis {
         self
     }
 }
-
 
 #[derive(Debug)]
 pub struct TempExecutor<'a> {

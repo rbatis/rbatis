@@ -1,8 +1,7 @@
 #![allow(deprecated)]
+use crate::{IPage, IPageRequest, DEFAULT_PAGE_SIZE};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Formatter};
-use crate::{DEFAULT_PAGE_SIZE, IPage, IPageRequest};
-
 
 #[deprecated(note = "please use `rbatis::plugin::page::Page`")]
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
@@ -274,8 +273,8 @@ impl<T: Display + Debug + Send + Sync> Display for Page<T> {
 
 impl<V: Send + Sync> Page<V> {
     pub fn from<T: Send + Sync>(arg: Page<T>) -> Self
-        where
-            V: From<T>,
+    where
+        V: From<T>,
     {
         let mut p = Page::<V>::new(arg.page_no, arg.page_size);
         p.page_no = arg.page_no;
