@@ -4,12 +4,11 @@ use crate::intercept::{Intercept, ResultType};
 use crate::{Error, RBatis};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
-use rbatis_codegen::ops::AsProxy;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct RbsValueDisplay<'a> {
     inner: &'a Vec<Value>,
