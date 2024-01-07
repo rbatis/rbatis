@@ -114,7 +114,8 @@ macro_rules! impl_insert {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
-                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                let ranges =
+                    $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     let exec_result = insert_batch(
                         executor,

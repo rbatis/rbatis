@@ -48,10 +48,6 @@ pub struct LogInterceptor {
     /// 4=Debug,
     /// 5=Trace
     pub level_filter: AtomicUsize,
-
-    /// replace_holder=true 'select column from table' []
-    /// replace_holder=false 'select ? from table' ['column']
-    pub replace_holder: AtomicBool,
 }
 
 impl Clone for LogInterceptor {
@@ -64,7 +60,6 @@ impl LogInterceptor {
     pub fn new(level_filter: LevelFilter) -> Self {
         let s = Self {
             level_filter: AtomicUsize::new(0),
-            replace_holder: AtomicBool::new(false),
         };
         s.set_level_filter(level_filter);
         s
@@ -102,18 +97,6 @@ impl LogInterceptor {
             LevelFilter::Debug => self.level_filter.store(4, Ordering::SeqCst),
             LevelFilter::Trace => self.level_filter.store(5, Ordering::SeqCst),
         }
-    }
-
-    /// replace_holder=true 'select column from table' []
-    /// replace_holder=false 'select ? from table' ['column']
-    pub fn set_replace_holder(&self, arg: bool) {
-        self.replace_holder.store(arg, Ordering::SeqCst);
-    }
-
-    /// replace_holder=true 'select column from table' []
-    /// replace_holder=false 'select ? from table' ['column']
-    pub fn get_replace_holder(&self) -> bool {
-        self.replace_holder.load(Ordering::Relaxed)
     }
 }
 
@@ -162,29 +145,14 @@ impl Intercept for LogInterceptor {
         } else {
             op = "exec ";
         }
-        if self.replace_holder.load(Ordering::Relaxed) {
-            let mut sql = sql.to_string();
-            for x in &*args {
-                sql = sql.replacen('?', &x.string(), 1);
-            }
-            log!(
-                level,
-                "[rbatis] [{}] {} => `{}` {}",
-                task_id,
-                op,
-                &sql,
-                RbsValueDisplay::new(args)
-            );
-        } else {
-            log!(
-                level,
-                "[rbatis] [{}] {} => `{}` {}",
-                task_id,
-                op,
-                &sql,
-                RbsValueDisplay::new(args)
-            );
-        }
+        log!(
+            level,
+            "[rbatis] [{}] {} => `{}` {}",
+            task_id,
+            op,
+            &sql,
+            RbsValueDisplay::new(args)
+        );
         return Ok(true);
     }
 

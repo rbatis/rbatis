@@ -128,7 +128,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     }
     let generic = target_fn.sig.generics.clone();
     //gen rust code
-    let push_count = sql_args_gen.to_string().matches("rb_arg_map.insert").count();
+    let push_count = sql_args_gen
+        .to_string()
+        .matches("rb_arg_map.insert")
+        .count();
 
     return quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {

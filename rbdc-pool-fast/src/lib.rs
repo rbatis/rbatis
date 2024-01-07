@@ -1,3 +1,4 @@
+use dark_std::sync::AtomicDuration;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult, Row};
 use rbdc::pool::conn_box::ConnectionBox;
@@ -7,13 +8,12 @@ use rbdc::Error;
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::time::Duration;
-use dark_std::sync::AtomicDuration;
 
 #[derive(Debug)]
 pub struct FastPool {
     pub manager: ConnManagerProxy,
     pub inner: fast_pool::Pool<ConnManagerProxy>,
-    pub timeout: AtomicDuration
+    pub timeout: AtomicDuration,
 }
 
 #[derive(Debug)]

@@ -214,8 +214,7 @@ fn parse(
             "" => {
                 let mut string_data = remove_extra(&x.data);
                 let convert_list = find_convert_string(&string_data);
-                let mut formats_value = quote! {
-                };
+                let mut formats_value = quote! {};
                 let mut replace_num = 0;
                 for (k, v) in convert_list {
                     let method_impl = crate::codegen::func::impl_fn(

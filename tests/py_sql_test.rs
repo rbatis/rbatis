@@ -300,9 +300,9 @@ mod test {
 
             let total = 100000;
             let now = std::time::Instant::now();
-             for _ in 0..total{
-                 let r = test_bench(&mut rb, &vec![t.clone()]).await.unwrap();
-             }
+            for _ in 0..total {
+                let r = test_bench(&mut rb, &vec![t.clone()]).await.unwrap();
+            }
             now.time(total);
             now.qps(total);
         };

@@ -1,6 +1,7 @@
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
+use crate::plugin::Tx;
 use crate::snowflake::new_snowflake_id;
 use crate::table_sync::{sync, ColumMapper};
 use crate::{DefaultPool, Error};
@@ -15,7 +16,6 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::plugin::Tx;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -186,7 +186,7 @@ impl RBatis {
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        let tx =  conn.begin().await?;
+        let tx = conn.begin().await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: Mutex::new(tx),
