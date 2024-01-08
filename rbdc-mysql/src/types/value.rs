@@ -20,6 +20,7 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
+use crate::types::json::{decode_json, encode_json};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
@@ -135,7 +136,7 @@ impl Encode for Value {
                         &v.into_string().unwrap_or_default(),
                     )?)
                     .encode(buf),
-                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf),
+                    "Json" => encode_json(*v,buf),
                     "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
                     "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
                     _ => {
@@ -198,10 +199,7 @@ impl Decode for Value {
                 "Year",
                 Box::new(Value::String(decode_year(v).unwrap_or_default())),
             ),
-            ColumnType::Json => Value::Ext(
-                "Json",
-                Box::new(Value::String(v.as_str().unwrap_or_default().to_string())),
-            ),
+            ColumnType::Json => decode_json(v)?,
             ColumnType::NewDecimal => Value::Ext(
                 "Decimal",
                 Box::new(Value::String(v.as_str().unwrap_or("0").to_string())),

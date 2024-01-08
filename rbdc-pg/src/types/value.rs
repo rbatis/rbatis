@@ -20,6 +20,7 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
+use crate::types::json::{decode_json, encode_json};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> PgTypeInfo {
@@ -34,15 +35,8 @@ impl TypeInfo for Value {
             Value::F64(_) => PgTypeInfo::FLOAT8,
             Value::String(_) => PgTypeInfo::VARCHAR,
             Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
-            Value::Array(arr) => {
-                if arr.len() == 0 {
-                    return PgTypeInfo::UNKNOWN;
-                }
-                arr[0]
-                    .type_info()
-                    .clone()
-                    .to_array_type()
-                    .unwrap_or(PgTypeInfo::UNKNOWN)
+            Value::Array(_) => {
+                PgTypeInfo::JSON
             }
             Value::Map(_) => PgTypeInfo::UNKNOWN,
             Value::Ext(type_name, _) => {
@@ -128,7 +122,7 @@ impl Decode for Value {
             PgType::Int4 => Value::I32(Decode::decode(arg)?),
             PgType::Text => Value::String(Decode::decode(arg)?),
             PgType::Oid => Value::Ext("Oid", Box::new(Value::U32(Decode::decode(arg)?))),
-            PgType::Json => Json::decode(arg)?.into(),
+            PgType::Json => decode_json(arg)?,
             PgType::Point => Value::Ext(
                 "Point",
                 Box::new(Value::Binary({
@@ -496,7 +490,7 @@ impl Encode for Value {
                     "Int4" => (v.as_i64().unwrap_or_default() as i16).encode(buf)?,
                     "Text" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
+                    "Json" => encode_json(*v,buf)?,
                     "Point" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Lseg" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Path" => v.into_bytes().unwrap_or_default().encode(buf)?,
