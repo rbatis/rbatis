@@ -13,7 +13,6 @@ use crate::value::MySqlValue;
 use rbdc::date::Date;
 use rbdc::datetime::DateTime;
 use rbdc::decimal::Decimal;
-use rbdc::json::Json;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
@@ -106,8 +105,8 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(v) => Json(Value::Array(v).to_string()).encode(buf),
-            Value::Map(v) => Json(Value::Map(v).to_string()).encode(buf),
+            Value::Array(v) => encode_json(Value::Array(v),buf),
+            Value::Map(v) => encode_json(Value::Map(v),buf),
             Value::Ext(ext_type, v) => {
                 match ext_type {
                     "Uuid" => {

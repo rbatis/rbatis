@@ -38,7 +38,7 @@ impl TypeInfo for Value {
             Value::Array(_) => {
                 PgTypeInfo::JSON
             }
-            Value::Map(_) => PgTypeInfo::UNKNOWN,
+            Value::Map(_) =>PgTypeInfo::JSON,
             Value::Ext(type_name, _) => {
                 match *type_name {
                     "Uuid" => PgTypeInfo::UUID,
@@ -291,7 +291,7 @@ impl Decode for Value {
                 })),
             ),
             PgType::Uuid => Uuid::decode(arg)?.into(),
-            PgType::Jsonb => Json::decode(arg)?.into(),
+            PgType::Jsonb => decode_json(arg)?,
             PgType::Int4Range => Value::Ext(
                 "Int4Range",
                 Box::new(Value::Binary({
@@ -457,8 +457,8 @@ impl Encode for Value {
                 v.encode(buf)?
             }
             Value::Binary(v) => v.encode(buf)?,
-            Value::Array(v) => v.encode(buf)?,
-            Value::Map(m) => Json(Value::Map(m).to_string()).encode(buf)?,
+            Value::Array(v) => encode_json(Value::Array(v),buf)?,
+            Value::Map(v) => encode_json(Value::Map(v),buf)?,
             Value::Ext(type_name, v) => {
                 match type_name {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
