@@ -224,4 +224,10 @@ mod test {
         println!("{}", arr.to_string());
         assert_eq!(r#"["1","2"]"#, Json::from(arr).0);
     }
+
+    #[test]
+    fn test_decode_raw() {
+        let m: Json = serde_json::from_str(r#"{"a":1}"#).unwrap();
+        assert_eq!(r#"{"a":1}"#, m.0);
+    }
 }
