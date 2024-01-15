@@ -58,7 +58,17 @@ fn eq_bool(value: &Value, other: bool) -> bool {
 }
 
 fn eq_str(value: &Value, other: &str) -> bool {
-    value.as_str().unwrap_or_default().eq(other)
+    match value {
+        Value::String(v) => {
+            v.eq(other)
+        }
+        Value::Ext(_, ext) => {
+            eq_str(ext, other)
+        }
+        _ => {
+            value.to_string().eq(other)
+        }
+    }
 }
 
 impl PartialEq<str> for Value {
@@ -274,7 +284,7 @@ impl_str_eq! {
 
 #[cfg(test)]
 mod test {
-    use crate::ops::Add;
+    use crate::ops::{Add, PartialEq};
     use rbs::{to_value, Value};
 
     #[test]
@@ -287,5 +297,12 @@ mod test {
         } else {
             assert!(false);
         }
+    }
+
+    #[test]
+    fn test_eq_str() {
+        let v = to_value!(1);
+        let r = v.op_ne("");
+        assert_eq!(r, true);
     }
 }
