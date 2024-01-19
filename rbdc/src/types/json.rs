@@ -3,9 +3,51 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-use crate::Error;
-use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+/// support deserialize JsonStruct or json string
+/// for example:
+/// ```rust
+/// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+/// pub struct Account {
+///     pub id: Option<String>,
+///     pub name: Option<String>,
+/// }
+///
+/// #[derive(Clone, serde::Serialize, serde::Deserialize)]
+/// pub struct User {
+///     pub id: Option<String>,
+///     //Deserialize json column.
+///     //maybe account is json_str: `{"id":"1","name":"v"}`  or json: {"id":"1","name":"v"}
+///     #[serde(deserialize_with = "rbdc::types::json::deserialize_maybe_str")]
+///     pub account: Account,
+/// }
+///
+/// ```
+pub fn deserialize_maybe_str<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: serde::de::DeserializeOwned
+{
+    use serde::de::Error;
+    let account_value: serde_json::Value = Deserialize::deserialize(deserializer)?;
+    match account_value {
+        serde_json::Value::String(account_str) => {
+            if std::any::type_name::<T>() == std::any::type_name::<String>() {
+                let account_json: T = serde_json::from_value(serde_json::Value::String(account_str)).map_err(D::Error::custom)?;
+                Ok(account_json)
+            } else {
+                let account_json: T = serde_json::from_str(&account_str).map_err(D::Error::custom)?;
+                Ok(account_json)
+            }
+        }
+        _ => {
+            let account_json: T = serde_json::from_str(&account_value.to_string()).map_err(D::Error::custom)?;
+            Ok(account_json)
+        }
+    }
+}
+
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Json")]
@@ -92,7 +134,7 @@ impl From<Json> for serde_json::Value {
 }
 
 impl FromStr for Json {
-    type Err = Error;
+    type Err = crate::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self(s.to_string()))
@@ -107,9 +149,9 @@ impl FromStr for Json {
 ///     pub account: Option<JsonV<Account>>,
 /// }
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub struct JsonV<T: Serialize + DeserializeOwned>(pub T);
+pub struct JsonV<T: Serialize + serde::de::DeserializeOwned>(pub T);
 
-impl<T: Serialize + DeserializeOwned> Serialize for JsonV<T> {
+impl<T: Serialize + serde::de::DeserializeOwned> Serialize for JsonV<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -124,7 +166,7 @@ impl<T: Serialize + DeserializeOwned> Serialize for JsonV<T> {
     }
 }
 
-impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
+impl<'de, T: Serialize + serde::de::DeserializeOwned> Deserialize<'de> for JsonV<T> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -158,7 +200,7 @@ impl<'de, T: Serialize + DeserializeOwned> Deserialize<'de> for JsonV<T> {
     }
 }
 
-impl<T: Serialize + DeserializeOwned> Deref for JsonV<T> {
+impl<T: Serialize + serde::de::DeserializeOwned> Deref for JsonV<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -166,13 +208,13 @@ impl<T: Serialize + DeserializeOwned> Deref for JsonV<T> {
     }
 }
 
-impl<T: Serialize + DeserializeOwned> DerefMut for JsonV<T> {
+impl<T: Serialize + serde::de::DeserializeOwned> DerefMut for JsonV<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T: Serialize + DeserializeOwned + Display> Display for JsonV<T> {
+impl<T: Serialize + serde::de::DeserializeOwned + Display> Display for JsonV<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.0, f)
     }
