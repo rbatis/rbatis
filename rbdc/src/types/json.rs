@@ -33,7 +33,8 @@ pub fn deserialize_maybe_str<'de, D, T>(deserializer: D) -> Result<T, D::Error>
     let account_value: serde_json::Value = Deserialize::deserialize(deserializer)?;
     match account_value {
         serde_json::Value::String(account_str) => {
-            if std::any::type_name::<T>() == std::any::type_name::<String>() {
+            let typename = std::any::type_name::<T>();
+            if typename == std::any::type_name::<String>() || typename == std::any::type_name::<Option<String>>() {
                 let account_json: T = serde_json::from_value(serde_json::Value::String(account_str)).map_err(D::Error::custom)?;
                 Ok(account_json)
             } else {
