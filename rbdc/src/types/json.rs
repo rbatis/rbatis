@@ -14,14 +14,14 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 ///     pub name: Option<String>,
 /// }
 ///
-/// #[derive(Clone, serde::Serialize, serde::Deserialize)]
-/// pub struct User {
-///     pub id: Option<String>,
-///     //Deserialize json column.
-///     //maybe account is json_str: `{"id":"1","name":"v"}`  or json: {"id":"1","name":"v"}
-///     #[serde(deserialize_with = "rbdc::types::json::deserialize_maybe_str")]
-///     pub account: Account,
-/// }
+///// #[derive(Clone, serde::Serialize, serde::Deserialize)]
+///// pub struct User {
+/////     pub id: Option<String>,
+/////     //Deserialize json column.
+/////     //maybe account is json_str: `{"id":"1","name":"v"}`  or json: {"id":"1","name":"v"}
+/////     #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
+/////     pub account: Account,
+///// }
 ///
 /// ```
 pub fn deserialize_maybe_str<'de, D, T>(deserializer: D) -> Result<T, D::Error>
