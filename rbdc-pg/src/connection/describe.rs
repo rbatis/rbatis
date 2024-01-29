@@ -405,7 +405,7 @@ ORDER BY attnum
             let raw_fields: Vec<V> =
                 rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
 
-            let mut fields = Vec::new();
+            let mut fields = Vec::with_capacity(raw_fields.len());
 
             for v in raw_fields.into_iter() {
                 let field_type = self.maybe_fetch_type_info_by_oid(v.atttypid, true).await?;

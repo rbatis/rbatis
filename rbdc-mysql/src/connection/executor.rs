@@ -56,7 +56,7 @@ impl MySqlConnection {
         // to-be-bound parameters; we will receive the output column definitions
         // once more on execute so we wait for that
 
-        let mut columns = Vec::new();
+        let mut columns = Vec::with_capacity(ok.columns as usize);
 
         let column_names = if ok.columns > 0 {
             recv_result_metadata(&mut self.stream, ok.columns as usize, &mut columns).await?
@@ -96,7 +96,13 @@ impl MySqlConnection {
             // make a slot for the shared column data
             // as long as a reference to a row is not held past one iteration, this enables us
             // to re-use this memory freely between result sets
-            let mut columns = Arc::new(Vec::new());
+            let mut columns = Arc::new(Vec::with_capacity({
+                if let Some(arguments) = &arguments {
+                     arguments.len()
+                }else{
+                     0
+                }
+            }));
 
             let (mut column_names, format, mut needs_metadata) = if let Some(arguments) = arguments {
                 let (id, metadata) = self.get_or_prepare(

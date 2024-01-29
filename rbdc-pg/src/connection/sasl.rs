@@ -24,7 +24,7 @@ pub(crate) async fn authenticate(
 ) -> Result<(), Error> {
     let mut has_sasl = false;
     let mut has_sasl_plus = false;
-    let mut unknown = Vec::new();
+    let mut unknown = Vec::with_capacity(10);
 
     for mechanism in data.mechanisms() {
         match mechanism {
