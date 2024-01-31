@@ -11,6 +11,10 @@ use rbs::Value;
 
 impl Encode for Json {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
+        let mut bytes = self.0.into_bytes();
+        if bytes.is_empty() {
+            bytes = "null".to_string().into_bytes();
+        }
         // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
         // instead of JSONB
         buf.patch(|buf, ty: &PgTypeInfo| {
@@ -23,7 +27,7 @@ impl Encode for Json {
         buf.push(1);
 
         // the JSON data written to the buffer is the same regardless of parameter type
-        buf.write_all(&self.0.into_bytes())?;
+        buf.write_all(&bytes)?;
 
         Ok(IsNull::No)
     }
@@ -71,7 +75,7 @@ pub fn decode_json(value: PgValue) -> Result<Value, Error> {
     Ok(serde_json::from_str(&unsafe { String::from_utf8_unchecked(buf) }).map_err(|e| Error::from(e.to_string()))?)
 }
 
-pub fn encode_json(v:Value ,buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>{
+pub fn encode_json(v: Value, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
     // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
     // instead of JSONB
     buf.patch(|buf, ty: &PgTypeInfo| {
@@ -88,25 +92,6 @@ pub fn encode_json(v:Value ,buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>
 
     Ok(IsNull::No)
 }
-
-pub fn encode_json_str(v:String ,buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>{
-    // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
-    // instead of JSONB
-    buf.patch(|buf, ty: &PgTypeInfo| {
-        if *ty == PgTypeInfo::JSON || *ty == PgTypeInfo::JSON_ARRAY {
-            buf[0] = b' ';
-        }
-    });
-
-    // JSONB version (as of 2020-03-20)
-    buf.push(1);
-
-    // the JSON data written to the buffer is the same regardless of parameter type
-    buf.write_all(&v.into_bytes())?;
-
-    Ok(IsNull::No)
-}
-
 
 impl TypeInfo for Json {
     fn type_info(&self) -> PgTypeInfo {
