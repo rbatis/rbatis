@@ -20,7 +20,7 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
-use crate::types::json::{decode_json, encode_json};
+use crate::types::json::{decode_json, encode_json, encode_json_str};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> PgTypeInfo {
@@ -490,7 +490,7 @@ impl Encode for Value {
                     "Int4" => (v.as_i64().unwrap_or_default() as i16).encode(buf)?,
                     "Text" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => encode_json(*v,buf)?,
+                    "Json" => encode_json_str(v.into_string().unwrap_or_default(),buf)?,
                     "Point" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Lseg" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Path" => v.into_bytes().unwrap_or_default().encode(buf)?,

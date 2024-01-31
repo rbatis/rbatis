@@ -225,6 +225,7 @@ impl<T: Serialize + serde::de::DeserializeOwned + Display> Display for JsonV<T> 
 mod test {
     use crate::json::Json;
     use rbs::value::map::ValueMap;
+    use crate::JsonV;
 
     #[test]
     fn test_decode_js_string() {
@@ -272,5 +273,13 @@ mod test {
     fn test_decode_raw() {
         let m: Json = serde_json::from_str(r#"{"a":1}"#).unwrap();
         assert_eq!(r#"{"a":1}"#, m.0);
+    }
+
+    #[test]
+    fn test_encode_jsonv() {
+        let source:JsonV<String>=JsonV(1.to_string());
+        let v = rbs::to_value!(source);
+        let data = *v.as_ext().unwrap().1.clone();
+        assert_eq!(data.into_string().unwrap_or_default(),"\"1\"");
     }
 }
