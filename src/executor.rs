@@ -2,7 +2,6 @@ use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::plugin::Tx;
 use crate::rbatis::RBatis;
-use crate::snowflake::new_snowflake_id;
 use crate::{utils, Error};
 use dark_std::sync::SyncVec;
 use futures::Future;
@@ -159,14 +158,28 @@ impl RBatisRef for RBatisConnExecutor {
 }
 
 impl RBatisConnExecutor {
-    pub async fn begin(self) -> crate::Result<RBatisTxExecutor> {
-        let tx = self.conn.into_inner();
-        return Ok(RBatisTxExecutor {
-            tx_id: new_snowflake_id(),
-            conn: Mutex::new(tx),
-            rb: self.rb,
-            done: false,
-        }.begin().await?);
+    pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
+        Box::pin(async move {
+            let v= Tx::begin(self).await?;
+            Ok(RBatisTxExecutor{
+                tx_id: 0,
+                conn: v.conn,
+                rb: Default::default(),
+                done: false,
+            })
+        })
+    }
+
+    pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        Box::pin(async {
+            Ok(Tx::rollback(self).await?)
+        })
+    }
+
+    pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        Box::pin(async {
+            Ok(Tx::commit(self).await?)
+        })
     }
 }
 
@@ -205,6 +218,24 @@ impl<'a> RBatisTxExecutor {
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
+    }
+
+    pub fn begin(self) -> BoxFuture<'static, Result<Self, Error>> {
+        Box::pin(async move {
+            Ok(Tx::begin(self).await?)
+        })
+    }
+
+    pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        Box::pin(async {
+            Ok(Tx::rollback(self).await?)
+        })
+    }
+
+    pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+        Box::pin(async {
+            Ok(Tx::commit(self).await?)
+        })
     }
 }
 
