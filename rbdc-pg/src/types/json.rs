@@ -89,6 +89,25 @@ pub fn encode_json(v:Value ,buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>
     Ok(IsNull::No)
 }
 
+pub fn encode_json_str(v:String ,buf: &mut PgArgumentBuffer) -> Result<IsNull, Error>{
+    // we have a tiny amount of dynamic behavior depending if we are resolved to be JSON
+    // instead of JSONB
+    buf.patch(|buf, ty: &PgTypeInfo| {
+        if *ty == PgTypeInfo::JSON || *ty == PgTypeInfo::JSON_ARRAY {
+            buf[0] = b' ';
+        }
+    });
+
+    // JSONB version (as of 2020-03-20)
+    buf.push(1);
+
+    // the JSON data written to the buffer is the same regardless of parameter type
+    buf.write_all(&v.into_bytes())?;
+
+    Ok(IsNull::No)
+}
+
+
 impl TypeInfo for Json {
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::JSONB
