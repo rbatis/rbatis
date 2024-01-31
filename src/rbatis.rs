@@ -183,11 +183,10 @@ impl RBatis {
 
     /// get an DataBase Connection,and call begin method,used for the next step
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
-        let pool = self.get_pool()?;
-        let conn = pool.get().await?;
+        let conn = self.acquire().await?;
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
-            conn: Mutex::new(conn),
+            conn: conn.conn,
             rb: self.clone(),
             done: false,
         }.begin().await?);
