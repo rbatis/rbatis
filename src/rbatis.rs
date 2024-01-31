@@ -1,7 +1,6 @@
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
-use crate::plugin::Tx;
 use crate::snowflake::new_snowflake_id;
 use crate::table_sync::{sync, ColumMapper};
 use crate::{DefaultPool, Error};
