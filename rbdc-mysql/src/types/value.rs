@@ -19,7 +19,7 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
-use crate::types::json::{decode_json, encode_json};
+use crate::types::json::{decode_json, encode_json, encode_json_str};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
@@ -135,7 +135,10 @@ impl Encode for Value {
                         &v.into_string().unwrap_or_default(),
                     )?)
                     .encode(buf),
-                    "Json" => encode_json(*v,buf),
+                    "Json" => {
+                        let json_str = v.into_string().unwrap_or_default();
+                        encode_json_str(json_str,buf)
+                    },
                     "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
                     "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
                     _ => {
