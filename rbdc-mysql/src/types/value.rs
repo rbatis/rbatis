@@ -16,10 +16,10 @@ use rbdc::decimal::Decimal;
 use rbdc::timestamp::Timestamp;
 use rbdc::types::time::Time;
 use rbdc::uuid::Uuid;
-use rbdc::Error;
+use rbdc::{Error, Json};
 use rbs::Value;
 use std::str::FromStr;
-use crate::types::json::{decode_json, encode_json, encode_json_str};
+use crate::types::json::{decode_json, encode_json};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
@@ -137,7 +137,7 @@ impl Encode for Value {
                     .encode(buf),
                     "Json" => {
                         let json_str = v.into_string().unwrap_or_default();
-                        encode_json_str(json_str,buf)
+                        Json(json_str).encode(buf)
                     },
                     "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
                     "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
