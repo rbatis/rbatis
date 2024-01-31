@@ -160,13 +160,13 @@ impl RBatisRef for RBatisConnExecutor {
 
 impl RBatisConnExecutor {
     pub async fn begin(self) -> crate::Result<RBatisTxExecutor> {
-        let tx = self.conn.into_inner().begin().await?;
+        let tx = self.conn.into_inner();
         return Ok(RBatisTxExecutor {
             tx_id: new_snowflake_id(),
             conn: Mutex::new(tx),
             rb: self.rb,
             done: false,
-        });
+        }.begin().await?);
     }
 }
 
@@ -295,23 +295,6 @@ impl RBatisRef for RBatisTxExecutor {
 }
 
 impl RBatisTxExecutor {
-    pub async fn begin(mut self) -> crate::Result<Self> {
-        self.conn = Mutex::new(self.conn.into_inner().begin().await?);
-        return Ok(self);
-    }
-    pub async fn commit(&mut self) -> crate::Result<bool> {
-        if let Ok(()) = self.conn.lock().await.commit().await {
-            self.done = true;
-        }
-        return Ok(self.done);
-    }
-    pub async fn rollback(&mut self) -> crate::Result<bool> {
-        if let Ok(()) = self.conn.lock().await.rollback().await {
-            self.done = true;
-        }
-        return Ok(self.done);
-    }
-
     pub fn take_conn(self) -> Option<Box<dyn Connection>> {
         return Some(self.conn.into_inner());
     }
@@ -344,20 +327,22 @@ impl RBatisTxExecutorGuard {
         return Ok(());
     }
 
-    pub async fn commit(&mut self) -> crate::Result<bool> {
+    pub async fn commit(&mut self) -> crate::Result<()> {
         let tx = self
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
-        return Ok(tx.commit().await?);
+        tx.commit().await?;
+        return Ok(());
     }
 
-    pub async fn rollback(&mut self) -> crate::Result<bool> {
+    pub async fn rollback(&mut self) -> crate::Result<()> {
         let tx = self
             .tx
             .as_mut()
             .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
-        return Ok(tx.rollback().await?);
+        tx.rollback().await?;
+        return Ok(());
     }
 
     pub fn take_conn(mut self) -> Option<Box<dyn Connection>> {
