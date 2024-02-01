@@ -143,6 +143,10 @@ impl Connection for Box<dyn Connection> {
         self.deref_mut().get_rows(sql, params)
     }
 
+    fn get_values(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Value>, Error>> {
+        self.deref_mut().get_values(sql, params)
+    }
+
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
         self.deref_mut().exec(sql, params)
     }
