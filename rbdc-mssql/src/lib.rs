@@ -181,7 +181,7 @@ impl Connection for MssqlConnection {
         Box::pin(async move {
             self.inner
                 .as_mut()
-                .expect("MssqlConnection inner is none")
+                .ok_or_else(|| Error::from("MssqlConnection is close"))?
                 .query("select 1", &[])
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
@@ -193,7 +193,7 @@ impl Connection for MssqlConnection {
         Box::pin(async move {
             self.inner
                 .as_mut()
-                .expect("MssqlConnection inner is none")
+                .ok_or_else(|| Error::from("MssqlConnection is close"))?
                 .simple_query("begin tran")
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
@@ -205,7 +205,7 @@ impl Connection for MssqlConnection {
         Box::pin(async move {
             self.inner
                 .as_mut()
-                .expect("MssqlConnection inner is none")
+                .ok_or_else(|| Error::from("MssqlConnection is close"))?
                 .simple_query("commit")
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
@@ -217,7 +217,7 @@ impl Connection for MssqlConnection {
         Box::pin(async move {
             self.inner
                 .as_mut()
-                .expect("MssqlConnection inner is none")
+                .ok_or_else(|| Error::from("MssqlConnection is close"))?
                 .simple_query("rollback")
                 .await
                 .map_err(|e| Error::from(e.to_string()))?;
