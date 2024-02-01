@@ -112,7 +112,7 @@ pub trait Connection: Send {
     /// an translation impl begin
     fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("begin",vec![]).await;
+            _ = self.exec("begin",vec![]).await?;
             Ok(())
         })
     }
@@ -120,7 +120,7 @@ pub trait Connection: Send {
     /// an translation impl commit
     fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("commit",vec![]).await;
+            _ = self.exec("commit",vec![]).await?;
             Ok(())
         })
     }
@@ -128,7 +128,7 @@ pub trait Connection: Send {
     /// an translation impl rollback
     fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("rollback",vec![]).await;
+            _ = self.exec("rollback",vec![]).await?;
             Ok(())
         })
     }
