@@ -154,6 +154,16 @@ impl Connection for Box<dyn Connection> {
     fn close(&mut self) -> BoxFuture<Result<(), Error>> {
         self.deref_mut().close()
     }
+
+    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().begin()
+    }
+    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().rollback()
+    }
+    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().commit()
+    }
 }
 
 /// Result set from executing a query against a statement
