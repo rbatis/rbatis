@@ -21,39 +21,6 @@ impl Debug for ConnectionBox {
 }
 
 unsafe impl Sync for ConnectionBox {}
-
-impl Connection for ConnectionBox {
-    fn get_rows(
-        &mut self,
-        sql: &str,
-        params: Vec<Value>,
-    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
-        self.deref_mut().get_rows(sql, params)
-    }
-
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
-        self.deref_mut().exec(sql, params)
-    }
-
-    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.deref_mut().close()
-    }
-
-    fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.deref_mut().ping()
-    }
-
-    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.deref_mut().begin()
-    }
-    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.deref_mut().commit()
-    }
-    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
-        self.deref_mut().rollback()
-    }
-}
-
 impl Deref for ConnectionBox {
     type Target = Box<dyn Connection>;
 
