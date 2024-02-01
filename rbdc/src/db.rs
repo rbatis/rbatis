@@ -108,6 +108,30 @@ pub trait Connection: Send {
     /// It is recommended to use Option<DataBaseConnection>
     /// and then call take to take ownership and then if let Some(v) = self.inner.take() {v.lose ().await; }
     fn close(&mut self) -> BoxFuture<Result<(), Error>>;
+
+    /// an translation impl begin
+    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async {
+            _ = self.exec("begin",vec![]).await;
+            Ok(())
+        })
+    }
+
+    /// an translation impl commit
+    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async {
+            _ = self.exec("commit",vec![]).await;
+            Ok(())
+        })
+    }
+
+    /// an translation impl rollback
+    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async {
+            _ = self.exec("rollback",vec![]).await;
+            Ok(())
+        })
+    }
 }
 
 impl Connection for Box<dyn Connection> {
@@ -182,8 +206,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }
