@@ -1,8 +1,5 @@
-use crate::db::{Connection, ExecResult, Row};
+use crate::db::{Connection};
 use crate::pool::conn_manager::ConnManager;
-use crate::Error;
-use futures_core::future::BoxFuture;
-use rbs::Value;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 
