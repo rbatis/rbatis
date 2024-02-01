@@ -155,6 +155,25 @@ impl Connection for ConnManagerProxy {
         }
         self.conn.as_mut().unwrap().close()
     }
+
+    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async { Err(Error::from("conn is drop")) });
+        }
+        self.conn.as_mut().unwrap().begin()
+    }
+    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async { Err(Error::from("conn is drop")) });
+        }
+        self.conn.as_mut().unwrap().commit()
+    }
+    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
+        if self.conn.is_none() {
+            return Box::pin(async { Err(Error::from("conn is drop")) });
+        }
+        self.conn.as_mut().unwrap().rollback()
+    }
 }
 
 #[cfg(test)]

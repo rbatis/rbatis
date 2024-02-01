@@ -42,6 +42,16 @@ impl Connection for ConnectionBox {
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
         self.deref_mut().ping()
     }
+
+    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().begin()
+    }
+    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().commit()
+    }
+    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
+        self.deref_mut().rollback()
+    }
 }
 
 impl Deref for ConnectionBox {
