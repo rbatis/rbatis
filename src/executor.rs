@@ -1,6 +1,5 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
-use crate::plugin::Tx;
 use crate::rbatis::RBatis;
 use crate::{utils, Error};
 use dark_std::sync::SyncVec;
@@ -160,10 +159,10 @@ impl RBatisRef for RBatisConnExecutor {
 impl RBatisConnExecutor {
     pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
         Box::pin(async move {
-            let v= Tx::begin(self).await?;
+            self.conn.lock().await.begin().await?;
             Ok(RBatisTxExecutor{
                 tx_id: 0,
-                conn: v.conn,
+                conn: self.conn,
                 rb: Default::default(),
                 done: false,
             })
@@ -172,13 +171,13 @@ impl RBatisConnExecutor {
 
     pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            Ok(Tx::rollback(self).await?)
+            Ok(self.conn.lock().await.rollback().await?)
         })
     }
 
     pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            Ok(Tx::commit(self).await?)
+            Ok(self.conn.lock().await.commit().await?)
         })
     }
 }
@@ -222,19 +221,20 @@ impl<'a> RBatisTxExecutor {
 
     pub fn begin(self) -> BoxFuture<'static, Result<Self, Error>> {
         Box::pin(async move {
-            Ok(Tx::begin(self).await?)
+            self.conn.lock().await.begin().await?;
+            Ok(self)
         })
     }
 
     pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            Ok(Tx::rollback(self).await?)
+            Ok(self.conn.lock().await.rollback().await?)
         })
     }
 
     pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            Ok(Tx::commit(self).await?)
+            Ok(self.conn.lock().await.commit().await?)
         })
     }
 }

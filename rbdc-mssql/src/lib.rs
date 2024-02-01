@@ -188,6 +188,42 @@ impl Connection for MssqlConnection {
             Ok(())
         })
     }
+
+    fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async move {
+            self.inner
+                .as_mut()
+                .expect("MssqlConnection inner is none")
+                .simple_query("begin tran")
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async move {
+            self.inner
+                .as_mut()
+                .expect("MssqlConnection inner is none")
+                .simple_query("commit")
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
+        Box::pin(async move {
+            self.inner
+                .as_mut()
+                .expect("MssqlConnection inner is none")
+                .simple_query("rollback")
+                .await
+                .map_err(|e| Error::from(e.to_string()))?;
+            Ok(())
+        })
+    }
 }
 
 #[cfg(test)]
