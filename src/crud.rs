@@ -83,14 +83,14 @@ macro_rules! impl_insert {
                          `(`
                          trim ',':
                            for k,v in table:
-                              if k == 'id' && v== null:
+                              if v== null:
                                  continue:
                               ${k},
                          `) VALUES `
                       (
                       trim ',':
                        for k,v in table:
-                         if k == 'id' && v== null:
+                         if v== null:
                             continue:
                          #{v},
                       ),
