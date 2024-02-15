@@ -325,7 +325,7 @@ mod test {
             let r = MockTable::insert(&mut rb, &t).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?)");
             assert_eq!(
                 args,
                 vec![
@@ -333,9 +333,6 @@ mod test {
                     to_value!(t.name),
                     to_value!(t.pc_link),
                     to_value!(t.h5_link),
-                    to_value!(t.pc_banner_img),
-                    to_value!(t.h5_banner_img),
-                    to_value!(t.sort),
                     to_value!(t.status),
                     to_value!(t.remark),
                     to_value!(t.create_time),
@@ -376,7 +373,7 @@ mod test {
             let r = MockTable::insert_batch(&mut rb, &ts, 10).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,pc_banner_img,h5_banner_img,sort,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?)");
             assert_eq!(
                 args,
                 vec![
@@ -384,9 +381,6 @@ mod test {
                     to_value!(&ts[0].name),
                     to_value!(&ts[0].pc_link),
                     to_value!(&ts[0].h5_link),
-                    to_value!(&ts[0].pc_banner_img),
-                    to_value!(&ts[0].h5_banner_img),
-                    to_value!(&ts[0].sort),
                     to_value!(&ts[0].status),
                     to_value!(&ts[0].remark),
                     to_value!(&ts[0].create_time),
@@ -397,9 +391,6 @@ mod test {
                     to_value!(&ts[1].name),
                     to_value!(&ts[1].pc_link),
                     to_value!(&ts[1].h5_link),
-                    to_value!(&ts[1].pc_banner_img),
-                    to_value!(&ts[1].h5_banner_img),
-                    to_value!(&ts[1].sort),
                     to_value!(&ts[1].status),
                     to_value!(&ts[1].remark),
                     to_value!(&ts[1].create_time),
