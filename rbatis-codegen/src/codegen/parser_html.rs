@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Read;
@@ -184,6 +185,20 @@ fn parse_html_node(
     token
 }
 
+fn generate_all_case_variation(pre_or_suffix: &str) -> String {
+    let len = pre_or_suffix.chars().count();
+    let cases = pre_or_suffix
+        .to_lowercase()
+        .chars()
+        .interleave(pre_or_suffix.to_uppercase().chars())
+        .combinations(len)
+        .map(|s| -> String { s.into_iter().collect() })
+        .filter(|s| s.to_lowercase() == pre_or_suffix.to_lowercase())
+        .unique()
+        .collect::<Vec<_>>().join("");
+    return cases;
+}
+
 /// gen rust code
 fn parse(
     arg: &Vec<Element>,
@@ -333,8 +348,8 @@ fn parse(
                 impl_trim(
                     " where ",
                     " ",
-                    " |and |or ",
-                    " | and| or",
+                    format!("{}{}{}"," ", generate_all_case_variation("|and "), generate_all_case_variation("|or ")).as_str(),
+                    format!("{}{}{}"," ", generate_all_case_variation("| and"), generate_all_case_variation("| or")).as_str(),
                     x,
                     &mut body,
                     arg,
