@@ -246,6 +246,113 @@ mod test {
     }
 
     #[test]
+    fn test_trim_and_after_where1() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_trim_and_after_where1(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
+            <select id="test_trim_and_after_where">
+                select * from user
+                <where>
+                    <if test="id != null && id == 1">
+                    ` and id = #{id}`
+                    </if>
+                </where>
+            </select>
+            </mapper>"#);
+
+            let r = test_trim_and_after_where1(&mut rb, &1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from user where id = ?");
+            assert_eq!(args, vec![Value::U64(1)]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_trim_and_after_where2() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_trim_and_after_where2(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
+            <select id="test_trim_and_after_where">
+                select * from user
+                <where>
+                    <if test="id != null && id == 1">
+                    ` AnD id = #{id}`
+                    </if>
+                </where>
+            </select>
+            </mapper>"#);
+
+            let r = test_trim_and_after_where2(&mut rb, &1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from user where id = ?");
+            assert_eq!(args, vec![Value::U64(1)]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_trim_or_after_where1() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_trim_or_after_where1(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
+            <select id="test_trim_or_after_where">
+                select * from user
+                <where>
+                    <if test="id != null && id == 1">
+                    ` or id = #{id}`
+                    </if>
+                </where>
+            </select>
+            </mapper>"#);
+
+            let r = test_trim_or_after_where1(&mut rb, &1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from user where id = ?");
+            assert_eq!(args, vec![Value::U64(1)]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_trim_or_after_where2() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            htmlsql!(test_trim_or_after_where2(rb: &RBatis, id: &u64)  -> Result<Value, Error> => r#"<mapper>
+            <select id="test_trim_or_after_where">
+                select * from user
+                <where>
+                    <if test="id != null && id == 1">
+                    ` OR id = #{id}`
+                    </if>
+                </where>
+            </select>
+            </mapper>"#);
+
+            let r = test_trim_or_after_where2(&mut rb, &1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from user where id = ?");
+            assert_eq!(args, vec![Value::U64(1)]);
+        };
+        block_on(f);
+    }
+    #[test]
     fn test_test_if() {
         let f = async move {
             let mut rb = RBatis::new();
