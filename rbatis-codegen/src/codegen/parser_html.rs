@@ -345,8 +345,7 @@ fn parse(
                 body = quote! {
                     #body
                     //check ends with where
-                    sql = sql.trim_end().to_string();
-                    sql = sql.trim_end_matches(" where").to_string();
+                    sql = sql.trim_end_matches(" where  ").to_string();
                 };
             }
 
