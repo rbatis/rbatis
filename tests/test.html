@@ -112,4 +112,21 @@
     <select id="test_where_empty">
         <where></where>
     </select>
+
+    <select id="test_where_sql">
+        <where></where>
+    </select>
+
+    <select id="test_bind">
+        <bind name="a" value="1"/>
+        ${a}
+    </select>
+
+    <select id="test_choose">
+        <choose>
+            <when test="a == 1">true</when>
+            <otherwise>false</otherwise>
+        </choose>
+    </select>
+
 </mapper>
