@@ -344,7 +344,7 @@ fn parse(
                 );
                 body = quote! {
                     #body
-                    //check ends with where
+                    //check if body empty ends with `where`
                     sql = sql.trim_end_matches(" where  ").to_string();
                 };
             }
