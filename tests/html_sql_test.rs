@@ -480,4 +480,56 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_where_sql() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            htmlsql!(test_where_sql(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
+            let r = test_where_sql(&rb).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_bind() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            htmlsql!(test_bind(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
+            let r = test_bind(&rb).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_choose() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            htmlsql!(test_choose(rb: &RBatis,a:i32)  -> Result<Value, Error> => "tests/test.html");
+            let r = test_choose(&rb,1).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "true");
+            assert_eq!(args, vec![]);
+            let r = test_choose(&rb,0).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "false");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
 }
