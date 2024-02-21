@@ -129,4 +129,13 @@
         </choose>
     </select>
 
+    <select id="test_for">
+        <foreach collection="ids" separator=",">
+            <if test="index == 0">
+                <continue></continue>
+            </if>
+            ${item}
+        </foreach>
+    </select>
+
 </mapper>
