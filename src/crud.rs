@@ -405,7 +405,7 @@ macro_rules! impl_select_page {
             ""
         );
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr},$table_name:expr) => {
+    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
                 executor: &dyn $crate::executor::Executor,
@@ -413,11 +413,12 @@ macro_rules! impl_select_page {
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::plugin::Page::<$table>, $crate::rbdc::Error> {
                 let mut table_column = "*".to_string();
-                let mut table_name = $table_name.to_string();
+                let mut table_name = String::new();
+                $(table_name = $table_name.to_string();)?
                 #[$crate::snake_name($table)]
                 fn snake_name(){}
                 if table_name.is_empty(){
-                   table_name = snake_name();
+                    table_name = snake_name();
                 }
                 //pg,mssql can override this parameter to implement its own limit statement
                 let mut limit_sql = " limit ${page_no},${page_size}".to_string();
