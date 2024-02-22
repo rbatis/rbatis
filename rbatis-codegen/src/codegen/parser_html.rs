@@ -646,22 +646,22 @@ fn impl_trim(
     fn_name: &str,
 ) {
     let trim_body = parse(&x.childs, methods, ignore, fn_name);
-    let prefixs: Vec<&str> = prefix_overrides.split("|").collect();
-    let suffixs: Vec<&str> = suffix_overrides.split("|").collect();
-    let have_trim = prefixs.len() != 0 && suffixs.len() != 0;
+    let prefixes: Vec<&str> = prefix_overrides.split("|").collect();
+    let suffixes: Vec<&str> = suffix_overrides.split("|").collect();
+    let have_trim = prefixes.len() != 0 && suffixes.len() != 0;
     let cup = x.child_string_cup();
     let mut trims = quote! {
          let mut sql= String::with_capacity(#cup);
          #trim_body
          sql=sql
     };
-    for x in prefixs {
+    for x in prefixes {
         trims = quote! {
             #trims
             .trim_start_matches(#x)
         }
     }
-    for x in suffixs {
+    for x in suffixes {
         trims = quote! {
             #trims
             .trim_end_matches(#x)
