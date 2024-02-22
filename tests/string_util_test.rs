@@ -1,13 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis::utils::string_util::to_snake_name;
     use rbatis_codegen::codegen::string_util::find_convert_string;
-
-    #[test]
-    fn test_to_snake_name() {
-        assert_eq!("abc_def", to_snake_name("AbcDeF"));
-    }
-
     #[test]
     fn test_find() {
         let sql = "update user set name=#{name}, password=#{password} ,sex=#{sex}, phone=#{phone}, delete_flag=#{flag}, #{name} #{ 1 + ";

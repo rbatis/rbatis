@@ -63,10 +63,7 @@ macro_rules! crud {
 #[macro_export]
 macro_rules! impl_insert {
     ($table:ty{}) => {
-        $crate::impl_insert!(
-            $table {},
-            $crate::utils::string_util::to_snake_name(stringify!($table))
-        );
+        $crate::impl_insert!($table {},"");
     };
     ($table:ty{},$table_name:expr) => {
         impl $table {
@@ -109,7 +106,12 @@ macro_rules! impl_insert {
                         "insert can not insert empty array tables!",
                     ));
                 }
-                let table_name = $table_name.to_string();
+                #[$crate::snake_name($table)]
+                fn snake_name(){}
+                let mut table_name = $table_name.to_string();
+                if table_name.is_empty(){
+                    table_name = snake_name();
+                }
                 let mut result = $crate::rbdc::db::ExecResult {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
@@ -166,7 +168,7 @@ macro_rules! impl_insert {
 #[macro_export]
 macro_rules! impl_select {
     ($table:ty{}) => {
-        $crate::impl_select!($table{},$crate::utils::string_util::to_snake_name(stringify!($table)));
+        $crate::impl_select!($table{},"");
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
@@ -189,8 +191,10 @@ macro_rules! impl_select {
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
                      $(table_name = $table_name.to_string();)?
+                     #[$crate::snake_name($table)]
+                     fn snake_name(){}
                      if table_name.is_empty(){
-                         table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                         table_name = snake_name();
                      }
                      $fn_name(executor,&table_column,&table_name,$($param_key ,)*).await
             }
@@ -216,7 +220,7 @@ macro_rules! impl_update {
     ($table:ty{}) => {
         $crate::impl_update!(
             $table{},
-            $crate::utils::string_util::to_snake_name(stringify!($table))
+            ""
         );
     };
     ($table:ty{},$table_name:expr) => {
@@ -279,8 +283,10 @@ macro_rules! impl_update {
                   }
                   let mut table_name = String::new();
                   $(table_name = $table_name.to_string();)?
+                  #[$crate::snake_name($table)]
+                  fn snake_name(){}
                   if table_name.is_empty(){
-                      table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                         table_name = snake_name();
                   }
                   let table = rbs::to_value!(table);
                   $fn_name(executor, table_name, &table, $($param_key,)*).await
@@ -309,7 +315,7 @@ macro_rules! impl_delete {
     ($table:ty{}) => {
         $crate::impl_delete!(
             $table{},
-            $crate::utils::string_util::to_snake_name(stringify!($table))
+            ""
         );
     };
     ($table:ty{},$table_name:expr) => {
@@ -358,8 +364,10 @@ macro_rules! impl_delete {
                 }
                 let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
+                #[$crate::snake_name($table)]
+                fn snake_name(){}
                 if table_name.is_empty(){
-                  table_name = $crate::utils::string_util::to_snake_name(stringify!($table));
+                         table_name = snake_name();
                 }
                 $fn_name(executor, table_name, $($param_key,)*).await
             }
@@ -394,7 +402,7 @@ macro_rules! impl_select_page {
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
         $crate::impl_select_page!(
             $table{$fn_name($($param_key:$param_type,)*)=> $where_sql},
-            $crate::utils::string_util::to_snake_name(stringify!($table))
+            ""
         );
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr},$table_name:expr) => {
@@ -406,6 +414,11 @@ macro_rules! impl_select_page {
             ) -> std::result::Result<$crate::plugin::Page::<$table>, $crate::rbdc::Error> {
                 let mut table_column = "*".to_string();
                 let mut table_name = $table_name.to_string();
+                #[$crate::snake_name($table)]
+                fn snake_name(){}
+                if table_name.is_empty(){
+                   table_name = snake_name();
+                }
                 //pg,mssql can override this parameter to implement its own limit statement
                 let mut limit_sql = " limit ${page_no},${page_size}".to_string();
                 limit_sql=limit_sql.replace("${page_no}", &page_request.offset().to_string());
@@ -422,15 +435,15 @@ macro_rules! impl_select_page {
                     ` from ${table_name} `\n",$where_sql,"\n
                     if do_count == false:
                         `${limit_sql}`")]
-                   async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                   async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,table_column:&str,table_name: &str,page_no:u64,page_size:u64,page_offset:u64,limit_sql:&str,$($param_key:&$param_type)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
                 let mut total = 0;
                 if page_request.do_count() {
-                    let total_value = Inner::$fn_name(executor,true,&table_column,&table_name,page_request.page_no(), page_request.page_size(),page_request.offset(),"",$(&$param_key,)*).await?;
+                    let total_value = Inner::$fn_name(executor,true,&table_column,&table_name,page_request.page_no(), page_request.page_size(),page_request.offset(),"",$(&$param_key)*).await?;
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
                 let mut page = $crate::plugin::Page::<$table>::new_total(page_request.page_no(), page_request.page_size(), total);
-                let records_value = Inner::$fn_name(executor,false,&table_column,&table_name,page_request.page_no(), page_request.page_size(),page_request.offset(),&limit_sql,$(&$param_key,)*).await?;
+                let records_value = Inner::$fn_name(executor,false,&table_column,&table_name,page_request.page_no(), page_request.page_size(),page_request.offset(),&limit_sql,$(&$param_key)*).await?;
                 page.records = rbs::from_value(records_value)?;
                 Ok(page)
             }
