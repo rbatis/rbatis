@@ -564,4 +564,36 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_include() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            htmlsql!(test_include(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
+            let r = test_include(&rb).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "1");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_set() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            htmlsql!(test_set(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
+            let r = test_set(&rb).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, " set 1 ");
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
 }
