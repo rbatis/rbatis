@@ -1,4 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
 <mapper>
     <select id="test_if">
         `select * from table `
@@ -142,6 +143,15 @@
         <trim prefix="(" prefixOverrides="1" suffixOverrides="2" suffix=")">
             12
         </trim>
+    </select>
+
+    <sql id="1">1</sql>
+    <select id="test_include">
+        <include refid="1"></include>
+    </select>
+
+    <select id="test_set">
+        <set>1</set>
     </select>
 
 </mapper>
