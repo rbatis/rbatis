@@ -8,7 +8,6 @@ use crate::value::map::ValueMap;
 use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
-use std::iter::FromIterator;
 use std::ops::Deref;
 
 pub mod ext;
