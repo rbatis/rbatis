@@ -2,7 +2,6 @@ use crate::ParseArgs;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn;
 use syn::{FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
