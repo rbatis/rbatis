@@ -822,7 +822,7 @@ mod test {
         };
         block_on(f);
     }
-    impl_select_page!(MockTable{select_page() => "`order by create_time desc`"});
+    impl_select_page!(MockTable{select_page(name:&str) => "`order by create_time desc`"});
     #[test]
     fn test_select_page() {
         let f = async move {
@@ -830,7 +830,7 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10))
+            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10),"1")
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
