@@ -444,7 +444,7 @@ macro_rules! impl_select_page {
                                      page_size:u64,
                                      page_offset:u64,
                                      limit_sql:&str,
-                 $($param_key:$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                 $($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 }
                 let mut total = 0;
                 if page_request.do_count() {
@@ -456,7 +456,7 @@ macro_rules! impl_select_page {
                                                       page_request.page_size(),
                                                       page_request.offset(),
                                                       "",
-                                                      $($param_key,)*).await?;
+                                                      $(&$param_key,)*).await?;
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
                 let mut page = $crate::plugin::Page::<$table>::new_total(page_request.page_no(), page_request.page_size(), total);
@@ -468,7 +468,7 @@ macro_rules! impl_select_page {
                                                     page_request.page_size(),
                                                     page_request.offset(),
                                                     &limit_sql,
-                                                    $($param_key,)*).await?;
+                                                    $(&$param_key,)*).await?;
                 page.records = rbs::from_value(records_value)?;
                 Ok(page)
             }
