@@ -1,9 +1,8 @@
 //! ObjectId
-use hex::{self, FromHexError};
+use hex::{FromHexError};
 use rand::{thread_rng, Rng};
 use std::sync::OnceLock;
 use std::{
-    convert::TryInto,
     error, fmt, result,
     str::FromStr,
     sync::atomic::{AtomicUsize, Ordering},

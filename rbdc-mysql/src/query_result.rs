@@ -1,5 +1,3 @@
-use std::iter::{Extend, IntoIterator};
-
 #[derive(Debug, Default)]
 pub struct MySqlQueryResult {
     pub(super) rows_affected: u64,
