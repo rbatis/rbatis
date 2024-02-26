@@ -6,12 +6,12 @@ impl std::ops::Not for &Value {
         match self {
             Value::Null => { true }
             Value::Bool(v) => { !v }
-            Value::I32(v) => { !(*v == 1) }
-            Value::I64(v) => { !(*v == 1) }
-            Value::U32(v) => { !(*v == 1) }
-            Value::U64(v) => { !(*v == 1) }
-            Value::F32(v) => { !(*v == 1.0) }
-            Value::F64(v) => { !(*v == 1.0) }
+            Value::I32(v) => { !(*v != 0) }
+            Value::I64(v) => { !(*v != 0) }
+            Value::U32(v) => { !(*v != 0) }
+            Value::U64(v) => { !(*v != 0) }
+            Value::F32(v) => { !(*v != 0.0) }
+            Value::F64(v) => { !(*v != 0.0) }
             Value::String(v) => { !(v == "true") }
             Value::Binary(_v) => { true }
             Value::Array(_v) => { true }
@@ -38,6 +38,6 @@ mod test {
     #[test]
     fn test_ops_not() {
         let v = Value::Null;
-        assert_eq!(!v,true);
+        assert_eq!(!v, true);
     }
 }
