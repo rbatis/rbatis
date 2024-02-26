@@ -1,5 +1,3 @@
-use std::iter::{Extend, IntoIterator};
-
 #[derive(Debug, Default)]
 pub struct SqliteQueryResult {
     pub(super) changes: u64,

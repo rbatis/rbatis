@@ -2,7 +2,6 @@ use crate::error::Error;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn;
 use syn::{BinOp, Expr, Lit, Member};
 
 ///translate like `#{a + b}` Expr to rust code Expr
