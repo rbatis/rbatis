@@ -36,7 +36,7 @@ mod test {
     use crate::Value;
 
     #[test]
-    fn trestnot() {
+    fn test_ops_not() {
         let v = Value::Null;
         assert_eq!(!v,true);
     }
