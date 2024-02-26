@@ -12,6 +12,7 @@ use std::ops::Deref;
 
 pub mod ext;
 pub mod map;
+mod ops;
 
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
@@ -630,10 +631,10 @@ impl Into<ValueMap> for Value {
 /// [`Array`](crate::Value::Array), rather than a
 /// [`Binary`](crate::Value::Binary)
 impl<V> FromIterator<V> for Value
-where
-    V: Into<Value>,
+    where
+        V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
