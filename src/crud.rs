@@ -504,7 +504,16 @@ macro_rules! impl_select_page {
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
-/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"<select id="select_page_data">`select `<if test="do_count == true">`count(1) from table`</if><if test="do_count == false">`* from table limit ${page_no},${page_size}`</if></select>"#);
+/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
+/// <select id="select_page_data">
+///   `select `
+///  <if test="do_count == true">
+///   `count(1) from table`
+///  </if>
+///  <if test="do_count == false">
+///  `* from table limit ${page_no},${page_size}`
+///  </if>
+/// </select>"#);
 /// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {
