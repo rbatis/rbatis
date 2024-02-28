@@ -30,7 +30,11 @@ mod test {
           AND age = 27
         otherwise:
           AND age = 0
-    WHERE id  = '2';"
+    trim end='where':
+      ` where`
+      if 1==2:
+        `true`;
+    "
     )]
     pub fn py_select_by_condition(arg: &mut rbs::Value, _tag: char) {}
 

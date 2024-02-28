@@ -280,13 +280,17 @@ fn parse(
                 let suffix = x.attrs.get("suffix").unwrap_or(&empty_string).to_string();
                 let prefix_overrides = x
                     .attrs
-                    .get("prefixOverrides")
-                    .unwrap_or(&empty_string)
+                    .get("start")
+                    .unwrap_or_else(||{
+                        x.attrs.get("prefixOverrides").unwrap_or(&empty_string)
+                    })
                     .to_string();
                 let suffix_overrides = x
                     .attrs
-                    .get("suffixOverrides")
-                    .unwrap_or(&empty_string)
+                    .get("end")
+                    .unwrap_or_else(||{
+                        x.attrs.get("suffixOverrides").unwrap_or(&empty_string)
+                    })
                     .to_string();
                 impl_trim(
                     &prefix,
@@ -636,8 +640,8 @@ fn impl_otherwise(
 fn impl_trim(
     prefix: &str,
     suffix: &str,
-    prefix_overrides: &str,
-    suffix_overrides: &str,
+    start: &str,
+    end: &str,
     x: &Element,
     body: &mut proc_macro2::TokenStream,
     _arg: &Vec<Element>,
@@ -646,8 +650,8 @@ fn impl_trim(
     fn_name: &str,
 ) {
     let trim_body = parse(&x.childs, methods, ignore, fn_name);
-    let prefixes: Vec<&str> = prefix_overrides.split("|").collect();
-    let suffixes: Vec<&str> = suffix_overrides.split("|").collect();
+    let prefixes: Vec<&str> = start.split("|").collect();
+    let suffixes: Vec<&str> = end.split("|").collect();
     let have_trim = prefixes.len() != 0 && suffixes.len() != 0;
     let cup = x.child_string_cup();
     let mut trims = quote! {
