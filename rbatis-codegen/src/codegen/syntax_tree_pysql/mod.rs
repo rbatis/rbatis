@@ -89,10 +89,17 @@ impl AsHtml for TrimNode {
         for x in &self.childs {
             childs.push_str(&x.as_html());
         }
-        format!(
-            "<trim prefixOverrides=\"{}\" suffixOverrides=\"{}\">{}</trim>",
-            self.trim, self.trim, childs
-        )
+        if self.trim != "" {
+            format!(
+                "<trim prefixOverrides=\"{}\" suffixOverrides=\"{}\">{}</trim>",
+                self.trim, self.trim, childs
+            )
+        } else {
+            format!(
+                "<trim prefixOverrides=\"{}\" suffixOverrides=\"{}\">{}</trim>",
+                self.start, self.end, childs
+            )
+        }
     }
 }
 

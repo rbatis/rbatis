@@ -240,14 +240,50 @@ impl NodeType {
             }));
         } else if trim_express.starts_with(TrimNode::name()) {
             let trim_express = trim_express.trim().trim_start_matches("trim ").trim();
-            if trim_express.starts_with("'") && trim_express.ends_with("'") {
+            if trim_express.starts_with("'") && trim_express.ends_with("'") || trim_express.starts_with("`") && trim_express.ends_with("`") {
                 let express = trim_express[1..trim_express.len() - 1].trim();
                 return Ok(NodeType::NTrim(TrimNode {
                     childs,
                     trim: express.to_string(),
+                    start: "".to_string(),
+                    end: "".to_string(),
+                }));
+            }else if trim_express.contains("=") || trim_express.contains(",") {
+                let express: Vec<&str> = trim_express.split(",").collect();
+                let mut prefix = "";
+                let mut suffix = "";
+                for mut expr in express {
+                    expr = expr.trim();
+                    if expr.starts_with("start") {
+                        prefix = expr.trim_start_matches("start")
+                            .trim()
+                            .trim_start_matches("=")
+                            .trim()
+                            .trim_start_matches("'")
+                            .trim_end_matches("'")
+                            .trim_start_matches("`")
+                            .trim_end_matches("`");
+                    } else if expr.starts_with("end") {
+                        suffix = expr.trim_start_matches("end")
+                            .trim()
+                            .trim_start_matches("=")
+                            .trim()
+                            .trim_start_matches("'")
+                            .trim_end_matches("'")
+                            .trim_start_matches("`")
+                            .trim_end_matches("`");
+                    } else {
+                        return Err(Error::from(format!("[rbatis-codegen] express trim node error, for example  trim 'value':  trim start='value': trim start='value',end='value':   express = {}", trim_express)));
+                    }
+                }
+                return Ok(NodeType::NTrim(TrimNode {
+                    childs,
+                    trim: "".to_string(),
+                    start: prefix.to_string(),
+                    end: suffix.to_string(),
                 }));
             } else {
-                return Err(Error::from(format!("[rbatis-codegen] express trim value must be string value, for example:  trim 'value',error express: {}", trim_express)));
+                return Err(Error::from(format!("[rbatis-codegen] express trim node error, for example  trim 'value':  trim start='value': trim start='value',end='value':   error express = {}", trim_express)));
             }
         } else if trim_express.starts_with(ChooseNode::name()) {
             let mut node = ChooseNode {
