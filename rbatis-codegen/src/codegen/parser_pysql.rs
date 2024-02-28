@@ -241,14 +241,19 @@ impl NodeType {
         } else if trim_express.starts_with(TrimNode::name()) {
             let trim_express = trim_express.trim().trim_start_matches("trim ").trim();
             if trim_express.starts_with("'") && trim_express.ends_with("'") || trim_express.starts_with("`") && trim_express.ends_with("`") {
-                let express = trim_express[1..trim_express.len() - 1].trim();
+                let mut trim_express = trim_express;
+                if trim_express.starts_with("`") && trim_express.ends_with("`") {
+                    trim_express = trim_express.trim_start_matches("`").trim_end_matches("`");
+                } else if trim_express.starts_with("'") && trim_express.ends_with("'") {
+                    trim_express = trim_express.trim_start_matches("'").trim_end_matches("'");
+                }
                 return Ok(NodeType::NTrim(TrimNode {
                     childs,
-                    trim: express.to_string(),
+                    trim: trim_express.to_string(),
                     start: "".to_string(),
                     end: "".to_string(),
                 }));
-            }else if trim_express.contains("=") || trim_express.contains(",") {
+            } else if trim_express.contains("=") || trim_express.contains(",") {
                 let express: Vec<&str> = trim_express.split(",").collect();
                 let mut prefix = "";
                 let mut suffix = "";
