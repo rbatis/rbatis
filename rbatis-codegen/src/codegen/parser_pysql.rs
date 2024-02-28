@@ -249,9 +249,8 @@ impl NodeType {
                 }
                 return Ok(NodeType::NTrim(TrimNode {
                     childs,
-                    trim: trim_express.to_string(),
-                    start: "".to_string(),
-                    end: "".to_string(),
+                    start: trim_express.to_string(),
+                    end: trim_express.to_string(),
                 }));
             } else if trim_express.contains("=") || trim_express.contains(",") {
                 let express: Vec<&str> = trim_express.split(",").collect();
@@ -283,7 +282,6 @@ impl NodeType {
                 }
                 return Ok(NodeType::NTrim(TrimNode {
                     childs,
-                    trim: "".to_string(),
                     start: prefix.to_string(),
                     end: suffix.to_string(),
                 }));
