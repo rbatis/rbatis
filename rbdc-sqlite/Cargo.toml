@@ -20,6 +20,7 @@ tls-native-tls=["rbdc/tls-native-tls"]
 rbs = { version = "4.5", path = "../rbs" }
 rbdc = { version = "4.5", path = "../rbdc", default-features = false, optional = true }
 serde = "1.0"
+serde_json = "1.0"
 log = "0.4"
 atoi = "2.0"
 percent-encoding = "2.1.0"
@@ -43,7 +44,6 @@ libsqlite3-sys = { version = "0.28.0", default-features = false, features = [
     "bundled",
     "unlock_notify"
 ] }
-serde_json = "1.0"
 
 
 [dev-dependencies]
