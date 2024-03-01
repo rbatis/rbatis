@@ -512,7 +512,6 @@ where
     fn is_null(&self) -> bool;
 
     fn into_iter(self) -> Result<Self::Iter, Self::Item>;
-    fn into_map_iter(self) -> Result<Self::MapIter, Self::Item>;
 
     #[inline]
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -560,14 +559,6 @@ where
     }
 
     #[inline]
-    fn deserialize_newtype_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: Visitor<'de>,
-    {
-        visitor.visit_newtype_struct(self)
-    }
-
-    #[inline]
     fn deserialize_unit_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
@@ -608,14 +599,6 @@ impl<'de> ValueBase<'de> for Value {
     fn into_iter(self) -> Result<Self::Iter, Self::Item> {
         match self {
             Value::Array(v) => Ok(v.into_iter()),
-            other => Err(other),
-        }
-    }
-
-    #[inline]
-    fn into_map_iter(self) -> Result<Self::MapIter, Self::Item> {
-        match self {
-            Value::Map(v) => Ok(v.0.into_iter()),
             other => Err(other),
         }
     }

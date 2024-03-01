@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-sqlite"
-version = "4.5.2"
+version = "4.5.3"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -43,6 +43,7 @@ libsqlite3-sys = { version = "0.28.0", default-features = false, features = [
     "bundled",
     "unlock_notify"
 ] }
+serde_json = "1.0"
 
 
 [dev-dependencies]
