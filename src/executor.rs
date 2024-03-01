@@ -186,6 +186,8 @@ pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn: Mutex<Box<dyn Connection>>,
     pub rb: RBatis,
+    /// if tx call .commit() or .rollback() done = true.
+    /// if tx not call .commit() or .rollback() done = false
     pub done: bool,
 }
 
