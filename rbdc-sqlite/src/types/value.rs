@@ -7,8 +7,8 @@ use rbs::Value;
 
 impl Decode for Value {
     fn decode(value: SqliteValue) -> Result<Self, Error>
-    where
-        Self: Sized,
+        where
+            Self: Sized,
     {
         if value.type_info_opt().is_none() {
             return Ok(Value::Null);
@@ -17,7 +17,18 @@ impl Decode for Value {
             DataType::Null => Ok(Value::Null),
             DataType::Int => Ok(Value::I64(i64::decode(value)?)),
             DataType::Float => Ok(Value::F64(f64::decode(value)?)),
-            DataType::Text => Ok(Value::String(String::decode(value)?)),
+            DataType::Text => {
+                let s = value.text()?;
+                if is_json_string(s) {
+                    if let Ok(v) = serde_json::from_str::<Value>(&s) {
+                        Ok(v)
+                    } else {
+                        Ok(Value::String(s.to_string()))
+                    }
+                } else {
+                    Ok(Value::String(s.to_string()))
+                }
+            }
             DataType::Blob => Ok(Value::Binary(Vec::<u8>::decode(value)?)),
             DataType::Numeric => Ok(Value::String(String::decode(value)?)),
             DataType::Bool => Ok(Value::Bool(bool::decode(value)?)),
@@ -120,5 +131,17 @@ impl Encode for Value {
                 _ => Ok(IsNull::Yes),
             },
         }
+    }
+}
+
+//if is json null/map/array
+pub fn is_json_string(js: &str) -> bool {
+    if js == "null"
+        || js.starts_with("{") && js.ends_with("}")
+        || js.starts_with("[") && js.ends_with("]")
+    {
+        true
+    } else {
+        false
     }
 }
