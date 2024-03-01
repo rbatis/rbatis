@@ -88,10 +88,11 @@ pub fn sync<'a>(
                 let mut sql_column = format!("");
                 for (k, v) in &m {
                     let k = k.as_str().unwrap_or_default();
+                    let column_type = mapper.get_column(k, &v);
                     sql_column.push_str(k);
                     sql_column.push_str(" ");
-                    sql_column.push_str(&mapper.get_column(k, &v));
-                    if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
+                    sql_column.push_str(column_type.as_str());
+                    if column_type.is_empty() && k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                         sql_column.push_str(&PRIMARY_KEY);
                     }
                     sql_column.push_str(",");
