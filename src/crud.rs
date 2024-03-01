@@ -2,7 +2,7 @@
 ///```rust
 /// use rbatis::{crud, Error, RBatis};
 ///
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// //crud!(MockTable{},"mock_table");
 /// crud!(MockTable{});
@@ -47,7 +47,7 @@ macro_rules! crud {
 /// example:
 ///```rust
 /// use rbatis::{Error, RBatis};
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// rbatis::impl_insert!(MockTable{});
 ///
@@ -146,7 +146,7 @@ macro_rules! impl_insert {
 /// example:
 ///```rust
 /// use rbatis::{Error, RBatis};
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// /// default
 ///rbatis::impl_select!(MockTable{});
@@ -205,7 +205,7 @@ macro_rules! impl_select {
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
 /// use rbatis::{Error, RBatis};
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{ pub id: Option<String> }
 /// rbatis::impl_update!(MockTable{});
 /// //use
@@ -299,7 +299,7 @@ macro_rules! impl_update {
 ///
 /// ```rust
 /// use rbatis::{Error, RBatis};
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::impl_delete!(MockTable{});
 ///
@@ -380,7 +380,7 @@ macro_rules! impl_delete {
 /// do_count: default do_count is a bool param value to determine the statement type
 ///
 /// ```rust
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::impl_select_page!(MockTable{select_page() =>"
 ///      if do_count == false:
@@ -389,7 +389,7 @@ macro_rules! impl_delete {
 ///
 /// limit_sql: If the database does not support the statement `limit ${page_no},${page_size}`,You should add param 'limit_sql:&str'
 /// ```rust
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::impl_select_page!(MockTable{select_page(limit_sql:&str) =>"
 ///      if do_count == false:
@@ -501,7 +501,7 @@ macro_rules! impl_select_page {
 ///   </select>
 /// ```
 /// ```
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
 /// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
@@ -561,7 +561,7 @@ macro_rules! htmlsql_select_page {
 ///                     ${ids.sql()}
 /// ```
 /// ```
-/// #[derive(Debug, serde::Serialize, serde::Deserialize)]
+/// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::pysql_select_page!(pysql_select_page(name:&str) -> MockTable =>
 ///     r#"`select `
