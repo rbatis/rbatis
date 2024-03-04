@@ -22,7 +22,7 @@ tls-native-tls = ["native-tls", "tokio-native-tls"]
 [dependencies]
 tokio = { version = "1", features = ["sync","fs", "net", "rt", "rt-multi-thread", "time", "io-util","macros"] }
 tokio-rustls = {version= "0.25.0", optional = true}
-rustls = { version = "0.22.2", optional = true }
+rustls = { version = "0.23.1", optional = true }
 webpki-roots = { version = "0.26.0", optional = true }
 rustls-pemfile = { version = "2.0.0", optional = true }
 log = "0.4"
