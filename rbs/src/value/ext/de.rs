@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::mem::ManuallyDrop;
 use std::ops::Deref;
@@ -393,7 +394,13 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             Some(val) => seed.deserialize(val).map_err(|mut e| {
                 if is_debug_mode() {
                     if let Some(key) = self.key.as_ref() {
-                        e = e.append(&format!(", key={:?}", *key.deref()));
+                        let key = key.deref();
+                        if (*key).type_id() == Value::String(String::new()).type_id() {
+                            let vv: &Value = unsafe { std::mem::transmute(key) };
+                            e = e.append(&format!(", key = `{}`", vv.as_str().unwrap_or_default()));
+                        } else {
+                            e = e.append(&format!(", key = `{:?}`", key));
+                        }
                     }
                 }
                 e
