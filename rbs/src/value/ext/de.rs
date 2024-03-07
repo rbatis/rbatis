@@ -395,9 +395,11 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
                 if is_debug_mode() {
                     if let Some(key) = self.key.as_ref() {
                         let key = key.deref();
-                        if (*key).type_id() == Value::String(String::new()).type_id() {
+                        if key.type_id() == Value::Null.type_id() {
                             let vv: &Value = unsafe { std::mem::transmute(key) };
-                            e = e.append(&format!(", key = `{}`", vv.as_str().unwrap_or_default()));
+                            e = e.append(", key = `");
+                            e = e.append(vv.as_str().unwrap_or_default());
+                            e = e.append("`");
                         } else {
                             e = e.append(&format!(", key = `{:?}`", key));
                         }
