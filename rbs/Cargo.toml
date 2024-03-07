@@ -1,6 +1,6 @@
 [package]
 name = "rbs"
-version = "4.5.5"
+version = "4.5.6"
 edition = "2021"
 description = "Serialization framework for ORM"
 readme = "Readme.md"
@@ -14,7 +14,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 
 
 [features]
-default = []
+default = ["debug_mode"]
 #debug_mode will can see MapDeserializer key
 debug_mode = []
 
