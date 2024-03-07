@@ -14,7 +14,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 
 
 [features]
-default = ["debug_mode"]
+default = []
 #debug_mode will can see MapDeserializer key
 debug_mode = []
 
