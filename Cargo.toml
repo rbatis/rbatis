@@ -27,7 +27,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 [features]
 default = ["rbatis-macro-driver/default"]
 #debug_mode feature will show decode json data
-debug_mode = ["rbatis-macro-driver/debug_mode"]
+debug_mode = ["rbatis-macro-driver/debug_mode","rbs/debug_mode"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
 
