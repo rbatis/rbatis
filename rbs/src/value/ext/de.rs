@@ -1,4 +1,6 @@
 use std::fmt::{self, Debug, Display, Formatter};
+use std::mem::ManuallyDrop;
+use std::ops::Deref;
 use std::vec::IntoIter;
 
 use serde::de::{DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
@@ -347,7 +349,7 @@ impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
 
 struct MapDeserializer<I, U> {
     val: Option<U>,
-    key: Option<U>,
+    key: Option<ManuallyDrop<U>>,
     iter: I,
 }
 
@@ -372,9 +374,9 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             Some((key, val)) => {
                 self.val = Some(val);
                 if is_debug_mode() {
-                    self.key = Some(key);
-                    let key_shadow: U = unsafe { std::mem::transmute_copy(self.key.as_ref().unwrap()) };
-                    seed.deserialize(key_shadow).map(Some)
+                    self.key = Some(ManuallyDrop::new(key));
+                    let key_shadow: ManuallyDrop<U> = unsafe { std::mem::transmute_copy(self.key.as_ref().unwrap()) };
+                    seed.deserialize(ManuallyDrop::into_inner(key_shadow)).map(Some)
                 } else {
                     seed.deserialize(key).map(Some)
                 }
@@ -388,13 +390,13 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             T: DeserializeSeed<'de>,
     {
         match self.val.take() {
-            Some(val) => seed.deserialize(val).map_err(|e| {
+            Some(val) => seed.deserialize(val).map_err(|mut e| {
                 if is_debug_mode() {
-                    let key = self.key.as_ref().unwrap();
-                    e.append(&format!(", key={:?}", *key))
-                } else {
-                    e
+                    if let Some(key) = self.key.as_ref() {
+                        e = e.append(&format!(", key={:?}", *key.deref()));
+                    }
                 }
+                e
             }),
             None => Err(serde::de::Error::custom("value is missing")),
         }
