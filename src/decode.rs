@@ -64,7 +64,10 @@ where
 
 pub fn is_debug_mode() -> bool {
     if cfg!(debug_assertions) {
-        true
+        #[cfg(feature = "debug_mode")]
+        {true}
+        #[cfg(not(feature = "debug_mode"))]
+        {false}
     } else {
         false
     }
