@@ -347,7 +347,7 @@ impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
 
 struct MapDeserializer<I, U> {
     val: Option<U>,
-    key: Option<String>,
+    key: Option<U>,
     iter: I,
 }
 
@@ -372,9 +372,12 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             Some((key, val)) => {
                 self.val = Some(val);
                 if is_debug_mode() {
-                    self.key = Some(format!("{:?}", key));
+                    self.key = Some(key);
+                    let key_shadow: U = unsafe { std::mem::transmute_copy(self.key.as_ref().unwrap()) };
+                    seed.deserialize(key_shadow).map(Some)
+                } else {
+                    seed.deserialize(key).map(Some)
                 }
-                seed.deserialize(key).map(Some)
             }
             None => Ok(None),
         }
@@ -387,7 +390,8 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
         match self.val.take() {
             Some(val) => seed.deserialize(val).map_err(|e| {
                 if is_debug_mode() {
-                    e.append(&format!(", key={}", self.key.as_ref().unwrap()))
+                    let key = self.key.as_ref().unwrap();
+                    e.append(&format!(", key={:?}", *key))
                 } else {
                     e
                 }
