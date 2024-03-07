@@ -252,4 +252,18 @@ mod test {
         };
         assert_eq!(v.to_string(), "{\"1\":\"1\",\"2\":\"2\"}");
     }
+
+    #[test]
+    fn test_de_position() {
+        #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+        struct MockTable {
+            // pub id: Option<String>,
+            pub name: Option<String>,
+        }
+        let value = rbs::to_value! {
+            "name": 0,
+        };
+        let v = rbs::from_value::<MockTable>(value).err().unwrap();
+        println!("{}",v.to_string());
+    }
 }

@@ -76,3 +76,16 @@ macro_rules! to_value {
         $crate::to_value($arg).unwrap_or_default()
     };
 }
+
+
+/// is debug mode
+pub fn is_debug_mode() -> bool {
+    if cfg!(debug_assertions) {
+        #[cfg(feature = "debug_mode")]
+        {true}
+        #[cfg(not(feature = "debug_mode"))]
+        {false}
+    } else {
+        false
+    }
+}
