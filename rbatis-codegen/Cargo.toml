@@ -27,7 +27,7 @@ serde_json = "1"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
-base64 = "0.21"
+base64 = "0.22"
 async-trait = "0.1"
 url = "2.2.2"
 html_parser = "0.6.3"
