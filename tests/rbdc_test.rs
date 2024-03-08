@@ -6,6 +6,14 @@ mod test {
 
 
     #[test]
+    fn test_bytes_iter() {
+        let bytes1 = rbdc::Bytes::from(vec![1u8]);
+        for v in bytes1{
+            assert_eq!(v,1u8);
+        }
+    }
+
+    #[test]
     fn test_bytes_old() {
         let bytes1 = rbdc::Bytes::from(vec![1u8]);
         let bytes2 = rbdc::Bytes::from(vec![0u8]);

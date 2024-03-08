@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
+use std::vec::IntoIter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// rbatis bytes use serde_bytes
@@ -113,9 +114,18 @@ impl Default for Bytes {
     }
 }
 
-impl Hash for Bytes{
+impl Hash for Bytes {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.inner.hash(state)
+    }
+}
+
+impl<'a> IntoIterator for Bytes {
+    type Item = u8;
+    type IntoIter = IntoIter<u8>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
     }
 }
 
