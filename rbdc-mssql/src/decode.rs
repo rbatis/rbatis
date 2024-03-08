@@ -194,7 +194,7 @@ pub trait DateTimeFromDateTimeFixedOffset {
 impl DateTimeFromNativeDatetime for fastdate::DateTime {
     fn from(arg: NaiveDateTime) -> Self {
         fastdate::DateTime::from_timestamp_nano(
-            arg.timestamp_nanos_opt()
+            arg.and_utc().timestamp_nanos_opt()
                 .expect("value can not be represented in a timestamp with nanosecond precision.")
                 as i128,
         )
