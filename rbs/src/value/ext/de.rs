@@ -6,21 +6,20 @@ use serde::{Deserialize, Deserializer};
 use crate::is_debug_mode;
 use crate::value::map::ValueMap;
 use crate::value::Value;
-use super::{Error};
 
 /// from_value
 #[inline]
-pub fn from_value<T>(val: Value) -> Result<T, Error>
+pub fn from_value<T>(val: Value) -> Result<T, crate::Error>
     where
         T: for<'de> Deserialize<'de>,
 {
     Deserialize::deserialize(&val)
 }
 
-impl serde::de::Error for Error {
+impl serde::de::Error for crate::Error {
     #[cold]
     fn custom<T: Display>(msg: T) -> Self {
-        Error::Syntax(format!("{}", msg))
+        crate::Error::Syntax(format!("{}", msg))
     }
 }
 
@@ -179,7 +178,7 @@ impl<'de> Deserialize<'de> for Value {
 }
 
 impl<'de> Deserializer<'de> for &Value {
-    type Error = Error;
+    type Error = crate::Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
         where
@@ -320,13 +319,13 @@ impl<I> SeqDeserializer<I> {
 impl<'de, I, U> SeqAccess<'de> for SeqDeserializer<I>
     where
         I: Iterator<Item=U>,
-        U: Deserializer<'de, Error=Error>,
+        U: Deserializer<'de, Error=crate::Error>,
 {
-    type Error = Error;
+    type Error = crate::Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
         where
-            T: serde::de::DeserializeSeed<'de>,
+            T: DeserializeSeed<'de>,
     {
         match self.iter.next() {
             Some(val) => seed.deserialize(val).map(Some),
@@ -338,9 +337,9 @@ impl<'de, I, U> SeqAccess<'de> for SeqDeserializer<I>
 impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
     where
         I: ExactSizeIterator<Item=U>,
-        U: Deserializer<'de, Error=Error>,
+        U: Deserializer<'de, Error=crate::Error>,
 {
-    type Error = Error;
+    type Error = crate::Error;
 
     #[inline]
     fn deserialize_any<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
@@ -382,7 +381,7 @@ impl<'a> MapDeserializer<'a> {
 
 impl<'de, 'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
 {
-    type Error = Error;
+    type Error = crate::Error;
 
     fn next_key_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
         where
@@ -424,7 +423,7 @@ impl<'de, 'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
 
 impl<'de, 'a> Deserializer<'de> for MapDeserializer<'a>
 {
-    type Error = Error;
+    type Error = crate::Error;
 
     #[inline]
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -447,10 +446,10 @@ struct EnumDeserializer {
 }
 
 impl<'de> serde::de::EnumAccess<'de> for EnumDeserializer {
-    type Error = Error;
+    type Error = crate::Error;
     type Variant = VariantDeserializer;
 
-    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, VariantDeserializer), Error>
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, VariantDeserializer), crate::Error>
         where
             V: DeserializeSeed<'de>,
     {
@@ -465,9 +464,9 @@ struct VariantDeserializer {
 }
 
 impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
-    type Error = Error;
+    type Error = crate::Error;
 
-    fn unit_variant(self) -> Result<(), Error> {
+    fn unit_variant(self) -> Result<(), crate::Error> {
         match self.value {
             Some(_v) => Ok(()),
             None => Err(serde::de::Error::invalid_value(
@@ -477,7 +476,7 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         }
     }
 
-    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, Error>
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, crate::Error>
         where
             T: serde::de::DeserializeSeed<'de>,
     {
@@ -507,12 +506,12 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         }
     }
 
-    fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value, Error>
+    fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value, crate::Error>
         where
             V: Visitor<'de>,
     {
         //todo impl tuple_variant
-        return Err(Error::Syntax(
+        return Err(crate::Error::Syntax(
             "rbs Deserialize unimplemented tuple_variant".to_string(),
         ));
     }
@@ -521,12 +520,12 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         self,
         _fields: &'static [&'static str],
         _visitor: V,
-    ) -> Result<V::Value, Error>
+    ) -> Result<V::Value, crate::Error>
         where
             V: Visitor<'de>,
     {
         //todo impl struct_variant
-        return Err(Error::Syntax(
+        return Err(crate::Error::Syntax(
             "rbs Deserialize unimplemented struct_variant".to_string(),
         ));
     }
