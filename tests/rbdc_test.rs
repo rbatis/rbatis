@@ -2,6 +2,43 @@
 mod test {
     use rbdc::db::Placeholder;
     use rbdc::impl_exchange;
+    use rbs::Value;
+
+
+    #[test]
+    fn test_bytes_old() {
+        let bytes1 = rbdc::Bytes::from(vec![1u8]);
+        let bytes2 = rbdc::Bytes::from(vec![0u8]);
+        assert_eq!(bytes1 > bytes2, true);
+    }
+
+    #[test]
+    fn test_bytes_eq() {
+        let bytes1 = rbdc::Bytes::from(vec![0u8]);
+        let bytes2 = rbdc::Bytes::from(vec![0u8]);
+        assert_eq!(bytes1, bytes2);
+    }
+
+    #[test]
+    fn test_bytes_debug() {
+        let bytes = rbdc::Bytes::from(vec![0u8]);
+        assert_eq!(format!("{:?}", bytes), "[0]");
+    }
+
+    #[test]
+    fn test_ser_bytes() {
+        let bytes = rbdc::Bytes::from(vec![0u8]);
+        let v = rbs::to_value!(bytes);
+        assert_eq!(v, Value::Binary(vec![0u8]));
+    }
+
+    #[test]
+    fn test_de_bytes() {
+        let bytes = rbdc::Bytes::from(vec![0u8]);
+        let v = rbs::to_value!(&bytes);
+        let r: rbdc::Bytes = rbs::from_value(v).unwrap();
+        assert_eq!(r, bytes);
+    }
 
     #[test]
     fn test_exchange() {
