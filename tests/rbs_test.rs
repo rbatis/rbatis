@@ -238,7 +238,7 @@ mod test {
             v,
             Value::Ext(
                 "Timestamptz",
-                Box::new(Value::Array(vec![Value::I64(1), Value::I32(1)]))
+                Box::new(Value::Array(vec![Value::I64(1), Value::I32(1)])),
             )
         );
     }
@@ -247,7 +247,7 @@ mod test {
     #[test]
     fn test_de_string() {
         let v = rbs::to_value!("1");
-        let r:String = rbs::from_value(v).unwrap();
+        let r: String = rbs::from_value(v).unwrap();
         assert_eq!(r, "1");
     }
 
@@ -282,8 +282,8 @@ mod test {
             "name": 0,
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
-        println!("{}",v.to_string());
+        println!("{}", v.to_string());
         #[cfg(feature = "debug_mode")]
-        assert_eq!(v.to_string(),"invalid type: integer `0`, expected a string,key = `name`");
+        assert_eq!(v.to_string(), "invalid type: integer `0`, expected a string,key = `name`");
     }
 }
