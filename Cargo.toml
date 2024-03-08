@@ -27,7 +27,7 @@ homepage = "https://rbatis.github.io/rbatis.io"
 [features]
 default = ["rbatis-macro-driver/default"]
 #debug_mode feature will show decode json data
-debug_mode = ["rbatis-macro-driver/debug_mode","rbs/debug_mode"]
+debug_mode = ["rbatis-macro-driver/debug_mode", "rbs/debug_mode"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
 
@@ -50,7 +50,7 @@ async-trait = "0.1.68"
 rbdc-pool-fast = { version = "4.5", path = "rbdc-pool-fast" }
 
 [dev-dependencies]
-rbs = { version = "4.5", path = "rbs",features = ["debug_mode"] }
+rbatis = { version = "4.5", path = ".", features = ["debug_mode"] }
 serde_json = "1"
 tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util", "macros"] }
 rbdc-mysql = { path = "rbdc-mysql" }
