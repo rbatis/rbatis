@@ -1,15 +1,12 @@
 use std::fmt::{self, Debug, Display, Formatter};
 use std::slice;
-use std::vec::IntoIter;
 
 use serde::de::{DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
 use crate::is_debug_mode;
-
 use crate::value::map::ValueMap;
 use crate::value::Value;
-
-use super::{Error, ValueExt};
+use super::{Error};
 
 /// from_value
 #[inline]
@@ -231,7 +228,7 @@ impl<'de> Deserializer<'de> for &Value {
             }
             Value::Ext(_tag, data) => {
                 Deserializer::deserialize_any(&*data.as_ref(), visitor)
-            },
+            }
         }
     }
 
@@ -240,7 +237,11 @@ impl<'de> Deserializer<'de> for &Value {
         where
             V: Visitor<'de>,
     {
-        ValueBase::deserialize_option(self, visitor)
+        if self.is_null() {
+            visitor.visit_none()
+        } else {
+            visitor.visit_some(self)
+        }
     }
 
     #[inline]
@@ -253,7 +254,31 @@ impl<'de> Deserializer<'de> for &Value {
         where
             V: Visitor<'de>,
     {
-        ValueBase::deserialize_enum(self, visitor)
+        let v = match self {
+            Value::String(v) => visitor.visit_enum(EnumDeserializer {
+                variant: v.clone(),
+                value: Some(Value::String(v.clone())),
+            }),
+            Value::Map(m) => {
+                if m.is_empty() || m.len() != 1 {
+                    return Err(serde::de::Error::invalid_type(
+                        Unexpected::Other(&format!("{:?}", m)),
+                        &"must be object map {\"Key\":\"Value\"}",
+                    ));
+                }
+                visitor.visit_enum(EnumDeserializer {
+                    variant: m.0[0].0.clone().into_string().unwrap(),
+                    value: Some(Value::Map(m.clone())),
+                })
+            }
+            _ => {
+                return Err(serde::de::Error::invalid_type(
+                    Unexpected::Other(&format!("{:?}", self)),
+                    &"string or map",
+                ));
+            }
+        };
+        v
     }
 
     #[inline]
@@ -277,7 +302,12 @@ impl<'de> Deserializer<'de> for &Value {
         where
             V: Visitor<'de>,
     {
-        ValueBase::deserialize_unit_struct(self, visitor)
+        let iter= self.into_iter();
+        if iter.len() == 0 {
+            visitor.visit_unit()
+        } else {
+            Err(serde::de::Error::invalid_type(Unexpected::Seq, &"empty array"))
+        }
     }
 
     forward_to_deserialize_any! {
@@ -360,7 +390,7 @@ impl<'a> MapDeserializer<'a> {
     }
 }
 
-impl<'de,'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
+impl<'de, 'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
 {
     type Error = Error;
 
@@ -512,105 +542,105 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
     }
 }
 
-trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt + Debug
-{
-    type Item: ValueBase<'de>;
-    type Iter: ExactSizeIterator<Item=Self::Item>;
-    type MapIter: Iterator<Item=(Self::Item, Self::Item)>;
-    type MapDeserializer: Deserializer<'de>;
+// trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt + Debug
+// {
+//     type Item: ValueBase<'de>;
+//     type Iter: ExactSizeIterator<Item=Self::Item>;
+//     type MapIter: Iterator<Item=(Self::Item, Self::Item)>;
+//     type MapDeserializer: Deserializer<'de>;
+//
+//     fn into_value(self) -> Value;
+//     fn is_null(&self) -> bool;
+//
+//     fn into_iter(self) -> Result<Self::Iter, Self::Item>;
+//
+//     #[inline]
+//     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+//         where
+//             V: Visitor<'de>,
+//     {
+//         if self.is_null() {
+//             visitor.visit_none()
+//         } else {
+//             visitor.visit_some(self)
+//         }
+//     }
+//
+//     #[inline]
+//     fn deserialize_enum<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+//         where
+//             V: Visitor<'de>,
+//     {
+//         let v = self.into_value();
+//         let v = match v {
+//             Value::String(v) => visitor.visit_enum(EnumDeserializer {
+//                 variant: v.clone(),
+//                 value: Some(Value::String(v)),
+//             }),
+//             Value::Map(m) => {
+//                 if m.is_empty() || m.len() != 1 {
+//                     return Err(serde::de::Error::invalid_type(
+//                         Unexpected::Other(&format!("{:?}", m)),
+//                         &"must be object map {\"Key\":\"Value\"}",
+//                     ));
+//                 }
+//                 visitor.visit_enum(EnumDeserializer {
+//                     variant: m.0[0].0.clone().into_string().unwrap(),
+//                     value: Some(Value::Map(m)),
+//                 })
+//             }
+//             _ => {
+//                 return Err(serde::de::Error::invalid_type(
+//                     Unexpected::Other(&format!("{:?}", v)),
+//                     &"string or map",
+//                 ));
+//             }
+//         };
+//         v
+//     }
+//
+//     #[inline]
+//     fn deserialize_unit_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+//         where
+//             V: Visitor<'de>,
+//     {
+//         match self.into_iter() {
+//             Ok(iter) => {
+//                 if iter.len() == 0 {
+//                     visitor.visit_unit()
+//                 } else {
+//                     Err(serde::de::Error::invalid_type(Unexpected::Seq, &"empty array"))
+//                 }
+//             }
+//             Err(other) => Err(serde::de::Error::invalid_type(other.unexpected(), &"empty array")),
+//         }
+//     }
+// }
 
-    fn into_value(self) -> Value;
-    fn is_null(&self) -> bool;
-
-    fn into_iter(self) -> Result<Self::Iter, Self::Item>;
-
-    #[inline]
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
-    {
-        if self.is_null() {
-            visitor.visit_none()
-        } else {
-            visitor.visit_some(self)
-        }
-    }
-
-    #[inline]
-    fn deserialize_enum<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
-    {
-        let v = self.into_value();
-        let v = match v {
-            Value::String(v) => visitor.visit_enum(EnumDeserializer {
-                variant: v.clone(),
-                value: Some(Value::String(v)),
-            }),
-            Value::Map(m) => {
-                if m.is_empty() || m.len() != 1 {
-                    return Err(serde::de::Error::invalid_type(
-                        Unexpected::Other(&format!("{:?}", m)),
-                        &"must be object map {\"Key\":\"Value\"}",
-                    ));
-                }
-                visitor.visit_enum(EnumDeserializer {
-                    variant: m.0[0].0.clone().into_string().unwrap(),
-                    value: Some(Value::Map(m)),
-                })
-            }
-            _ => {
-                return Err(serde::de::Error::invalid_type(
-                    Unexpected::Other(&format!("{:?}", v)),
-                    &"string or map",
-                ));
-            }
-        };
-        v
-    }
-
-    #[inline]
-    fn deserialize_unit_struct<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: Visitor<'de>,
-    {
-        match self.into_iter() {
-            Ok(iter) => {
-                if iter.len() == 0 {
-                    visitor.visit_unit()
-                } else {
-                    Err(serde::de::Error::invalid_type(Unexpected::Seq, &"empty array"))
-                }
-            }
-            Err(other) => Err(serde::de::Error::invalid_type(other.unexpected(), &"empty array")),
-        }
-    }
-}
-
-impl<'a,'de> ValueBase<'de> for &'a Value{
-    type Item = &'a Value;
-    type Iter = slice::Iter<'a,Value>;
-    type MapIter = IntoIter<(&'a Value, &'a Value)>;
-    type MapDeserializer = MapDeserializer<'a>;
-
-    fn into_value(self) -> Value {
-        self.clone()
-    }
-
-    #[inline]
-    fn is_null(&self) -> bool {
-        if let Value::Null = *self {
-            true
-        } else {
-            false
-        }
-    }
-
-    #[inline]
-    fn into_iter(self) -> Result<Self::Iter, Self::Item> {
-        match self {
-            Value::Array(v) =>Ok(v.into_iter()),
-            other => Err(other),
-        }
-    }
-}
+// impl<'a,'de> ValueBase<'de> for &'a Value{
+//     type Item = &'a Value;
+//     type Iter = slice::Iter<'a,Value>;
+//     type MapIter = IntoIter<(&'a Value, &'a Value)>;
+//     type MapDeserializer = MapDeserializer<'a>;
+//
+//     fn into_value(self) -> Value {
+//         self.clone()
+//     }
+//
+//     #[inline]
+//     fn is_null(&self) -> bool {
+//         if let Value::Null = *self {
+//             true
+//         } else {
+//             false
+//         }
+//     }
+//
+//     #[inline]
+//     fn into_iter(self) -> Result<Self::Iter, Self::Item> {
+//         match self {
+//             Value::Array(v) =>Ok(v.into_iter()),
+//             other => Err(other),
+//         }
+//     }
+// }
