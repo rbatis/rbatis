@@ -8,6 +8,16 @@ mod test {
     use std::cmp::Ordering;
 
     #[test]
+    fn test_ser_value() {
+        let v = rbs::to_value!(Value::I32(1));
+        assert_eq!(v, Value::I32(1));
+        let v = rbs::to_value!(&Value::I32(2));
+        assert_eq!(v, Value::I32(2));
+        let v = rbs::to_value!(&&Value::I32(3));
+        assert_eq!(v, Value::I32(3));
+    }
+
+    #[test]
     fn test_ser_i32() {
         let v = rbs::to_value!(1);
         assert_eq!(v, Value::I32(1));
