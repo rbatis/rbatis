@@ -1,7 +1,5 @@
-use std::any::Any;
 use std::fmt::{self, Debug, Display, Formatter};
-use std::mem::ManuallyDrop;
-use std::ops::Deref;
+use std::slice;
 use std::vec::IntoIter;
 
 use serde::de::{DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
@@ -19,7 +17,7 @@ pub fn from_value<T>(val: Value) -> Result<T, Error>
     where
         T: for<'de> Deserialize<'de>,
 {
-    deserialize_from(val)
+    deserialize_from(&val)
 }
 
 /// deserialize_from
@@ -193,7 +191,7 @@ impl<'de> Deserialize<'de> for Value {
     }
 }
 
-impl<'de> Deserializer<'de> for Value {
+impl<'de> Deserializer<'de> for &Value {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -202,15 +200,15 @@ impl<'de> Deserializer<'de> for Value {
     {
         match self {
             Value::Null => visitor.visit_none(),
-            Value::Bool(v) => visitor.visit_bool(v),
-            Value::I32(v) => visitor.visit_i32(v),
-            Value::I64(v) => visitor.visit_i64(v),
-            Value::U32(v) => visitor.visit_u32(v),
-            Value::U64(v) => visitor.visit_u64(v),
-            Value::F32(v) => visitor.visit_f32(v),
-            Value::F64(v) => visitor.visit_f64(v),
-            Value::String(v) => visitor.visit_string(v),
-            Value::Binary(v) => visitor.visit_byte_buf(v),
+            Value::Bool(v) => visitor.visit_bool(*v),
+            Value::I32(v) => visitor.visit_i32(*v),
+            Value::I64(v) => visitor.visit_i64(*v),
+            Value::U32(v) => visitor.visit_u32(*v),
+            Value::U64(v) => visitor.visit_u64(*v),
+            Value::F32(v) => visitor.visit_f32(*v),
+            Value::F64(v) => visitor.visit_f64(*v),
+            Value::String(v) => visitor.visit_str(v),
+            Value::Binary(v) => visitor.visit_bytes(v),
             Value::Array(v) => {
                 let len = v.len();
                 let mut de = SeqDeserializer::new(v.into_iter());
@@ -223,7 +221,7 @@ impl<'de> Deserializer<'de> for Value {
             }
             Value::Map(v) => {
                 let len = v.len();
-                let mut de = MapDeserializer::new(v.0.into_iter());
+                let mut de = MapDeserializer::new(v.into_iter());
                 let map = visitor.visit_map(&mut de)?;
                 if de.iter.len() == 0 {
                     Ok(map)
@@ -231,7 +229,9 @@ impl<'de> Deserializer<'de> for Value {
                     Err(serde::de::Error::invalid_length(len, &"fewer elements in map"))
                 }
             }
-            Value::Ext(_tag, data) => Deserializer::deserialize_any(*data, visitor),
+            Value::Ext(_tag, data) => {
+                Deserializer::deserialize_any(&*data.as_ref(), visitor)
+            },
         }
     }
 
@@ -348,22 +348,19 @@ impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
     }
 }
 
-struct MapDeserializer<I, U> {
-    val: Option<U>,
-    key: Option<ManuallyDrop<U>>,
-    iter: I,
+struct MapDeserializer<'a> {
+    val: Option<&'a Value>,
+    key: Option<&'a Value>,
+    iter: slice::Iter<'a, (Value, Value)>,
 }
 
-impl<I, U> MapDeserializer<I, U> {
-    fn new(iter: I) -> Self {
+impl<'a> MapDeserializer<'a> {
+    fn new(iter: slice::Iter<'a, (Value, Value)>) -> Self {
         Self { key: None, val: None, iter }
     }
 }
 
-impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
-    where
-        I: Iterator<Item=(U, U)>,
-        U: ValueBase<'de>,
+impl<'de,'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
 {
     type Error = Error;
 
@@ -375,9 +372,8 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             Some((key, val)) => {
                 self.val = Some(val);
                 if is_debug_mode() {
-                    self.key = Some(ManuallyDrop::new(key));
-                    let key_shadow: ManuallyDrop<U> = unsafe { std::mem::transmute_copy(self.key.as_ref().unwrap()) };
-                    seed.deserialize(ManuallyDrop::into_inner(key_shadow)).map(Some)
+                    self.key = Some(key);
+                    seed.deserialize(*self.key.as_ref().unwrap()).map(Some)
                 } else {
                     seed.deserialize(key).map(Some)
                 }
@@ -394,15 +390,9 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
             Some(val) => seed.deserialize(val).map_err(|mut e| {
                 if is_debug_mode() {
                     if let Some(key) = self.key.as_ref() {
-                        let key = key.deref();
-                        if key.type_id() == Value::Null.type_id() {
-                            let vv: &Value = unsafe { std::mem::transmute(key) };
-                            e = e.append(", key = `");
-                            e = e.append(vv.as_str().unwrap_or_default());
-                            e = e.append("`");
-                        } else {
-                            e = e.append(&format!(", key = `{:?}`", key));
-                        }
+                        e = e.append(", key = `");
+                        e = e.append((*key).as_str().unwrap_or_default());
+                        e = e.append("`");
                     }
                 }
                 e
@@ -412,10 +402,7 @@ impl<'de, I, U> serde::de::MapAccess<'de> for MapDeserializer<I, U>
     }
 }
 
-impl<'de, I, U> Deserializer<'de> for MapDeserializer<I, U>
-    where
-        I: Iterator<Item=(U, U)>,
-        U: ValueBase<'de>,
+impl<'de, 'a> Deserializer<'de> for MapDeserializer<'a>
 {
     type Error = Error;
 
@@ -491,7 +478,7 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
                     )));
                 }
                 let mut v = m.0;
-                seed.deserialize(v.pop().unwrap().1)
+                seed.deserialize(&v.pop().unwrap().1)
             }
             None => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
@@ -526,8 +513,6 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
 }
 
 trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt + Debug
-    where
-        Self: 'static,
 {
     type Item: ValueBase<'de>;
     type Iter: ExactSizeIterator<Item=Self::Item>;
@@ -602,14 +587,14 @@ trait ValueBase<'de>: Deserializer<'de, Error=Error> + ValueExt + Debug
     }
 }
 
-impl<'de> ValueBase<'de> for Value {
-    type Item = Value;
-    type Iter = IntoIter<Value>;
-    type MapIter = IntoIter<(Value, Value)>;
-    type MapDeserializer = MapDeserializer<Self::MapIter, Self::Item>;
+impl<'a,'de> ValueBase<'de> for &'a Value{
+    type Item = &'a Value;
+    type Iter = slice::Iter<'a,Value>;
+    type MapIter = IntoIter<(&'a Value, &'a Value)>;
+    type MapDeserializer = MapDeserializer<'a>;
 
     fn into_value(self) -> Value {
-        self
+        self.clone()
     }
 
     #[inline]
@@ -624,7 +609,7 @@ impl<'de> ValueBase<'de> for Value {
     #[inline]
     fn into_iter(self) -> Result<Self::Iter, Self::Item> {
         match self {
-            Value::Array(v) => Ok(v.into_iter()),
+            Value::Array(v) =>Ok(v.into_iter()),
             other => Err(other),
         }
     }
