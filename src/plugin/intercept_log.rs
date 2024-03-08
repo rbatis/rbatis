@@ -131,19 +131,17 @@ impl Intercept for LogInterceptor {
         _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<bool, Error> {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(true);
         }
         let level = self.to_level().unwrap();
         //send sql/args
-        let op = result.type_name();
         log!(
             level,
-            "[rbatis] [{}] {} => `{}` {}",
+            "[rbatis] [{}] => `{}` {}",
             task_id,
-            op,
             &sql,
             RbsValueDisplay::new(args)
         );
@@ -162,21 +160,19 @@ impl Intercept for LogInterceptor {
             return Ok(true);
         }
         let level = self.to_level().unwrap();
-        let type_name = result.type_name();
         //ResultType
         match result {
             ResultType::Exec(result) => match result {
                 Ok(result) => {
                     log!(
                         level,
-                        "[rbatis] [{}] {} <= rows_affected={}",
+                        "[rbatis] [{}] <= rows_affected={}",
                         task_id,
-                        type_name,
                         result
                     );
                 }
                 Err(e) => {
-                    log!(level, "[rbatis] [{}] {} <= {}", task_id, type_name, e);
+                    log!(level, "[rbatis] [{}] <= {}", task_id, e);
                 }
             },
             ResultType::Query(result) => match result {
@@ -184,24 +180,22 @@ impl Intercept for LogInterceptor {
                     if is_debug_mode() {
                         log!(
                             level,
-                            "[rbatis] [{}] {} <= len={},rows={}",
+                            "[rbatis] [{}] <= len={},rows={}",
                             task_id,
-                            type_name,
                             result.len(),
                             RbsValueDisplay { inner: result }
                         );
                     } else {
                         log!(
                             level,
-                            "[rbatis] [{}] {} <= len={}",
+                            "[rbatis] [{}] <= len={}",
                             task_id,
-                            type_name,
                             result.len()
                         );
                     }
                 }
                 Err(e) => {
-                    log!(level, "[rbatis] [{}] {} <= {}", task_id, type_name, e);
+                    log!(level, "[rbatis] [{}] <= {}", task_id, e);
                 }
             },
         }
