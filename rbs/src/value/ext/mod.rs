@@ -1,11 +1,7 @@
 use std::error;
 use std::fmt::{self, Display, Formatter};
 
-use serde::de::Unexpected;
-
-use crate::Value;
-
-pub use self::de::{deserialize_from, from_value};
+pub use self::de::{from_value};
 pub use self::se::{to_value, to_value_def};
 
 mod de;

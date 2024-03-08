@@ -14,17 +14,7 @@ pub fn from_value<T>(val: Value) -> Result<T, Error>
     where
         T: for<'de> Deserialize<'de>,
 {
-    deserialize_from(&val)
-}
-
-/// deserialize_from
-#[inline]
-pub fn deserialize_from<'de, T, D>(val: D) -> Result<T, Error>
-    where
-        T: Deserialize<'de>,
-        D: Deserializer<'de, Error=Error>,
-{
-    Deserialize::deserialize(val)
+    Deserialize::deserialize(&val)
 }
 
 impl serde::de::Error for Error {

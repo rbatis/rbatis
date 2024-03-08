@@ -233,6 +233,14 @@ mod test {
         );
     }
 
+
+    #[test]
+    fn test_de_string() {
+        let v = rbs::to_value!("1");
+        let r:String = rbs::from_value(v).unwrap();
+        assert_eq!(r, "1");
+    }
+
     #[test]
     fn test_de_null() {
         #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
