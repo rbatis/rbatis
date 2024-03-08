@@ -131,19 +131,14 @@ impl Intercept for LogInterceptor {
         _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<bool, Error> {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(true);
         }
         let level = self.to_level().unwrap();
         //send sql/args
-        let op;
-        if sql.trim_start().starts_with("select") {
-            op = "query";
-        } else {
-            op = "exec ";
-        }
+        let op = result.type_name();
         log!(
             level,
             "[rbatis] [{}] {} => `{}` {}",
@@ -174,14 +169,14 @@ impl Intercept for LogInterceptor {
                 Ok(result) => {
                     log!(
                         level,
-                        "[rbatis] [{}] {:5} <= rows_affected={}",
+                        "[rbatis] [{}] {} <= rows_affected={}",
                         task_id,
                         type_name,
                         result
                     );
                 }
                 Err(e) => {
-                    log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
+                    log!(level, "[rbatis] [{}] {} <= {}", task_id, type_name, e);
                 }
             },
             ResultType::Query(result) => match result {
@@ -189,7 +184,7 @@ impl Intercept for LogInterceptor {
                     if is_debug_mode() {
                         log!(
                             level,
-                            "[rbatis] [{}] {:5} <= len={},rows={}",
+                            "[rbatis] [{}] {} <= len={},rows={}",
                             task_id,
                             type_name,
                             result.len(),
@@ -198,7 +193,7 @@ impl Intercept for LogInterceptor {
                     } else {
                         log!(
                             level,
-                            "[rbatis] [{}] {:5} <= len={}",
+                            "[rbatis] [{}] {} <= len={}",
                             task_id,
                             type_name,
                             result.len()
@@ -206,7 +201,7 @@ impl Intercept for LogInterceptor {
                     }
                 }
                 Err(e) => {
-                    log!(level, "[rbatis] [{}] {:5} <= {}", task_id, type_name, e);
+                    log!(level, "[rbatis] [{}] {} <= {}", task_id, type_name, e);
                 }
             },
         }
