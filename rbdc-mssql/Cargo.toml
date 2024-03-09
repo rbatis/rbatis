@@ -20,7 +20,7 @@ tls-native-tls=["rbdc/tls-native-tls","tiberius/native-tls"]
 rbs = { version = "4.5", path = "../rbs" }
 rbdc = { version = "4.5", path = "../rbdc", default-features = false, optional = true }
 tiberius = { version = "0.12", default-features = false, features = ["chrono", "bigdecimal", "rust_decimal", "tds73"], optional = true }
-tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+tokio = { version = "1", default-features = false ,features = ["net"] }
 tokio-util = { version = "0.7.1", features = ["compat"] }
 futures-io = { version = "0.3.21", features = ["std"] }
 futures-core = { version = "0.3.19", default-features = false }
