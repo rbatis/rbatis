@@ -87,7 +87,7 @@ QPS: 288531 QPS/s
 | [TDengine](https://crates.io/crates/rbdc-tdengine)  | [tdcare/rbdc-tdengine](https://github.com/tdcare/rbdc-tdengine)                |
 
 
-> how to support other Driver for RBatis?
+> how to write my DataBase Driver for RBatis?
 * first. define your driver project ,add Cargo.toml deps
 ```toml
 [features]
