@@ -98,7 +98,7 @@ tls-native-tls=["rbdc/tls-native-tls"]
 rbs = { version = "4.5"}
 rbdc = { version = "4.5", default-features = false,  optional = true }
 fastdate = { version = "0.3" }
-tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util"] }
+tokio = { version = "1", features = ["full"] }
 ```
 * then. you should impl `rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row}` trait
 * finish. your driver is finish (you just need call RB.init() methods). it's support RBatis Connection Pool/tls(native,rustls)
