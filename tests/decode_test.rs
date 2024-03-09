@@ -8,7 +8,7 @@ mod test {
     fn test_decode_value() {
         let m = to_value! {
             1: 1,
-            "2": 2,
+            "2": 2
         };
         let v: Value = rbatis::decode(Value::Array(vec![m.clone()])).unwrap();
         assert_eq!(v, Value::Array(vec![m]));
