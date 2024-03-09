@@ -283,7 +283,7 @@ mod test {
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
         println!("{}", v.to_string());
-        #[cfg(feature = "debug_mode")]
-        assert_eq!(v.to_string(), "invalid type: integer `0`, expected a string, key = `name`");
+        assert_eq!(v.to_string().contains("invalid type: integer `0`, expected a string, key ="),true);
+        assert_eq!(v.to_string().contains("name"),true);
     }
 }
