@@ -3,7 +3,6 @@ use std::slice;
 
 use serde::de::{DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
-use crate::is_debug_mode;
 use crate::value::map::ValueMap;
 use crate::value::Value;
 
@@ -291,7 +290,7 @@ impl<'de> Deserializer<'de> for &Value {
         where
             V: Visitor<'de>,
     {
-        let iter= self.into_iter();
+        let iter = self.into_iter();
         if iter.len() == 0 {
             visitor.visit_unit()
         } else {
@@ -390,12 +389,8 @@ impl<'de, 'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
         match self.iter.next() {
             Some((key, val)) => {
                 self.val = Some(val);
-                if is_debug_mode() {
-                    self.key = Some(key);
-                    seed.deserialize(*self.key.as_ref().unwrap()).map(Some)
-                } else {
-                    seed.deserialize(key).map(Some)
-                }
+                self.key = Some(key);
+                seed.deserialize(*self.key.as_ref().unwrap()).map(Some)
             }
             None => Ok(None),
         }
@@ -407,12 +402,10 @@ impl<'de, 'a> serde::de::MapAccess<'de> for MapDeserializer<'a>
     {
         match self.val.take() {
             Some(val) => seed.deserialize(val).map_err(|mut e| {
-                if is_debug_mode() {
-                    if let Some(key) = self.key.as_ref() {
-                        e = e.append(", key = `");
-                        e = e.append((*key).as_str().unwrap_or_default());
-                        e = e.append("`");
-                    }
+                if let Some(key) = self.key.as_ref() {
+                    e = e.append(", key = `");
+                    e = e.append((*key).as_str().unwrap_or_default());
+                    e = e.append("`");
                 }
                 e
             }),
