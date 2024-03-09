@@ -57,18 +57,20 @@ QPS: 288531 QPS/s
 
 ### Supported data structures
 
-| data structure                                                        | is supported |
-|-----------------------------------------------------------------------|--------------|
-| Option                                                                | √            | 
-| Vec                                                                   | √            |  
-| HashMap                                                               | √            |
-| i32,i64,f32,f64,bool,String...more rust type                          | √            |  
-| rbatis::rbdc::types::{Date,DateTime,Time,Timestamp,Decimal,Json}      | √            |
-| rbatis::plugin::page::{Page<T>, PageRequest}                          | √            |
-| rbs::Value*                                                           | √            |
-| serde_json::*                                                         | √            |
-| any serde type                                                        | √            |
-| driver type on package (rdbc-mysql/types,rbdc-pg/types,rbdc-sqlite/types) | √            |
+| data structure                                                           | is supported |
+|--------------------------------------------------------------------------|--------------|
+| `Option`                                                                 | √            | 
+| `Vec`                                                                    | √            |  
+| `HashMap`                                                                | √            |
+| `i32,i64,f32,f64,bool,String`...more rust base type                      | √            |  
+| `rbatis::rbdc::types::{Bytes,Date,DateTime,Time,Timestamp,Decimal,Json}` | √            |
+| `rbatis::plugin::page::{Page, PageRequest}`                              | √            |
+| `rbs::Value`                                                             | √            |
+| `serde_json::Value` ...more serde type                                   | √            |
+| `rdbc-mysql::types::*`                                                   | √            |
+| `rdbc-pg::types::*`                                                      | √            |
+| `rdbc-sqlite::types::*`                                                  | √            |
+| `rdbc-mssql::types::*`                                                   | √            |
 
 ### Supported database driver
 
