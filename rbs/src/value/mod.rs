@@ -16,9 +16,9 @@ pub mod map;
 /// Represents any valid MessagePack value.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
-    /// Nil represents nil.
+    /// null
     Null,
-    /// Bool represents true or false.
+    /// true or false
     Bool(bool),
     /// Int32
     I32(i32),
@@ -28,17 +28,17 @@ pub enum Value {
     U32(u32),
     /// Uint64
     U64(u64),
-    /// A 32-bit floating point number.
+    /// A 32-bit float number.
     F32(f32),
-    /// A 64-bit floating point number.
+    /// A 64-bit float number.
     F64(f64),
-    /// String extending Raw type represents a UTF-8 string.
+    /// String
     String(String),
-    /// Binary extending Raw type represents a byte array.
+    /// Binary/Bytes.
     Binary(Vec<u8>),
-    /// Array represents a sequence of objects.
+    /// Array/Vec.
     Array(Vec<Self>),
-    /// Map represents key-value pairs of objects.
+    /// Map<Key,Value>.
     Map(ValueMap),
     /// Extended implements Extension interface
     Ext(&'static str, Box<Self>),
