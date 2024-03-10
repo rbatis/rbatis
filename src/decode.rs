@@ -19,7 +19,7 @@ pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
         }
         _ => {}
     }
-    // try speculate type
+    // try to identify type
     let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
     if is_array {
         //decode array

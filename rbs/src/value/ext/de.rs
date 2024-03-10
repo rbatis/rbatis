@@ -15,6 +15,14 @@ pub fn from_value<T>(val: Value) -> Result<T, crate::Error>
     Deserialize::deserialize(&val)
 }
 
+#[inline]
+pub fn from_value_ref<T>(val: &Value) -> Result<T, crate::Error>
+    where
+        T: for<'de> Deserialize<'de>,
+{
+    Deserialize::deserialize(val)
+}
+
 impl serde::de::Error for crate::Error {
     #[cold]
     fn custom<T: Display>(msg: T) -> Self {
