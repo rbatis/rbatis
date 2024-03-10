@@ -9,8 +9,8 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     let mut datas = vec![];
     match bs {
@@ -31,8 +31,8 @@ where
 
 //decode doc or one type
 pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
-where
-    T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -49,11 +49,24 @@ where
     match &m {
         Value::Map(map) => {
             if map.len() == 1 {
-                if let Some((_, value)) = map.into_iter().next() {
-                    //try one
-                    if let Ok(v) = rbs::from_value::<T>(value.clone()) {
-                        return Ok(v);
-                    }
+                //try one
+                let type_name = std::any::type_name::<T>();
+                if type_name == std::any::type_name::<i32>()
+                    || type_name == std::any::type_name::<i64>()
+                    || type_name == std::any::type_name::<f32>()
+                    || type_name == std::any::type_name::<f64>()
+                    || type_name == std::any::type_name::<u32>()
+                    || type_name == std::any::type_name::<u64>()
+                    || type_name == std::any::type_name::<String>()
+                    || type_name == std::any::type_name::<bool>()
+                    || type_name == std::any::type_name::<rbdc::types::Decimal>()
+                    || type_name == std::any::type_name::<rbdc::types::Bytes>()
+                    || type_name == std::any::type_name::<rbdc::types::DateTime>()
+                    || type_name == std::any::type_name::<rbdc::types::Date>()
+                    || type_name == std::any::type_name::<rbdc::types::Time>()
+                    || type_name == std::any::type_name::<rbdc::types::Uuid>() {
+                    let (_, value) = m.into_iter().next().unwrap();
+                    return rbs::from_value::<T>(value).map_err(|e| Error::E(e.to_string()));
                 }
             }
         }
@@ -65,9 +78,9 @@ where
 pub fn is_debug_mode() -> bool {
     if cfg!(debug_assertions) {
         #[cfg(feature = "debug_mode")]
-        {true}
+        { true }
         #[cfg(not(feature = "debug_mode"))]
-        {false}
+        { false }
     } else {
         false
     }
