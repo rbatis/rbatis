@@ -9,7 +9,7 @@ impl FromStr for MySqlConnectOptions {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Error> {
-        let url: Url = s.parse().map_err(|e: ParseError| Error::E(e.to_string()))?;
+        let url: Url = s.parse().map_err(|e: ParseError| Error::from(e.to_string()))?;
         let mut options = Self::new();
 
         if let Some(host) = url.host_str() {
@@ -56,7 +56,7 @@ impl FromStr for MySqlConnectOptions {
                     options = options.statement_cache_capacity(
                         value
                             .parse()
-                            .map_err(|e: ParseIntError| Error::E(e.to_string()))?,
+                            .map_err(|e: ParseIntError| Error::from(e.to_string()))?,
                     );
                 }
 

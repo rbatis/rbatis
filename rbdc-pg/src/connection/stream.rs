@@ -100,7 +100,7 @@ impl PgStream {
             match message.format {
                 MessageFormat::ErrorResponse => {
                     // An error returned from the database server.
-                    return Err(Error::E(format!("db:{:?}", message.decode::<Notice>()?)));
+                    return Err(Error::from(format!("db:{:?}", message.decode::<Notice>()?)));
                 }
 
                 MessageFormat::NotificationResponse => {

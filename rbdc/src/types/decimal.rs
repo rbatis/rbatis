@@ -58,7 +58,7 @@ impl FromStr for Decimal {
 
 impl From<ParseBigDecimalError> for Error {
     fn from(value: ParseBigDecimalError) -> Self {
-        Error::E(value.to_string())
+        Error::from(value.to_string())
     }
 }
 

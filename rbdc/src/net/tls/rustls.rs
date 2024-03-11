@@ -33,16 +33,16 @@ pub async fn configure_tls_connector(
             let mut cursor = Cursor::new(data);
             for cert_result in rustls_pemfile::certs(&mut cursor) {
                 let cert =
-                    cert_result.map_err(|_| Error::E(format!("Invalid certificate {}", ca)))?;
+                    cert_result.map_err(|_| Error::from(format!("Invalid certificate {}", ca)))?;
                 cert_store
                     .add(cert)
-                    .map_err(|err| Error::E(err.to_string()))?;
+                    .map_err(|err| Error::from(err.to_string()))?;
             }
         }
         if accept_invalid_hostnames {
             let verifier = WebPkiVerifier::builder(Arc::new(cert_store))
                 .build()
-                .map_err(|e| Error::E(e.to_string()))?;
+                .map_err(|e| Error::from(e.to_string()))?;
             config
                 .with_custom_certificate_verifier(Arc::new(NoHostnameTlsVerifier { verifier }))
                 .with_no_client_auth()

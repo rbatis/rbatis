@@ -99,13 +99,13 @@ where
             MaybeTlsStream::Upgrading => {
                 // we previously failed to upgrade and now hold no connection
                 // this should only happen from an internal misuse of this method
-                return Err(Error::E(io::ErrorKind::ConnectionAborted.to_string()));
+                return Err(Error::from(io::ErrorKind::ConnectionAborted.to_string()));
             }
         };
 
         #[cfg(feature = "tls-rustls")]
         let host = tokio_rustls::rustls::pki_types::ServerName::try_from(host.to_string())
-            .map_err(|err| Error::E(err.to_string()))?;
+            .map_err(|err| Error::from(err.to_string()))?;
 
         *self = MaybeTlsStream::Tls(connector.connect(host, stream).await?);
 

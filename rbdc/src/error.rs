@@ -12,7 +12,7 @@ impl Error {
     #[allow(dead_code)]
     #[inline]
     pub fn protocol(err: impl Display) -> Self {
-        Error::E(format!("ProtocolError {}", err))
+        Error::from(format!("ProtocolError {}", err))
     }
 }
 
@@ -37,26 +37,26 @@ impl serde::ser::Error for Error {
 
 impl From<std::io::Error> for Error {
     fn from(arg: std::io::Error) -> Self {
-        Error::E(arg.to_string())
+        Error::from(arg.to_string())
     }
 }
 
 #[cfg(feature = "tls-native-tls")]
 impl From<native_tls::Error> for Error {
     fn from(e: native_tls::Error) -> Self {
-        Error::E(e.to_string())
+        Error::from(e.to_string())
     }
 }
 
 impl From<std::str::Utf8Error> for Error {
     fn from(e: Utf8Error) -> Self {
-        Error::E(e.to_string())
+        Error::from(e.to_string())
     }
 }
 
 impl From<&str> for Error {
     fn from(arg: &str) -> Self {
-        Error::E(arg.to_string())
+        Error::from(arg.to_string())
     }
 }
 
@@ -68,19 +68,19 @@ impl From<String> for Error {
 
 impl From<ParseIntError> for Error {
     fn from(arg: ParseIntError) -> Self {
-        Error::E(arg.to_string())
+        Error::from(arg.to_string())
     }
 }
 
 impl From<ParseFloatError> for Error {
     fn from(arg: ParseFloatError) -> Self {
-        Error::E(arg.to_string())
+        Error::from(arg.to_string())
     }
 }
 
 impl From<fastdate::error::Error> for Error {
     fn from(arg: fastdate::error::Error) -> Self {
-        Error::E(arg.to_string())
+        Error::from(arg.to_string())
     }
 }
 
