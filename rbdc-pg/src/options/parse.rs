@@ -68,7 +68,7 @@ impl FromStr for PgConnectOptions {
                     options = options.statement_cache_capacity(
                         value
                             .parse()
-                            .map_err(|e: ParseIntError| Error::E(e.to_string()))?,
+                            .map_err(|e: ParseIntError| Error::from(e.to_string()))?,
                     );
                 }
 

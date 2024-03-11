@@ -45,7 +45,7 @@ impl PgStatement {
         self.metadata
             .column_names
             .get(index)
-            .ok_or_else(|| Error::E(format!("ColumnNotFound {}", index)))
+            .ok_or_else(|| Error::from(format!("ColumnNotFound {}", index)))
             .map(|v| *v)
     }
 }

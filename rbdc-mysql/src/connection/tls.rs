@@ -20,7 +20,7 @@ pub(super) async fn maybe_upgrade(
         MySqlSslMode::Required | MySqlSslMode::VerifyIdentity | MySqlSslMode::VerifyCa => {
             if !upgrade(stream, options).await? {
                 // upgrade failed, die
-                return Err(Error::E("server does not support TLS".into()));
+                return Err(Error::from("server does not support TLS"));
             }
         }
     }

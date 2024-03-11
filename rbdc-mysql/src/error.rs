@@ -67,6 +67,6 @@ impl MySqlDatabaseError {
 
 impl From<MySqlDatabaseError> for rbdc::Error {
     fn from(arg: MySqlDatabaseError) -> Self {
-        rbdc::Error::E(arg.to_string())
+        rbdc::Error::from(arg.to_string())
     }
 }

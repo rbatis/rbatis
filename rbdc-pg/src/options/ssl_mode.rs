@@ -47,7 +47,7 @@ impl FromStr for PgSslMode {
             "verify-full" => PgSslMode::VerifyFull,
 
             _ => {
-                return Err(Error::E(format!("unknown value {:?} for `ssl_mode`", s)));
+                return Err(Error::from(format!("unknown value {:?} for `ssl_mode`", s)));
             }
         })
     }

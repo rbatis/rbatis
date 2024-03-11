@@ -26,7 +26,7 @@ impl Display for Error {
 
 impl From<syn::Error> for Error {
     fn from(value: syn::Error) -> Self {
-        Error::E(value.to_string())
+        Error::from(value.to_string())
     }
 }
 impl StdError for Error {}
@@ -40,7 +40,7 @@ impl From<io::Error> for Error {
 
 impl From<&str> for Error {
     fn from(arg: &str) -> Self {
-        return Error::E(arg.to_string());
+        return Error::from(arg.to_string());
     }
 }
 
@@ -52,7 +52,7 @@ impl From<std::string::String> for Error {
 
 impl From<&dyn std::error::Error> for Error {
     fn from(arg: &dyn std::error::Error) -> Self {
-        return Error::E(arg.to_string());
+        return Error::from(arg.to_string());
     }
 }
 
