@@ -59,11 +59,12 @@ pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
                     || type_name == std::any::type_name::<u64>()
                     || type_name == std::any::type_name::<String>()
                     || type_name == std::any::type_name::<bool>()
-                    || type_name == std::any::type_name::<rbdc::types::Decimal>()
                     || type_name == std::any::type_name::<rbdc::types::Bytes>()
+                    || type_name == std::any::type_name::<rbdc::types::Decimal>()
                     || type_name == std::any::type_name::<rbdc::types::DateTime>()
                     || type_name == std::any::type_name::<rbdc::types::Date>()
                     || type_name == std::any::type_name::<rbdc::types::Time>()
+                    || type_name == std::any::type_name::<rbdc::types::Timestamp>()
                     || type_name == std::any::type_name::<rbdc::types::Uuid>() {
                     let (_, value) = m.into_iter().next().unwrap();
                     return rbs::from_value::<T>(value).map_err(|e| Error::E(e.to_string()));
