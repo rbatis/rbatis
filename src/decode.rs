@@ -57,22 +57,8 @@ pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
         Value::Map(map) => {
             if map.len() == 1 {
                 //try one
-                let type_name = std::any::type_name::<T>();
-                if type_name == std::any::type_name::<i32>()
-                    || type_name == std::any::type_name::<i64>()
-                    || type_name == std::any::type_name::<f32>()
-                    || type_name == std::any::type_name::<f64>()
-                    || type_name == std::any::type_name::<u32>()
-                    || type_name == std::any::type_name::<u64>()
-                    || type_name == std::any::type_name::<String>()
-                    || type_name == std::any::type_name::<bool>()
-                    || type_name == std::any::type_name::<rbdc::types::Bytes>()
-                    || type_name == std::any::type_name::<rbdc::types::Decimal>()
-                    || type_name == std::any::type_name::<rbdc::types::DateTime>()
-                    || type_name == std::any::type_name::<rbdc::types::Date>()
-                    || type_name == std::any::type_name::<rbdc::types::Time>()
-                    || type_name == std::any::type_name::<rbdc::types::Timestamp>()
-                    || type_name == std::any::type_name::<rbdc::types::Uuid>() {
+                let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
+                if is_array == false {
                     let (_, value) = map.into_iter().next().unwrap();
                     return rbs::from_value_ref::<T>(value).map_err(|e| Error::from(e.to_string()));
                 }
