@@ -8,29 +8,36 @@ use crate::Error;
 /// support decode types:
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
-pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
+pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
     where
         T: DeserializeOwned,
 {
-    let mut datas = vec![];
-    match bs {
-        Value::Array(arr) => {
-            datas = arr;
-        }
-        _ => {}
-    }
     // try to identify type
     let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
     if is_array {
         //decode array
-        Ok(rbs::from_value(Value::Array(datas))?)
+        Ok(rbs::from_value_ref(values)?)
     } else {
-        Ok(try_decode_map(&mut datas)?)
+        match values {
+            Value::Array(datas) => {
+                Ok(try_decode_map(datas)?)
+            }
+            _ => {
+                Err(Error::from("decode an not array value"))
+            }
+        }
     }
 }
 
+pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+{
+    decode_ref(&bs)
+}
+
 //decode doc or one type
-pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
+pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
 {
@@ -45,7 +52,7 @@ pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
     if datas.is_empty() {
         return Ok(rbs::from_value::<T>(Value::Null)?);
     }
-    let m = datas.remove(0);
+    let m = datas.get(0).unwrap();
     match &m {
         Value::Map(map) => {
             if map.len() == 1 {
@@ -66,14 +73,14 @@ pub fn try_decode_map<T>(datas: &mut Vec<Value>) -> Result<T, Error>
                     || type_name == std::any::type_name::<rbdc::types::Time>()
                     || type_name == std::any::type_name::<rbdc::types::Timestamp>()
                     || type_name == std::any::type_name::<rbdc::types::Uuid>() {
-                    let (_, value) = m.into_iter().next().unwrap();
-                    return rbs::from_value::<T>(value).map_err(|e| Error::from(e.to_string()));
+                    let (_, value) = map.into_iter().next().unwrap();
+                    return rbs::from_value_ref::<T>(value).map_err(|e| Error::from(e.to_string()));
                 }
             }
         }
         _ => {}
     }
-    Ok(rbs::from_value::<T>(m)?)
+    Ok(rbs::from_value_ref::<T>(m)?)
 }
 
 pub fn is_debug_mode() -> bool {
