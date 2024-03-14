@@ -131,11 +131,11 @@
     </select>
 
     <select id="test_for">
-        <foreach collection="ids" separator=",">
-            <if test="index == 0">
+        <foreach collection="ids" separator="," index="k" item="v">
+            <if test="k == 0">
                 <continue></continue>
             </if>
-            ${item}
+            (${k},${v})
         </foreach>
     </select>
 

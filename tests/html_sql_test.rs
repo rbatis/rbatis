@@ -544,7 +544,7 @@ mod test {
             htmlsql!(test_for(rb: &RBatis,ids:Vec<i32>)  -> Result<Value, Error> => "tests/test.html");
             let r = test_for(&rb,vec![0,1,2,3]).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql, "1,2,3");
+            assert_eq!(sql, "(1,1),(2,2),(3,3)");
             assert_eq!(args, vec![]);
         };
         block_on(f);
