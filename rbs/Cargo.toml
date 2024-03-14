@@ -1,6 +1,6 @@
 [package]
 name = "rbs"
-version = "4.5.11"
+version = "4.5.12"
 edition = "2021"
 description = "Serialization framework for ORM"
 readme = "Readme.md"
@@ -21,6 +21,7 @@ debug_mode = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
+indexmap = "2.2.5"
 
 
 

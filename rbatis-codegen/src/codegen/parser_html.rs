@@ -4,7 +4,7 @@ use std::io::Read;
 
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
-use syn::{Expr, ItemFn};
+use syn::{ItemFn, LitStr};
 use url::Url;
 
 use crate::codegen::loader_html::{load_html, Element};
@@ -316,8 +316,6 @@ fn parse(
                     .get("value")
                     .expect("<bind> element must be have value!")
                     .to_string();
-
-                let name_expr = parse_expr(&name);
                 let method_impl = crate::codegen::func::impl_fn(
                     &body.to_string(),
                     "",
@@ -325,12 +323,15 @@ fn parse(
                     false,
                     ignore,
                 );
+                let lit_str = LitStr::new(&name,Span::call_site());
                 body = quote! {
                     #body
                     //bind
-                    let #name_expr = rbs::to_value(#method_impl).unwrap_or_default();
+                    if arg[#lit_str] == rbs::Value::Null{
+                        arg.insert(rbs::Value::String(#lit_str.to_string()), rbs::Value::Null);
+                    }
+                    arg[#lit_str] = rbs::to_value(#method_impl).unwrap_or_default();
                 };
-                ignore.push(name);
             }
 
             "where" => {
@@ -484,7 +485,7 @@ fn parse(
                 let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
-                    pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
+                    pub fn #method_name (mut arg: rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(#push_count);
@@ -504,7 +505,7 @@ fn parse(
                 let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
-                    pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
+                    pub fn #method_name (mut arg: rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(#push_count);
@@ -524,7 +525,7 @@ fn parse(
                 let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
-                    pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
+                    pub fn #method_name (mut arg: rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(#push_count);
@@ -544,7 +545,7 @@ fn parse(
                 let cup = x.child_string_cup() + 1000;
                 let push_count = child_body.to_string().matches("args.push").count();
                 let select = quote! {
-                    pub fn #method_name (arg:&rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
+                    pub fn #method_name (mut arg: rbs::Value, _tag: char) -> (String,Vec<rbs::Value>) {
                        use rbatis_codegen::ops::*;
                        let mut sql = String::with_capacity(#cup);
                        let mut args = Vec::with_capacity(#push_count);
@@ -702,12 +703,4 @@ pub fn impl_fn_html(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let html_data = args.sqls[0].to_token_stream().to_string();
     let t = parse_html(&html_data, &fn_name, &mut vec![]);
     return t.into();
-}
-
-/// parse to expr
-fn parse_expr(lit_str: &str) -> Expr {
-    let s = syn::parse::<syn::LitStr>(lit_str.to_token_stream().into())
-        .expect(&format!("parse::<syn::LitStr> fail: {}", lit_str));
-    return syn::parse_str::<Expr>(&s.value())
-        .expect(&format!("parse_str::<Expr> fail: {}", lit_str));
 }

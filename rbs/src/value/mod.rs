@@ -593,12 +593,6 @@ impl From<Vec<Value>> for Value {
     }
 }
 
-impl From<Vec<(Value, Value)>> for Value {
-    #[inline]
-    fn from(v: Vec<(Value, Value)>) -> Self {
-        Value::Map(ValueMap(v))
-    }
-}
 
 ///from tuple for ext
 impl From<(&'static str, Value)> for Value {
@@ -686,7 +680,7 @@ impl Default for Value {
 
 impl IntoIterator for Value {
     type Item = (Value, Value);
-    type IntoIter = std::vec::IntoIter<(Value, Value)>;
+    type IntoIter = indexmap::map::IntoIter<Value, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
@@ -695,7 +689,7 @@ impl IntoIterator for Value {
                 let mut v = ValueMap::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    v.push((Value::U32(idx), x));
+                    v.insert(Value::U32(idx), x);
                     idx += 1;
                 }
                 v.into_iter()

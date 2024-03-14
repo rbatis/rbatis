@@ -507,6 +507,7 @@ mod test {
             htmlsql!(test_bind(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
             let r = test_bind(&rb).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
+            println!("sql={},args={}",sql,Value::Array(args.clone()));
             assert_eq!(sql, "1");
             assert_eq!(args, vec![]);
         };

@@ -1,5 +1,5 @@
 use std::fmt::{self, Debug, Display, Formatter};
-use std::slice;
+use indexmap::IndexMap;
 
 use serde::de::{DeserializeSeed, IntoDeserializer, SeqAccess, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
@@ -159,14 +159,14 @@ impl<'de> Deserialize<'de> for Value {
                 let mut pairs = {
                     match visitor.size_hint() {
                         None => {
-                            vec![]
+                            IndexMap::new()
                         }
-                        Some(l) => Vec::with_capacity(l),
+                        Some(l) => IndexMap::with_capacity(l),
                     }
                 };
                 while let Some(key) = visitor.next_key()? {
                     let val = visitor.next_value()?;
-                    pairs.push((key, val));
+                    pairs.insert(key, val);
                 }
 
                 Ok(Value::Map(ValueMap(pairs)))
@@ -252,7 +252,7 @@ impl<'de> Deserializer<'de> for &Value {
     {
         let v = match self {
             Value::String(v) => visitor.visit_enum(EnumDeserializer {
-                variant: v.clone(),
+                variant: v.as_str(),
                 value: Some(Value::String(v.clone())),
             }),
             Value::Map(m) => {
@@ -262,8 +262,9 @@ impl<'de> Deserializer<'de> for &Value {
                         &"must be object map {\"Key\":\"Value\"}",
                     ));
                 }
+                let variant = m.0.iter().next().unwrap().0.as_str().unwrap_or_default();
                 visitor.visit_enum(EnumDeserializer {
-                    variant: m.0[0].0.clone().into_string().unwrap(),
+                    variant: variant,
                     value: Some(Value::Map(m.clone())),
                 })
             }
@@ -377,12 +378,12 @@ impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
 struct MapDeserializer<'a> {
     val: Option<&'a Value>,
     key: Option<&'a Value>,
-    iter: slice::Iter<'a, (Value, Value)>,
+    iter: indexmap::map::Iter<'a,Value,Value>,
 }
 
 impl<'a> MapDeserializer<'a> {
-    fn new(iter: slice::Iter<'a, (Value, Value)>) -> Self {
-        Self { key: None, val: None, iter }
+    fn new(m: indexmap::map::Iter<'a,Value,Value>) -> Self {
+        Self { key: None, val: None, iter:m }
     }
 }
 
@@ -441,12 +442,12 @@ impl<'de, 'a> Deserializer<'de> for MapDeserializer<'a>
     }
 }
 
-struct EnumDeserializer {
-    variant: String,
+struct EnumDeserializer<'a> {
+    variant: &'a str,
     value: Option<Value>,
 }
 
-impl<'de> serde::de::EnumAccess<'de> for EnumDeserializer {
+impl<'de,'a> serde::de::EnumAccess<'de> for EnumDeserializer<'a> {
     type Error = crate::Error;
     type Variant = VariantDeserializer;
 

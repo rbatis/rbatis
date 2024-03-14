@@ -53,7 +53,7 @@ mod test {
             m.insert("k".into(), 1.into());
             Value::Map(m)
         });
-        let (sql, args) = py_select_by_condition(&mut rbs::Value::Map(arg), '$');
+        let (sql, args) = py_select_by_condition(rbs::Value::Map(arg), '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }
@@ -80,7 +80,7 @@ mod test {
             arg.insert("table".into(), "a".into());
             Value::Map(arg)
         });
-        let (sql, args) = save(&mut rbs::Value::Map(arg), '$');
+        let (sql, args) = save(rbs::Value::Map(arg), '$');
         println!("py->sql: {}", sql);
         println!("py->args: {}", serde_json::to_string(&args).unwrap());
     }
@@ -98,7 +98,7 @@ mod test {
                 m
             }),
         );
-        let res = test_py_sql(&mut rbs::Value::Map(data), '?');
+        let res = test_py_sql(rbs::Value::Map(data), '?');
         println!("res={:?}", res.0);
         assert_eq!("select * from test where  coalesce(user_id,?)=?", res.0);
     }

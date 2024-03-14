@@ -4,11 +4,11 @@ use serde::ser::SerializeMap;
 use serde::{Deserializer, Serializer};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
-use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::vec::IntoIter;
+use std::ops::{Index, IndexMut};
+use indexmap::IndexMap;
 
 #[derive(PartialEq)]
-pub struct ValueMap(pub Vec<(Value, Value)>);
+pub struct ValueMap(pub IndexMap<Value,Value>);
 
 impl serde::Serialize for ValueMap {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -63,9 +63,7 @@ impl Clone for ValueMap {
 
 impl Debug for ValueMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_map()
-            .entries(self.0.iter().map(|&(ref k, ref v)| (k, v)))
-            .finish()
+        std::fmt::Debug::fmt(&self.0,f)
     }
 }
 
@@ -88,80 +86,37 @@ impl Display for ValueMap {
 
 impl ValueMap {
     pub fn new() -> Self {
-        ValueMap(vec![])
+        ValueMap(IndexMap::new())
     }
     pub fn with_capacity(n: usize) -> Self {
-        ValueMap(Vec::with_capacity(n))
+        ValueMap(IndexMap::with_capacity(n))
     }
-    pub fn insert(&mut self, k: Value, v: Value) {
-        for (mk, mv) in &mut self.0 {
-            if k.eq(mk) {
-                *mv = v;
-                return;
-            }
-        }
-        self.0.push((k, v));
+    pub fn insert(&mut self, k: Value, v: Value) -> Option<Value> {
+        self.0.insert(k, v)
     }
     pub fn remove(&mut self, k: &Value) -> Value {
-        let mut idx = 0;
-        for (mkey, _v) in &self.0 {
-            if k.eq(mkey) {
-                let (_, v) = self.0.remove(idx);
-                return v;
-            }
-            idx += 1
-        }
-        return Value::Null;
+        self.0.swap_remove(k).unwrap_or_default()
     }
 
-    pub fn is(&mut self, k: &str, v: Value) {
-        let k = Value::String(k.to_string());
-        for (mk, mv) in &mut self.0 {
-            if k.eq(mk) {
-                *mv = v;
-                return;
-            }
-        }
-        self.0.push((k, v));
+    pub fn rm(&mut self, k: &Value) -> Value {
+        self.remove(k)
     }
 
-    pub fn rm(&mut self, k: &str) -> Value {
-        let mut idx = 0;
-        for (key, _v) in &self.0 {
-            if k.eq(key.as_str().unwrap_or_default()) {
-                let (_, v) = self.0.remove(idx);
-                return v;
-            }
-            idx += 1
-        }
-        return Value::Null;
+    pub fn len(&self) -> usize{
+        self.0.len()
+    }
+
+    pub fn is_empty(&self)-> bool{
+        self.0.is_empty()
     }
 }
 
-impl Deref for ValueMap {
-    type Target = Vec<(Value, Value)>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for ValueMap {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 impl Index<&str> for ValueMap {
     type Output = Value;
 
     fn index(&self, index: &str) -> &Self::Output {
-        for (k, v) in &self.0 {
-            if k.as_str().unwrap_or_default().eq(index) {
-                return v;
-            }
-        }
-        return &Value::Null;
+        self.0.index(&Value::String(index.to_string()))
     }
 }
 
@@ -169,58 +124,43 @@ impl Index<i64> for ValueMap {
     type Output = Value;
 
     fn index(&self, index: i64) -> &Self::Output {
-        for (k, v) in &self.0 {
-            if k.as_i64().unwrap_or_default().eq(&index) {
-                return v;
-            }
-        }
-        return &Value::Null;
+        self.0.index(&Value::I64(index))
     }
 }
 
 impl IndexMut<&str> for ValueMap {
     fn index_mut(&mut self, index: &str) -> &mut Self::Output {
-        for (k, v) in &mut self.0 {
-            if k.as_str().unwrap_or_default().eq(index) {
-                return v;
-            }
-        }
-        panic!("not have index={}", index)
+        self.0.index_mut(&Value::String(index.to_string()))
     }
 }
 
 impl IndexMut<i64> for ValueMap {
     fn index_mut(&mut self, index: i64) -> &mut Self::Output {
-        for (k, v) in &mut self.0 {
-            if k.as_i64().unwrap_or_default().eq(&index) {
-                return v;
-            }
-        }
-        panic!("not have index={}", index)
+        self.0.index_mut(&Value::I64(index))
     }
 }
 
 impl<'a> IntoIterator for &'a ValueMap {
-    type Item = &'a (Value, Value);
-    type IntoIter = std::slice::Iter<'a, (Value, Value)>;
+    type Item = (&'a Value, &'a Value);
+    type IntoIter = indexmap::map::Iter<'a, Value, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.deref().into_iter()
+        self.0.iter()
     }
 }
 
 impl<'a> IntoIterator for &'a mut ValueMap {
-    type Item = &'a mut (Value, Value);
-    type IntoIter = std::slice::IterMut<'a, (Value, Value)>;
+    type Item = (&'a Value, &'a mut Value);
+    type IntoIter = indexmap::map::IterMut<'a, Value, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.deref_mut().into_iter()
+        self.0.iter_mut().into_iter()
     }
 }
 
 impl IntoIterator for ValueMap {
     type Item = (Value, Value);
-    type IntoIter = IntoIter<(Value, Value)>;
+    type IntoIter = indexmap::map::IntoIter<Value, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()

@@ -3,9 +3,18 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbdc::datetime::DateTime;
     use rbdc::Timestamp;
-    use rbs::Value;
+    use rbs::{to_value, Value};
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
+
+
+    #[test]
+    fn test_set() {
+        let mut v = rbs::to_value! {};
+        v.insert(to_value!("a"),Value::Null);
+        v["a"] = Value::I32(1);
+        assert_eq!(v["a"].as_i64().unwrap_or_default(),1);
+    }
 
     #[test]
     fn test_ser_value() {
@@ -189,7 +198,7 @@ mod test {
             BB(i32), //{"BB":2}
         }
         let v = rbs::to_value!(A::BB(2));
-        println!("{:?}", v);
+        println!("{}", v);
         let nv: A = rbs::from_value(v).unwrap();
         assert_eq!(nv, A::BB(2));
     }
@@ -283,7 +292,7 @@ mod test {
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
         println!("{}", v.to_string());
-        assert_eq!(v.to_string().contains("invalid type: integer `0`, expected a string, key ="),true);
-        assert_eq!(v.to_string().contains("name"),true);
+        assert_eq!(v.to_string().contains("invalid type: integer `0`, expected a string, key ="), true);
+        assert_eq!(v.to_string().contains("name"), true);
     }
 }

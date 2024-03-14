@@ -33,7 +33,7 @@ impl Serialize for Value {
             }
             Value::Map(ref map) => {
                 let mut state = s.serialize_map(Some(map.len()))?;
-                for &(ref key, ref val) in map {
+                for (key, val) in map {
                     state.serialize_entry(key, val)?;
                 }
                 state.end()
@@ -272,7 +272,7 @@ impl ser::Serializer for Serializer {
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Error> {
         let se = DefaultSerializeMap {
-            map: Vec::with_capacity(len.unwrap_or(0)),
+            map: ValueMap::with_capacity(len.unwrap_or(0)),
             next_key: None,
         };
         Ok(se)
@@ -285,7 +285,7 @@ impl ser::Serializer for Serializer {
         len: usize,
     ) -> Result<Self::SerializeStruct, Error> {
         let se = DefaultSerializeMap {
-            map: Vec::with_capacity(len),
+            map: ValueMap::with_capacity(len),
             next_key: None,
         };
         Ok(se)
@@ -349,7 +349,7 @@ pub struct SerializeTupleVariant {
 
 #[doc(hidden)]
 pub struct DefaultSerializeMap {
-    map: Vec<(Value, Value)>,
+    map: ValueMap,
     next_key: Option<Value>,
 }
 
@@ -459,13 +459,13 @@ impl ser::SerializeMap for DefaultSerializeMap {
             .next_key
             .take()
             .expect("`serialize_value` called before `serialize_key`");
-        self.map.push((key, to_value(&value)?));
+        self.map.insert(key, to_value(&value)?);
         Ok(())
     }
 
     #[inline]
     fn end(self) -> Result<Value, Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(self.map))
     }
 }
 
@@ -481,13 +481,12 @@ impl ser::SerializeStruct for DefaultSerializeMap {
     where
         T: Serialize,
     {
-        self.map
-            .push((Value::String(key.to_string()), to_value(&value)?));
+        self.map.insert(Value::String(key.to_string()), to_value(&value)?);
         Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(self.map))
     }
 }
 
@@ -503,13 +502,12 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
     where
         T: Serialize,
     {
-        self.map
-            .push((Value::String(key.to_string()), to_value(&value)?));
+        self.map.insert(Value::String(key.to_string()), to_value(&value)?);
         Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Map(ValueMap(self.map)))
+        Ok(Value::Map(self.map))
     }
 }
 
