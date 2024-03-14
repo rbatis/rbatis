@@ -57,10 +57,18 @@ pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
         Value::Map(map) => {
             if map.len() == 1 {
                 //try one
-                let (_, value) = map.into_iter().next().unwrap();
-                let is_value = rbs::from_value_ref::<T>(value);
-                if is_value.is_ok() {
-                    return Ok(is_value?);
+                let type_name = std::any::type_name::<T>();
+                if type_name == std::any::type_name::<i32>()
+                    || type_name == std::any::type_name::<i64>()
+                    || type_name == std::any::type_name::<f32>()
+                    || type_name == std::any::type_name::<f64>()
+                    || type_name == std::any::type_name::<u32>()
+                    || type_name == std::any::type_name::<u64>()
+                    || type_name == std::any::type_name::<String>()
+                    || type_name == std::any::type_name::<bool>()
+                    || type_name.starts_with("rbdc::types::") {
+                    let (_, value) = map.into_iter().next().unwrap();
+                    return Ok(rbs::from_value_ref::<T>(value)?);
                 }
             }
         }
