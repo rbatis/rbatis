@@ -5,7 +5,6 @@
 //! ```
 //! ```
 use crate::value::map::ValueMap;
-use std::borrow::Cow;
 use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
@@ -558,13 +557,6 @@ impl<'a> From<&'a str> for Value {
     }
 }
 
-impl<'a> From<Cow<'a, str>> for Value {
-    #[inline]
-    fn from(v: Cow<'a, str>) -> Self {
-        Value::String(v.to_string())
-    }
-}
-
 impl From<Vec<u8>> for Value {
     #[inline]
     fn from(v: Vec<u8>) -> Self {
@@ -578,14 +570,6 @@ impl<'a> From<&'a [u8]> for Value {
         Value::Binary(v.into())
     }
 }
-
-impl<'a> From<Cow<'a, [u8]>> for Value {
-    #[inline]
-    fn from(v: Cow<'a, [u8]>) -> Self {
-        Value::Binary(v.into_owned())
-    }
-}
-
 impl From<Vec<Value>> for Value {
     #[inline]
     fn from(v: Vec<Value>) -> Self {
@@ -704,15 +688,15 @@ impl IntoIterator for Value {
 }
 
 impl<'a> IntoIterator for &'a Value {
-    type Item = (Cow<'a, Value>, &'a Value);
-    type IntoIter = std::vec::IntoIter<(Cow<'a, Value>, &'a Value)>;
+    type Item = (Value, &'a Value);
+    type IntoIter = std::vec::IntoIter<(Value, &'a Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
             Value::Map(m) => {
                 let mut arr = Vec::with_capacity(m.len());
                 for (k, v) in m {
-                    arr.push((Cow::Borrowed(k), v));
+                    arr.push((k.to_owned(), v));
                 }
                 arr.into_iter()
             }
@@ -720,7 +704,7 @@ impl<'a> IntoIterator for &'a Value {
                 let mut v = Vec::with_capacity(arr.len());
                 let mut idx = 0;
                 for x in arr {
-                    v.push((Cow::Owned(Value::U32(idx)), x));
+                    v.push((Value::U32(idx), x));
                     idx += 1;
                 }
                 v.into_iter()

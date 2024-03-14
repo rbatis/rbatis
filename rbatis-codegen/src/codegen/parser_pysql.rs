@@ -17,6 +17,7 @@ use crate::codegen::ParseArgs;
 use quote::ToTokens;
 use std::collections::HashMap;
 use syn::ItemFn;
+use crate::codegen::syntax_tree_pysql::break_node::BreakNode;
 
 pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error>;
@@ -342,6 +343,8 @@ impl NodeType {
             return Ok(NodeType::NWhere(WhereNode { childs }));
         } else if trim_express.starts_with(ContinueNode::name()) {
             return Ok(NodeType::NContinue(ContinueNode {}));
+        } else if trim_express.starts_with(BreakNode::name()) {
+            return Ok(NodeType::NBreak(BreakNode {}));
         } else {
             // unkonw tag
             return Err(Error::from(

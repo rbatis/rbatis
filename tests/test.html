@@ -135,6 +135,9 @@
             <if test="k == 0">
                 <continue></continue>
             </if>
+            <if test="k == 3">
+                <break></break>
+            </if>
             (${k},${v})
         </foreach>
     </select>

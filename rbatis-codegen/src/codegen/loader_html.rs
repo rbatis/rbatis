@@ -58,6 +58,9 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
             }
             Node::Element(element) => {
                 el.tag = element.name.to_string();
+                if el.tag == "nbreak" {
+                    el.tag = "break".to_string();
+                }
                 if element.id.is_some() {
                     el.attrs.insert(
                         "id".to_string(),
@@ -83,7 +86,9 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
 }
 
 pub fn load_html(html: &str) -> Result<Vec<Element>> {
-    let dom = Dom::parse(html)?;
+    let mut html = html.to_string();
+    html = html.replace("<break>", "<nbreak>").replace("</break>", "</nbreak>");
+    let dom = Dom::parse(&html)?;
     let els = as_element(&dom.children);
     return Ok(els);
 }

@@ -2,6 +2,7 @@
 pub mod bind_node;
 pub mod choose_node;
 pub mod continue_node;
+pub mod break_node;
 pub mod error;
 pub mod foreach_node;
 pub mod if_node;
@@ -14,6 +15,7 @@ pub mod when_node;
 pub mod where_node;
 
 use crate::codegen::syntax_tree_pysql::bind_node::BindNode;
+use crate::codegen::syntax_tree_pysql::break_node::BreakNode;
 use crate::codegen::syntax_tree_pysql::choose_node::ChooseNode;
 use crate::codegen::syntax_tree_pysql::continue_node::ContinueNode;
 use crate::codegen::syntax_tree_pysql::foreach_node::ForEachNode;
@@ -40,6 +42,7 @@ pub enum NodeType {
     NSet(SetNode),
     NWhere(WhereNode),
     NContinue(ContinueNode),
+    NBreak(BreakNode),
     NSql(SqlNode),
 }
 
@@ -184,6 +187,7 @@ impl AsHtml for NodeType {
             NodeType::NSet(n) => n.as_html(),
             NodeType::NWhere(n) => n.as_html(),
             NodeType::NContinue(n) => n.as_html(),
+            NodeType::NBreak(n) => n.as_html(),
             NodeType::NSql(n) => n.as_html(),
         }
     }
