@@ -143,7 +143,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          let driver_type = #rbatis_ident.rb_ref().driver_type()?;
          use rbatis::rbatis_codegen;
          #gen_func
-         let (mut sql,rb_args) = impl_html_sql(&rbs::Value::Map(rb_arg_map),'?');
+         let (mut sql,rb_args) = impl_html_sql(rbs::Value::Map(rb_arg_map),'?');
          #call_method
        }
     }
