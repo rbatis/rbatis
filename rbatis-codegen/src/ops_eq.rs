@@ -1,7 +1,9 @@
+use std::borrow::Cow;
 use crate::ops::AsProxy;
 use crate::ops::PartialEq;
 use rbs::Value;
 use std::cmp::PartialEq as PE;
+use std::ops::Deref;
 
 impl PartialEq<Value> for &'_ Value {
     fn op_eq(&self, other: &Value) -> bool {
@@ -110,6 +112,12 @@ impl PartialEq<String> for Value {
 impl PartialEq<Value> for String {
     fn op_eq(&self, other: &Value) -> bool {
         eq_str(other, self.as_str())
+    }
+}
+
+impl PartialEq<Cow<'_,Value>> for Value{
+    fn op_eq(&self, other: &Cow<'_, Value>) -> bool {
+         self.eq(other.deref())
     }
 }
 
