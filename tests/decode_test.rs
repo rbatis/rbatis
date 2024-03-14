@@ -3,15 +3,28 @@ mod test {
     use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
     use std::str::FromStr;
+    use serde::{Deserialize, Serialize};
 
     #[test]
     fn test_decode_value() {
-        let m = to_value! {
-            1: 1,
-            "2": 2
-        };
-        let v: Value = rbatis::decode(Value::Array(vec![m.clone()])).unwrap();
-        assert_eq!(v, Value::Array(vec![m]));
+        let m = Value::Array(vec![to_value! {
+            "1": 1
+        }]);
+        let v: i64 = rbatis::decode(m).unwrap();
+        assert_eq!(v, 1);
+    }
+
+    #[test]
+    fn test_decode_type_fail() {
+        #[derive(Serialize,Deserialize)]
+        pub struct A{
+            pub aa:i32
+        }
+        let m = Value::Array(vec![to_value! {
+            "aa": ""
+        }]);
+        let v = rbatis::decode::<A>(m).err().unwrap();
+        assert_eq!(v.to_string(),"invalid type: string \"\", expected i32, key = `aa`");
     }
 
     #[test]
@@ -32,7 +45,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-        .unwrap();
+            .unwrap();
         assert_eq!(v, 1);
     }
 
@@ -43,7 +56,7 @@ mod test {
             m.insert(Value::String("a".to_string()), Value::I64(1));
             m
         })]))
-        .unwrap();
+            .unwrap();
         assert_eq!(v, 1i64);
     }
 
