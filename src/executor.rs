@@ -160,8 +160,9 @@ impl RBatisRef for RBatisConnExecutor {
 impl RBatisConnExecutor {
     pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
         Box::pin(async move {
-            self.conn.lock().await.begin().await?;
-            Ok(RBatisTxExecutor::new(self.conn.into_inner()))
+            let mut conn = self.conn.into_inner();
+            conn.begin().await?;
+            Ok(RBatisTxExecutor::new(self.rb, conn))
         })
     }
 
@@ -198,11 +199,11 @@ impl Debug for RBatisTxExecutor {
 }
 
 impl<'a> RBatisTxExecutor {
-    pub fn new(conn: Box<dyn Connection>) -> Self {
+    pub fn new(rb: RBatis, conn: Box<dyn Connection>) -> Self {
         RBatisTxExecutor {
             tx_id: 0,
             conn: Mutex::new(conn),
-            rb: Default::default(),
+            rb: rb,
             done: false,
         }
     }
