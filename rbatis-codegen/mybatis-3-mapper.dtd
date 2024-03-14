@@ -34,12 +34,12 @@
                 type CDATA #REQUIRED
                 >
 
-        <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST select
                 id CDATA #REQUIRED
                 >
 
-        <!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST insert
                 id CDATA #REQUIRED
 
@@ -47,11 +47,11 @@
 <!--                useGeneratedKeys (true|false) #IMPLIED-->
                 >
 
-        <!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST update
                 id CDATA #REQUIRED
                 >
-        <!ELEMENT delete (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT delete (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST delete
                 id CDATA #REQUIRED
                 >
@@ -71,24 +71,24 @@
                 value CDATA #REQUIRED
                 >
 
-        <!ELEMENT sql (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT sql (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST sql
                 id CDATA #REQUIRED
                 lang CDATA #IMPLIED
                 
                 >
 
-        <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST trim
                 prefix CDATA #IMPLIED
                 prefixOverrides CDATA #IMPLIED
                 suffix CDATA #IMPLIED
                 suffixOverrides CDATA #IMPLIED
                 >
-        <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
-        <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
+        <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
 
-        <!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST foreach
                 collection CDATA #REQUIRED
                 item CDATA #IMPLIED
@@ -99,15 +99,17 @@
                 >
 
         <!ELEMENT choose (when* , otherwise?)>
-        <!ELEMENT when (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT when (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST when
                 test CDATA #REQUIRED
                 >
-        <!ELEMENT otherwise (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT otherwise (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
 
-        <!ELEMENT if (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT if (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST if
                 test CDATA #REQUIRED
                 >
-        <!ELEMENT continue (#PCDATA | include | trim | where | set | foreach | choose | if | bind |  continue)*>
+        <!ELEMENT continue (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST continue>
+        <!ELEMENT break (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
+        <!ATTLIST break>

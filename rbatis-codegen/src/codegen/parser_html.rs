@@ -211,6 +211,9 @@ fn parse(
             "continue" => {
                 impl_continue(x, &mut body, ignore);
             }
+            "break" => {
+                impl_break(x, &mut body, ignore);
+            }
             "" => {
                 let mut string_data = remove_extra(&x.data);
                 let convert_list = find_convert_string(&string_data);
@@ -281,14 +284,14 @@ fn parse(
                 let prefix_overrides = x
                     .attrs
                     .get("start")
-                    .unwrap_or_else(||{
+                    .unwrap_or_else(|| {
                         x.attrs.get("prefixOverrides").unwrap_or(&empty_string)
                     })
                     .to_string();
                 let suffix_overrides = x
                     .attrs
                     .get("end")
-                    .unwrap_or_else(||{
+                    .unwrap_or_else(|| {
                         x.attrs.get("suffixOverrides").unwrap_or(&empty_string)
                     })
                     .to_string();
@@ -323,7 +326,7 @@ fn parse(
                     false,
                     ignore,
                 );
-                let lit_str = LitStr::new(&name,Span::call_site());
+                let lit_str = LitStr::new(&name, Span::call_site());
                 body = quote! {
                     #body
                     //bind
@@ -415,10 +418,10 @@ fn parse(
                     .unwrap_or(&empty_string)
                     .to_string();
 
-                if item.is_empty() {
+                if item.is_empty() || item == "_" {
                     item = def_item;
                 }
-                if findex.is_empty() {
+                if findex.is_empty() || findex == "_" {
                     findex = def_index;
                 }
                 let mut ignores = ignore.clone();
@@ -461,7 +464,7 @@ fn parse(
                 body = quote! {
                     #body
                     #open_impl
-                    for (#index_ident,#item_ident) in #method_impl {
+                    for (ref #index_ident,#item_ident) in #method_impl {
                         #impl_body
                         #split_code
                     }
@@ -601,6 +604,14 @@ fn impl_continue(_x: &Element, body: &mut proc_macro2::TokenStream, _ignore: &mu
          continue
     };
 }
+
+fn impl_break(_x: &Element, body: &mut proc_macro2::TokenStream, _ignore: &mut Vec<String>) {
+    *body = quote! {
+         #body
+         break
+    };
+}
+
 
 fn impl_if(
     test_value: &str,
