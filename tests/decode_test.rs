@@ -27,6 +27,17 @@ mod test {
         assert_eq!(v.to_string(),"invalid type: string \"\", expected i32, key = `aa`");
     }
 
+    //https://github.com/rbatis/rbatis/issues/498
+    #[test]
+    fn test_decode_type_fail_498() {
+        let m = Value::Array(vec![to_value! {
+            "aa": 0.0
+        }]);
+        let v = rbatis::decode::<i64>(m).err().unwrap();
+        assert_eq!(v.to_string(),"invalid type: floating point `0.0`, expected i64");
+    }
+
+
     #[test]
     fn test_decode_one() {
         let date = rbdc::types::datetime::DateTime::now();
