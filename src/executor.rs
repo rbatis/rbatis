@@ -1,7 +1,7 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
-use crate::{utils, Error};
+use crate::Error;
 use dark_std::sync::SyncVec;
 use futures::Future;
 use futures_core::future::BoxFuture;
@@ -10,6 +10,7 @@ use rbdc::rt::tokio::sync::Mutex;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
+use crate::snowflake::new_snowflake_id;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
@@ -73,7 +74,7 @@ impl Executor for RBatisConnExecutor {
     fn exec(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = self.id + utils::timestamp::create_timestamp();
+            let rb_task_id = new_snowflake_id();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
@@ -112,7 +113,7 @@ impl Executor for RBatisConnExecutor {
     fn query(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = self.id + utils::timestamp::create_timestamp();
+            let rb_task_id = new_snowflake_id();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
