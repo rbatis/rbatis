@@ -487,6 +487,58 @@ mod test {
     }
 
     #[test]
+    fn test_update_by_column_skip() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let t = MockTable {
+                id: Some("2".into()),
+                name: Some("2".into()),
+                pc_link: Some("2".into()),
+                h5_link: Some("2".into()),
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(2),
+                remark: Some("2".into()),
+                create_time: Some(DateTime::now()),
+                version: Some(1),
+                delete_flag: Some(1),
+                count: 0,
+            };
+            let r = MockTable::update_by_column_skip(&mut rb, &t, "id",false)
+                .await
+                .unwrap();
+
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,pc_banner_img=?,h5_banner_img=?,sort=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
+            assert_eq!(args.len(), 13);
+            assert_eq!(
+                args,
+                vec![
+                    to_value!(t.name),
+                    to_value!(t.pc_link),
+                    to_value!(t.h5_link),
+                    to_value!(t.pc_banner_img),
+                    to_value!(t.h5_banner_img),
+                    to_value!(t.sort),
+                    to_value!(t.status),
+                    to_value!(t.remark),
+                    to_value!(t.create_time),
+                    to_value!(t.version),
+                    to_value!(t.delete_flag),
+                    to_value!(t.count),
+                    to_value!(t.id),
+                ]
+            );
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_update_by_column_batch() {
         #[derive(Debug)]
         pub struct TestIntercept {

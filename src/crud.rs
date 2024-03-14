@@ -224,29 +224,49 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_update!($table{update_by_column_value(column: &str,column_value: &rbs::Value) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_update!($table{update_by_column_value(column: &str, column_value: &rbs::Value, skip_null: bool) => "`where ${column} = #{column_value}`"},$table_name);
         impl $table {
+            ///  will skip null column
             pub async fn update_by_column(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
                 column: &str) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
-                let columns = rbs::to_value!(table);
-                let column_value = &columns[column];
-                <$table>::update_by_column_value(executor,table,column,column_value).await
+                <$table>::update_by_column_skip(executor,table,column,true).await
             }
 
+            ///will skip null column
             pub async fn update_by_column_batch(
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
                 column: &str,
+                batch_size: u64
+            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+              <$table>::update_by_column_batch_skip(executor,tables,column,batch_size,true).await
+            }
+
+            pub async fn update_by_column_skip(
+                executor: &dyn $crate::executor::Executor,
+                table: &$table,
+                column: &str,
+                skip_null: bool) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
+                let columns = rbs::to_value!(table);
+                let column_value = &columns[column];
+                <$table>::update_by_column_value(executor,table,column,column_value,skip_null).await
+            }
+
+            pub async fn update_by_column_batch_skip(
+                executor: &dyn $crate::executor::Executor,
+                tables: &[$table],
+                column: &str,
                 batch_size: u64,
+                skip_null: bool
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 let mut rows_affected = 0;
                 let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     //todo better way impl batch?
                     for table in &tables[offset as usize..limit as usize]{
-                       rows_affected += <$table>::update_by_column(executor,table,column).await?.rows_affected;
+                       rows_affected += <$table>::update_by_column_skip(executor,table,column,skip_null).await?.rows_affected;
                     }
                 }
                 Ok($crate::rbdc::db::ExecResult{
@@ -269,7 +289,9 @@ macro_rules! impl_update {
                 #[$crate::py_sql("`update ${table_name} set `
                                  trim ',':
                                    for k,v in table:
-                                     if k == column || v== null:
+                                     if k == column:
+                                        continue:
+                                     if v == null && (skip_null == true || skip_null == null):
                                         continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
