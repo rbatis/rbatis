@@ -57,10 +57,10 @@ pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
         Value::Map(map) => {
             if map.len() == 1 {
                 //try one
-                let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
-                if is_array == false {
-                    let (_, value) = map.into_iter().next().unwrap();
-                    return rbs::from_value_ref::<T>(value).map_err(|e| Error::from(e.to_string()));
+                let (_, value) = map.into_iter().next().unwrap();
+                let is_value = rbs::from_value_ref::<T>(value);
+                if is_value.is_ok() {
+                    return Ok(is_value?);
                 }
             }
         }
