@@ -9,6 +9,7 @@ pub trait AsProxy {
     fn u32(&self) -> u32;
     fn u64(&self) -> u64;
     fn f64(&self) -> f64;
+    fn usize(&self) -> usize;
     fn bool(&self) -> bool;
 
     fn string(&self) -> String;
@@ -54,6 +55,10 @@ impl AsProxy for Value {
             _ => vec![],
         }
     }
+
+    fn usize(&self) -> usize {
+        self.as_u64().unwrap_or_default() as usize
+    }
 }
 
 impl AsProxy for bool {
@@ -82,6 +87,14 @@ impl AsProxy for bool {
     }
 
     fn u64(&self) -> u64 {
+        if *self {
+            1
+        } else {
+            0
+        }
+    }
+
+    fn usize(&self) -> usize {
         if *self {
             1
         } else {
@@ -131,6 +144,10 @@ impl AsProxy for String {
         self.parse().unwrap_or_default()
     }
 
+    fn usize(&self) -> usize {
+        self.parse().unwrap_or_default()
+    }
+
     fn f64(&self) -> f64 {
         self.parse().unwrap_or_default()
     }
@@ -162,6 +179,10 @@ impl AsProxy for str {
     }
 
     fn u64(&self) -> u64 {
+        self.parse().unwrap_or_default()
+    }
+
+    fn usize(&self) -> usize {
         self.parse().unwrap_or_default()
     }
 
@@ -199,6 +220,10 @@ macro_rules! as_number {
 
             fn u64(&self) -> u64 {
                 *self as u64
+            }
+
+            fn usize(&self) -> usize {
+                *self as usize
             }
 
             fn f64(&self) -> f64 {

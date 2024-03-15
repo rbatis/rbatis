@@ -182,7 +182,7 @@ macro_rules! impl_numeric_eq {
 }
 
 impl_numeric_eq! {
-    eq_i64[u8 u16 u32 u64]
+    eq_i64[u8 u16 u32 u64 usize]
     eq_i64[i8 i16 i32 i64 isize]
     eq_f64[f32 f64]
     eq_bool[bool]
@@ -215,7 +215,7 @@ impl PartialEq<&$ty> for &$ty{
     };
 }
 
-self_eq!([u8 u16 u32 u64]);
+self_eq!([u8 u16 u32 u64 usize]);
 self_eq!([i8 i16 i32 i64 isize]);
 self_eq!([f32 f64]);
 self_eq!([String & str]);
@@ -284,7 +284,7 @@ fn eq_str_bool(value: &str, other: bool) -> bool {
     }
 }
 impl_str_eq! {
-    eq_str_i64[u8 u16 u32 u64]
+    eq_str_i64[u8 u16 u32 u64 usize]
     eq_str_i64[i8 i16 i32 i64 isize]
     eq_str_f64[f32 f64]
     eq_str_bool[bool]
