@@ -1,7 +1,7 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
-use crate::{Error, RBatis};
+use crate::{Error};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
 use rbdc::db::ExecResult;
@@ -99,30 +99,6 @@ impl LogInterceptor {
     }
 }
 
-/// from  rb
-/// ```rust
-/// use std::sync::Arc;
-/// use log::LevelFilter;
-/// use rbatis::intercept_log::LogInterceptor;
-/// use rbatis::RBatis;
-/// let rb = RBatis::new();
-/// rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
-/// let v=Option::<&LogInterceptor>::from(&rb);
-/// ```
-impl From<&RBatis> for Option<&LogInterceptor> {
-    fn from(value: &RBatis) -> Self {
-        let name = std::any::type_name::<LogInterceptor>();
-        let r = value.get_intercept_dyn(name);
-        match r {
-            None => None,
-            Some(r) => {
-                let call: &LogInterceptor = unsafe { std::mem::transmute_copy(&r) };
-                Some(call)
-            }
-        }
-    }
-}
-
 #[async_trait]
 impl Intercept for LogInterceptor {
     async fn before(
@@ -203,21 +179,3 @@ impl Intercept for LogInterceptor {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use crate::intercept::Intercept;
-    use crate::intercept_log::LogInterceptor;
-    use crate::RBatis;
-    use log::LevelFilter;
-    use std::sync::Arc;
-
-    #[test]
-    fn test_get() {
-        let rb = RBatis::new();
-        rb.intercepts
-            .push(Arc::new(LogInterceptor::new(LevelFilter::Trace)));
-        let intercept = Option::<&LogInterceptor>::from(&rb);
-        assert_eq!(intercept.is_some(), true);
-        println!("{}", intercept.unwrap().name());
-    }
-}

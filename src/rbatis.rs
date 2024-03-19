@@ -250,9 +250,8 @@ impl RBatis {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
-                //this is safe,limit by T::name() == item.name
-                let rf = item.as_ref();
-                let call: &T = unsafe { std::mem::transmute_copy(&rf) };
+                //this is safe
+                let call: &T = unsafe { std::mem::transmute_copy(&item.as_ref()) };
                 return Some(call);
             }
         }
