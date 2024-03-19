@@ -345,10 +345,8 @@ impl RBatisTxExecutor {
 
 pub struct RBatisTxExecutorGuard {
     pub tx: Option<RBatisTxExecutor>,
-    pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send>,
+    pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send + Sync>,
 }
-
-unsafe impl Sync for RBatisTxExecutorGuard {}
 
 impl Debug for RBatisTxExecutorGuard {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
