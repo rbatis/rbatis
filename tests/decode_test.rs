@@ -72,6 +72,14 @@ mod test {
     }
 
     #[test]
+    fn test_decode_string() {
+        let v: String = rbatis::decode(Value::Array(vec![to_value!{
+            "a":"a",
+        }])).unwrap();
+        assert_eq!(v, "a");
+    }
+
+    #[test]
     fn test_decode_json_array() {
         let m = to_value! {
             "1" : 1,
