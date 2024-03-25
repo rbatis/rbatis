@@ -1,6 +1,6 @@
 [package]
 name = "rbdc"
-version = "4.5.28"
+version = "4.5.29"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
@@ -14,15 +14,15 @@ homepage = "https://rbatis.github.io/rbatis.io"
 
 [features]
 default = ["tls-rustls"]
-tls-rustls = ["rustls", "webpki-roots", "rustls-pemfile","tokio-rustls"]
+tls-rustls = ["rustls", "webpki-roots", "rustls-pemfile", "tokio-rustls"]
 tls-native-tls = ["native-tls", "tokio-native-tls"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1", features = ["sync","fs", "net", "rt", "rt-multi-thread", "time", "io-util","macros"] }
-tokio-rustls = {version= "0.25.0", optional = true}
-rustls = { version = "0.22.2", optional = true }
+tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util", "macros"] }
+tokio-rustls = { version = "0.26.0", default-features = false, optional = true, features = ["ring"] }
+rustls = { version = "0.23.3", default-features = false, optional = true, features = ["ring"] }
 webpki-roots = { version = "0.26.0", optional = true }
 rustls-pemfile = { version = "2.0.0", optional = true }
 log = "0.4"
@@ -41,6 +41,6 @@ serde_bytes = "0.11.6"
 async-trait = "0.1.56"
 uuid = { version = "1.1", features = ["v4"] }
 itoa = "1.0"
-bigdecimal = {version = "0.4.1",features = ["serde"]}
+bigdecimal = { version = "0.4.1", features = ["serde"] }
 lru = "0.12.0"
 once_cell = "1.18.0"
