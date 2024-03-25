@@ -210,7 +210,7 @@ impl DateTimeFromDateTimeFixedOffset for fastdate::DateTime {
                 .expect("value can not be represented in a timestamp with nanosecond precision.")
                 as i128,
         )
-        .set_offset(offset_sec())
+        .set_offset(arg.offset().local_minus_utc())
     }
 }
 
