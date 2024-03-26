@@ -1,12 +1,14 @@
 # doc see [website](https://rbatis.github.io/rbatis.io/#/)
 
-# 1 It is recommended to clone this project using Intellij Clion/VSCode
+## setup
 
-# 2 next,you should run command `git clone https://github.com/rbatis/example.git`
+* 1 It is recommended to clone this project using Intellij Clion/VSCode
 
-# 3 next,you should run command `git pull`
+* 2 next,you should run command `git clone https://github.com/rbatis/example.git`
 
-# 4 next,you should run command `cargo update`
+* 3 next,you should run command `git pull`
+
+* 4 next,you should run command `cargo update`
 
 
 ### These examples provide a comprehensive overview of rbatis's features and functionalities.
