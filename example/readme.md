@@ -4,7 +4,7 @@
 
 * 1 It is recommended to clone this project using Intellij Clion/VSCode
 
-* 2 next,you should run command `git clone https://github.com/rbatis/example.git`
+* 2 next,you should run command `git clone https://github.com/rbatis/rbatis.git`
 
 * 3 next,you should run command `git pull`
 
