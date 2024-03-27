@@ -78,11 +78,12 @@ impl DerefMut for Uuid {
 
 #[cfg(test)]
 mod test {
-    use uuid::Uuid;
+    use crate::Uuid;
 
     #[test]
     fn test_default() {
         let u = Uuid::default();
         println!("{}", u);
+        assert_eq!(u.to_string(),"Uuid(00000000-0000-0000-0000-000000000000)");
     }
 }
