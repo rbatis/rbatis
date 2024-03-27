@@ -8,7 +8,9 @@ members = [
     "rbdc-sqlite",
     "rbdc-mssql",
     "rbatis-macro-driver",
-    "rbdc-pool-fast"]
+    "rbdc-pool-fast",
+    "example"
+]
 
 [package]
 name = "rbatis"

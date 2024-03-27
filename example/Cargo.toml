@@ -1,0 +1,107 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = ["zhuxiujia <zhuxiujia@qq.com>"]
+edition = "2021"
+publish = false
+
+
+[[bin]]
+name = "macro_proc_htmlsql"
+path = "src/macro_proc_htmlsql.rs"
+
+[[bin]]
+name = "macro_proc_htmlsql_custom_func"
+path = "src/macro_proc_htmlsql_custom_func.rs"
+
+[[bin]]
+name = "macro_proc_pysql"
+path = "src/macro_proc_pysql.rs"
+
+[[bin]]
+name = "macro_proc_pysql_file"
+path = "src/macro_proc_pysql_file.rs"
+
+[[bin]]
+name = "macro_proc_rawsql"
+path = "src/macro_proc_rawsql.rs"
+
+[[bin]]
+name = "crud"
+path = "src/crud.rs"
+[[bin]]
+name = "crud_insert"
+path = "src/crud_insert.rs"
+[[bin]]
+name = "crud_delete"
+path = "src/crud_delete.rs"
+[[bin]]
+name = "crud_select"
+path = "src/crud_select.rs"
+[[bin]]
+name = "crud_select_page"
+path = "src/crud_select_page.rs"
+[[bin]]
+name = "crud_update"
+path = "src/crud_update.rs"
+[[bin]]
+name = "crud_map"
+path = "src/crud_map.rs"
+[[bin]]
+name = "crud_sql"
+path = "src/crud_sql.rs"
+[[bin]]
+name = "crud_json"
+path = "src/crud_json.rs"
+[[bin]]
+name = "plugin_table_sync"
+path = "src/plugin_table_sync.rs"
+[[bin]]
+name = "transaction"
+path = "src/transaction.rs"
+[[bin]]
+name = "raw_sql"
+path = "src/raw_sql.rs"
+[[bin]]
+name = "macro_proc_htmlsql_page_file"
+path = "src/macro_proc_htmlsql_page_file.rs"
+[[bin]]
+name = "macro_proc_htmlsql_page"
+path = "src/macro_proc_htmlsql_page.rs"
+[[bin]]
+name = "macro_proc_htmlsql_file"
+path = "src/macro_proc_htmlsql_file.rs"
+[[bin]]
+name = "table_extend"
+path = "src/table_extend.rs"
+[[bin]]
+name = "plugin_intercept"
+path = "src/plugin_intercept.rs"
+[[bin]]
+name = "init_pool"
+path = "src/custom_pool.rs"
+[[bin]]
+name = "plugin_intercept_log"
+path = "src/plugin_intercept_log.rs"
+[[bin]]
+name = "plugin_intercept_returing_id"
+path = "src/plugin_intercept_returing_id.rs"
+[dependencies]
+#test pool custom
+deadpool = "0.10.0"
+futures-core = { version = "0.3.19" }
+
+#serde and base types
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+#log lib
+log = "0.4"
+fast_log = "1.6"
+#async runtime lib
+tokio = { version = "1", features = ["full"] }
+rbs = { version = "4.5", path = "../rbs" }
+rbatis = { version = "4.5", features = ["debug_mode"], path = "../" }
+rbdc-sqlite = { version = "4.5", path = "../rbdc-sqlite" }
+rbdc-mysql = { version = "4.5", path = "../rbdc-mysql" }
+rbdc-pg = { version = "4.5", path = "../rbdc-pg" }
+rbdc-mssql = { version = "4.5", path = "../rbdc-mssql" }
