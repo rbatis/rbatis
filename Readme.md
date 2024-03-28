@@ -360,7 +360,10 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 - [x] customize connection pooling,connection pool add more dynamically configured parameters
 - [ ] V5 version
 
-# Contact/donation, or click on star [rbatis](https://github.com/rbatis/rbatis)
+# Ask AI For Help
+
+<img style="width: 200px;height: 300px;" width="200" height="300" src="ai.jpg" alt="" />
+
 
 * [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
