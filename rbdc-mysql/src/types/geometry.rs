@@ -10,7 +10,7 @@ pub struct Geometry(pub Vec<u8>);
 
 impl Display for Geometry {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Geometry({})", hex::encode(&self.0))
+        write!(f, "{}", hex::encode(&self.0))
     }
 }
 

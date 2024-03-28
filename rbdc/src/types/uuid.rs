@@ -24,7 +24,7 @@ impl<'de> serde::Deserialize<'de> for Uuid {
 
 impl Display for Uuid {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Uuid({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -84,6 +84,6 @@ mod test {
     fn test_default() {
         let u = Uuid::default();
         println!("{}", u);
-        assert_eq!(u.to_string(),"Uuid(00000000-0000-0000-0000-000000000000)");
+        assert_eq!(u.to_string(),"00000000-0000-0000-0000-000000000000");
     }
 }

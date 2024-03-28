@@ -40,6 +40,14 @@ pub async fn main() {
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
     rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
+    sync_table(&rb).await;
+
+    let data = Activity::select_by_method(&rb, &["221", "222"]).await;
+    println!("select_by_method = {}", json!(data));
+}
+
+
+async fn sync_table(rb: &RBatis) {
     fast_log::LOGGER.set_level(LevelFilter::Off);
     _=RBatis::sync(&rb.acquire().await.unwrap(), &SqliteTableMapper{}, &Activity{
         id: Some(String::new()),
@@ -56,7 +64,4 @@ pub async fn main() {
         delete_flag: Some(0),
     }, "activity").await;
     fast_log::LOGGER.set_level(LevelFilter::Debug);
-
-    let data = Activity::select_by_method(&rb, &["221", "222"]).await;
-    println!("select_by_method = {}", json!(data));
 }
