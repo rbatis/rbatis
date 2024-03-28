@@ -39,22 +39,8 @@ pub async fn main() {
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
     rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
-    fast_log::LOGGER.set_level(LevelFilter::Off);
-    _=RBatis::sync(&rb.acquire().await.unwrap(), &SqliteTableMapper{}, &Activity{
-        id: Some(String::new()),
-        name: Some(String::new()),
-        pc_link: Some(String::new()),
-        h5_link: Some(String::new()),
-        pc_banner_img: Some(String::new()),
-        h5_banner_img: Some(String::new()),
-        sort: Some(String::new()),
-        status: Some(0),
-        remark: Some(String::new()),
-        create_time: Some(DateTime::now()),
-        version: Some(0),
-        delete_flag: Some(0),
-    }, "activity").await;
-    fast_log::LOGGER.set_level(LevelFilter::Debug);
+    sync_table(&rb).await;
+
     let table = Activity {
         id: Some("1".into()),
         name: Some("1".into()),
@@ -102,4 +88,23 @@ pub async fn main() {
     }];
     let data = Activity::insert_batch(&rb, &tables, 10).await;
     println!("insert_batch = {}", json!(data));
+}
+
+async fn sync_table(rb: &RBatis) {
+    fast_log::LOGGER.set_level(LevelFilter::Off);
+    _=RBatis::sync(&rb.acquire().await.unwrap(), &SqliteTableMapper{}, &Activity{
+        id: Some(String::new()),
+        name: Some(String::new()),
+        pc_link: Some(String::new()),
+        h5_link: Some(String::new()),
+        pc_banner_img: Some(String::new()),
+        h5_banner_img: Some(String::new()),
+        sort: Some(String::new()),
+        status: Some(0),
+        remark: Some(String::new()),
+        create_time: Some(DateTime::now()),
+        version: Some(0),
+        delete_flag: Some(0),
+    }, "activity").await;
+    fast_log::LOGGER.set_level(LevelFilter::Debug);
 }
