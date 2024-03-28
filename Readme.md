@@ -360,7 +360,7 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 - [x] customize connection pooling,connection pool add more dynamically configured parameters
 - [ ] V5 version
 
-# Ask AI For Help
+# Ask AI For Help(AI帮助)
 
 <img style="width: 200px;height: 300px;" width="200" height="300" src="ai.jpg" alt="" />
 
