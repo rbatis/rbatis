@@ -37,7 +37,7 @@ impl Display for Timestamptz {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Timestamptz({})",
+            "{}",
             fastdate::DateTime::from_timestamp_millis(self.0 as i64).set_offset(self.1)
         )
     }

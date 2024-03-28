@@ -154,7 +154,6 @@ impl Decode for BigDecimal {
 #[cfg(test)]
 mod bigdecimal_to_pgnumeric {
     use super::{BigDecimal, PgNumeric, PgNumericSign};
-    use std::convert::TryFrom;
 
     #[test]
     fn zero() {

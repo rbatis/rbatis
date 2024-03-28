@@ -23,7 +23,7 @@ pub struct Money(pub i64);
 
 impl Display for Money {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Money({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
