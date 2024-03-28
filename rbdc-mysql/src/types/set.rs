@@ -10,7 +10,7 @@ pub struct Set(pub String);
 
 impl Display for Set {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Set({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 

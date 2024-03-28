@@ -10,7 +10,7 @@ pub struct Date(pub fastdate::Date);
 
 impl Display for Date {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Date({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 

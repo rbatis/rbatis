@@ -10,7 +10,7 @@ pub struct Year(pub u16);
 
 impl Display for Year {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Year({})", self.0)
+        write!(f, "{}", self.0)
     }
 }
 
