@@ -854,13 +854,13 @@ mod test {
         let v = Value::Array(vec![Value::I32(1), Value::I32(2), Value::I32(3)]);
         for (k, v) in &v {
             if Value::I32(1).eq(v) {
-                assert_eq!(&Value::U32(0), k.as_ref());
+                assert_eq!(&Value::U32(0), &k);
             }
             if Value::I32(2).eq(v) {
-                assert_eq!(&Value::U32(1), k.as_ref());
+                assert_eq!(&Value::U32(1), &k);
             }
             if Value::I32(3).eq(v) {
-                assert_eq!(&Value::U32(2), k.as_ref());
+                assert_eq!(&Value::U32(2), &k);
             }
         }
     }

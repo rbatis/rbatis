@@ -35,6 +35,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: --workspace
       - name: Run cargo tarpaulin
         if: matrix.os == 'ubuntu-latest' && matrix.version == 'stable'
         run: |
