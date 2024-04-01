@@ -24,8 +24,9 @@ pub async fn main() {
 }
 
 mod my_pool {
+    use std::borrow::Cow;
     use deadpool::managed::{Metrics, Object, RecycleError, RecycleResult, Timeouts};
-    use deadpool::{async_trait, Status};
+    use deadpool::{Status};
     use futures_core::future::BoxFuture;
     use rbatis::rbdc::db::{Connection, ExecResult, Row};
     use rbatis::rbdc::pool::conn_manager::ConnManager;
@@ -34,6 +35,7 @@ mod my_pool {
     use rbs::{to_value, Value};
     use std::fmt::{Debug, Formatter};
     use std::time::Duration;
+    use rbatis::async_trait;
     use rbatis::rbdc::pool::conn_box::ConnectionBox;
     use rbs::value::map::ValueMap;
 
@@ -140,7 +142,6 @@ mod my_pool {
         pub conn: Option<Object<ConnManagerProxy>>,
     }
 
-    #[async_trait]
     impl deadpool::managed::Manager for ConnManagerProxy {
         type Type = ConnectionBox;
 
@@ -156,7 +157,7 @@ mod my_pool {
             _metrics: &Metrics,
         ) -> RecycleResult<Self::Error> {
             if obj.conn.is_none() {
-                return Err(RecycleError::StaticMessage("none"));
+                return Err(RecycleError::Message(Cow::Owned("none".to_string())));
             }
             self.inner.check(obj).await?;
             Ok(())
