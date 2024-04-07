@@ -139,7 +139,7 @@ impl SqliteConnectOptions {
             filename: Cow::Borrowed(Path::new(":memory:")),
             in_memory: false,
             read_only: false,
-            create_if_missing: false,
+            create_if_missing: true,
             shared_cache: false,
             statement_cache_capacity: 100,
             busy_timeout: Duration::from_secs(5),
@@ -376,7 +376,6 @@ impl ConnectOptions for SqliteConnectOptions {
 
     fn set_uri(&mut self, uri: &str) -> Result<(), Error> {
         *self = SqliteConnectOptions::from_str(uri).map_err(|e| Error::from(e.to_string()))?;
-        self.create_if_missing = true;
         Ok(())
     }
 }

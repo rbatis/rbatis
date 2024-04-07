@@ -362,7 +362,9 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 # Ask AI For Help(AI帮助)
 
+<a href="https://chatglm.cn/main/gdetail/6604ffe818d17f1aaa8d9cf8">
 <img style="width: 200px;height: 300px;" width="200" height="300" src="ai.jpg" alt="" />
+</a>
 
 
 * [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
