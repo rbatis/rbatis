@@ -150,10 +150,10 @@ macro_rules! impl_insert {
 /// pub struct MockTable{ pub id: Option<String> }
 /// /// default
 ///rbatis::impl_select!(MockTable{});
-///rbatis::impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "where id = #{id} and name = #{name}"});
+///rbatis::impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 /// /// container result
-///rbatis::impl_select!(MockTable{select_by_id(id:String) -> Option => "where id = #{id} limit 1"});
-///rbatis::impl_select!(MockTable{select_by_id2(id:String) -> Vec => "where id = #{id} limit 1"});
+///rbatis::impl_select!(MockTable{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
+///rbatis::impl_select!(MockTable{select_by_id2(id:String) -> Vec => "`where id = #{id} limit 1`"});
 ///
 /// //usage
 /// async fn test_select(rb:&RBatis) -> Result<(),Error>{
