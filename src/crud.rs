@@ -672,7 +672,7 @@ macro_rules! pysql {
 }
 
 /// use macro wrapper #[html_sql]
-/// for example:
+/// for example query rbs::Value:
 /// ```rust
 /// use rbatis::executor::Executor;
 /// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
@@ -686,6 +686,20 @@ macro_rules! pysql {
 /// use rbatis::executor::Executor;
 /// use rbdc::db::ExecResult;
 /// rbatis::htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis::Error> => "example/example.html");
+/// ```
+/// or query table
+/// ```rust
+/// use rbatis::executor::Executor;
+/// #[derive(serde::Serialize, serde::Deserialize)]
+/// pub struct MyTable{
+///      pub id:Option<u64>,
+///      pub name:Option<String>,
+/// }
+/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis::Error> => r#"<mapper>
+///             <select id="test_same_id">
+///             select ${id},${id},#{id},#{id}
+///             </select>
+///             </mapper>"#);
 /// ```
 #[macro_export]
 macro_rules! htmlsql {
