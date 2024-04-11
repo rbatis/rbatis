@@ -675,7 +675,7 @@ macro_rules! pysql {
 /// for example query rbs::Value:
 /// ```rust
 /// use rbatis::executor::Executor;
-/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"
+/// rbatis::htmlsql!(test_select_column(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"
 ///             <mapper>
 ///             <select id="test_same_id">
 ///               `select ${id} from my_table`
@@ -696,7 +696,7 @@ macro_rules! pysql {
 ///      pub id:Option<u64>,
 ///      pub name:Option<String>,
 /// }
-/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis::Error> => r#"
+/// rbatis::htmlsql!(test_select_table(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis::Error> => r#"
 ///             <mapper>
 ///               <select id="test_same_id">
 ///                 `select * from my_table`
