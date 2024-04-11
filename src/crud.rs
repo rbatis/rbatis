@@ -646,13 +646,21 @@ macro_rules! raw_sql {
 }
 
 /// use macro wrapper #[py_sql]
-/// for example:
+/// for query example:
 /// ```rust
 /// use rbatis::executor::Executor;
 /// rbatis::pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> =>
 /// "select * from table where ${id} = 1
 ///  if id != 0:
 ///    `id = #{id}`"
+/// );
+/// ```
+/// for exec example:
+/// ```rust
+/// use rbatis::executor::Executor;
+/// use rbdc::db::ExecResult;
+/// rbatis::pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis::Error> =>
+/// "`update activity set name = '1' where id = #{id}`"
 /// );
 /// ```
 #[macro_export]
