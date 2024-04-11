@@ -72,4 +72,7 @@
             </if>
         </where>
     </select>
+    <update id="update_by_id">
+        update activity set name = '1' where id = #{id}
+    </update>
 </mapper>
