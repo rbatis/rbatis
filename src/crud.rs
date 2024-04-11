@@ -675,19 +675,20 @@ macro_rules! pysql {
 /// for example query rbs::Value:
 /// ```rust
 /// use rbatis::executor::Executor;
-/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"<mapper>
+/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis::Error> => r#"
+///             <mapper>
 ///             <select id="test_same_id">
-///             select ${id},${id},#{id},#{id}
+///               `select ${id} from my_table`
 ///             </select>
 ///             </mapper>"#);
 /// ```
-/// or load from file
+/// exec (from file)
 /// ```rust
 /// use rbatis::executor::Executor;
 /// use rbdc::db::ExecResult;
 /// rbatis::htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis::Error> => "example/example.html");
 /// ```
-/// or query table
+/// query
 /// ```rust
 /// use rbatis::executor::Executor;
 /// #[derive(serde::Serialize, serde::Deserialize)]
@@ -695,10 +696,11 @@ macro_rules! pysql {
 ///      pub id:Option<u64>,
 ///      pub name:Option<String>,
 /// }
-/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis::Error> => r#"<mapper>
-///             <select id="test_same_id">
-///             select ${id},${id},#{id},#{id}
-///             </select>
+/// rbatis::htmlsql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis::Error> => r#"
+///             <mapper>
+///               <select id="test_same_id">
+///                 `select * from my_table`
+///               </select>
 ///             </mapper>"#);
 /// ```
 #[macro_export]
