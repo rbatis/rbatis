@@ -28,10 +28,7 @@ pub struct Activity {
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
 #[html_sql(
-    r#"
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
-<select id="select_by_condition">
+r#"<select id="select_by_condition">
         `select * from activity`
         <where>
          <if test="a">
