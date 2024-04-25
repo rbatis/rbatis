@@ -17,8 +17,8 @@ pub async fn main() {
     let _ = rb
         .init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(SqliteDriver {}, opts);
     //set pool max size
-    let _ = rb.get_pool().unwrap().set_max_open_conns(100);
-    let _ = rb.get_pool().unwrap().set_max_idle_conns(100);
+    let _ = rb.get_pool().unwrap().set_max_open_conns(100).await;
+    let _ = rb.get_pool().unwrap().set_max_idle_conns(100).await;
     let _ = rb.get_pool().unwrap().get().await;
     println!(">>>>> state={}", rb.get_pool().unwrap().state().await);
 }
