@@ -76,9 +76,11 @@ impl Intercept for DisableLogIntercept {
     }
 
     async fn after(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
-        if sql.contains("delete from ") {
-            //return Ok(false) will be skip next Intercept!
-            return Ok(Some(false));
+        for x in &self.skip_sql {
+            if sql.contains(x) {
+                //return Ok(false) will be skip next Intercept!
+                return Ok(Some(false));
+            }
         }
         Ok(Some(true))
     }
