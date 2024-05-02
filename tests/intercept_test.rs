@@ -174,17 +174,19 @@ mod test {
             _sql: &mut String,
             _args: &mut Vec<Value>,
             result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<bool, Error> {
+        ) -> Result<Option<bool>, Error> {
             match result {
                 ResultType::Exec(v) => {
                     *v = Ok(ExecResult {
                         rows_affected: 1,
                         last_insert_id: Value::U64(1),
                     });
+                    Ok(None)
                 }
-                ResultType::Query(_) => {}
+                ResultType::Query(_) => {
+                    Ok(Some(true))
+                }
             }
-            Ok(false)
         }
     }
 

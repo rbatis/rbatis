@@ -86,7 +86,11 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return before_result;
                 }
             }
@@ -102,7 +106,11 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return result;
                 }
             }
@@ -125,7 +133,11 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return before_result.map(|v| Value::from(v));
                 }
             }
@@ -142,7 +154,11 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return result.map(|v| Value::from(v));
                 }
             }
@@ -262,7 +278,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return before_result;
                 }
             }
@@ -278,7 +298,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return result;
                 }
             }
@@ -300,7 +324,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if next {
+                        break;
+                    }
+                } else {
                     return before_result.map(|v| Value::from(v));
                 }
             }
@@ -318,7 +346,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                if !next {
+                if let Some(next) = next {
+                    if !next {
+                        break;
+                    }
+                } else {
                     return result.map(|v| Value::from(v));
                 }
             }

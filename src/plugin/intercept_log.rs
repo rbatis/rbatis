@@ -108,9 +108,9 @@ impl Intercept for LogInterceptor {
         sql: &mut String,
         args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
+    ) -> Result<Option<bool>, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return Ok(true);
+            return Ok(Some(true));
         }
         let level = self.to_level().unwrap();
         //send sql/args
@@ -121,7 +121,7 @@ impl Intercept for LogInterceptor {
             &sql,
             RbsValueDisplay::new(args)
         );
-        return Ok(true);
+        return Ok(Some(true));
     }
 
     async fn after(
@@ -131,9 +131,9 @@ impl Intercept for LogInterceptor {
         _sql: &mut String,
         _args: &mut Vec<Value>,
         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
+    ) -> Result<Option<bool>, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return Ok(true);
+            return Ok(Some(true));
         }
         let level = self.to_level().unwrap();
         //ResultType
@@ -165,6 +165,6 @@ impl Intercept for LogInterceptor {
                 }
             },
         }
-        return Ok(true);
+        return Ok(Some(true));
     }
 }

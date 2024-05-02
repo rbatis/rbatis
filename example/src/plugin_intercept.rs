@@ -23,7 +23,7 @@ impl Intercept for LogicDeleteIntercept {
         sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
+    ) -> Result<Option<bool>, Error> {
         if sql.contains("delete from ") {
             let table_name =
                 sql[sql.find("from").unwrap_or(0) + 4..sql.find("where").unwrap_or(0)].trim();
@@ -38,7 +38,7 @@ impl Intercept for LogicDeleteIntercept {
             sql.push_str(" and delete_flag = 0 ");
             println!("[LogicDeletePlugin] after=> {}", sql);
         }
-        Ok(true)
+        Ok(Some(true))
     }
 }
 
