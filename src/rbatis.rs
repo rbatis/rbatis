@@ -311,6 +311,7 @@ impl RBatis {
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table_mysql(conn: &dyn Executor){
+    ///      //empty string: auto create type,  "VARCHAR(50)" -> sqlite type
     ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
     ///      let _ = RBatis::sync(conn,&MysqlTableMapper{},&table,"user").await;
     /// }
