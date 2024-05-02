@@ -4,9 +4,9 @@ extern crate rbatis;
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
-use rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
+use rbatis::RBatis;
 use serde_json::json;
 
 /// table
@@ -28,7 +28,7 @@ pub struct Activity {
 
 // Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
 #[html_sql(
-r#"<select id="select_by_condition">
+    r#"<select id="select_by_condition">
         `select * from activity`
         <where>
          <if test="a">
@@ -64,8 +64,14 @@ async fn select_by_condition(
 
 #[tokio::main]
 pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug));
-    defer!(||{log::logger().flush();});
+    _ = fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    );
+    defer!(|| {
+        log::logger().flush();
+    });
 
     //use static ref
     let rb = RBatis::new();
@@ -73,23 +79,33 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     // table sync done
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    _=RBatis::sync(&rb.acquire().await.unwrap(), &SqliteTableMapper{}, &Activity{
-        id: Some(String::new()),
-        name: Some(String::new()),
-        pc_link: Some(String::new()),
-        h5_link: Some(String::new()),
-        pc_banner_img: Some(String::new()),
-        h5_banner_img: Some(String::new()),
-        sort: Some(String::new()),
-        status: Some(0),
-        remark: Some(String::new()),
-        create_time: Some(DateTime::now()),
-        version: Some(0),
-        delete_flag: Some(0),
-    }, "activity").await;
+    _ = RBatis::sync(
+        &rb.acquire().await.unwrap(),
+        &SqliteTableMapper {},
+        &Activity {
+            id: Some(String::new()),
+            name: Some(String::new()),
+            pc_link: Some(String::new()),
+            h5_link: Some(String::new()),
+            pc_banner_img: Some(String::new()),
+            h5_banner_img: Some(String::new()),
+            sort: Some(String::new()),
+            status: Some(0),
+            remark: Some(String::new()),
+            create_time: Some(DateTime::now()),
+            version: Some(0),
+            delete_flag: Some(0),
+        },
+        "activity",
+    )
+    .await;
     fast_log::LOGGER.set_level(LevelFilter::Debug);
 
     let a = select_by_condition(&rb, "test", &DateTime::now(), false)

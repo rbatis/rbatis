@@ -1,14 +1,14 @@
 use crate::Value;
+use indexmap::IndexMap;
 use serde::de::{MapAccess, Visitor};
 use serde::ser::SerializeMap;
 use serde::{Deserializer, Serializer};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::{Index, IndexMut};
-use indexmap::IndexMap;
 
 #[derive(PartialEq)]
-pub struct ValueMap(pub IndexMap<Value,Value>);
+pub struct ValueMap(pub IndexMap<Value, Value>);
 
 impl serde::Serialize for ValueMap {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -63,7 +63,7 @@ impl Clone for ValueMap {
 
 impl Debug for ValueMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Debug::fmt(&self.0,f)
+        std::fmt::Debug::fmt(&self.0, f)
     }
 }
 
@@ -102,15 +102,14 @@ impl ValueMap {
         self.remove(k)
     }
 
-    pub fn len(&self) -> usize{
+    pub fn len(&self) -> usize {
         self.0.len()
     }
 
-    pub fn is_empty(&self)-> bool{
+    pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 }
-
 
 impl Index<&str> for ValueMap {
     type Output = Value;

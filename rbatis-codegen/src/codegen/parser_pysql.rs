@@ -1,6 +1,7 @@
 use crate::codegen::parser_html::parse_html;
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree_pysql::bind_node::BindNode;
+use crate::codegen::syntax_tree_pysql::break_node::BreakNode;
 use crate::codegen::syntax_tree_pysql::choose_node::ChooseNode;
 use crate::codegen::syntax_tree_pysql::continue_node::ContinueNode;
 use crate::codegen::syntax_tree_pysql::error::Error;
@@ -17,7 +18,6 @@ use crate::codegen::ParseArgs;
 use quote::ToTokens;
 use std::collections::HashMap;
 use syn::ItemFn;
-use crate::codegen::syntax_tree_pysql::break_node::BreakNode;
 
 pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error>;
@@ -241,7 +241,9 @@ impl NodeType {
             }));
         } else if trim_express.starts_with(TrimNode::name()) {
             let trim_express = trim_express.trim().trim_start_matches("trim ").trim();
-            if trim_express.starts_with("'") && trim_express.ends_with("'") || trim_express.starts_with("`") && trim_express.ends_with("`") {
+            if trim_express.starts_with("'") && trim_express.ends_with("'")
+                || trim_express.starts_with("`") && trim_express.ends_with("`")
+            {
                 let mut trim_express = trim_express;
                 if trim_express.starts_with("`") && trim_express.ends_with("`") {
                     trim_express = trim_express.trim_start_matches("`").trim_end_matches("`");
@@ -260,7 +262,8 @@ impl NodeType {
                 for mut expr in express {
                     expr = expr.trim();
                     if expr.starts_with("start") {
-                        prefix = expr.trim_start_matches("start")
+                        prefix = expr
+                            .trim_start_matches("start")
                             .trim()
                             .trim_start_matches("=")
                             .trim()
@@ -269,7 +272,8 @@ impl NodeType {
                             .trim_start_matches("`")
                             .trim_end_matches("`");
                     } else if expr.starts_with("end") {
-                        suffix = expr.trim_start_matches("end")
+                        suffix = expr
+                            .trim_start_matches("end")
                             .trim()
                             .trim_start_matches("=")
                             .trim()

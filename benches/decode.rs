@@ -41,12 +41,11 @@ fn bench_rbatis_decode_map(b: &mut Bencher) {
     });
 }
 
-
 #[bench]
 fn bench_rbs_decode_inner(b: &mut Bencher) {
     let m = Value::Array(vec![to_value! {
-            "aa": 0
-        }]);
+        "aa": 0
+    }]);
     b.iter(|| {
         rbatis::decode_ref::<i64>(&m).unwrap();
     });

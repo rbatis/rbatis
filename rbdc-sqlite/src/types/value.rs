@@ -7,8 +7,8 @@ use rbs::Value;
 
 impl Decode for Value {
     fn decode(value: SqliteValue) -> Result<Self, Error>
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         if value.type_info_opt().is_none() {
             return Ok(Value::Null);

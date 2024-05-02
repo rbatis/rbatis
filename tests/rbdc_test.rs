@@ -4,12 +4,11 @@ mod test {
     use rbdc::impl_exchange;
     use rbs::Value;
 
-
     #[test]
     fn test_bytes_iter() {
         let bytes1 = rbdc::Bytes::from(vec![1u8]);
-        for v in bytes1{
-            assert_eq!(v,1u8);
+        for v in bytes1 {
+            assert_eq!(v, 1u8);
         }
     }
 

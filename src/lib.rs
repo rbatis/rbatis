@@ -3,7 +3,7 @@ pub extern crate rbatis_codegen;
 extern crate rbatis_macro_driver;
 pub extern crate rbdc;
 
-pub use rbatis_macro_driver::{html_sql, py_sql, sql, snake_name};
+pub use rbatis_macro_driver::{html_sql, py_sql, snake_name, sql};
 
 pub mod plugin;
 

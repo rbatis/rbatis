@@ -6,6 +6,7 @@ use crate::types::decode::{
     uint_decode,
 };
 use crate::types::enums::Enum;
+use crate::types::json::{decode_json, encode_json};
 use crate::types::set::Set;
 use crate::types::year::Year;
 use crate::types::{Decode, Encode, TypeInfo};
@@ -19,7 +20,6 @@ use rbdc::uuid::Uuid;
 use rbdc::{Error, Json};
 use rbs::Value;
 use std::str::FromStr;
-use crate::types::json::{decode_json, encode_json};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> MySqlTypeInfo {
@@ -105,8 +105,8 @@ impl Encode for Value {
                 buf.put_bytes_lenenc(v);
                 Ok(0)
             }
-            Value::Array(v) => encode_json(Value::Array(v),buf),
-            Value::Map(v) => encode_json(Value::Map(v),buf),
+            Value::Array(v) => encode_json(Value::Array(v), buf),
+            Value::Map(v) => encode_json(Value::Map(v), buf),
             Value::Ext(ext_type, v) => {
                 match ext_type {
                     "Uuid" => {
@@ -138,7 +138,7 @@ impl Encode for Value {
                     "Json" => {
                         let json_str = v.into_string().unwrap_or_default();
                         Json(json_str).encode(buf)
-                    },
+                    }
                     "Enum" => Enum(v.into_string().unwrap_or_default()).encode(buf),
                     "Set" => Set(v.into_string().unwrap_or_default()).encode(buf),
                     _ => {

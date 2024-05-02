@@ -54,9 +54,7 @@ impl Index<&str> for Value {
 impl IndexMut<&str> for Value {
     fn index_mut(&mut self, index: &str) -> &mut Self::Output {
         match self {
-            Value::Map(m) => {
-                m.index_mut(index)
-            }
+            Value::Map(m) => m.index_mut(index),
             Value::Ext(_, ext) => {
                 return ext.index_mut(index);
             }
@@ -70,41 +68,37 @@ impl IndexMut<&str> for Value {
 impl Value {
     pub fn insert(&mut self, key: Value, value: Value) -> Option<Value> {
         match self {
-            Value::Null => { None }
-            Value::Bool(_) => { None }
-            Value::I32(_) => { None }
-            Value::I64(_) => { None }
-            Value::U32(_) => { None }
-            Value::U64(_) => { None }
-            Value::F32(_) => { None }
-            Value::F64(_) => { None }
-            Value::String(_) => { None }
-            Value::Binary(_) => { None }
+            Value::Null => None,
+            Value::Bool(_) => None,
+            Value::I32(_) => None,
+            Value::I64(_) => None,
+            Value::U32(_) => None,
+            Value::U64(_) => None,
+            Value::F32(_) => None,
+            Value::F64(_) => None,
+            Value::String(_) => None,
+            Value::Binary(_) => None,
             Value::Array(arr) => {
                 arr.insert(key.as_u64().unwrap_or_default() as usize, value);
                 None
             }
-            Value::Map(m) => {
-                m.insert(key, value)
-            }
-            Value::Ext(_, m) => {
-                m.insert(key, value)
-            }
+            Value::Map(m) => m.insert(key, value),
+            Value::Ext(_, m) => m.insert(key, value),
         }
     }
 
     pub fn remove(&mut self, key: &Value) -> Value {
         match self {
-            Value::Null => { Value::Null }
-            Value::Bool(_) => { Value::Null }
-            Value::I32(_) => { Value::Null }
-            Value::I64(_) => { Value::Null }
-            Value::U32(_) => { Value::Null }
-            Value::U64(_) => { Value::Null }
-            Value::F32(_) => { Value::Null }
-            Value::F64(_) => { Value::Null }
-            Value::String(_) => { Value::Null }
-            Value::Binary(_) => { Value::Null }
+            Value::Null => Value::Null,
+            Value::Bool(_) => Value::Null,
+            Value::I32(_) => Value::Null,
+            Value::I64(_) => Value::Null,
+            Value::U32(_) => Value::Null,
+            Value::U64(_) => Value::Null,
+            Value::F32(_) => Value::Null,
+            Value::F64(_) => Value::Null,
+            Value::String(_) => Value::Null,
+            Value::Binary(_) => Value::Null,
             Value::Array(arr) => {
                 let index = key.as_u64().unwrap_or_default() as usize;
                 if index >= arr.len() {
@@ -112,10 +106,8 @@ impl Value {
                 }
                 arr.remove(index)
             }
-            Value::Map(m) => {
-                m.remove(key)
-            }
-            Value::Ext(_, e) => { e.remove(key) }
+            Value::Map(m) => m.remove(key),
+            Value::Ext(_, e) => e.remove(key),
         }
     }
 }

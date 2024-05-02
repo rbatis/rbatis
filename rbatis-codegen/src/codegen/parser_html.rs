@@ -284,16 +284,12 @@ fn parse(
                 let prefix_overrides = x
                     .attrs
                     .get("start")
-                    .unwrap_or_else(|| {
-                        x.attrs.get("prefixOverrides").unwrap_or(&empty_string)
-                    })
+                    .unwrap_or_else(|| x.attrs.get("prefixOverrides").unwrap_or(&empty_string))
                     .to_string();
                 let suffix_overrides = x
                     .attrs
                     .get("end")
-                    .unwrap_or_else(|| {
-                        x.attrs.get("suffixOverrides").unwrap_or(&empty_string)
-                    })
+                    .unwrap_or_else(|| x.attrs.get("suffixOverrides").unwrap_or(&empty_string))
                     .to_string();
                 impl_trim(
                     &prefix,
@@ -611,7 +607,6 @@ fn impl_break(_x: &Element, body: &mut proc_macro2::TokenStream, _ignore: &mut V
          break
     };
 }
-
 
 fn impl_if(
     test_value: &str,

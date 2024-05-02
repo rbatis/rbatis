@@ -245,9 +245,9 @@ mod test {
                 .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done,false);
+            assert_eq!(tx.done, false);
             tx.commit().await;
-            assert_eq!(tx.done,true);
+            assert_eq!(tx.done, true);
         };
         block_on(f);
     }
@@ -262,9 +262,9 @@ mod test {
                 .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done,false);
+            assert_eq!(tx.done, false);
             tx.rollback().await;
-            assert_eq!(tx.done,true);
+            assert_eq!(tx.done, true);
         };
         block_on(f);
     }
@@ -508,7 +508,7 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_column_skip(&mut rb, &t, "id",false)
+            let r = MockTable::update_by_column_skip(&mut rb, &t, "id", false)
                 .await
                 .unwrap();
 
@@ -916,7 +916,7 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10),"1")
+            let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10), "1")
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();

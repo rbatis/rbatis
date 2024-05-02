@@ -1,5 +1,5 @@
 //! ObjectId
-use hex::{FromHexError};
+use hex::FromHexError;
 use rand::{thread_rng, Rng};
 use std::sync::OnceLock;
 use std::{

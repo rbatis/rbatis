@@ -19,8 +19,14 @@ pub struct RBUser {
 
 #[tokio::main]
 pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug));
-    defer!(||{log::logger().flush();});
+    _ = fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    );
+    defer!(|| {
+        log::logger().flush();
+    });
     let rb = RBatis::new();
     // ------------choose driver------------
     //rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
@@ -53,6 +59,6 @@ pub async fn main() {
         },
         "rb_user",
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 }

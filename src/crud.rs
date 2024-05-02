@@ -63,7 +63,7 @@ macro_rules! crud {
 #[macro_export]
 macro_rules! impl_insert {
     ($table:ty{}) => {
-        $crate::impl_insert!($table {},"");
+        $crate::impl_insert!($table {}, "");
     };
     ($table:ty{},$table_name:expr) => {
         impl $table {
@@ -107,9 +107,9 @@ macro_rules! impl_insert {
                     ));
                 }
                 #[$crate::snake_name($table)]
-                fn snake_name(){}
+                fn snake_name() {}
                 let mut table_name = $table_name.to_string();
-                if table_name.is_empty(){
+                if table_name.is_empty() {
                     table_name = snake_name();
                 }
                 let mut result = $crate::rbdc::db::ExecResult {

@@ -49,9 +49,7 @@ impl FromStr for MySqlSslMode {
             "verify_identity" => MySqlSslMode::VerifyIdentity,
 
             _ => {
-                return Err(Error::from(
-                    format!("unknown value {:?} for `ssl_mode`", s),
-                ));
+                return Err(Error::from(format!("unknown value {:?} for `ssl_mode`", s)));
             }
         })
     }

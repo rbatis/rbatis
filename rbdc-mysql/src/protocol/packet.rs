@@ -1,11 +1,11 @@
 use std::ops::{Deref, DerefMut};
 
-use bytes::Bytes;
-use std::cmp::min;
 use crate::protocol::response::{EofPacket, OkPacket};
 use crate::protocol::Capabilities;
+use bytes::Bytes;
 use rbdc::io::{Decode, Encode};
 use rbdc::Error;
+use std::cmp::min;
 
 #[derive(Debug)]
 pub struct Packet<T>(pub T);

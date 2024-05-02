@@ -187,9 +187,7 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     rbatis_codegen::rb_html(args, func)
 }
 
-
 #[proc_macro_attribute]
 pub fn snake_name(args: TokenStream, func: TokenStream) -> TokenStream {
     macros::snake_name::snake_name(args, func)
 }
-

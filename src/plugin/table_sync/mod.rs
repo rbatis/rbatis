@@ -92,7 +92,9 @@ pub fn sync<'a>(
                     sql_column.push_str(k);
                     sql_column.push_str(" ");
                     sql_column.push_str(column_type.as_str());
-                    if column_type.is_empty() && k.eq("id") || v.as_str().unwrap_or_default() == "id" {
+                    if column_type.is_empty() && k.eq("id")
+                        || v.as_str().unwrap_or_default() == "id"
+                    {
                         sql_column.push_str(&PRIMARY_KEY);
                     }
                     sql_column.push_str(",");

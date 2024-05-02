@@ -29,7 +29,6 @@ pub fn encode_json(arg: rbs::Value, buf: &mut Vec<u8>) -> Result<usize, Error> {
     Ok(len)
 }
 
-
 pub fn decode_json(value: MySqlValue) -> Result<rbs::Value, Error> {
     let v = value.as_str().unwrap_or("null").to_string();
     Ok(serde_json::from_str(&v).map_err(|e| Error::from(e.to_string()))?)
