@@ -84,6 +84,9 @@ path = "src/custom_pool.rs"
 name = "plugin_intercept_log"
 path = "src/plugin_intercept_log.rs"
 [[bin]]
+name = "plugin_intercept_log2"
+path = "src/plugin_intercept_log2.rs"
+[[bin]]
 name = "plugin_intercept_returing_id"
 path = "src/plugin_intercept_returing_id.rs"
 [dependencies]
