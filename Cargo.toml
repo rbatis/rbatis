@@ -14,7 +14,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "4.5.21"
+version = "4.5.22"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]

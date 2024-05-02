@@ -44,8 +44,8 @@ impl<A, B> ResultType<A, B> {
 ///         sql: &mut String,
 ///         args: &mut Vec<Value>,
 ///         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-///     ) -> Result<bool, Error> {
-///         Ok(true)
+///     ) -> Result<Option<bool>, Error> {
+///         Ok(Some(true))
 ///     }
 /// }
 /// ```
@@ -57,7 +57,10 @@ pub trait Intercept: Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
-    /// if return Ok(false) will be return data. return Ok(true) will run next
+    ///
+    /// if return None will be return result
+    /// if return Some(true) will be run next intercept
+    /// if return Some(false) will be break
     async fn before(
         &self,
         _task_id: i64,
@@ -65,8 +68,8 @@ pub trait Intercept: Send + Sync + Debug {
         _sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
-        Ok(true)
+    ) -> Result<Option<bool>, Error> {
+        Ok(Some(true))
     }
 
     /// task_id maybe is conn_id or tx_id,
@@ -79,7 +82,7 @@ pub trait Intercept: Send + Sync + Debug {
         _sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
-        Ok(true)
+    ) -> Result<Option<bool>, Error> {
+        Ok(Some(true))
     }
 }

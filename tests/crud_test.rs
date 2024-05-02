@@ -51,9 +51,9 @@ mod test {
             sql: &mut String,
             args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<bool, Error> {
+        ) -> Result<Option<bool>, Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
-            Ok(true)
+            Ok(Some(true))
         }
     }
 
@@ -554,7 +554,7 @@ mod test {
                 sql: &mut String,
                 args: &mut Vec<Value>,
                 _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-            ) -> Result<bool, Error> {
+            ) -> Result<Option<bool>, Error> {
                 assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
                 let num = self.num.load(Ordering::Relaxed) + 1;
                 println!("{}", sql);
@@ -578,7 +578,7 @@ mod test {
                     ]
                 );
                 self.num.fetch_add(1, Ordering::Relaxed);
-                return Ok(true);
+                return Ok(Some(true));
             }
         }
         let f = async move {
@@ -705,7 +705,7 @@ mod test {
                 sql: &mut String,
                 args: &mut Vec<Value>,
                 _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-            ) -> Result<bool, Error> {
+            ) -> Result<Option<bool>, Error> {
                 if self.num.load(Ordering::Relaxed) == 0 {
                     assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
                     assert_eq!(args, &vec![to_value!("1"), to_value!("2")]);
@@ -714,7 +714,7 @@ mod test {
                     assert_eq!(args, &vec![to_value!("3"), to_value!("4")]);
                 }
                 self.num.fetch_add(1, Ordering::Relaxed);
-                return Ok(true);
+                return Ok(Some(true));
             }
         }
         let f = async move {

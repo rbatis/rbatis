@@ -21,7 +21,7 @@ impl Intercept for ReturningIdPlugin {
         sql: &mut String,
         args: &mut Vec<Value>,
         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<bool, Error> {
+    ) -> Result<Option<bool>, Error> {
         if sql.contains("insert into") {
             let new_sql = format!("{} {}", sql, "returning id");
             let new_args = args.clone();
@@ -32,12 +32,12 @@ impl Intercept for ReturningIdPlugin {
                     let mut exec = ExecResult::default();
                     exec.last_insert_id = id.into();
                     *exec_r = Ok(exec);
-                    Ok(false)
+                    Ok(None)
                 }
-                ResultType::Query(_) => Ok(true),
+                ResultType::Query(_) => Ok(Some(true)),
             }
         } else {
-            Ok(true)
+            Ok(Some(true))
         }
     }
 }
