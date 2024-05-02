@@ -4,6 +4,7 @@ use crate::type_info::PgTypeInfo;
 use crate::types::byte::Bytea;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
+use crate::types::json::{decode_json, encode_json};
 use crate::types::money::Money;
 use crate::types::timestamptz::Timestamptz;
 use crate::types::timetz::Timetz;
@@ -20,7 +21,6 @@ use rbdc::uuid::Uuid;
 use rbdc::Error;
 use rbs::Value;
 use std::str::FromStr;
-use crate::types::json::{decode_json, encode_json};
 
 impl TypeInfo for Value {
     fn type_info(&self) -> PgTypeInfo {
@@ -35,10 +35,8 @@ impl TypeInfo for Value {
             Value::F64(_) => PgTypeInfo::FLOAT8,
             Value::String(_) => PgTypeInfo::VARCHAR,
             Value::Binary(_) => PgTypeInfo::BYTEA_ARRAY,
-            Value::Array(_) => {
-                PgTypeInfo::JSON
-            }
-            Value::Map(_) =>PgTypeInfo::JSON,
+            Value::Array(_) => PgTypeInfo::JSON,
+            Value::Map(_) => PgTypeInfo::JSON,
             Value::Ext(type_name, _) => {
                 match *type_name {
                     "Uuid" => PgTypeInfo::UUID,
@@ -457,8 +455,8 @@ impl Encode for Value {
                 v.encode(buf)?
             }
             Value::Binary(v) => v.encode(buf)?,
-            Value::Array(v) => encode_json(Value::Array(v),buf)?,
-            Value::Map(v) => encode_json(Value::Map(v),buf)?,
+            Value::Array(v) => encode_json(Value::Array(v), buf)?,
+            Value::Map(v) => encode_json(Value::Map(v), buf)?,
             Value::Ext(type_name, v) => {
                 match type_name {
                     "Uuid" => Uuid(v.into_string().unwrap_or_default()).encode(buf)?,
@@ -490,9 +488,7 @@ impl Encode for Value {
                     "Int4" => (v.as_i64().unwrap_or_default() as i16).encode(buf)?,
                     "Text" => v.into_string().unwrap_or_default().encode(buf)?,
                     "Oid" => Oid::from(v.as_u64().unwrap_or_default() as u32).encode(buf)?,
-                    "Json" => {
-                        Json(v.into_string().unwrap_or_default()).encode(buf)?
-                    },
+                    "Json" => Json(v.into_string().unwrap_or_default()).encode(buf)?,
                     "Point" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Lseg" => v.into_bytes().unwrap_or_default().encode(buf)?,
                     "Path" => v.into_bytes().unwrap_or_default().encode(buf)?,

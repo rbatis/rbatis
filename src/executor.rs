@@ -1,6 +1,7 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
+use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
 use futures::Future;
@@ -10,7 +11,6 @@ use rbdc::rt::tokio::sync::Mutex;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
-use crate::snowflake::new_snowflake_id;
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
@@ -62,8 +62,8 @@ impl RBatisConnExecutor {
     }
 
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -167,15 +167,11 @@ impl RBatisConnExecutor {
     }
 
     pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async {
-            Ok(self.conn.lock().await.rollback().await?)
-        })
+        Box::pin(async { Ok(self.conn.lock().await.rollback().await?) })
     }
 
     pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async {
-            Ok(self.conn.lock().await.commit().await?)
-        })
+        Box::pin(async { Ok(self.conn.lock().await.commit().await?) })
     }
 }
 
@@ -220,8 +216,8 @@ impl<'a> RBatisTxExecutor {
     }
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
         Ok(decode(v)?)
@@ -394,8 +390,8 @@ impl RBatisTxExecutorGuard {
     }
 
     pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let tx = self
             .tx
@@ -413,8 +409,8 @@ impl RBatisTxExecutor {
     ///         });
     ///
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-        where
-            F: Future<Output=()> + Send + 'static,
+    where
+        F: Future<Output = ()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
@@ -480,8 +476,8 @@ impl RBatis {
 
     /// query and decode
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let conn = self.acquire().await?;
         let v = conn.query(sql, args).await?;

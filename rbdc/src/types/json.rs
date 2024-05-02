@@ -25,30 +25,35 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 ///
 /// ```
 pub fn deserialize_maybe_str<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: Deserializer<'de>,
-        T: serde::de::DeserializeOwned
+where
+    D: Deserializer<'de>,
+    T: serde::de::DeserializeOwned,
 {
     use serde::de::Error;
     let account_value: serde_json::Value = Deserialize::deserialize(deserializer)?;
     match account_value {
         serde_json::Value::String(account_str) => {
             let typename = std::any::type_name::<T>();
-            if typename == std::any::type_name::<String>() || typename == std::any::type_name::<Option<String>>() {
-                let account_json: T = serde_json::from_value(serde_json::Value::String(account_str)).map_err(D::Error::custom)?;
+            if typename == std::any::type_name::<String>()
+                || typename == std::any::type_name::<Option<String>>()
+            {
+                let account_json: T =
+                    serde_json::from_value(serde_json::Value::String(account_str))
+                        .map_err(D::Error::custom)?;
                 Ok(account_json)
             } else {
-                let account_json: T = serde_json::from_str(&account_str).map_err(D::Error::custom)?;
+                let account_json: T =
+                    serde_json::from_str(&account_str).map_err(D::Error::custom)?;
                 Ok(account_json)
             }
         }
         _ => {
-            let account_json: T = serde_json::from_str(&account_value.to_string()).map_err(D::Error::custom)?;
+            let account_json: T =
+                serde_json::from_str(&account_value.to_string()).map_err(D::Error::custom)?;
             Ok(account_json)
         }
     }
 }
-
 
 #[derive(serde::Serialize, Clone, Eq, PartialEq, Hash)]
 #[serde(rename = "Json")]
@@ -224,8 +229,8 @@ impl<T: Serialize + serde::de::DeserializeOwned + Display> Display for JsonV<T> 
 #[cfg(test)]
 mod test {
     use crate::json::Json;
-    use rbs::value::map::ValueMap;
     use crate::JsonV;
+    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_decode_js_string() {
@@ -277,9 +282,9 @@ mod test {
 
     #[test]
     fn test_encode_jsonv() {
-        let source:JsonV<String>=JsonV(1.to_string());
+        let source: JsonV<String> = JsonV(1.to_string());
         let v = rbs::to_value!(source);
         let data = *v.as_ext().unwrap().1.clone();
-        assert_eq!(data.into_string().unwrap_or_default(),"\"1\"");
+        assert_eq!(data.into_string().unwrap_or_default(), "\"1\"");
     }
 }

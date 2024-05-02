@@ -112,7 +112,7 @@ pub trait Connection: Send {
     /// an translation impl begin
     fn begin(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("begin",vec![]).await?;
+            _ = self.exec("begin", vec![]).await?;
             Ok(())
         })
     }
@@ -120,7 +120,7 @@ pub trait Connection: Send {
     /// an translation impl commit
     fn commit(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("commit",vec![]).await?;
+            _ = self.exec("commit", vec![]).await?;
             Ok(())
         })
     }
@@ -128,7 +128,7 @@ pub trait Connection: Send {
     /// an translation impl rollback
     fn rollback(&mut self) -> BoxFuture<Result<(), Error>> {
         Box::pin(async {
-            _ = self.exec("rollback",vec![]).await?;
+            _ = self.exec("rollback", vec![]).await?;
             Ok(())
         })
     }
@@ -143,7 +143,11 @@ impl Connection for Box<dyn Connection> {
         self.deref_mut().get_rows(sql, params)
     }
 
-    fn get_values(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Value>, Error>> {
+    fn get_values(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Value>, Error>> {
         self.deref_mut().get_values(sql, params)
     }
 
@@ -220,8 +224,8 @@ pub trait ConnectOptions: Any + Send + Sync + Debug + 'static {
     ///
     #[inline]
     fn set(&mut self, arg: Box<dyn Any>)
-        where
-            Self: Sized,
+    where
+        Self: Sized,
     {
         *self = *arg.downcast().expect("must be self type!");
     }

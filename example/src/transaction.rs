@@ -1,10 +1,9 @@
-
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::RBatisTxExecutor;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::{Error, RBatis};
 use rbatis::table_sync::SqliteTableMapper;
+use rbatis::{Error, RBatis};
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -33,33 +32,47 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     // table sync done
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    _=RBatis::sync(&rb.acquire().await.unwrap(), &SqliteTableMapper{}, &Activity{
-        id: Some(String::new()),
-        name: Some(String::new()),
-        pc_link: Some(String::new()),
-        h5_link: Some(String::new()),
-        pc_banner_img: Some(String::new()),
-        h5_banner_img: Some(String::new()),
-        sort: Some(String::new()),
-        status: Some(0),
-        remark: Some(String::new()),
-        create_time: Some(DateTime::now()),
-        version: Some(0),
-        delete_flag: Some(0),
-    }, "activity").await;
+    _ = RBatis::sync(
+        &rb.acquire().await.unwrap(),
+        &SqliteTableMapper {},
+        &Activity {
+            id: Some(String::new()),
+            name: Some(String::new()),
+            pc_link: Some(String::new()),
+            h5_link: Some(String::new()),
+            pc_banner_img: Some(String::new()),
+            h5_banner_img: Some(String::new()),
+            sort: Some(String::new()),
+            status: Some(0),
+            remark: Some(String::new()),
+            create_time: Some(DateTime::now()),
+            version: Some(0),
+            delete_flag: Some(0),
+        },
+        "activity",
+    )
+    .await;
     fast_log::LOGGER.set_level(LevelFilter::Debug);
     //clear data
     let _ = Activity::delete_in_column(&rb.clone(), "id", &["3"]).await;
     //use rb.acquire_begin() create tx
-    tx_insert({
-                  // acquire_begin() = {let conn=rb.acquire(); conn.begin()}
-                  rb.acquire_begin().await.unwrap()
-              }, "3", true)
-        .await
-        .unwrap();
+    tx_insert(
+        {
+            // acquire_begin() = {let conn=rb.acquire(); conn.begin()}
+            rb.acquire_begin().await.unwrap()
+        },
+        "3",
+        true,
+    )
+    .await
+    .unwrap();
     //use conn.begin() create tx
     tx_insert(
         {
@@ -69,8 +82,8 @@ pub async fn main() {
         "3",
         false,
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 }
 
 async fn tx_insert(tx: RBatisTxExecutor, id: &str, forget_commit: bool) -> Result<(), Error> {
@@ -102,7 +115,7 @@ async fn tx_insert(tx: RBatisTxExecutor, id: &str, forget_commit: bool) -> Resul
             delete_flag: Some(1),
         },
     )
-        .await;
+    .await;
     //if not commit or rollback,tx.done = false,
     if !forget_commit {
         tx.commit().await?;

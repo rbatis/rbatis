@@ -1,4 +1,4 @@
-
+use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
@@ -7,7 +7,6 @@ use rbatis::{async_trait, crud, Error, RBatis};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
-use rbatis::dark_std::defer;
 
 /// Postgres insert sql returning id Intercept
 #[derive(Debug)]
@@ -65,7 +64,11 @@ crud!(Activity {});
 //docker run -d --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
 #[tokio::main]
 pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug));
+    _ = fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    );
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
     rb.init(

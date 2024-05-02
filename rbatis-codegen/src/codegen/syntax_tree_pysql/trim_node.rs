@@ -4,7 +4,7 @@ use crate::codegen::syntax_tree_pysql::{Name, NodeType};
 pub struct TrimNode {
     pub childs: Vec<NodeType>,
     pub start: String,
-    pub end:String,
+    pub end: String,
 }
 
 impl Name for TrimNode {

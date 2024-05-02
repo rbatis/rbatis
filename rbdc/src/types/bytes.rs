@@ -1,9 +1,9 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 use std::vec::IntoIter;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// rbatis bytes use serde_bytes
 ///
@@ -15,23 +15,19 @@ pub struct Bytes {
 impl Bytes {
     /// Construct a new, empty `ByteBuf`.
     pub fn new() -> Self {
-        Bytes {
-            inner: Vec::new()
-        }
+        Bytes { inner: Vec::new() }
     }
 
     /// Construct a new, empty `ByteBuf` with the specified capacity.
     pub fn with_capacity(cap: usize) -> Self {
         Bytes {
-            inner: Vec::with_capacity(cap)
+            inner: Vec::with_capacity(cap),
         }
     }
 
     /// Wrap existing bytes in a `ByteBuf`.
     pub fn from(bytes: Vec<u8>) -> Self {
-        Self {
-            inner: bytes
-        }
+        Self { inner: bytes }
     }
 
     /// Unwrap the vector of byte underlying this `ByteBuf`.
@@ -47,8 +43,8 @@ impl Debug for Bytes {
 }
 
 impl<Rhs> PartialEq<Rhs> for Bytes
-    where
-        Rhs: ?Sized + AsRef<[u8]>,
+where
+    Rhs: ?Sized + AsRef<[u8]>,
 {
     fn eq(&self, other: &Rhs) -> bool {
         self.as_ref().eq(other.as_ref())
@@ -56,8 +52,8 @@ impl<Rhs> PartialEq<Rhs> for Bytes
 }
 
 impl<Rhs> PartialOrd<Rhs> for Bytes
-    where
-        Rhs: ?Sized + AsRef<[u8]>,
+where
+    Rhs: ?Sized + AsRef<[u8]>,
 {
     fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
         self.as_ref().partial_cmp(other.as_ref())
@@ -66,16 +62,14 @@ impl<Rhs> PartialOrd<Rhs> for Bytes
 
 impl From<Vec<u8>> for Bytes {
     fn from(value: Vec<u8>) -> Self {
-        Bytes {
-            inner: value
-        }
+        Bytes { inner: value }
     }
 }
 
 impl From<&[u8]> for Bytes {
     fn from(value: &[u8]) -> Self {
         Self {
-            inner: value.to_vec()
+            inner: value.to_vec(),
         }
     }
 }
@@ -109,7 +103,7 @@ impl DerefMut for Bytes {
 impl Default for Bytes {
     fn default() -> Self {
         Self {
-            inner: Vec::default()
+            inner: Vec::default(),
         }
     }
 }
@@ -148,17 +142,23 @@ impl<'a> IntoIterator for &'a mut Bytes {
 }
 
 impl Serialize for Bytes {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let inner = serde_bytes::Bytes::new(&self.inner);
         inner.serialize(serializer)
     }
 }
 
 impl<'de> Deserialize<'de> for Bytes {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let buf = serde_bytes::ByteBuf::deserialize(deserializer)?;
         Ok(Self {
-            inner: buf.into_vec()
+            inner: buf.into_vec(),
         })
     }
 }

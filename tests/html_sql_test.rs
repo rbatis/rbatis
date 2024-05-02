@@ -507,7 +507,7 @@ mod test {
             htmlsql!(test_bind(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
             let r = test_bind(&rb).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            println!("sql={},args={}",sql,Value::Array(args.clone()));
+            println!("sql={},args={}", sql, Value::Array(args.clone()));
             assert_eq!(sql, "1");
             assert_eq!(args, vec![]);
         };
@@ -522,11 +522,11 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             htmlsql!(test_choose(rb: &RBatis,a:i32)  -> Result<Value, Error> => "tests/test.html");
-            let r = test_choose(&rb,1).await.unwrap();
+            let r = test_choose(&rb, 1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "true");
             assert_eq!(args, vec![]);
-            let r = test_choose(&rb,0).await.unwrap();
+            let r = test_choose(&rb, 0).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "false");
             assert_eq!(args, vec![]);
@@ -542,9 +542,9 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             htmlsql!(test_for(rb: &RBatis,ids:Vec<i32>)  -> Result<Value, Error> => "tests/test.html");
-            let r = test_for(&rb,vec![0,1,2,3]).await.unwrap();
+            let r = test_for(&rb, vec![0, 1, 2, 3]).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            println!("sql={},args={}",sql,Value::Array(args.clone()));
+            println!("sql={},args={}", sql, Value::Array(args.clone()));
             assert_eq!(sql, "(1,1),(2,2)");
             assert_eq!(args, vec![]);
         };

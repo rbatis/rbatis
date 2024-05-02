@@ -7,13 +7,12 @@ mod test {
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
 
-
     #[test]
     fn test_set() {
         let mut v = rbs::to_value! {};
-        v.insert(to_value!("a"),Value::Null);
+        v.insert(to_value!("a"), Value::Null);
         v["a"] = Value::I32(1);
-        assert_eq!(v["a"].as_i64().unwrap_or_default(),1);
+        assert_eq!(v["a"].as_i64().unwrap_or_default(), 1);
     }
 
     #[test]
@@ -252,7 +251,6 @@ mod test {
         );
     }
 
-
     #[test]
     fn test_de_string() {
         let v = rbs::to_value!("1");
@@ -292,7 +290,11 @@ mod test {
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
         println!("{}", v.to_string());
-        assert_eq!(v.to_string().contains("invalid type: integer `0`, expected a string, key ="), true);
+        assert_eq!(
+            v.to_string()
+                .contains("invalid type: integer `0`, expected a string, key ="),
+            true
+        );
         assert_eq!(v.to_string().contains("name"), true);
     }
 }

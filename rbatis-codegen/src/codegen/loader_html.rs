@@ -88,7 +88,7 @@ pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
 pub fn load_html(html: &str) -> Result<Vec<Element>> {
     let mut html = html.to_string();
     html = html
-        .replace("<break>","<bk>")
+        .replace("<break>", "<bk>")
         .replace("<break/>", "<bk/>")
         .replace("</break>", "</bk>");
     let dom = Dom::parse(&html)?;

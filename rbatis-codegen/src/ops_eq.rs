@@ -1,7 +1,7 @@
-use std::borrow::Cow;
 use crate::ops::AsProxy;
 use crate::ops::PartialEq;
 use rbs::Value;
+use std::borrow::Cow;
 use std::cmp::PartialEq as PE;
 use std::ops::Deref;
 
@@ -61,15 +61,9 @@ fn eq_bool(value: &Value, other: bool) -> bool {
 
 fn eq_str(value: &Value, other: &str) -> bool {
     match value {
-        Value::String(v) => {
-            v.eq(other)
-        }
-        Value::Ext(_, ext) => {
-            eq_str(ext, other)
-        }
-        _ => {
-            value.to_string().eq(other)
-        }
+        Value::String(v) => v.eq(other),
+        Value::Ext(_, ext) => eq_str(ext, other),
+        _ => value.to_string().eq(other),
     }
 }
 
@@ -115,9 +109,9 @@ impl PartialEq<Value> for String {
     }
 }
 
-impl PartialEq<Cow<'_,Value>> for Value{
+impl PartialEq<Cow<'_, Value>> for Value {
     fn op_eq(&self, other: &Cow<'_, Value>) -> bool {
-         self.eq(other.deref())
+        self.eq(other.deref())
     }
 }
 

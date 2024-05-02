@@ -380,7 +380,7 @@ mod test {
     fn test_ser_de() {
         let dt = DateTime::now();
         let v = serde_json::to_value(&dt).unwrap();
-        println!("{}",v);
+        println!("{}", v);
         let new_dt: DateTime = serde_json::from_value(v).unwrap();
         assert_eq!(new_dt, dt);
     }

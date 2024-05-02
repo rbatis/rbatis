@@ -1,4 +1,4 @@
-use crate::db::{Connection};
+use crate::db::Connection;
 use crate::pool::conn_manager::ConnManager;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};

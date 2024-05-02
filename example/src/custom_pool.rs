@@ -1,21 +1,28 @@
-
+use rbatis::dark_std::defer;
 use rbatis::RBatis;
 use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
 use std::str::FromStr;
-use rbatis::dark_std::defer;
 
 /// define a custom pool(my_pool::DeadPool) use `rb.init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(SqliteDriver {}, opts)`
 #[tokio::main]
 pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug));
-    defer!(||{log::logger().flush();});
+    _ = fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    );
+    defer!(|| {
+        log::logger().flush();
+    });
 
     let rb = RBatis::new();
     let opts = SqliteConnectOptions::from_str("sqlite://target/sqlite.db").unwrap();
     //default_is//let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, rbatis::DefaultPool>(SqliteDriver{},opts);
     // set custom impl pool
-    let _ = rb
-        .init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(SqliteDriver {}, opts);
+    let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(
+        SqliteDriver {},
+        opts,
+    );
     //set pool max size
     let _ = rb.get_pool().unwrap().set_max_open_conns(100).await;
     let _ = rb.get_pool().unwrap().set_max_idle_conns(100).await;
@@ -24,20 +31,20 @@ pub async fn main() {
 }
 
 mod my_pool {
-    use std::borrow::Cow;
     use deadpool::managed::{Metrics, Object, RecycleError, RecycleResult, Timeouts};
-    use deadpool::{Status};
+    use deadpool::Status;
     use futures_core::future::BoxFuture;
+    use rbatis::async_trait;
     use rbatis::rbdc::db::{Connection, ExecResult, Row};
+    use rbatis::rbdc::pool::conn_box::ConnectionBox;
     use rbatis::rbdc::pool::conn_manager::ConnManager;
     use rbatis::rbdc::pool::Pool;
     use rbatis::rbdc::{db, Error};
+    use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
+    use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
     use std::time::Duration;
-    use rbatis::async_trait;
-    use rbatis::rbdc::pool::conn_box::ConnectionBox;
-    use rbs::value::map::ValueMap;
 
     pub struct DeadPool {
         pub manager: ConnManagerProxy,
@@ -64,8 +71,8 @@ mod my_pool {
     #[async_trait]
     impl Pool for DeadPool {
         fn new(manager: ConnManager) -> Result<Self, Error>
-            where
-                Self: Sized,
+        where
+            Self: Sized,
         {
             Ok(Self {
                 manager: ConnManagerProxy {
@@ -76,8 +83,8 @@ mod my_pool {
                     inner: manager,
                     conn: None,
                 })
-                    .build()
-                    .map_err(|e| Error::from(e.to_string()))?,
+                .build()
+                .map_err(|e| Error::from(e.to_string()))?,
             })
         }
 

@@ -2,10 +2,10 @@
 extern crate rbatis;
 
 use log::LevelFilter;
-use rbatis::{RBatis, table_sync};
 use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
-use rbs::{to_value};
+use rbatis::{table_sync, RBatis};
+use rbs::to_value;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Account {
@@ -26,15 +26,25 @@ crud!(User {});
 
 #[tokio::main]
 pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console().level(log::LevelFilter::Debug));
-    defer!(||{log::logger().flush();});
+    _ = fast_log::init(
+        fast_log::Config::new()
+            .console()
+            .level(log::LevelFilter::Debug),
+    );
+    defer!(|| {
+        log::logger().flush();
+    });
 
     let rb = RBatis::new();
     // ------------choose database driver------------
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://SA:TestPass!123456@localhost:1433/test").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     create_table(&rb).await;
     let user = User {
         id: Some(1),
@@ -57,10 +67,10 @@ pub async fn main() {
 
 async fn create_table(rb: &RBatis) {
     fast_log::LOGGER.set_level(LevelFilter::Off);
-    defer!(||{
-         fast_log::LOGGER.set_level(LevelFilter::Info);
+    defer!(|| {
+        fast_log::LOGGER.set_level(LevelFilter::Info);
     });
-    let table = to_value!{
+    let table = to_value! {
         "id":"INTEGER PRIMARY KEY AUTOINCREMENT",
         "account1":"JSON",
         "account2":"JSON",

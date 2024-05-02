@@ -1,7 +1,7 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
-use crate::{Error};
+use crate::Error;
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
 use rbdc::db::ExecResult;
@@ -140,12 +140,7 @@ impl Intercept for LogInterceptor {
         match result {
             ResultType::Exec(result) => match result {
                 Ok(result) => {
-                    log!(
-                        level,
-                        "[rbatis] [{}] <= rows_affected={}",
-                        task_id,
-                        result
-                    );
+                    log!(level, "[rbatis] [{}] <= rows_affected={}", task_id, result);
                 }
                 Err(e) => {
                     log!(level, "[rbatis] [{}] <= {}", task_id, e);
@@ -162,12 +157,7 @@ impl Intercept for LogInterceptor {
                             RbsValueDisplay { inner: result }
                         );
                     } else {
-                        log!(
-                            level,
-                            "[rbatis] [{}] <= len={}",
-                            task_id,
-                            result.len()
-                        );
+                        log!(level, "[rbatis] [{}] <= len={}", task_id, result.len());
                     }
                 }
                 Err(e) => {
@@ -178,4 +168,3 @@ impl Intercept for LogInterceptor {
         return Ok(true);
     }
 }
-

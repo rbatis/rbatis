@@ -481,7 +481,8 @@ impl ser::SerializeStruct for DefaultSerializeMap {
     where
         T: Serialize,
     {
-        self.map.insert(Value::String(key.to_string()), to_value(&value)?);
+        self.map
+            .insert(Value::String(key.to_string()), to_value(&value)?);
         Ok(())
     }
 
@@ -502,7 +503,8 @@ impl ser::SerializeStructVariant for DefaultSerializeMap {
     where
         T: Serialize,
     {
-        self.map.insert(Value::String(key.to_string()), to_value(&value)?);
+        self.map
+            .insert(Value::String(key.to_string()), to_value(&value)?);
         Ok(())
     }
 

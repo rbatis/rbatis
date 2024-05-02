@@ -1,9 +1,8 @@
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{ItemFn, parse_macro_input, Token};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-
+use syn::{parse_macro_input, ItemFn, Token};
 
 pub struct ParseArgs {
     pub sqls: Vec<syn::Ident>,
@@ -56,7 +55,7 @@ fn to_snake_name(name: &str) -> String {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use crate::macros::snake_name::to_snake_name;
 
     #[test]

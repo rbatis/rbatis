@@ -6,8 +6,8 @@ use crate::types::TypeInfo;
 use crate::value::{PgValue, PgValueFormat};
 use rbdc::json::Json;
 use rbdc::Error;
-use std::io::Write;
 use rbs::Value;
+use std::io::Write;
 
 impl Encode for Json {
     fn encode(self, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {
@@ -72,7 +72,10 @@ pub fn decode_json(value: PgValue) -> Result<Value, Error> {
         );
         buf.remove(0);
     }
-    Ok(serde_json::from_str(&unsafe { String::from_utf8_unchecked(buf) }).map_err(|e| Error::from(e.to_string()))?)
+    Ok(
+        serde_json::from_str(&unsafe { String::from_utf8_unchecked(buf) })
+            .map_err(|e| Error::from(e.to_string()))?,
+    )
 }
 
 pub fn encode_json(v: Value, buf: &mut PgArgumentBuffer) -> Result<IsNull, Error> {

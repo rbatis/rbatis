@@ -9,8 +9,8 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
 pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     // try to identify type
     let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
@@ -19,27 +19,23 @@ pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
         Ok(rbs::from_value_ref(values)?)
     } else {
         match values {
-            Value::Array(datas) => {
-                Ok(try_decode_map(datas)?)
-            }
-            _ => {
-                Err(Error::from("decode an not array value"))
-            }
+            Value::Array(datas) => Ok(try_decode_map(datas)?),
+            _ => Err(Error::from("decode an not array value")),
         }
     }
 }
 
 pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     decode_ref(&bs)
 }
 
 //decode doc or one type
 pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
-    where
-        T: DeserializeOwned,
+where
+    T: DeserializeOwned,
 {
     //decode struct
     if datas.len() > 1 {
@@ -66,7 +62,8 @@ pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
                     || type_name == std::any::type_name::<u64>()
                     || type_name == std::any::type_name::<String>()
                     || type_name == std::any::type_name::<bool>()
-                    || type_name.starts_with("rbdc::types::") {
+                    || type_name.starts_with("rbdc::types::")
+                {
                     let (_, value) = map.into_iter().next().unwrap();
                     return Ok(rbs::from_value_ref::<T>(value)?);
                 }
@@ -80,9 +77,13 @@ pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
 pub fn is_debug_mode() -> bool {
     if cfg!(debug_assertions) {
         #[cfg(feature = "debug_mode")]
-        { true }
+        {
+            true
+        }
         #[cfg(not(feature = "debug_mode"))]
-        { false }
+        {
+            false
+        }
     } else {
         false
     }

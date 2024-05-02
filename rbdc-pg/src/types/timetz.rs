@@ -3,12 +3,12 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ReadBytesExt};
+use fastdate::time1::UtcOffset;
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Cursor;
 use std::time::Duration;
-use fastdate::time1::UtcOffset;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timez")]
@@ -86,11 +86,10 @@ impl Encode for Timetz {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use fastdate::{offset_sec, Time};
     use crate::types::timetz::OffsetTz;
+    use fastdate::{offset_sec, Time};
 
     #[test]
     fn test_display() {

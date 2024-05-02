@@ -135,7 +135,11 @@ impl Connection for ConnManagerProxy {
         self.conn.as_mut().unwrap().get_rows(sql, params)
     }
 
-    fn get_values(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Value>, Error>> {
+    fn get_values(
+        &mut self,
+        sql: &str,
+        params: Vec<Value>,
+    ) -> BoxFuture<Result<Vec<Value>, Error>> {
         if self.conn.is_none() {
             return Box::pin(async { Err(Error::from("conn is drop")) });
         }
