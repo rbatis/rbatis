@@ -40,8 +40,11 @@ pub async fn main() {
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
     rb.intercepts.insert(0,Arc::new(DisableLogIntercept::default()));
 
+    let intercept: &DisableLogIntercept = rb.get_intercept().unwrap();
+    intercept.skip_sql.push("delete from".to_string());
+
     //will not show log
-    let r = Activity::delete_by_column(&rb, "id", "1").await;
+    let _r = Activity::delete_by_column(&rb, "id", "1").await;
 
     log::logger().flush();
     println!("this is no log print by 'DisableLogIntercept'");
@@ -50,7 +53,7 @@ pub async fn main() {
 
 #[derive(Debug,Default)]
 pub struct DisableLogIntercept {
-    skip_sql:SyncVec<String>
+    pub skip_sql:SyncVec<String>
 }
 
 #[async_trait]
@@ -63,9 +66,11 @@ impl Intercept for DisableLogIntercept {
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
-        if sql.contains("delete from ") {
-           //return Ok(false) will be skip next Intercept!
-           return Ok(Some(false));
+        for x in &self.skip_sql {
+            if sql.contains(x) {
+                //return Ok(false) will be skip next Intercept!
+                return Ok(Some(false));
+            }
         }
         Ok(Some(true))
     }
