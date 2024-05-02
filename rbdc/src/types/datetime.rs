@@ -150,6 +150,8 @@ impl DateTime {
     /// format support token = ["YYYY","MM","DD","hh","mm","ss",".000000",".000000000","+00:00"]
     /// ```
     ///   let dt = rbdc::DateTime::now();
+    ///   println!("{}",dt.format("YYYY-MM-DD hh:mm:ss"));
+    ///   println!("{}",dt.format("YYYY-MM-DD hh:mm:ss.000000"));
     ///   println!("{}",dt.format("YYYY/MM/DD/hh/mm/ss/.000000/+00:00"));
     ///   println!("{}",dt.format("YYYY-MM-DD/hh/mm/ss"));
     /// ```
