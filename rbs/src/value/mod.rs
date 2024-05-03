@@ -849,6 +849,12 @@ mod test {
     use std::collections::HashMap;
 
     #[test]
+    fn test_display() {
+        let v = Value::U64(1);
+        println!("{}", v);
+        assert_eq!("1", v.to_string());
+    }
+    #[test]
     fn test_iter() {
         let v = Value::Array(vec![Value::I32(1), Value::I32(2), Value::I32(3)]);
         for (k, v) in &v {

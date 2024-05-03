@@ -1,14 +1,14 @@
-use std::sync::Arc;
 use log::LevelFilter;
 use rbatis::dark_std::defer;
-use rbatis::intercept_log::LogInterceptor;
-use rbatis::{async_trait, crud, Error, RBatis};
-use std::time::Duration;
 use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
+use rbatis::intercept_log::LogInterceptor;
 use rbatis::rbdc::db::ExecResult;
+use rbatis::{async_trait, crud, Error, RBatis};
 use rbs::Value;
+use std::sync::Arc;
+use std::time::Duration;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Activity {
@@ -38,7 +38,8 @@ pub async fn main() {
     .unwrap();
 
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
-    rb.intercepts.insert(0,Arc::new(DisableLogIntercept::default()));
+    rb.intercepts
+        .insert(0, Arc::new(DisableLogIntercept::default()));
 
     let intercept: &DisableLogIntercept = rb.get_intercept().unwrap();
     intercept.skip_sql.push("delete from".to_string());
@@ -50,10 +51,9 @@ pub async fn main() {
     println!("this is no log print by 'DisableLogIntercept'");
 }
 
-
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 pub struct DisableLogIntercept {
-    pub skip_sql:SyncVec<String>
+    pub skip_sql: SyncVec<String>,
 }
 
 #[async_trait]
@@ -75,7 +75,14 @@ impl Intercept for DisableLogIntercept {
         Ok(Some(true))
     }
 
-    async fn after(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
+    async fn after(
+        &self,
+        _task_id: i64,
+        _rb: &dyn Executor,
+        sql: &mut String,
+        _args: &mut Vec<Value>,
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+    ) -> Result<Option<bool>, Error> {
         for x in &self.skip_sql {
             if sql.contains(x) {
                 //return Ok(false) will be skip next Intercept!
