@@ -183,9 +183,7 @@ mod test {
                     });
                     Ok(None)
                 }
-                ResultType::Query(_) => {
-                    Ok(Some(true))
-                }
+                ResultType::Query(_) => Ok(Some(true)),
             }
         }
     }
