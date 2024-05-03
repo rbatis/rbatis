@@ -53,11 +53,21 @@ pub struct ExecResult {
 
 impl Display for ExecResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        struct DisplayBox<'a> {
+            inner: &'a Value,
+        }
+        impl<'a> Debug for DisplayBox<'a> {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                std::fmt::Display::fmt(&self.inner, f)
+            }
+        }
         f.debug_map()
             .key(&"rows_affected")
             .value(&self.rows_affected)
             .key(&"last_insert_id")
-            .value(&self.last_insert_id)
+            .value(&DisplayBox {
+                inner: &self.last_insert_id,
+            })
             .finish()
     }
 }
