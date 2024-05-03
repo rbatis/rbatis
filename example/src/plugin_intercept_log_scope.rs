@@ -43,7 +43,7 @@ pub async fn main() {
 
 
     IS_SCHEDULE.scope(1, async move{
-        //will not show log
+        //this scope will not show log
         let _r = Activity::delete_by_column(&rb, "id", "1").await;
 
     }).await;
