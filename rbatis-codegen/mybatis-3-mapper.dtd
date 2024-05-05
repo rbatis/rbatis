@@ -20,20 +20,6 @@
         <!ATTLIST mapper
                 >
 
-        <!ELEMENT arg EMPTY>
-        <!ATTLIST arg
-                type CDATA #IMPLIED
-                column CDATA #IMPLIED
-                select CDATA #IMPLIED
-                name CDATA #IMPLIED
-                >
-
-        <!ELEMENT typeAlias EMPTY>
-        <!ATTLIST typeAlias
-                alias CDATA #REQUIRED
-                type CDATA #REQUIRED
-                >
-
         <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST select
                 id CDATA #REQUIRED
@@ -42,11 +28,7 @@
         <!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST insert
                 id CDATA #REQUIRED
-
-<!--                not support for now-->
-<!--                useGeneratedKeys (true|false) #IMPLIED-->
                 >
-
         <!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST update
                 id CDATA #REQUIRED
@@ -55,29 +37,20 @@
         <!ATTLIST delete
                 id CDATA #REQUIRED
                 >
-        <!-- include file or sql element,for example:
-        <include refid="{refid}"></include>
-        <include refid="file://{xml_file_path}?refid={refid}"></include>
-         -->
-
         <!ELEMENT include ()?>
         <!ATTLIST include
                 refid CDATA #REQUIRED
                 >
-
         <!ELEMENT bind EMPTY>
         <!ATTLIST bind
                 name CDATA #REQUIRED
                 value CDATA #REQUIRED
                 >
-
         <!ELEMENT sql (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST sql
                 id CDATA #REQUIRED
                 lang CDATA #IMPLIED
-                
                 >
-
         <!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST trim
                 prefix CDATA #IMPLIED
@@ -87,7 +60,6 @@
                 >
         <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
-
         <!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST foreach
                 collection CDATA #REQUIRED
@@ -97,7 +69,6 @@
                 close CDATA #IMPLIED
                 separator CDATA #IMPLIED
                 >
-
         <!ELEMENT choose (when* , otherwise?)>
         <!ELEMENT when (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST when
