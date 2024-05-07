@@ -71,6 +71,7 @@ where
                     || type_name == std::any::type_name::<Option<String>>()
                     || type_name == std::any::type_name::<Option<bool>>()
                     || type_name.starts_with("rbdc::types::")
+                    || type_name.starts_with("core::option::Option<rbdc::types::")
                 {
                     let (_, value) = map.into_iter().next().unwrap();
                     return Ok(rbs::from_value_ref::<T>(value)?);
