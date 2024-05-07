@@ -62,6 +62,14 @@ where
                     || type_name == std::any::type_name::<u64>()
                     || type_name == std::any::type_name::<String>()
                     || type_name == std::any::type_name::<bool>()
+                    || type_name == std::any::type_name::<Option<i32>>()
+                    || type_name == std::any::type_name::<Option<i64>>()
+                    || type_name == std::any::type_name::<Option<f32>>()
+                    || type_name == std::any::type_name::<Option<f64>>()
+                    || type_name == std::any::type_name::<Option<u32>>()
+                    || type_name == std::any::type_name::<Option<u64>>()
+                    || type_name == std::any::type_name::<Option<String>>()
+                    || type_name == std::any::type_name::<Option<bool>>()
                     || type_name.starts_with("rbdc::types::")
                 {
                     let (_, value) = map.into_iter().next().unwrap();
