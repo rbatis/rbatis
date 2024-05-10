@@ -8,6 +8,7 @@ use rbdc::Error;
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use std::time::Duration;
+use log::info;
 
 #[derive(Debug)]
 pub struct FastPool {
@@ -82,9 +83,13 @@ impl Pool for FastPool {
         self.timeout.store(timeout);
     }
 
-    async fn set_conn_max_lifetime(&self, _max_lifetime: Option<Duration>) {}
+    async fn set_conn_max_lifetime(&self, _max_lifetime: Option<Duration>) {
+        info!("FastPool not support method set_conn_max_lifetime");
+    }
 
-    async fn set_max_idle_conns(&self, _n: u64) {}
+    async fn set_max_idle_conns(&self, _n: u64) {
+        info!("FastPool not support method set_max_idle_conns");
+    }
 
     async fn set_max_open_conns(&self, n: u64) {
         self.inner.set_max_open(n);
