@@ -11,7 +11,7 @@ use std::vec::IntoIter;
 /// rbatis bytes use serde_bytes
 ///
 #[derive(Clone, Eq)]
-pub struct Bytes(Vec<u8>);
+pub struct Bytes(pub Vec<u8>);
 
 impl Bytes {
     /// Construct a new, empty `ByteBuf`.
