@@ -1,6 +1,6 @@
 [package]
 name = "rbdc-pool-fast"
-version = "4.5.8"
+version = "4.5.9"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "readme.md"
@@ -20,3 +20,4 @@ rbs = { version ="4.5", path = "../rbs" }
 rbdc = { version ="4.5", path = "../rbdc" ,default-features = false}
 fast_pool = {version = "0.2.0" }
 dark-std = "0.2"
+log = "0.4.21"
