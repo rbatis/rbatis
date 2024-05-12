@@ -11,37 +11,33 @@ use std::vec::IntoIter;
 /// rbatis bytes use serde_bytes
 ///
 #[derive(Clone, Eq)]
-pub struct Bytes {
-    pub inner: Vec<u8>,
-}
+pub struct Bytes(Vec<u8>);
 
 impl Bytes {
     /// Construct a new, empty `ByteBuf`.
     pub fn new() -> Self {
-        Bytes { inner: Vec::new() }
+        Bytes(Vec::new())
     }
 
     /// Construct a new, empty `ByteBuf` with the specified capacity.
     pub fn with_capacity(cap: usize) -> Self {
-        Bytes {
-            inner: Vec::with_capacity(cap),
-        }
+        Bytes(Vec::with_capacity(cap))
     }
 
     /// Wrap existing bytes in a `ByteBuf`.
     pub fn from(bytes: Vec<u8>) -> Self {
-        Self { inner: bytes }
+        Self(bytes)
     }
 
     /// Unwrap the vector of byte underlying this `ByteBuf`.
     pub fn into_inner(self) -> Vec<u8> {
-        self.inner
+        self.0
     }
 }
 
 impl Debug for Bytes {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.inner, f)
+        Debug::fmt(&self.0, f)
     }
 }
 
@@ -65,27 +61,25 @@ impl<Rhs> PartialOrd<Rhs> for Bytes
 
 impl From<Vec<u8>> for Bytes {
     fn from(value: Vec<u8>) -> Self {
-        Bytes { inner: value }
+        Bytes(value)
     }
 }
 
 impl From<&[u8]> for Bytes {
     fn from(value: &[u8]) -> Self {
-        Self {
-            inner: value.to_vec(),
-        }
+        Self(value.to_vec())
     }
 }
 
 impl AsRef<[u8]> for Bytes {
     fn as_ref(&self) -> &[u8] {
-        &self.inner
+        &self.0
     }
 }
 
 impl AsMut<[u8]> for Bytes {
     fn as_mut(&mut self) -> &mut [u8] {
-        &mut self.inner
+        &mut self.0
     }
 }
 
@@ -93,27 +87,25 @@ impl Deref for Bytes {
     type Target = [u8];
 
     fn deref(&self) -> &Self::Target {
-        &self.inner
+        &self.0
     }
 }
 
 impl DerefMut for Bytes {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
+        &mut self.0
     }
 }
 
 impl Default for Bytes {
     fn default() -> Self {
-        Self {
-            inner: Vec::default(),
-        }
+        Self(Vec::default())
     }
 }
 
 impl Hash for Bytes {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.inner.hash(state)
+        self.0.hash(state)
     }
 }
 
@@ -122,7 +114,7 @@ impl<'a> IntoIterator for Bytes {
     type IntoIter = IntoIter<u8>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.inner.into_iter()
+        self.0.into_iter()
     }
 }
 
@@ -131,7 +123,7 @@ impl<'a> IntoIterator for &'a Bytes {
     type IntoIter = <&'a [u8] as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.inner.iter()
+        self.0.iter()
     }
 }
 
@@ -140,7 +132,7 @@ impl<'a> IntoIterator for &'a mut Bytes {
     type IntoIter = <&'a mut [u8] as IntoIterator>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.inner.iter_mut()
+        self.0.iter_mut()
     }
 }
 
@@ -149,7 +141,7 @@ impl Serialize for Bytes {
         where
             S: Serializer,
     {
-        let inner = serde_bytes::Bytes::new(&self.inner);
+        let inner = serde_bytes::Bytes::new(&self.0);
         inner.serialize(serializer)
     }
 }
@@ -160,14 +152,12 @@ impl<'de> Deserialize<'de> for Bytes {
             D: Deserializer<'de>,
     {
         let buf = serde_bytes::ByteBuf::deserialize(deserializer)?;
-        Ok(Self {
-            inner: buf.into_vec(),
-        })
+        Ok(Self(buf.into_vec()))
     }
 }
 
 
-#[derive(Debug, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Eq, Clone, Copy, PartialEq, PartialOrd)]
 pub struct BytesSize(pub i64);
 
 pub const EB: BytesSize = BytesSize(1024 * 1024 * 1024 * 1024 * 1024);
