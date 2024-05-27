@@ -40,7 +40,7 @@ macro_rules! make_table_field_vec {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::vec::Vec::with_capacity($vec_ref.len());
         for item in $vec_ref {
-            match item.$($field_name.)+as_ref() {
+            match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.push(v.clone());
                 }
@@ -70,7 +70,7 @@ macro_rules! make_table_field_set {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::HashSet::with_capacity($vec_ref.len());
         for item in $vec_ref {
-            match item.$($field_name.)+as_ref() {
+             match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone());
                 }
@@ -100,7 +100,7 @@ macro_rules! make_table_field_map {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::HashMap::with_capacity($vec_ref.len());
         for item in $vec_ref {
-            match item.$($field_name.)+as_ref() {
+              match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(), item.clone());
                 }
@@ -130,7 +130,7 @@ macro_rules! make_table_field_map_btree {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
-            match item.$($field_name.)+as_ref() {
+             match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(), item.clone());
                 }
