@@ -43,7 +43,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = make_table_field_vec!(&arr, id);
+        let c = make_table_field_vec!(arr, id);
         assert_eq!(c, vec!["id".to_string()]);
         println!("{:?}", c);
     }
