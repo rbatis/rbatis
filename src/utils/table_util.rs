@@ -30,7 +30,7 @@ macro_rules! make_table {
 ///         pub role_id:String
 ///      }
 ///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = make_table_field_vec!(&user_roles,role_id); // role_ids: Vec<String>
+///      let role_ids:Vec<String> = make_table_field_vec!(&user_roles,role_id);
 ///
 ///
 ///
@@ -51,6 +51,19 @@ macro_rules! make_table_field_vec {
     }};
 }
 
+/// take the target Vec member attribute Vec collection
+/// vec_ref: a reference to vec, field_name: the field name of the structure
+///
+/// need impl Clone or #[derive(Clone, Debug)]
+/// for example:
+///      struct SysUserRole{
+///         pub role_id:String
+///      }
+///      let user_roles: Vec<SysUserRole>;
+///      let role_ids:HashSet<String> = make_table_field_vec!(&user_roles,role_id);
+///
+///
+///
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! make_table_field_set {
@@ -77,7 +90,7 @@ macro_rules! make_table_field_set {
 ///         pub role_id:String
 ///      }
 ///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = make_table_field_map!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///      let role_ids: HashMap<String,SysUserRole> = make_table_field_map!(&user_roles,role_id);
 ///
 ///
 ///
