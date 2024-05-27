@@ -1,10 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbatis::{
-        field_key, field_name, make_table, make_table_field_map, make_table_field_map_btree,
-        make_table_field_vec,
-    };
-    use std::collections::{BTreeMap, HashMap};
+    use rbatis::{field_key, field_name, make_table, make_table_field_map, make_table_field_map_btree, make_table_field_set, make_table_field_vec};
+    use std::collections::{BTreeMap, HashMap, HashSet};
 
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
     pub struct Base {
@@ -50,6 +47,24 @@ mod test {
         assert_eq!(c, vec!["id".to_string()]);
         println!("{:?}", c);
     }
+
+    #[test]
+    fn test_make_table_field_set() {
+        let t = MockTable {
+            base: Base {
+                pc_banner_img: Some("1".to_string()),
+                h5_banner_img: None,
+            },
+            id: Some("id".to_string()),
+        };
+        let arr = vec![t.clone()];
+        let c = make_table_field_set!(&arr, id);
+        let mut set = HashSet::new();
+        set.insert(t.id.clone().unwrap_or_default());
+        assert_eq!(c, set);
+        println!("{:?}", c);
+    }
+
     #[test]
     fn test_make_table_field_vec_2() {
         let t = MockTable {
