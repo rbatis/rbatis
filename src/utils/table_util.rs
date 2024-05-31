@@ -1,16 +1,18 @@
 /// Simplifies table construction by relying on the Default trait
 ///
 /// step1:  impl Default
+/// ```rust
 /// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
-/// MockTable{
+/// pub struct MockTable{
+///    pub id:Option<String>,
+///    pub name:Option<String>,
 /// }
-///
 /// //step2: make struct
 /// let activity = rbatis::table!(MockTable{
 ///             id : "12312".to_string(),
-///             delete_flag : 1,
 ///             name:  None,
-///             });
+///    });
+/// ```
 #[macro_export]
 macro_rules! table {
         ($t:path{ $($key:ident:$value:expr$(,)?)+ }) => {
@@ -26,12 +28,13 @@ macro_rules! table {
 ///
 /// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
+///```rust
 ///      struct SysUserRole{
-///         pub role_id:String
+///         pub role_id: Option<String>
 ///      }
-///      let user_roles: Vec<SysUserRole>;
-///      let role_ids:Vec<String> = table_field_vec!(&user_roles,role_id);
-///
+///      let user_roles: Vec<SysUserRole> = vec![];
+///      let role_ids:Vec<String> = rbatis::table_field_vec!(&user_roles,role_id);
+/// ```
 ///
 ///
 #[allow(unused_macros)]
@@ -56,12 +59,14 @@ macro_rules! table_field_vec {
 ///
 /// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
-///      struct SysUserRole{
-///         pub role_id:String
-///      }
-///      let user_roles: Vec<SysUserRole>;
-///      let role_ids:HashSet<String> = table_field_vec!(&user_roles,role_id);
-///
+/// ```rust
+///use std::collections::HashSet;
+/// pub struct SysUserRole{
+///  pub role_id:Option<String>
+///}
+///let user_roles: Vec<SysUserRole> = vec![];
+///let role_ids:HashSet<String> = rbatis::table_field_set!(&user_roles,role_id);
+///```
 ///
 ///
 #[allow(unused_macros)]
@@ -86,12 +91,16 @@ macro_rules! table_field_set {
 ///
 /// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
-///      struct SysUserRole{
-///         pub role_id:String
-///      }
-///      let user_roles: Vec<SysUserRole>;
-///      let role_ids: HashMap<String,SysUserRole> = table_field_map!(&user_roles,role_id);
+/// ```rust
+///use std::collections::HashMap;
 ///
+///#[derive(Clone)]
+///pub struct SysUserRole{
+///   pub role_id: Option<String>
+///}
+///let user_roles: Vec<SysUserRole> = vec![];
+///let role_ids: HashMap<String,SysUserRole> = rbatis::table_field_map!(&user_roles,role_id);
+///```
 ///
 ///
 #[allow(unused_macros)]
@@ -116,12 +125,13 @@ macro_rules! table_field_map {
 ///
 /// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
-///      struct SysUserRole{
-///         pub role_id:String
-///      }
-///      let user_roles: Vec<SysUserRole>;
-///      let role_ids = table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
-///
+/// ```rust
+///pub struct SysUserRole{
+///   pub role_id: Option<String>
+/// }
+///let user_roles: Vec<SysUserRole>=vec![];
+///let role_ids = rbatis::table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///```
 ///
 ///
 #[allow(unused_macros)]
@@ -144,7 +154,12 @@ macro_rules! table_field_map_btree {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=field_name!(MockTable.id);
+///```rust
+///pub struct MockTable{
+///  pub id:String
+///}
+/// let name=rbatis::field_name!(MockTable.id);
+/// ```
 ///
 #[allow(unused_macros)]
 #[macro_export]
@@ -172,7 +187,13 @@ macro_rules! field_name {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-/// let name=field_key!(MockTable::id);
+///
+///```rust
+///pub struct MockTable{
+///  pub id:String
+///}
+/// let name = rbatis::field_key!(MockTable::id);
+/// ```
 ///
 #[allow(unused_macros)]
 #[macro_export]
