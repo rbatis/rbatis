@@ -93,7 +93,7 @@ macro_rules! table_field_set {
 ///   pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
-///let role_ids: HashMap<String,SysUserRole> = table_field_map!(&user_roles,role_id);
+///let role_ids: HashMap<String,SysUserRole> = table_field_map!(user_roles,role_id);
 ///```
 #[allow(unused_macros)]
 #[macro_export]
@@ -102,9 +102,9 @@ macro_rules! table_field_map {
         let vec = $vec_ref;
         let mut ids = std::collections::HashMap::with_capacity(vec.len());
         for item in vec {
-              match &item $(.$field_name)+ {
-                std::option::Option::Some(v) => {
-                    ids.insert(v.clone(), item.clone());
+              match item $(.$field_name)+ {
+                std::option::Option::Some(ref v) => {
+                    ids.insert(v.clone(), item);
                 }
                 _ => {}
             }
@@ -133,8 +133,8 @@ macro_rules! table_field_btree {
         let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
              match &item $(.$field_name)+ {
-                std::option::Option::Some(v) => {
-                    ids.insert(v.clone(), item.clone());
+                std::option::Option::Some(ref v) => {
+                    ids.insert(v.clone(), item);
                 }
                 _ => {}
             }
@@ -217,8 +217,8 @@ macro_rules! make_table_field_map_btree {
         let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
              match &item $(.$field_name)+ {
-                std::option::Option::Some(v) => {
-                    ids.insert(v.clone(), item.clone());
+                std::option::Option::Some(ref v) => {
+                    ids.insert(v.clone(), item);
                 }
                 _ => {}
             }
@@ -232,11 +232,12 @@ macro_rules! make_table_field_map_btree {
 #[macro_export]
 macro_rules! make_table_field_map {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
-        let mut ids = std::collections::HashMap::with_capacity($vec_ref.len());
-        for item in $vec_ref {
-              match &item $(.$field_name)+ {
-                std::option::Option::Some(v) => {
-                    ids.insert(v.clone(), item.clone());
+        let vec = $vec_ref;
+        let mut ids = std::collections::HashMap::with_capacity(vec.len());
+        for item in vec {
+              match item $(.$field_name)+ {
+                std::option::Option::Some(ref v) => {
+                    ids.insert(v.clone(), item);
                 }
                 _ => {}
             }

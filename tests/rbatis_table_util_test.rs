@@ -89,7 +89,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_map!(&arr, id);
+        let c = table_field_map!(arr, id);
         assert_eq!(c, {
             let mut m = HashMap::new();
             m.insert(
@@ -116,7 +116,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_map!(&arr, base.pc_banner_img);
+        let c = table_field_map!(arr, base.pc_banner_img);
         assert_eq!(c, {
             let mut m = HashMap::new();
             m.insert(
@@ -143,7 +143,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_btree!(&arr, id);
+        let c = table_field_btree!(arr, id);
         assert_eq!(c, {
             let mut m = BTreeMap::new();
             m.insert(
@@ -170,7 +170,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_btree!(&arr, base.pc_banner_img);
+        let c = table_field_btree!(arr, base.pc_banner_img);
         assert_eq!(c, {
             let mut m = BTreeMap::new();
             m.insert(
