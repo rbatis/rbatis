@@ -246,7 +246,7 @@ macro_rules! make_table_field_map_btree {
         for item in $vec_ref {
              match &item $(.$field_name)+ {
                 std::option::Option::Some(ref v) => {
-                    ids.insert(v.clone(), item);
+                    ids.insert(v.clone(), item.clone());
                 }
                 _ => {}
             }
@@ -265,7 +265,7 @@ macro_rules! make_table_field_map {
         for item in vec {
               match item $(.$field_name)+ {
                 std::option::Option::Some(ref v) => {
-                    ids.insert(v.clone(), item);
+                    ids.insert(v.clone(), item.clone());
                 }
                 _ => {}
             }
