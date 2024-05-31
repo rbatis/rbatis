@@ -55,9 +55,9 @@ macro_rules! table_field_vec {
         let vec = $vec_ref;
         let mut ids = std::vec::Vec::with_capacity(vec.len());
         for item in vec {
-            match item $(.$field_name)+ {
+            match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
-                    ids.push(v);
+                    ids.push(v.clone());
                 }
                 _ => {}
             }
@@ -99,9 +99,9 @@ macro_rules! table_field_set {
         let vec = $vec_ref;
         let mut ids = std::collections::HashSet::with_capacity(vec.len());
         for item in vec {
-             match item $(.$field_name)+ {
+             match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
-                    ids.insert(v);
+                    ids.insert(v.clone());
                 }
                 _ => {}
             }
