@@ -2,13 +2,14 @@
 ///
 /// step1:  impl Default
 /// ```rust
+/// use rbatis::table;
 /// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///    pub id:Option<String>,
 ///    pub name:Option<String>,
 /// }
 /// //step2: make struct
-/// let activity = rbatis::table!(MockTable{
+/// let activity = table!(MockTable{
 ///             id : "12312".to_string(),
 ///             name:  None,
 ///    });
@@ -24,19 +25,15 @@ macro_rules! table {
         }
 }
 /// take the target Vec member attribute Vec collection
-/// vec_ref: a reference to vec, field_name: the field name of the structure
-///
-/// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
 ///```rust
-///      struct SysUserRole{
-///         pub role_id: Option<String>
-///      }
-///      let user_roles: Vec<SysUserRole> = vec![];
-///      let role_ids:Vec<String> = rbatis::table_field_vec!(&user_roles,role_id);
+///use rbatis::table_field_vec;
+///struct SysUserRole{
+///  pub role_id: Option<String>
+///}
+///let user_roles: Vec<SysUserRole> = vec![];
+///let role_ids:Vec<String> = table_field_vec!(&user_roles,role_id);
 /// ```
-///
-///
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! table_field_vec {
@@ -55,20 +52,17 @@ macro_rules! table_field_vec {
 }
 
 /// take the target Vec member attribute Vec collection
-/// vec_ref: a reference to vec, field_name: the field name of the structure
-///
-/// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
 /// ```rust
 ///use std::collections::HashSet;
-/// pub struct SysUserRole{
+///use rbatis::table_field_set;
+///
+///pub struct SysUserRole{
 ///  pub role_id:Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
-///let role_ids:HashSet<String> = rbatis::table_field_set!(&user_roles,role_id);
+///let role_ids:HashSet<String> = table_field_set!(&user_roles,role_id);
 ///```
-///
-///
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! table_field_set {
@@ -87,22 +81,18 @@ macro_rules! table_field_set {
 }
 
 /// Gets the HashMap collection of member attributes of the target Vec
-/// vec_ref: vec reference，field_name: the field name of the structure
-///
-/// need impl Clone or #[derive(Clone, Debug)]
 /// for example:
 /// ```rust
 ///use std::collections::HashMap;
+///use rbatis::table_field_map;
 ///
 ///#[derive(Clone)]
 ///pub struct SysUserRole{
 ///   pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
-///let role_ids: HashMap<String,SysUserRole> = rbatis::table_field_map!(&user_roles,role_id);
+///let role_ids: HashMap<String,SysUserRole> = table_field_map!(&user_roles,role_id);
 ///```
-///
-///
 #[allow(unused_macros)]
 #[macro_export]
 macro_rules! table_field_map {
@@ -120,17 +110,16 @@ macro_rules! table_field_map {
     }};
 }
 
-/// Gets the HashMap collection of member attributes of the target Vec
-/// vec_ref: vec reference，field_name: the field name of the structure
-///
-/// need impl Clone or #[derive(Clone, Debug)]
+/// Gets the BtreeMap collection of member attributes of the target Vec
 /// for example:
 /// ```rust
+///use rbatis::table_field_map_btree;
+///
 ///pub struct SysUserRole{
 ///   pub role_id: Option<String>
-/// }
+///}
 ///let user_roles: Vec<SysUserRole>=vec![];
-///let role_ids = rbatis::table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///let role_ids = table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
 ///```
 ///
 ///
@@ -158,7 +147,7 @@ macro_rules! table_field_map_btree {
 ///pub struct MockTable{
 ///  pub id:String
 ///}
-/// let name=rbatis::field_name!(MockTable.id);
+///let name=rbatis::field_name!(MockTable.id);
 /// ```
 ///
 #[allow(unused_macros)]
@@ -187,12 +176,11 @@ macro_rules! field_name {
 /// Used to simulate enumerations to improve code maintainability.
 /// this is return &str data
 /// for example:
-///
 ///```rust
 ///pub struct MockTable{
 ///  pub id:String
 ///}
-/// let name = rbatis::field_key!(MockTable::id);
+///let name = rbatis::field_key!(MockTable::id);
 /// ```
 ///
 #[allow(unused_macros)]
