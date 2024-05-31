@@ -92,6 +92,9 @@ path = "src/plugin_intercept_log_scope.rs"
 [[bin]]
 name = "plugin_intercept_returing_id"
 path = "src/plugin_intercept_returing_id.rs"
+[[bin]]
+name = "table_util"
+path = "src/table_util.rs"
 [dependencies]
 #test pool custom
 deadpool = "0.12.0"
