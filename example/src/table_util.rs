@@ -31,18 +31,18 @@ fn main() {
             id: Some(1),
             name: Some("1".to_string()),
         })];
-    //ref
+    //map ref
     let hash = table_field_map!(&tables,id);
     println!("---hash={}", rbs::to_value!(hash));
-    //owned
+    //map owned
     let hash_owned = table_field_map!(tables.clone(),id);
     println!("---hash={}", rbs::to_value!(hash_owned));
-    //owned
-    let btree_owned = table_field_btree!(tables.clone(),id);
-    println!("---btree_owned={}", rbs::to_value!(btree_owned));
-    //ref
+    //btree ref
     let btree = table_field_btree!(&tables,id);
     println!("---btree={}", rbs::to_value!(btree));
+    //btree owned
+    let btree_owned = table_field_btree!(tables.clone(),id);
+    println!("---btree_owned={}", rbs::to_value!(btree_owned));
     //vec<ref>
     let ids= table_field_vec!(&tables,id);
     println!("---ids={}", rbs::to_value!(ids));
