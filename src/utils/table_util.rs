@@ -93,6 +93,7 @@ macro_rules! table_field_set {
 ///   pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
+///let role_ids_ref: HashMap<String,&SysUserRole> = table_field_map!(&user_roles,role_id);
 ///let role_ids: HashMap<String,SysUserRole> = table_field_map!(user_roles,role_id);
 ///```
 #[allow(unused_macros)]
@@ -116,13 +117,15 @@ macro_rules! table_field_map {
 /// Gets the BtreeMap collection of member attributes of the target Vec
 /// for example:
 /// ```rust
-///use rbatis::table_field_btree;
+///use std::collections::BTreeMap;
+/// use rbatis::table_field_btree;
 ///
 ///pub struct SysUserRole{
 ///   pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole>=vec![];
-///let role_ids = table_field_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///let role_ids_ref: BTreeMap<String,&SysUserRole> = table_field_btree!(&user_roles,role_id);
+///let role_ids_owner: BTreeMap<String,SysUserRole> = table_field_btree!(user_roles,role_id);
 ///```
 ///
 ///
