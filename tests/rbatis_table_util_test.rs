@@ -58,7 +58,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t.clone()];
-        let c = table_field_set!(&arr, id);
+        let c = table_field_set!(arr, id);
         let mut set = HashSet::new();
         set.insert(t.id.clone().unwrap_or_default());
         assert_eq!(c, set);
@@ -75,7 +75,7 @@ mod test {
             id: None,
         };
         let arr = vec![t];
-        let c = table_field_vec!(&arr, base.pc_banner_img);
+        let c = table_field_vec!(arr, base.pc_banner_img);
         assert_eq!(c, vec!["1".to_string()]);
         println!("{:?}", c);
     }
