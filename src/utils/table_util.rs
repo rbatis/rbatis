@@ -9,10 +9,7 @@
 ///    pub name:Option<String>,
 /// }
 /// //step2: make struct
-/// let activity = table!(MockTable{
-///             id : "12312".to_string(),
-///             name:  None,
-///    });
+/// let activity = table!(MockTable{id : "12312".to_string()});
 /// ```
 #[macro_export]
 macro_rules! table {
