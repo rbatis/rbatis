@@ -116,19 +116,19 @@ macro_rules! table_field_map {
 /// Gets the BtreeMap collection of member attributes of the target Vec
 /// for example:
 /// ```rust
-///use rbatis::table_field_map_btree;
+///use rbatis::table_field_btree;
 ///
 ///pub struct SysUserRole{
 ///   pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole>=vec![];
-///let role_ids = table_field_map_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
+///let role_ids = table_field_btree!(&user_roles,role_id); // role_ids: HashMap<String,SysUserRole>
 ///```
 ///
 ///
 #[allow(unused_macros)]
 #[macro_export]
-macro_rules! table_field_map_btree {
+macro_rules! table_field_btree {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
         let mut ids = std::collections::BTreeMap::new();
         for item in $vec_ref {
@@ -210,9 +210,7 @@ macro_rules! field_key {
 }
 
 
-
-
-#[deprecated(note = "please use table_field_map_btree!")]
+#[deprecated(note = "please use table_field_btree!")]
 #[macro_export]
 macro_rules! make_table_field_map_btree {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{

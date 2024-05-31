@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use rbatis::{field_key, field_name, table_field_set, table, table_field_map, table_field_map_btree, table_field_vec};
+    use rbatis::{field_key, field_name, table_field_set, table, table_field_map, table_field_btree, table_field_vec};
     use std::collections::{BTreeMap, HashMap, HashSet};
 
     #[derive(Clone, Debug, Eq, PartialEq, Default)]
@@ -143,7 +143,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_map_btree!(&arr, id);
+        let c = table_field_btree!(&arr, id);
         assert_eq!(c, {
             let mut m = BTreeMap::new();
             m.insert(
@@ -170,7 +170,7 @@ mod test {
             id: Some("id".to_string()),
         };
         let arr = vec![t];
-        let c = table_field_map_btree!(&arr, base.pc_banner_img);
+        let c = table_field_btree!(&arr, base.pc_banner_img);
         assert_eq!(c, {
             let mut m = BTreeMap::new();
             m.insert(
