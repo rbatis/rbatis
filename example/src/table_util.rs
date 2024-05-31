@@ -1,7 +1,7 @@
 use rbatis::rbdc::DateTime;
 use rbatis::{table, table_field_btree, table_field_map, table_field_vec};
 
-#[derive(serde::Serialize, serde::Deserialize,Default,Debug)]
+#[derive(serde::Serialize, serde::Deserialize,Default,Debug,Clone)]
 pub struct Activity {
     pub id: Option<i64>,
     pub name: Option<String>,
@@ -31,13 +31,22 @@ fn main() {
             id: Some(1),
             name: Some("1".to_string()),
         })];
+    //ref
     let hash = table_field_map!(&tables,id);
     println!("---hash={}", rbs::to_value!(hash));
-    //auto sort by id
+    //owned
+    let hash_owned = table_field_map!(tables.clone(),id);
+    println!("---hash={}", rbs::to_value!(hash_owned));
+    //owned
+    let btree_owned = table_field_btree!(tables.clone(),id);
+    println!("---btree_owned={}", rbs::to_value!(btree_owned));
+    //ref
     let btree = table_field_btree!(&tables,id);
     println!("---btree={}", rbs::to_value!(btree));
+    //vec<ref>
     let ids= table_field_vec!(&tables,id);
     println!("---ids={}", rbs::to_value!(ids));
+    //vec<owned>
     let ids= table_field_vec!(tables,id);
     println!("---ids owned={:?}", ids);
 }
