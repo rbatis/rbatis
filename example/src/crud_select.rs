@@ -48,18 +48,23 @@ pub async fn main() {
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
     )
-    .unwrap();
+        .unwrap();
     // table sync done
     sync_table(&rb).await;
-
-    let data = Activity::select_by_column(&rb, "id", "1").await;
-    println!("select_by_id = {}", json!(data));
 
     let data = Activity::select_all_by_id(&rb, "1", "1").await;
     println!("select_all_by_id = {}", json!(data));
 
     let data = Activity::select_by_id(&rb, "1").await;
     println!("select_by_id = {}", json!(data));
+
+    let data = Activity::select_by_column(&rb, "id", "1").await;
+    println!("select_by_id = {}", json!(data));
+    if let Ok(v) = data {
+        //into HashMap
+        let map = table_field_map!(v,id);
+        println!("select_by_id hash_map= {}", json!(map));
+    }
 }
 
 async fn sync_table(rb: &RBatis) {
@@ -83,6 +88,6 @@ async fn sync_table(rb: &RBatis) {
         },
         "activity",
     )
-    .await;
+        .await;
     fast_log::LOGGER.set_level(LevelFilter::Debug);
 }
