@@ -38,8 +38,9 @@ macro_rules! table {
 #[macro_export]
 macro_rules! table_field_vec {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
-        let mut ids = std::vec::Vec::with_capacity($vec_ref.len());
-        for item in $vec_ref {
+        let vec = $vec_ref;
+        let mut ids = std::vec::Vec::with_capacity(vec.len());
+        for item in vec {
             match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.push(v.clone());
@@ -67,8 +68,9 @@ macro_rules! table_field_vec {
 #[macro_export]
 macro_rules! table_field_set {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
-        let mut ids = std::collections::HashSet::with_capacity($vec_ref.len());
-        for item in $vec_ref {
+        let vec = $vec_ref;
+        let mut ids = std::collections::HashSet::with_capacity(vec.len());
+        for item in vec {
              match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone());
@@ -97,8 +99,9 @@ macro_rules! table_field_set {
 #[macro_export]
 macro_rules! table_field_map {
     ($vec_ref:expr,$($field_name:ident$(.)?)+) => {{
-        let mut ids = std::collections::HashMap::with_capacity($vec_ref.len());
-        for item in $vec_ref {
+        let vec = $vec_ref;
+        let mut ids = std::collections::HashMap::with_capacity(vec.len());
+        for item in vec {
               match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
                     ids.insert(v.clone(), item.clone());
