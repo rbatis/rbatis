@@ -487,7 +487,7 @@ mod test {
     }
 
     #[test]
-    fn test_update_by_column_skip() {
+    fn test_update_by_column_skip_null() {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());

@@ -291,7 +291,7 @@ macro_rules! impl_update {
                                    for k,v in table:
                                      if k == column:
                                         continue:
-                                     if v == null && (skip_null == true || skip_null == null):
+                                     if skip_null != false && v == null:
                                         continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
