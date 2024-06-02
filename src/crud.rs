@@ -291,7 +291,7 @@ macro_rules! impl_update {
                                    for k,v in table:
                                      if k == column:
                                         continue:
-                                     if skip_null != false && v == null:
+                                     if skip_null == true && v == null:
                                         continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
@@ -299,6 +299,7 @@ macro_rules! impl_update {
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
                       table: &rbs::Value,
+                      skip_null:bool,
                       $($param_key:$param_type,)*
                   ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                       impled!()
@@ -311,7 +312,7 @@ macro_rules! impl_update {
                          table_name = snake_name();
                   }
                   let table = rbs::to_value!(table);
-                  $fn_name(executor, table_name, &table, $($param_key,)*).await
+                  $fn_name(executor, table_name, &table,true, $($param_key,)*).await
             }
         }
     };
