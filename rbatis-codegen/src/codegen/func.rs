@@ -256,7 +256,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
         Expr::Index(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
             return syn::parse_str::<Expr>(&format!(
-                "{}[{}]",
+                "&{}[{}]",
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
             ))
