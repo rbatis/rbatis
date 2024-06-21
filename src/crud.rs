@@ -178,16 +178,6 @@ macro_rules! impl_select {
           trim ',': for _,item in column_values:
              #{item},
           `)`"},$table_name);
-        $crate::impl_select!($table{select_and_columns(column_values: &[(&str,rbs::Value)]) -> Vec =>
-         "` where `
-          trim ' and ': for _,item in column_values:
-             `${item[0]} = #{item[1]} and `
-         "},$table_name);
-        $crate::impl_select!($table{select_or_columns(column_values: &[(&str,rbs::Value)]) -> Vec =>
-         "` where `
-          trim ' or ': for _,item in column_values:
-             `${item[0]} = #{item[1]} or `
-         "},$table_name);
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
