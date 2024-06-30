@@ -65,6 +65,99 @@ impl IndexMut<&str> for Value {
     }
 }
 
+
+impl Index<Value> for Value {
+    type Output = Value;
+
+    fn index(&self, index: Value) -> &Self::Output {
+        return match self {
+            Value::Array(arr) => {
+                let idx = index.as_u64().unwrap_or_default() as usize;
+                arr.index(idx)
+            }
+            Value::Map(map) => {
+                let s = index.as_str().unwrap_or_default();
+                map.index(s)
+            }
+            Value::Ext(_, ext) => {
+                ext.index(index)
+            }
+            _ => {
+                &Value::Null
+            }
+        }
+    }
+}
+
+impl Index<Value> for &Value {
+    type Output = Value;
+
+    fn index(&self, index: Value) -> &Self::Output {
+        return match self {
+            Value::Array(arr) => {
+                let idx = index.as_u64().unwrap_or_default() as usize;
+                arr.index(idx)
+            }
+            Value::Map(map) => {
+                let s = index.as_str().unwrap_or_default();
+                map.index(s)
+            }
+            Value::Ext(_, ext) => {
+                ext.index(index)
+            }
+            _ => {
+                &Value::Null
+            }
+        }
+    }
+}
+
+impl Index<&Value> for Value {
+    type Output = Value;
+
+    fn index(&self, index: &Value) -> &Self::Output {
+        return match self {
+            Value::Array(arr) => {
+                let idx = index.as_u64().unwrap_or_default() as usize;
+                arr.index(idx)
+            }
+            Value::Map(map) => {
+                let s = index.as_str().unwrap_or_default();
+                map.index(s)
+            }
+            Value::Ext(_, ext) => {
+                ext.index(index)
+            }
+            _ => {
+                &Value::Null
+            }
+        }
+    }
+}
+
+impl Index<&Value> for &Value {
+    type Output = Value;
+
+    fn index(&self, index: &Value) -> &Self::Output {
+        return match self {
+            Value::Array(arr) => {
+                let idx = index.as_u64().unwrap_or_default() as usize;
+                arr.index(idx)
+            }
+            Value::Map(map) => {
+                let s = index.as_str().unwrap_or_default();
+                map.index(s)
+            }
+            Value::Ext(_, ext) => {
+                ext.index(index)
+            }
+            _ => {
+                &Value::Null
+            }
+        }
+    }
+}
+
 impl Value {
     pub fn insert(&mut self, key: Value, value: Value) -> Option<Value> {
         match self {

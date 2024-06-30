@@ -358,7 +358,7 @@ mod test {
             };
             let r = MockTable::insert(&mut rb, &t).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
+            println!("{} [{}]", sql,Value::from(args.clone()));
             assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?)");
             assert_eq!(
                 args,
@@ -406,7 +406,7 @@ mod test {
             let ts = vec![t, t2];
             let r = MockTable::insert_batch(&mut rb, &ts, 10).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
+            println!("{} [{}]", sql,Value::from(args.clone()));
             assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?)");
             assert_eq!(
                 args,

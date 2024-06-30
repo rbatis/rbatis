@@ -717,6 +717,15 @@ impl<'a> IntoIterator for &'a Value {
     }
 }
 
+impl <'a,'b>IntoIterator for &'a&'b Value {
+    type Item = (Value, &'a Value);
+    type IntoIter = std::vec::IntoIter<(Value, &'a Value)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        (*self).into_iter()
+    }
+}
+
 impl From<Value> for bool {
     fn from(arg: Value) -> Self {
         arg.as_bool().unwrap_or_default()
