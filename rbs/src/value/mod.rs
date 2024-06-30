@@ -718,8 +718,8 @@ impl<'a> IntoIterator for &'a Value {
 }
 
 impl <'a,'b>IntoIterator for &'a&'b Value {
-    type Item = (Value, &'a Value);
-    type IntoIter = std::vec::IntoIter<(Value, &'a Value)>;
+    type Item = (Value, &'b Value);
+    type IntoIter = std::vec::IntoIter<(Value, &'b Value)>;
 
     fn into_iter(self) -> Self::IntoIter {
         (*self).into_iter()
