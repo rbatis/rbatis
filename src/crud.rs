@@ -86,10 +86,10 @@ macro_rules! impl_insert {
                          `) VALUES `
                       (
                       trim ',':
-                       for k,v in table:
+                       for k,v in tables[0]:
                          if v== null:
                             continue:
-                         #{v},
+                         #{table[k]},
                       ),
                     "
                 )]
