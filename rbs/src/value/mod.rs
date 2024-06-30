@@ -570,6 +570,7 @@ impl<'a> From<&'a [u8]> for Value {
         Value::Binary(v.into())
     }
 }
+
 impl From<Vec<Value>> for Value {
     #[inline]
     fn from(v: Vec<Value>) -> Self {
@@ -610,7 +611,7 @@ impl<V> FromIterator<V> for Value
 where
     V: Into<Value>,
 {
-    fn from_iter<I: IntoIterator<Item = V>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item=V>>(iter: I) -> Self {
         let v: Vec<Value> = iter.into_iter().map(|v| v.into()).collect();
         Value::Array(v)
     }
@@ -717,7 +718,7 @@ impl<'a> IntoIterator for &'a Value {
     }
 }
 
-impl <'a,'b>IntoIterator for &'a&'b Value {
+impl<'a, 'b> IntoIterator for &'a &'b Value {
     type Item = (Value, &'b Value);
     type IntoIter = std::vec::IntoIter<(Value, &'b Value)>;
 
@@ -863,6 +864,7 @@ mod test {
         println!("{}", v);
         assert_eq!("1", v.to_string());
     }
+
     #[test]
     fn test_iter() {
         let v = Value::Array(vec![Value::I32(1), Value::I32(2), Value::I32(3)]);
