@@ -403,6 +403,7 @@ mod test {
             };
             let mut t2 = t.clone();
             t2.id = "3".to_string().into();
+            t2.remark = None;
             let ts = vec![t, t2];
             let r = MockTable::insert_batch(&mut rb, &ts, 10).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
