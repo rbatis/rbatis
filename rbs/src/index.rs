@@ -85,32 +85,10 @@ impl Index<Value> for Value {
             _ => {
                 &Value::Null
             }
-        }
+        };
     }
 }
 
-impl Index<Value> for &Value {
-    type Output = Value;
-
-    fn index(&self, index: Value) -> &Self::Output {
-        return match self {
-            Value::Array(arr) => {
-                let idx = index.as_u64().unwrap_or_default() as usize;
-                arr.index(idx)
-            }
-            Value::Map(map) => {
-                let s = index.as_str().unwrap_or_default();
-                map.index(s)
-            }
-            Value::Ext(_, ext) => {
-                ext.index(index)
-            }
-            _ => {
-                &Value::Null
-            }
-        }
-    }
-}
 
 impl Index<&Value> for Value {
     type Output = Value;
@@ -131,28 +109,49 @@ impl Index<&Value> for Value {
             _ => {
                 &Value::Null
             }
+        };
+    }
+}
+
+
+impl IndexMut<Value> for Value {
+    fn index_mut(&mut self, index: Value) -> &mut Self::Output {
+        match self {
+            Value::Array(arr) => {
+                let idx = index.as_u64().unwrap_or_default() as usize;
+                arr.index_mut(idx)
+            }
+            Value::Map(map) => {
+                let s = index.as_str().unwrap_or_default();
+                map.index_mut(s)
+            }
+            Value::Ext(_, ext) => {
+                ext.index_mut(index)
+            }
+            _ => {
+                panic!("not map/array type")
+            }
         }
     }
 }
 
-impl Index<&Value> for &Value {
-    type Output = Value;
 
-    fn index(&self, index: &Value) -> &Self::Output {
-        return match self {
+impl IndexMut<&Value> for Value {
+    fn index_mut(&mut self, index: &Value) -> &mut Self::Output {
+        match self {
             Value::Array(arr) => {
                 let idx = index.as_u64().unwrap_or_default() as usize;
-                arr.index(idx)
+                arr.index_mut(idx)
             }
             Value::Map(map) => {
                 let s = index.as_str().unwrap_or_default();
-                map.index(s)
+                map.index_mut(s)
             }
             Value::Ext(_, ext) => {
-                ext.index(index)
+                ext.index_mut(index)
             }
             _ => {
-                &Value::Null
+                panic!("not map/array type")
             }
         }
     }
