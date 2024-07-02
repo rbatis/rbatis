@@ -1,14 +1,11 @@
-use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
-use rbatis::intercept_log::LogInterceptor;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::{async_trait, crud, Error, RBatis};
 use rbs::Value;
 use std::sync::Arc;
-use std::time::Duration;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Activity {
