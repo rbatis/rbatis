@@ -1,11 +1,12 @@
 ///PySql: gen select*,update*,insert*,delete* ... methods
 ///```rust
-/// use rbatis::{crud, Error, RBatis};
+/// use rbatis::{Error, RBatis};
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{ pub id: Option<String> }
-/// //crud!(MockTable{},"mock_table");
-/// crud!(MockTable{});
+/// pub struct MockTable{
+///    pub id: Option<String>
+/// }
+/// rbatis::crud!(MockTable{}); //or crud!(MockTable{},"mock_table");
 ///
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
@@ -48,7 +49,9 @@ macro_rules! crud {
 ///```rust
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{ pub id: Option<String> }
+/// pub struct MockTable{
+///   pub id: Option<String>
+/// }
 /// rbatis::impl_insert!(MockTable{});
 ///
 /// //use
@@ -161,7 +164,9 @@ macro_rules! impl_insert {
 ///```rust
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{ pub id: Option<String> }
+/// pub struct MockTable{
+///   pub id: Option<String>
+/// }
 /// /// default
 ///rbatis::impl_select!(MockTable{});
 ///rbatis::impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
@@ -220,7 +225,9 @@ macro_rules! impl_select {
 /// ```rust
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{ pub id: Option<String> }
+/// pub struct MockTable{
+///   pub id: Option<String>
+/// }
 /// rbatis::impl_update!(MockTable{});
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
