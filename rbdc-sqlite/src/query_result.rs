@@ -22,13 +22,3 @@ impl Extend<SqliteQueryResult> for SqliteQueryResult {
         }
     }
 }
-
-#[cfg(feature = "any")]
-impl From<SqliteQueryResult> for crate::any::AnyQueryResult {
-    fn from(done: SqliteQueryResult) -> Self {
-        crate::any::AnyQueryResult {
-            rows_affected: done.changes,
-            last_insert_id: Some(done.last_insert_rowid),
-        }
-    }
-}
