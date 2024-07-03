@@ -91,7 +91,7 @@ macro_rules! impl_insert {
                 )]
                 async fn insert_batch(
                     executor: &dyn $crate::executor::Executor,
-                    columns: &rbs::Value,
+                    columns: rbs::Value,
                     tables: rbs::Value,
                     table_name: &str,
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
@@ -134,7 +134,7 @@ macro_rules! impl_insert {
                     let columns = rbs::Value::from(columns);
                     let exec_result = insert_batch(
                         executor,
-                        &columns,
+                        columns,
                         table_values,
                         table_name.as_str(),
                     )
