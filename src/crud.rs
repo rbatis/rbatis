@@ -92,7 +92,7 @@ macro_rules! impl_insert {
                 async fn insert_batch(
                     executor: &dyn $crate::executor::Executor,
                     columns: &rbs::Value,
-                    tables: &[$table],
+                    tables: rbs::Value,
                     table_name: &str,
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
                 {
@@ -135,7 +135,7 @@ macro_rules! impl_insert {
                     let exec_result = insert_batch(
                         executor,
                         &columns,
-                        &tables[offset as usize..limit as usize],
+                        table_values,
                         table_name.as_str(),
                     )
                     .await?;
