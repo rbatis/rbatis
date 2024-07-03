@@ -79,22 +79,19 @@ macro_rules! impl_insert {
                       if idx == 0:
                          `(`
                          trim ',':
-                           for k,v in table:
-                              if v == null:
-                                 continue:
-                              ${k},
+                           for _,v in columns:
+                              ${v},
                          `) VALUES `
                       (
                       trim ',':
-                       for k,v in tables[0]:
-                         if v == null:
-                            continue:
-                         #{table[k]},
+                       for _,v in columns:
+                         #{table[v]},
                       ),
                     "
                 )]
                 async fn insert_batch(
                     executor: &dyn $crate::executor::Executor,
+                    columns: &rbs::Value,
                     tables: &[$table],
                     table_name: &str,
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
@@ -116,11 +113,28 @@ macro_rules! impl_insert {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
-                let ranges =
-                    $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
+                    let mut column_set = std::collections::HashSet::with_capacity(limit as usize);
+                    let table_values = rbs::to_value!(&tables[offset as usize..limit as usize]);
+                    for item in table_values.as_array().unwrap() {
+                          for (k,v) in &item {
+                               if (*v) != rbs::Value::Null{
+                                   column_set.insert(k);
+                               }
+                          }
+                    }
+                    let table = &table_values[0];
+                    let mut columns = Vec::with_capacity(table.len());
+                    for (column,_) in table {
+                        if column_set.contains(&column){
+                          columns.push(column);
+                        }
+                    }
+                    let columns = rbs::Value::from(columns);
                     let exec_result = insert_batch(
                         executor,
+                        &columns,
                         &tables[offset as usize..limit as usize],
                         table_name.as_str(),
                     )
