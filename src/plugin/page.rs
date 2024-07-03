@@ -372,6 +372,20 @@ mod test {
     }
 
     #[test]
+    fn test_page_into_range_zero() {
+        let mut v = vec![1];
+        v.clear();
+        let ranges = Page::<i32>::make_ranges(v.len() as u64, 3);
+        let mut new_v = vec![];
+        for (offset, limit) in ranges {
+            for i in offset..limit {
+                new_v.push(i + 1);
+            }
+        }
+        assert_eq!(v, new_v);
+    }
+
+    #[test]
     fn test_page_into_pages() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let pages = Page::make_pages(v.clone(), 3);
