@@ -25,7 +25,6 @@ async fn prepare(
     parameters: &[PgTypeInfo],
     metadata: Option<Arc<PgStatementMetadata>>,
 ) -> Result<(Oid, Arc<PgStatementMetadata>), Error> {
-    #![allow(dependency_on_unit_never_type_fallback)]
     let id = conn.next_statement_id;
     conn.next_statement_id.incr_one();
 
