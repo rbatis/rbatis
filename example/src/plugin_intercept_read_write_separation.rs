@@ -157,7 +157,7 @@ impl Intercept for ReadWriteIntercept {
             }
             Ok(None)
         } else {
-            println!("run on write database");
+            println!("---------------------------------run on write database--------------------------------------");
             Ok(Some(true))
         }
     }
