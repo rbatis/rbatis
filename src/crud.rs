@@ -76,10 +76,10 @@ macro_rules! impl_insert {
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 pub trait ColumnSet{
+                    /// take `vec![Table{"id":1}]` columns
                     fn column_sets(&self)->rbs::Value;
                 }
                 impl ColumnSet for rbs::Value {
-                    /// take `vec![Table{"id":1}]` columns
                     fn column_sets(&self) -> rbs::Value {
                         let len = self.len();
                         let mut column_set = std::collections::HashSet::with_capacity(len);
