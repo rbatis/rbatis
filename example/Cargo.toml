@@ -95,6 +95,9 @@ path = "src/plugin_intercept_returing_id.rs"
 [[bin]]
 name = "table_util"
 path = "src/table_util.rs"
+[[bin]]
+name = "plugin_intercept_read_write_separation"
+path = "src/plugin_intercept_read_write_separation.rs"
 [dependencies]
 #test pool custom
 deadpool = "0.12.0"
