@@ -75,7 +75,7 @@ macro_rules! impl_insert {
                 tables: &[$table],
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use crate::rbatis::sql::column::ColumnSet;
+                use $crate::sql::column::ColumnSet;
                 #[$crate::py_sql(
                     "`insert into ${table_name} `
                     trim ',':
