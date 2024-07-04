@@ -77,10 +77,9 @@ macro_rules! impl_insert {
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use crate::rbatis::sql::column::ColumnSet;
                 #[$crate::py_sql(
-                    "
-                    bind columns = tables.column_sets():
-                    `insert into ${table_name} `
+                    "`insert into ${table_name} `
                     trim ',':
+                     bind columns = tables.column_sets():
                      for idx,table in tables:
                       if idx == 0:
                          `(`
