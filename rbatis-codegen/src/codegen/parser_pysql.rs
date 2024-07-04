@@ -338,8 +338,8 @@ impl NodeType {
                 ));
             }
             return Ok(NodeType::NBind(BindNode {
-                name: name_value[0].to_owned(),
-                value: name_value[1].to_owned(),
+                name: name_value[0].to_owned().trim().to_string(),
+                value: name_value[1].to_owned().trim().to_string(),
             }));
         } else if trim_express.starts_with(SetNode::name()) {
             return Ok(NodeType::NSet(SetNode { childs }));

@@ -75,8 +75,35 @@ macro_rules! impl_insert {
                 tables: &[$table],
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                 pub trait ColumnSet{
+                      fn columns_set(&self)->rbs::Value;
+                 }
+                 impl ColumnSet for rbs::Value {
+                      fn columns_set(&self) -> Value {
+                           let mut column_set = std::collections::HashSet::with_capacity(self.len());
+                           for item in self.as_array().unwrap() {
+                             for (k,v) in &item {
+                               if (*v) != rbs::Value::Null{
+                                   column_set.insert(k);
+                               }
+                             }
+                           }
+                           let table = &self[0];
+                           let mut columns = Vec::with_capacity(table.len());
+                           for (column,_) in table {
+                               if column_set.contains(&column){
+                                 columns.push(column);
+                               }
+                           }
+                           let columns = rbs::Value::from(columns);
+                           columns
+                      }
+                 }
+
                 #[$crate::py_sql(
-                    "`insert into ${table_name} `
+                    "
+                    bind columns = tables.columns_set():
+                    `insert into ${table_name} `
                     trim ',':
                      for idx,table in tables:
                       if idx == 0:
@@ -94,8 +121,7 @@ macro_rules! impl_insert {
                 )]
                 async fn insert_batch(
                     executor: &dyn $crate::executor::Executor,
-                    columns: rbs::Value,
-                    tables: rbs::Value,
+                    tables: &[$table],
                     table_name: &str,
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
                 {
@@ -118,27 +144,9 @@ macro_rules! impl_insert {
                 };
                 let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
-                    let mut column_set = std::collections::HashSet::with_capacity(limit as usize);
-                    let table_values = rbs::to_value!(&tables[offset as usize..limit as usize]);
-                    for item in table_values.as_array().unwrap() {
-                          for (k,v) in &item {
-                               if (*v) != rbs::Value::Null{
-                                   column_set.insert(k);
-                               }
-                          }
-                    }
-                    let table = &table_values[0];
-                    let mut columns = Vec::with_capacity(table.len());
-                    for (column,_) in table {
-                        if column_set.contains(&column){
-                          columns.push(column);
-                        }
-                    }
-                    let columns = rbs::Value::from(columns);
                     let exec_result = insert_batch(
                         executor,
-                        columns,
-                        table_values,
+                        &tables[offset as usize..limit as usize],
                         table_name.as_str(),
                     )
                     .await?;
