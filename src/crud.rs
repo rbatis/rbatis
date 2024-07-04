@@ -79,7 +79,7 @@ macro_rules! impl_insert {
                       fn columns_set(&self)->rbs::Value;
                  }
                  impl ColumnSet for rbs::Value {
-                      fn columns_set(&self) -> Value {
+                      fn columns_set(&self) -> rbs::Value {
                            let mut column_set = std::collections::HashSet::with_capacity(self.len());
                            for item in self.as_array().unwrap() {
                              for (k,v) in &item {
