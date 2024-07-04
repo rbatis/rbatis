@@ -128,7 +128,7 @@ pub struct ReadWriteIntercept {
 impl Intercept for ReadWriteIntercept {
     async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
         if sql.trim().starts_with("select") {
-            println!("---------------------------------run on read database--------------------------------------");
+            println!("-------------------------------------------------------run on read database------------------------------------------------------------");
             let conn = self.read.acquire().await?;
             let r = conn.query(&sql.clone(), args.clone()).await;
             match r {
@@ -157,7 +157,7 @@ impl Intercept for ReadWriteIntercept {
             }
             Ok(None)
         } else {
-            println!("---------------------------------run on write database--------------------------------------");
+            println!("-------------------------------------------------------run on write database------------------------------------------------------------");
             Ok(Some(true))
         }
     }
