@@ -80,7 +80,8 @@ macro_rules! impl_insert {
                  }
                  impl ColumnSet for rbs::Value {
                       fn column_sets(&self) -> rbs::Value {
-                           let mut column_set = std::collections::HashSet::with_capacity(self.len());
+                           let len = self.len();
+                           let mut column_set = std::collections::HashSet::with_capacity(len);
                            for item in self.as_array().unwrap() {
                              for (k,v) in &item {
                                if (*v) != rbs::Value::Null{
@@ -88,14 +89,17 @@ macro_rules! impl_insert {
                                }
                              }
                            }
-                           let table = &self[0];
-                           let mut columns = Vec::with_capacity(table.len());
-                           for (column,_) in table {
-                               if column_set.contains(&column){
-                                 columns.push(column);
-                               }
+                           let mut columns = rbs::Value::Array(vec![]);
+                           if len > 0 {
+                             let table = &self[0];
+                             let mut column_datas = Vec::with_capacity(table.len());
+                             for (column,_) in table {
+                                 if column_set.contains(&column){
+                                   column_datas.push(column);
+                                 }
+                             }
+                             columns = rbs::Value::from(column_datas);
                            }
-                           let columns = rbs::Value::from(columns);
                            columns
                       }
                  }
