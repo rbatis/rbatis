@@ -24,6 +24,7 @@
 * macro_proc_pysql: Demonstrates the usage of pysql.
 * macro_proc_rawsql: Shows how to use raw SQL statements in rbatis.
 * plugin_intercept: Demonstrates the usage of interceptors in rbatis.
+* plugin_intercept_read_write_separation: Read write separation DataBase 
 * plugin_table_sync: Illustrates automatically synchronizing struct definitions to table structures.
 * pool_custom: Shows how to customize connection pool parameters.
 * table_extend.rs: Demonstrates a struct inheriting members from another struct.
