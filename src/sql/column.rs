@@ -1,7 +1,21 @@
+
+
+/// take `vec![Table{"id":1}]` columns
+/// ```rust
+/// use rbatis::sql::column::ColumnSet;
+/// use rbs::Value;
+/// let tables = vec![rbs::to_value!{"id":1,"name":2}];
+/// let tables: Value = rbs::to_value!(&tables);
+/// let columns = tables.column_sets();
+/// println!("{}",columns);//vec!["id","name"]
+/// ```
 pub trait ColumnSet{
+    /// take `vec![Table{"id":1}]` columns
     fn column_sets(&self)->rbs::Value;
 }
 impl ColumnSet for rbs::Value {
+
+    /// take `vec![Table{"id":1}]` columns
     fn column_sets(&self) -> rbs::Value {
         let len = self.len();
         let mut column_set = std::collections::HashSet::with_capacity(len);
