@@ -1,12 +1,11 @@
 use crate::value::map::ValueMap;
-use crate::Value;
+use crate::{Error, Value};
 use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
 use std::fmt::Display;
 
-use super::Error;
 
 impl Serialize for Value {
     fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
