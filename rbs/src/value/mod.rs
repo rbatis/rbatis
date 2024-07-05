@@ -9,7 +9,7 @@ use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
 
-pub mod ext;
+pub mod serde;
 pub mod map;
 
 /// Represents any valid MessagePack value.
