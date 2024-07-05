@@ -844,9 +844,8 @@ impl Hash for Value {
                     v.hash(state);
                 }
             }
-            Value::Ext(s, v) => {
+            Value::Ext(_, v) => {
                 state.write_u8(12);
-                s.hash(state);
                 v.hash(state);
             }
         }
