@@ -4,8 +4,9 @@ extern crate core;
 
 pub mod index;
 pub mod value;
+mod error;
 
-pub use crate::value::serde::Error;
+pub use crate::error::Error;
 pub use value::serde::{from_value, from_value_ref};
 pub use value::serde::{to_value, to_value_def};
 pub use value::Value;
