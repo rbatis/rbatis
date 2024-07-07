@@ -38,7 +38,7 @@ pub enum Value {
     Array(Vec<Self>),
     /// Map<Key,Value>.
     Map(ValueMap),
-    /// Extended implements Extension interface
+    /// Ext(Reflection Type Name,Value)
     Ext(&'static str, Box<Self>),
 }
 
