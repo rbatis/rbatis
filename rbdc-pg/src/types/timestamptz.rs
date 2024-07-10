@@ -9,11 +9,47 @@ use rbs::Value;
 use std::fmt::{Display, Formatter};
 use std::io::Cursor;
 use std::str::FromStr;
+use serde::Deserializer;
 
 /// (timestamp,offset sec)
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(serde::Serialize, Debug, Clone, Eq, PartialEq)]
 #[serde(rename = "Timestamptz")]
 pub struct Timestamptz(pub i64, pub i32);
+
+impl<'de> serde::Deserialize<'de> for Timestamptz {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Error;
+        #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq)]
+        #[serde(rename = "Timestamptz")]
+        struct Timestamptz1(pub i64, pub i32);
+
+        let v = Value::deserialize(deserializer)?;
+        match v {
+            Value::String(v) => {
+                let date = fastdate::DateTime::from_str(&v).map_err(|e| D::Error::custom(e.to_string()))?;
+                Ok(Timestamptz(date.unix_timestamp_millis(), date.offset()))
+            }
+            Value::Array(v) => {
+                if v.len() == 2 && v[0].is_i64() && v[1].is_i32() {
+                    let r: Timestamptz1 = rbs::from_value(Value::Ext("Timestamptz", Box::new(Value::Array(v)))).map_err(|e| D::Error::custom(e.to_string()))?;
+                    Ok(Self(r.0, r.1))
+                } else {
+                    Err(D::Error::custom("Timestamptz must be String or Value::Ext(\"Timestamptz\", Array([I64(0), I32(0)]))"))
+                }
+            }
+            Value::Ext(t, v) => {
+                let v: Timestamptz1 = rbs::from_value(Value::Ext(t, v)).map_err(|e| D::Error::custom(e.to_string()))?;
+                Ok(Self(v.0, v.1))
+            }
+            _ => {
+                Err(D::Error::custom("Timestamptz must be String or Value::Ext(\"Timestamptz\", Array([I64(0), I32(0)]))"))
+            }
+        }
+    }
+}
 
 impl Timestamptz {
     pub fn now() -> Self {
@@ -114,5 +150,13 @@ mod test {
         println!("{:?}", v);
         let r: Timestamptz = rbs::from_value(v).unwrap();
         assert_eq!(r, tz);
+    }
+
+    //2024-07-26 09:03:48+00
+    #[test]
+    fn test_de_date() {
+        let v = rbs::Value::String("2024-07-26 09:03:48+00".to_string());
+        println!("{:?}", v);
+        let r: Timestamptz = rbs::from_value(v).unwrap();
     }
 }
