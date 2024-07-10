@@ -97,6 +97,17 @@ impl Value {
         }
     }
 
+
+    /// Returns true if the `Value` is convertible to an i32. Returns false otherwise.
+    #[inline]
+    pub fn is_i32(&self) -> bool {
+        if let Value::I32(_) = *self {
+            true
+        } else {
+            false
+        }
+    }
+
     /// Returns true if the `Value` is convertible to an u64. Returns false otherwise.
     ///
     #[inline]
