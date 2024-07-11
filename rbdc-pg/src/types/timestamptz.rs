@@ -3,7 +3,7 @@ use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
 use crate::value::{PgValue, PgValueFormat};
 use byteorder::{BigEndian, ReadBytesExt};
-use fastdate::offset_sec;
+use fastdate::{DateTime, offset_sec};
 use rbdc::Error;
 use rbs::Value;
 use std::fmt::{Display, Formatter};
@@ -54,18 +54,18 @@ impl<'de> serde::Deserialize<'de> for Timestamptz {
 impl Timestamptz {
     pub fn now() -> Self {
         let now = fastdate::DateTime::now();
-        Self {
-            0: now.unix_timestamp_millis(),
-            1: now.offset(),
-        }
+        Self::from(now)
     }
 
     pub fn utc() -> Self {
         let now = fastdate::DateTime::utc();
-        Self {
-            0: now.unix_timestamp_millis(),
-            1: 0,
-        }
+        Self::from(now)
+    }
+}
+
+impl From<fastdate::DateTime> for Timestamptz {
+    fn from(date: DateTime) -> Self {
+        Timestamptz(date.unix_timestamp_millis(), date.offset())
     }
 }
 
@@ -133,7 +133,7 @@ impl Decode for Timestamptz {
             PgValueFormat::Text => {
                 let s = value.as_str()?;
                 let date = fastdate::DateTime::from_str(s)?;
-                Timestamptz(date.unix_timestamp_millis(), date.offset())
+                Timestamptz::from(date)
             }
         })
     }
