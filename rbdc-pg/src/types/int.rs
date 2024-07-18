@@ -19,7 +19,16 @@ impl Decode for u64 {
 impl Decode for u32 {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_u32(value.as_bytes()?),
+            PgValueFormat::Binary => {
+                let bytes = value.as_bytes()?;
+                if bytes.len() == 8 {
+                    BigEndian::read_u64(value.as_bytes()?) as u32
+                } else if bytes.len() == 4 {
+                    BigEndian::read_u32(value.as_bytes()?)
+                } else {
+                    return Err(Error::from("error u32 bytes len"));
+                }
+            },
             PgValueFormat::Text => value.as_str()?.parse()?,
         })
     }
@@ -28,7 +37,18 @@ impl Decode for u32 {
 impl Decode for u16 {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_u16(value.as_bytes()?),
+            PgValueFormat::Binary => {
+                let bytes = value.as_bytes()?;
+                if bytes.len() == 8 {
+                    BigEndian::read_u64(value.as_bytes()?) as u16
+                } else if bytes.len() == 4 {
+                    BigEndian::read_u32(value.as_bytes()?) as u16
+                } else if bytes.len() == 2 {
+                    BigEndian::read_u16(value.as_bytes()?)
+                } else {
+                    return Err(Error::from("error u16 bytes len"));
+                }
+            },
             PgValueFormat::Text => value.as_str()?.parse()?,
         })
     }
@@ -53,7 +73,16 @@ impl Decode for i64 {
 impl Decode for i32 {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_i32(value.as_bytes()?),
+            PgValueFormat::Binary => {
+                let bytes = value.as_bytes()?;
+                if bytes.len() == 8 {
+                    BigEndian::read_i64(value.as_bytes()?) as i32
+                } else if bytes.len() == 4 {
+                    BigEndian::read_i32(value.as_bytes()?)
+                }else {
+                    return Err(Error::from("error i32 bytes len"));
+                }
+            },
             PgValueFormat::Text => value.as_str()?.parse()?,
         })
     }
@@ -62,7 +91,18 @@ impl Decode for i32 {
 impl Decode for i16 {
     fn decode(value: PgValue) -> Result<Self, Error> {
         Ok(match value.format() {
-            PgValueFormat::Binary => BigEndian::read_i16(value.as_bytes()?),
+            PgValueFormat::Binary => {
+                let bytes = value.as_bytes()?;
+                if bytes.len() == 8 {
+                    BigEndian::read_i64(value.as_bytes()?) as i16
+                } else if bytes.len() == 4 {
+                    BigEndian::read_i32(value.as_bytes()?) as i16
+                } else if bytes.len() == 2 {
+                    BigEndian::read_i16(value.as_bytes()?)
+                } else {
+                    return Err(Error::from("error i16 bytes len"));
+                }
+            },
             PgValueFormat::Text => value.as_str()?.parse()?,
         })
     }
