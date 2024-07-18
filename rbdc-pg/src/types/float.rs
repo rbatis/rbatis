@@ -20,9 +20,9 @@ impl Decode for f32 {
             PgValueFormat::Binary => {
                 let bytes = value.as_bytes()?;
                 if bytes.len() == 8 {
-                    BigEndian::read_f64(value.as_bytes()?) as f32
+                    BigEndian::read_f64(bytes) as f32
                 } else if bytes.len() == 4 {
-                    BigEndian::read_f32(value.as_bytes()?)
+                    BigEndian::read_f32(bytes)
                 } else {
                     return Err(Error::from("error f32 bytes len"));
                 }

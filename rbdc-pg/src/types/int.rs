@@ -22,9 +22,9 @@ impl Decode for u32 {
             PgValueFormat::Binary => {
                 let bytes = value.as_bytes()?;
                 if bytes.len() == 8 {
-                    BigEndian::read_u64(value.as_bytes()?) as u32
+                    BigEndian::read_u64(bytes) as u32
                 } else if bytes.len() == 4 {
-                    BigEndian::read_u32(value.as_bytes()?)
+                    BigEndian::read_u32(bytes)
                 } else {
                     return Err(Error::from("error u32 bytes len"));
                 }
@@ -40,11 +40,11 @@ impl Decode for u16 {
             PgValueFormat::Binary => {
                 let bytes = value.as_bytes()?;
                 if bytes.len() == 8 {
-                    BigEndian::read_u64(value.as_bytes()?) as u16
+                    BigEndian::read_u64(bytes) as u16
                 } else if bytes.len() == 4 {
-                    BigEndian::read_u32(value.as_bytes()?) as u16
+                    BigEndian::read_u32(bytes) as u16
                 } else if bytes.len() == 2 {
-                    BigEndian::read_u16(value.as_bytes()?)
+                    BigEndian::read_u16(bytes)
                 } else {
                     return Err(Error::from("error u16 bytes len"));
                 }
@@ -76,9 +76,9 @@ impl Decode for i32 {
             PgValueFormat::Binary => {
                 let bytes = value.as_bytes()?;
                 if bytes.len() == 8 {
-                    BigEndian::read_i64(value.as_bytes()?) as i32
+                    BigEndian::read_i64(bytes) as i32
                 } else if bytes.len() == 4 {
-                    BigEndian::read_i32(value.as_bytes()?)
+                    BigEndian::read_i32(bytes)
                 }else {
                     return Err(Error::from("error i32 bytes len"));
                 }
@@ -94,11 +94,11 @@ impl Decode for i16 {
             PgValueFormat::Binary => {
                 let bytes = value.as_bytes()?;
                 if bytes.len() == 8 {
-                    BigEndian::read_i64(value.as_bytes()?) as i16
+                    BigEndian::read_i64(bytes) as i16
                 } else if bytes.len() == 4 {
-                    BigEndian::read_i32(value.as_bytes()?) as i16
+                    BigEndian::read_i32(bytes) as i16
                 } else if bytes.len() == 2 {
-                    BigEndian::read_i16(value.as_bytes()?)
+                    BigEndian::read_i16(bytes)
                 } else {
                     return Err(Error::from("error i16 bytes len"));
                 }
@@ -185,5 +185,85 @@ impl Encode for i8 {
 impl TypeInfo for i8 {
     fn type_info(&self) -> PgTypeInfo {
         PgTypeInfo::BYTEA
+    }
+}
+
+
+
+#[cfg(test)]
+mod test {
+    use crate::type_info::PgTypeInfo;
+    use crate::types::decode::Decode;
+    use crate::value::{PgValue, PgValueFormat};
+
+    #[test]
+    fn test_decode_u32() {
+        let bytes: [u8; 4] = 3_u32.to_be_bytes();
+        let r: u32 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
+    }
+
+    #[test]
+    fn test_decode_u32_by_u64() {
+        let bytes: [u8; 8] = 3_u64.to_be_bytes();
+        println!("bytes={:?}", bytes);
+        let r: u32 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
+    }
+
+    #[test]
+    fn test_decode_u16_by_u64() {
+        let bytes: [u8; 8] = 3_u64.to_be_bytes();
+        println!("bytes={:?}", bytes);
+        let r: u16 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
+    }
+
+
+    #[test]
+    fn test_decode_i32() {
+        let bytes: [u8; 4] = 3_i32.to_be_bytes();
+        let r: i32 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
+    }
+
+    #[test]
+    fn test_decode_i32_by_i64() {
+        let bytes: [u8; 8] = 3_i64.to_be_bytes();
+        println!("bytes={:?}", bytes);
+        let r: i32 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
+    }
+
+    #[test]
+    fn test_decode_i16_by_i64() {
+        let bytes: [u8; 8] = 3_i64.to_be_bytes();
+        println!("bytes={:?}", bytes);
+        let r: i16 = Decode::decode(PgValue {
+            value: Some(bytes.to_vec()),
+            type_info: PgTypeInfo::INT8,
+            format: PgValueFormat::Binary,
+        }).unwrap();
+        assert_eq!(r, 3);
     }
 }
