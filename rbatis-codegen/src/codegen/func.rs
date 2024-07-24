@@ -263,7 +263,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
             .map_err(|e| Error::from(e));
         }
         Expr::Let(_let_expr) => {
-            return Err(Error::from("unsupport token `let`"));
+            return Err(Error::from("unsupported token `let`"));
         }
         Expr::Lit(b) => {
             match b.lit.clone() {
