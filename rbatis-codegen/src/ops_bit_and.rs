@@ -170,25 +170,25 @@ macro_rules! self_bitand {
     ([$($ty:ty)*]) => {
         $(
 impl BitAnd<$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitand(self, rhs: $ty) -> Self::Output {
         self & rhs
       }
-    }
+}
 impl BitAnd<&$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitand(self, rhs: &$ty) -> Self::Output {
         self  &  *rhs
       }
-    }
+}
 impl BitAnd<$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitand(self, rhs: $ty) -> Self::Output {
         *self  &  rhs
       }
-    }
+}
 impl BitAnd<&$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitand(self, rhs: &$ty) -> Self::Output {
         *self & *rhs
       }
