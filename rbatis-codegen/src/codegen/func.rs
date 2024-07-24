@@ -31,12 +31,12 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
         }
         Expr::MethodCall(mut b) => {
             //receiver is named need to convert to arg["xxx"]
-            b.receiver = Box::new(translate(context, *b.receiver.clone(), ignore)?);
+            b.receiver = Box::new(translate(context, *b.receiver, ignore)?);
             return Ok(Expr::MethodCall(b));
         }
         Expr::Binary(mut b) => {
-            b.left = Box::new(translate(context, *b.left.clone(), ignore)?);
-            b.right = Box::new(translate(context, *b.right.clone(), ignore)?);
+            b.left = Box::new(translate(context, *b.left, ignore)?);
+            b.right = Box::new(translate(context, *b.right, ignore)?);
             match b.op {
                 BinOp::Add(_) => {
                     let left_token = b.left.to_token_stream().to_string();
@@ -234,7 +234,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
         }
         //
         Expr::Field(mut b) => {
-            b.base = Box::new(translate(context, *b.base.clone(), ignore)?);
+            b.base = Box::new(translate(context, *b.base, ignore)?);
             match b.member {
                 Member::Named(named) => {
                     return syn::parse_str::<Expr>(&format!(
@@ -266,7 +266,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
             return Err(Error::from("unsupported token `let`"));
         }
         Expr::Lit(b) => {
-            match b.lit.clone() {
+            match b.lit {
                 Lit::Str(_) => {}
                 Lit::ByteStr(_) => {}
                 Lit::Byte(_) => {}
