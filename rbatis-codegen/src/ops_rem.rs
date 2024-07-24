@@ -178,29 +178,29 @@ macro_rules! self_rem {
     ([$($ty:ty)*]) => {
         $(
 impl Rem<$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_rem(self, rhs: $ty) -> Self::Output {
         self % rhs
       }
-    }
+}
 impl Rem<&$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_rem(self, rhs: &$ty) -> Self::Output {
         self % *rhs
       }
-    }
+}
 impl Rem<$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_rem(self, rhs: $ty) -> Self::Output {
         *self % rhs
       }
-    }
+}
 impl Rem<&$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_rem(self, rhs: &$ty) -> Self::Output {
         *self % *rhs
       }
-    }
+}
         )*
     };
 }

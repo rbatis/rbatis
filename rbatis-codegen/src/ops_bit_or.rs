@@ -168,25 +168,25 @@ macro_rules! self_bitor {
     ([$($ty:ty)*]) => {
         $(
 impl BitOr<$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitor(self, rhs: $ty) -> Self::Output {
         self | rhs
       }
-    }
+}
 impl BitOr<&$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitor(self, rhs: &$ty) -> Self::Output {
         self  |  *rhs
       }
-    }
+}
 impl BitOr<$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitor(self, rhs: $ty) -> Self::Output {
         *self  |  rhs
       }
-    }
+}
 impl BitOr<&$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_bitor(self, rhs: &$ty) -> Self::Output {
         *self | *rhs
       }
