@@ -161,29 +161,29 @@ macro_rules! self_sub {
     ([$($ty:ty)*]) => {
         $(
 impl Sub<$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_sub(self, rhs: $ty) -> Self::Output {
         self-rhs
       }
-    }
+}
 impl Sub<&$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_sub(self, rhs: &$ty) -> Self::Output {
         self-*rhs
       }
-    }
+}
 impl Sub<$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_sub(self, rhs: $ty) -> Self::Output {
         *self-rhs
       }
-    }
+}
 impl Sub<&$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_sub(self, rhs: &$ty) -> Self::Output {
         *self-*rhs
       }
-    }
+}
         )*
     };
 }

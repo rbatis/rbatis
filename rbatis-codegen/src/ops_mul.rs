@@ -166,29 +166,29 @@ macro_rules! self_mul {
     ([$($ty:ty)*]) => {
         $(
 impl Mul<$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_mul(self, rhs: $ty) -> Self::Output {
         self * rhs
       }
-    }
+}
 impl Mul<&$ty> for $ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_mul(self, rhs: &$ty) -> Self::Output {
         self * *rhs
       }
-    }
+}
 impl Mul<$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_mul(self, rhs: $ty) -> Self::Output {
         *self * rhs
       }
-    }
+}
 impl Mul<&$ty> for &$ty{
-         type Output = $ty;
+      type Output = $ty;
       fn op_mul(self, rhs: &$ty) -> Self::Output {
         *self * *rhs
       }
-    }
+}
         )*
     };
 }
