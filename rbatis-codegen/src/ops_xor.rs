@@ -159,34 +159,34 @@ impl_numeric_sub! {
 }
 
 macro_rules! xor_self {
-    ([$($ty:ty)*]) => {
-        $(
-impl BitXor<$ty> for $ty{
-         type Output = $ty;
-      fn op_bitxor(self, rhs: $ty) -> Self::Output {
-        self ^ rhs
-      }
-    }
-impl BitXor<&$ty> for $ty{
-         type Output = $ty;
-      fn op_bitxor(self, rhs: &$ty) -> Self::Output {
-        self ^ *rhs
-      }
-    }
-impl BitXor<$ty> for &$ty{
-         type Output = $ty;
-      fn op_bitxor(self, rhs: $ty) -> Self::Output {
-        *self ^ rhs
-      }
-    }
-impl BitXor<&$ty> for &$ty{
-         type Output = $ty;
-      fn op_bitxor(self, rhs: &$ty) -> Self::Output {
-        *self ^ *rhs
-      }
-    }
-        )*
-    };
+([$($ty:ty)*]) => {
+$(
+impl BitXor< $ ty> for $ ty{
+  type Output = $ty;
+  fn op_bitxor(self, rhs: $ty) -> Self::Output {
+      self ^ rhs
+  }
+}
+impl BitXor<& $ ty> for $ ty{
+  type Output = $ty;
+  fn op_bitxor(self, rhs: & $ ty) -> Self::Output {
+    self ^ *rhs
+  }
+}
+impl BitXor< $ ty> for & $ ty{
+  type Output = $ty;
+  fn op_bitxor(self, rhs: $ty) -> Self::Output {
+    *self ^ rhs
+  }
+}
+impl BitXor<& $ ty> for & $ ty{
+  type Output = $ty;
+  fn op_bitxor(self, rhs: & $ ty) -> Self::Output {
+    *self ^ *rhs
+  }
+}
+)*
+};
 }
 
 xor_self!([u8 u16 u32 u64]);

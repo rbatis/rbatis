@@ -210,22 +210,22 @@ impl PartialOrd<$ty> for $ty{
       fn op_partial_cmp(&self, rhs: &$ty) ->  Option<Ordering> {
         $eq(*self as _, *rhs as _)
       }
-    }
+}
 impl PartialOrd<&$ty> for $ty{
       fn op_partial_cmp(&self, rhs: &&$ty) ->  Option<Ordering> {
         $eq(*self as _, **rhs as _)
       }
-    }
+}
 impl PartialOrd<$ty> for &$ty{
       fn op_partial_cmp(&self, rhs: &$ty) ->  Option<Ordering> {
         $eq(**self as _, *rhs as _)
       }
-    }
+}
 impl PartialOrd<&$ty> for &$ty{
       fn op_partial_cmp(&self, rhs: &&$ty) ->  Option<Ordering> {
         $eq(**self as _, **rhs as _)
       }
-    }
+}
         )*
     };
 }
