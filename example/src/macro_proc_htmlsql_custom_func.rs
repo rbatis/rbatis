@@ -85,7 +85,7 @@ pub async fn main() {
     )
     .unwrap();
     // table sync done
-    fast_log::LOGGER.set_level(LevelFilter::Off);
+    fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
         &rb.acquire().await.unwrap(),
         &SqliteTableMapper {},
@@ -106,7 +106,7 @@ pub async fn main() {
         "activity",
     )
     .await;
-    fast_log::LOGGER.set_level(LevelFilter::Debug);
+    fast_log::logger().set_level(LevelFilter::Debug);
 
     let a = custom_func(&rb, "test").await.unwrap();
     println!("{}", json!(a));
