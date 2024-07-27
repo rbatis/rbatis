@@ -66,9 +66,9 @@ pub async fn main() {
 }
 
 async fn create_table(rb: &RBatis) {
-    fast_log::LOGGER.set_level(LevelFilter::Off);
+    fast_log::logger().set_level(LevelFilter::Off);
     defer!(|| {
-        fast_log::LOGGER.set_level(LevelFilter::Info);
+        fast_log::logger().set_level(LevelFilter::Info);
     });
     let table = to_value! {
         "id":"INTEGER PRIMARY KEY AUTOINCREMENT",

@@ -38,7 +38,7 @@ pub async fn main() {
     )
     .unwrap();
     // table sync done
-    fast_log::LOGGER.set_level(LevelFilter::Off);
+    fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
         &rb.acquire().await.unwrap(),
         &SqliteTableMapper {},
@@ -59,7 +59,7 @@ pub async fn main() {
         "activity",
     )
     .await;
-    fast_log::LOGGER.set_level(LevelFilter::Debug);
+    fast_log::logger().set_level(LevelFilter::Debug);
     //clear data
     let _ = Activity::delete_in_column(&rb.clone(), "id", &["3"]).await;
     //use rb.acquire_begin() create tx

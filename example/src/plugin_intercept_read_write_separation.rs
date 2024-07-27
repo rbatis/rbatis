@@ -94,7 +94,7 @@ async fn write_rb() -> RBatis {
 }
 
 async fn sync_table(rb: &RBatis) {
-    fast_log::LOGGER.set_level(LevelFilter::Off);
+    fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
         &rb.acquire().await.unwrap(),
         &SqliteTableMapper {},
@@ -115,7 +115,7 @@ async fn sync_table(rb: &RBatis) {
         "activity",
     )
         .await;
-    fast_log::LOGGER.set_level(LevelFilter::Debug);
+    fast_log::logger().set_level(LevelFilter::Debug);
 }
 
 
