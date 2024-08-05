@@ -195,7 +195,7 @@ impl Decode for Value {
             ),
             ColumnType::Datetime => Value::Ext(
                 "DateTime",
-                Box::new(Value::String(decode_timestamp(v).unwrap_or_default())),
+                Box::new(Value::String(DateTime::decode(v)?.to_string())),
             ),
             ColumnType::Year => Value::Ext(
                 "Year",
