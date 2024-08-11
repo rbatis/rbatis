@@ -45,8 +45,10 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     if cfg!(debug_assertions) {
-        println!("............gen macro sql:\n {}", stream);
-        println!("............gen macro sql end............");
+        use quote::ToTokens;
+        let func_name_ident = target_fn.sig.ident.to_token_stream();
+        println!("............#[sql] '{}'...................\n {}", func_name_ident, stream);
+        println!(".......................................................");
     }
 
     stream
@@ -109,13 +111,15 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_py_sql(&target_fn, args);
     #[cfg(feature = "debug_mode")]
     if cfg!(debug_assertions) {
+        use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
+        let func_name_ident = target_fn.sig.ident.to_token_stream();
         let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
-        println!("............gen macro py_sql :\n {}", code);
-        println!("............gen macro py_sql end............");
+        println!("............#[py_sql] '{}'............\n {}", func_name_ident, code);
+        println!(".......................................................");
     }
     stream
 }
@@ -164,13 +168,15 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let stream = impl_macro_html_sql(&target_fn, &args);
     #[cfg(feature = "debug_mode")]
     if cfg!(debug_assertions) {
+        use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
+        let func_name_ident = target_fn.sig.ident.to_token_stream();
         let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
-        println!("............gen macro html_sql :\n {}", code);
-        println!("............gen macro html_sql end............");
+        println!("............#[html_sql] '{}'............\n {}", func_name_ident, code);
+        println!(".......................................................");
     }
     stream
 }
