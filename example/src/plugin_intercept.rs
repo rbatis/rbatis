@@ -9,13 +9,17 @@ use rbatis::{async_trait, crud, Error, RBatis};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
+use std::time::Instant;
+use rbatis::dark_std::sync::SyncHashMap;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 #[derive(Debug)]
-pub struct LogicDeleteIntercept {}
+pub struct CountTimeIntercept {
+    map: SyncHashMap<i64, Instant>,
+}
 
 #[async_trait]
-impl Intercept for LogicDeleteIntercept {
+impl Intercept for CountTimeIntercept {
     async fn before(
         &self,
         _task_id: i64,
@@ -24,19 +28,12 @@ impl Intercept for LogicDeleteIntercept {
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
-        if sql.contains("delete from ") {
-            let table_name =
-                sql[sql.find("from").unwrap_or(0) + 4..sql.find("where").unwrap_or(0)].trim();
-            println!("[LogicDeletePlugin] before=> {}", sql);
-            *sql = sql.replace(
-                &format!("delete from {}", table_name),
-                &format!("update {} set delete_flag = 1 ", table_name),
-            );
-            println!("[LogicDeletePlugin] after=> {}", sql);
-        } else if sql.contains("select ") && sql.contains(" where ") {
-            println!("[LogicDeletePlugin] before=> {}", sql);
-            sql.push_str(" and delete_flag = 0 ");
-            println!("[LogicDeletePlugin] after=> {}", sql);
+        self.map.insert(_task_id, Instant::now());
+        Ok(Some(true))
+    }
+    async fn after(&self, task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
+        if let Some(v) = self.map.remove(&task_id) {
+            println!("[{}] use time={:?}", task_id, v.elapsed());
         }
         Ok(Some(true))
     }
@@ -80,7 +77,7 @@ pub async fn main() {
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
     )
-    .unwrap();
+        .unwrap();
     // table sync done
     fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
@@ -102,13 +99,13 @@ pub async fn main() {
         },
         "activity",
     )
-    .await;
+        .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
-    rb.intercepts.push(Arc::new(LogicDeleteIntercept {}));
+    rb.intercepts.push(Arc::new(CountTimeIntercept { map: Default::default() }));
 
     //get intercept
-    let intercept = rb.get_intercept::<LogicDeleteIntercept>().unwrap();
+    let intercept = rb.get_intercept::<CountTimeIntercept>().unwrap();
     println!("intercept name = {}", intercept.name());
     //query
     let r = Activity::delete_by_column(&rb, "id", "1").await;
