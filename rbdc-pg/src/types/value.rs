@@ -1,6 +1,7 @@
 use crate::arguments::PgArgumentBuffer;
 use crate::type_info::PgType;
 use crate::type_info::PgTypeInfo;
+use crate::type_info::PgTypeKind;
 use crate::types::byte::Bytea;
 use crate::types::decode::Decode;
 use crate::types::encode::{Encode, IsNull};
@@ -363,15 +364,18 @@ impl Decode for Value {
                     }
                 })),
             ),
-            PgType::Custom(_) => Value::Ext(
-                "Custom",
-                Box::new(Value::Binary({
-                    match arg.format() {
-                        PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
-                        PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
-                    }
-                })),
-            ),
+            PgType::Custom(ref pg_custom_type) => match &pg_custom_type.kind {
+                PgTypeKind::Enum(_) => Value::String(Decode::decode(arg)?),
+                _ => Value::Ext(
+                    "Custom",
+                    Box::new(Value::Binary({
+                        match arg.format() {
+                            PgValueFormat::Binary => arg.as_bytes()?.to_owned(),
+                            PgValueFormat::Text => arg.as_str()?.as_bytes().to_vec(),
+                        }
+                    })),
+                ),
+            },
             PgType::DeclareWithName(_) => Value::Ext(
                 "DeclareWithName",
                 Box::new(Value::Binary({
