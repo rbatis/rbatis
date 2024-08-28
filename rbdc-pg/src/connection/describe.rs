@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 /// Describes the type of the `pg_type.typtype` column
 ///
-/// See <https://www.postgresql.org/docs/13/catalog-pg-type.html>
+/// See <https://www.postgresql.org/docs/current/catalog-pg-type.html>
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum TypType {
     Base,
@@ -185,8 +185,8 @@ impl PgConnection {
         #[derive(serde::Serialize, serde::Deserialize)]
         pub struct PGType {
             pub typname: String,
-            pub typtype: i8,
-            pub typcategory: i8,
+            pub typtype: String,
+            pub typcategory: String,
             pub typrelid: u32,
             pub typelem: u32,
             pub typbasetype: i32,
@@ -199,26 +199,36 @@ impl PgConnection {
             //     .bind(oid)
             //     .fetch_one(&mut *self)
             //     .await?;
+
             let mut pg_type = PGType {
                 typname: "".to_string(),
-                typtype: 0,
-                typcategory: 0,
+                typtype: "".to_string(),     // Default to empty string
+                typcategory: "".to_string(), // Default to empty string
                 typrelid: 0,
                 typelem: 0,
                 typbasetype: 0,
             };
-            let rows =self.get_values("SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1", vec![oid.0.into()])
-                .await?;
+
+            let rows = self.get_values(
+                "SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM pg_catalog.pg_type WHERE oid = $1",
+                vec![oid.0.into()]
+            ).await?;
+
             let vs: Vec<PGType> =
                 rbs::from_value(Value::Array(rows)).map_err(|e| Error::from(e.to_string()))?;
+
             if let Some(x) = vs.into_iter().next() {
                 pg_type = x;
             }
-            let typ_type = TypType::try_from(pg_type.typtype as u8);
-            let category = TypCategory::try_from(pg_type.typcategory as u8);
+
+            let typ_type =
+                TypType::try_from(pg_type.typtype.chars().next().unwrap_or_default() as u8);
+            let category =
+                TypCategory::try_from(pg_type.typcategory.chars().next().unwrap_or_default() as u8);
             let typelem = Oid::from(pg_type.typelem);
             let relation_id = Oid::from(pg_type.typrelid);
             let typbasetype = Oid::from(pg_type.typbasetype as u32);
+
             match (typ_type, category) {
                 (Ok(TypType::Domain), _) => {
                     self.fetch_domain_by_oid(oid, typbasetype, pg_type.typname)
