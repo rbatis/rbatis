@@ -436,10 +436,17 @@ impl RBatisTxExecutorGuard {
 impl RBatisTxExecutor {
     /// defer and use future method
     /// for example:
-    ///         tx.defer_async(|mut tx| async {
+    /// ```rust
+    ///  use rbatis::executor::RBatisTxExecutor;
+    ///  use rbatis::{Error, RBatis};
+    ///
+    ///  async fn test_tx(tx:RBatisTxExecutor) -> Result<(),Error>{
+    ///         tx.defer_async(|mut tx| async move {
     ///             tx.rollback().await;
     ///         });
-    ///
+    ///     Ok(())
+    /// }
+    /// ```
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
     where
         F: Future<Output = ()> + Send + 'static,
