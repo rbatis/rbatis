@@ -123,8 +123,8 @@ impl Snowflake {
         let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
         // Shift and combine the components to generate the final ID.
         let timestamp_shifted = now << 22;
-        let worker_id_shifted = self.worker_id << 12;
-        let id = timestamp_shifted + worker_id_shifted + sequence;
+        let worker_id_shifted = self.worker_id << 22;
+        let id = timestamp_shifted | worker_id_shifted + sequence;
         id
     }
 
