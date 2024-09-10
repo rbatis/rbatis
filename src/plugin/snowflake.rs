@@ -179,13 +179,6 @@ mod test {
         let mut v2: Vec<i64> = Vec::with_capacity(size);
         let mut v3: Vec<i64> = Vec::with_capacity(size);
         let mut v4: Vec<i64> = Vec::with_capacity(size);
-        println!(
-            "v1 len:{},v2 len:{},v3 len:{},v4 len:{}",
-            v1.len(),
-            v2.len(),
-            v3.len(),
-            v4.len()
-        );
         let wg = WaitGroup::new();
         std::thread::scope(|s| {
             s.spawn(|| {
