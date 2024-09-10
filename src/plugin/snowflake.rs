@@ -99,16 +99,11 @@ impl Snowflake {
     pub fn generate(&self) -> u64 {
         let mut now = self.get_timestamp();
         loop {
-            let last_timestamp = self.last_timestamp.load(Ordering::Relaxed);
+            let last_timestamp = self.last_timestamp.load(Ordering::SeqCst);
             // If the current timestamp is smaller than the last recorded timestamp,
             // update the timestamp to the last recorded timestamp to prevent non-monotonic IDs.
-            if now < last_timestamp {
+            if now <= last_timestamp {
                 now = last_timestamp;
-            }
-            //update timestamp
-            if now == last_timestamp {
-                now += 1;
-                continue;
             }
             // Compare and swap the last recorded timestamp with the current timestamp.
             // If the comparison succeeds, break the loop.
@@ -125,11 +120,11 @@ impl Snowflake {
                 break;
             }
         }
-        let sequence = self.sequence.fetch_add(1, Ordering::Relaxed);
+        let sequence = self.sequence.fetch_add(1, Ordering::SeqCst);
         // Shift and combine the components to generate the final ID.
         let timestamp_shifted = now << 22;
         let worker_id_shifted = self.worker_id << 12;
-        let id = timestamp_shifted | worker_id_shifted | sequence;
+        let id = timestamp_shifted + worker_id_shifted + sequence;
         id
     }
 
