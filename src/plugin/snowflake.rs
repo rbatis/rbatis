@@ -97,13 +97,18 @@ impl Snowflake {
     }
 
     pub fn generate(&self) -> u64 {
-        let mut timestamp = self.get_timestamp();
+        let mut now = self.get_timestamp();
         loop {
             let last_timestamp = self.last_timestamp.load(Ordering::Relaxed);
             // If the current timestamp is smaller than the last recorded timestamp,
             // update the timestamp to the last recorded timestamp to prevent non-monotonic IDs.
-            if timestamp < last_timestamp {
-                timestamp = last_timestamp;
+            if now < last_timestamp {
+                now = last_timestamp;
+            }
+            //update timestamp
+            if now == last_timestamp {
+                now += 1;
+                continue;
             }
             // Compare and swap the last recorded timestamp with the current timestamp.
             // If the comparison succeeds, break the loop.
@@ -111,7 +116,7 @@ impl Snowflake {
                 .last_timestamp
                 .compare_exchange(
                     last_timestamp,
-                    timestamp,
+                    now,
                     Ordering::SeqCst,
                     Ordering::SeqCst,
                 )
@@ -122,7 +127,7 @@ impl Snowflake {
         }
         let sequence = self.sequence.fetch_add(1, Ordering::Relaxed);
         // Shift and combine the components to generate the final ID.
-        let timestamp_shifted = timestamp << 22;
+        let timestamp_shifted = now << 22;
         let worker_id_shifted = self.worker_id << 12;
         let id = timestamp_shifted | worker_id_shifted | sequence;
         id
@@ -151,6 +156,7 @@ mod test {
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::thread::sleep;
     use std::time::Duration;
+    use dark_std::sync::WaitGroup;
 
     #[test]
     fn test_gen() {
@@ -173,7 +179,7 @@ mod test {
 
     #[test]
     fn test_race() {
-        let size = 1000;
+        let size = 100000;
         let mut v1: Vec<i64> = Vec::with_capacity(size);
         let mut v2: Vec<i64> = Vec::with_capacity(size);
         let mut v3: Vec<i64> = Vec::with_capacity(size);
@@ -185,28 +191,39 @@ mod test {
             v3.len(),
             v4.len()
         );
+        let wg = WaitGroup::new();
         std::thread::scope(|s| {
             s.spawn(|| {
+                let wg1 = wg.clone();
                 for _ in 0..size {
                     v1.push(new_snowflake_id());
                 }
+                drop(wg1);
             });
             s.spawn(|| {
+                let wg1 = wg.clone();
                 for _ in 0..size {
                     v2.push(new_snowflake_id());
                 }
+                drop(wg1);
             });
             s.spawn(|| {
+                let wg1 = wg.clone();
                 for _ in 0..size {
                     v3.push(new_snowflake_id());
                 }
+                drop(wg1);
             });
             s.spawn(|| {
+                let wg1 = wg.clone();
                 for _ in 0..size {
                     v4.push(new_snowflake_id());
                 }
+                drop(wg1);
             });
         });
+
+        wg.wait();
 
         println!(
             "v1 len:{},v2 len:{},v3 len:{},v4 len:{}",
