@@ -99,7 +99,7 @@ impl Snowflake {
     }
 }
 
-/// Note:  if you have multiple machines, please modify the machine ID and node ID
+/// Note:  if you have multiple machines/server, please modify the machine ID and node ID
 pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
     Snowflake::new(1, 1,0)
 });
@@ -111,7 +111,7 @@ pub fn new_snowflake_id() -> i64 {
 
 #[cfg(test)]
 mod test {
-    use crate::snowflake::{new_snowflake_id, Snowflake};
+    use crate::snowflake::{Snowflake};
     use std::collections::HashMap;
     use std::thread::sleep;
     use std::time::Duration;
