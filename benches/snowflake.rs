@@ -1,11 +1,17 @@
 #![feature(test)]
 extern crate test;
 
-use rbatis::snowflake::new_snowflake_id;
+use rbatis::snowflake::{Snowflake};
 use test::Bencher;
 
 #[bench]
 fn bench_snowflake_id(b: &mut Bencher) {
-    new_snowflake_id();
-    b.iter(|| new_snowflake_id());
+    let snow = Snowflake::new(1, 1, 0);
+    b.iter(|| snow.generate());
+}
+
+#[bench]
+fn bench_snowflake_mode1(b: &mut Bencher) {
+    let snow = Snowflake::new(1, 1, 1);
+    b.iter(|| snow.generate());
 }
