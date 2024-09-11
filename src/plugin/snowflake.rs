@@ -99,6 +99,7 @@ impl Snowflake {
     }
 }
 
+/// Note:  if you have multiple machines, please modify the machine ID and node ID
 pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
     Snowflake::new(1, 1,0)
 });
