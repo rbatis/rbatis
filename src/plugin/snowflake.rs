@@ -12,7 +12,7 @@ pub struct Snowflake {
     pub machine_id: i32,
     pub node_id: i32,
     idx: AtomicU16, // Atomic to replace mutable u16
-    lock:parking_lot::ReentrantMutex<()>
+    lock: ReentrantMutex<()>,
 }
 
 impl Clone for Snowflake {
@@ -50,7 +50,7 @@ impl Snowflake {
 
     #[inline]
     pub fn generate(&self) -> i64 {
-        let g= self.lock.lock();
+        let g = self.lock.lock();
         let mut idx = self.idx.fetch_add(1, Ordering::SeqCst) % 4096;
         if idx == 0 {
             let mut now_millis = Self::get_time_millis(self.epoch);
@@ -91,7 +91,7 @@ impl Snowflake {
 }
 
 pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
-    Snowflake::new(1,1)
+    Snowflake::new(1, 1)
 });
 
 ///gen new snowflake_id
