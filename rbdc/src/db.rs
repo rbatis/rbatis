@@ -17,7 +17,7 @@ pub trait Driver: Debug + Sync + Send {
     fn connect_opt<'a>(
         &'a self,
         opt: &'a dyn ConnectOptions,
-    ) -> BoxFuture<Result<Box<dyn Connection>, Error>>;
+    ) -> BoxFuture<'a,Result<Box<dyn Connection>, Error>>;
 
     /// make an default option
     fn default_option(&self) -> Box<dyn ConnectOptions>;
@@ -35,7 +35,7 @@ impl Driver for Box<dyn Driver> {
     fn connect_opt<'a>(
         &'a self,
         opt: &'a dyn ConnectOptions,
-    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    ) -> BoxFuture<'a,Result<Box<dyn Connection>, Error>> {
         self.deref().connect_opt(opt)
     }
 

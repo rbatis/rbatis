@@ -376,7 +376,7 @@ impl PgConnection {
         &'a mut self,
         sql: String,
         parameters: &'a [PgTypeInfo],
-    ) -> BoxFuture<'_, Result<PgStatement, Error>> {
+    ) -> BoxFuture<'a, Result<PgStatement, Error>> {
         Box::pin(async move {
             self.wait_until_ready().await?;
 

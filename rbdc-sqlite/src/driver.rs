@@ -23,7 +23,7 @@ impl Driver for SqliteDriver {
     fn connect_opt<'a>(
         &'a self,
         opt: &'a dyn ConnectOptions,
-    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    ) -> BoxFuture<'a,Result<Box<dyn Connection>, Error>> {
         let opt: &SqliteConnectOptions = opt.downcast_ref().unwrap();
         Box::pin(async move {
             let conn = opt.connect().await?;

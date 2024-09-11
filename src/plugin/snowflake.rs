@@ -54,7 +54,7 @@ impl Snowflake {
     #[inline]
     pub fn generate(&self) -> i64 {
         let g = self.lock.lock();
-        let mut idx = self.idx.fetch_add(1, Ordering::SeqCst) % 4096;
+        let idx = self.idx.fetch_add(1, Ordering::SeqCst) % 4096;
         if idx == 0 {
             // use timestamp
             if self.mode == 1 {

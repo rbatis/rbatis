@@ -24,7 +24,7 @@ impl Driver for MssqlDriver {
     fn connect_opt<'a>(
         &'a self,
         opt: &'a dyn ConnectOptions,
-    ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    ) -> BoxFuture<'a,Result<Box<dyn Connection>, Error>> {
         let opt = opt.downcast_ref::<MssqlConnectOptions>().unwrap();
         Box::pin(async move {
             let conn = MssqlConnection::establish(&opt.0).await?;
