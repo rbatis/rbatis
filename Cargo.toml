@@ -50,6 +50,7 @@ dark-std = "0.2"
 async-trait = "0.1.68"
 
 rbdc-pool-fast = { version = "4.5", path = "rbdc-pool-fast" }
+parking_lot = "0.12.3"
 
 [dev-dependencies]
 rbatis = { version = "4.5", path = ".", features = ["debug_mode"] }
