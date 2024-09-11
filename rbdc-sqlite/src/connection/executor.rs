@@ -56,7 +56,7 @@ impl SqliteConnection {
         &'a mut self,
         sql: &'a str,
         _parameters: &[SqliteTypeInfo],
-    ) -> BoxFuture<'_, Result<SqliteStatement, Error>> {
+    ) -> BoxFuture<'a, Result<SqliteStatement, Error>> {
         Box::pin(async move {
             let statement = self.worker.prepare(sql).await?;
 
