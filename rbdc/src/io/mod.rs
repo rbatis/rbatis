@@ -10,3 +10,4 @@ pub use buf_mut::BufMutExt;
 pub use buf_stream::BufStream;
 pub use decode::Decode;
 pub use encode::Encode;
+pub use decode::Nothing;
