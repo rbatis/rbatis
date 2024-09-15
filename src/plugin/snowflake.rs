@@ -7,12 +7,12 @@ use parking_lot::ReentrantMutex;
 ///Snowflakes algorithm
 #[derive(Debug)]
 pub struct Snowflake {
-    epoch: SystemTime,
-    last_timestamp: AtomicI64, // Atomic to replace mutable i64
+    pub epoch: SystemTime,
+    pub last_timestamp: AtomicI64, // Atomic to replace mutable i64
     pub machine_id: i32,
     pub node_id: i32,
     pub mode: i32, // mode [0=fast_generate,1=realtime_generate]
-    idx: AtomicU16, // Atomic to replace mutable u16
+    pub idx: AtomicU16, // Atomic to replace mutable u16
     lock: ReentrantMutex<()>,
 }
 
