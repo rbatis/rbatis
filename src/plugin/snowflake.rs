@@ -95,9 +95,9 @@ impl Snowflake {
                 //mode = 0,this is fast mode
                 self.last_timestamp.fetch_add(1, Ordering::SeqCst);
             }
-            drop(g);
         }
         let last_time = self.last_timestamp.load(Ordering::SeqCst);
+        drop(g);
         last_time << 22
             | ((self.machine_id << 17) as i64)
             | ((self.node_id << 12) as i64)
