@@ -115,7 +115,11 @@ impl Index<&str> for ValueMap {
     type Output = Value;
 
     fn index(&self, index: &str) -> &Self::Output {
-        self.0.index(&Value::String(index.to_string()))
+        if let Some(v) = self.0.get(&Value::String(index.to_string())) {
+            v
+        } else {
+            &Value::Null
+        }
     }
 }
 
