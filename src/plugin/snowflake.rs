@@ -7,12 +7,12 @@ use parking_lot::ReentrantMutex;
 ///Snowflakes algorithm
 #[derive(Debug)]
 pub struct Snowflake {
-    epoch: SystemTime,
-    last_timestamp: AtomicI64, // Atomic to replace mutable i64
+    pub epoch: SystemTime,
+    pub last_timestamp: AtomicI64, // Atomic to replace mutable i64
     pub machine_id: i32,
     pub node_id: i32,
     pub mode: i32, // mode [0=fast_generate,1=realtime_generate]
-    idx: AtomicU16, // Atomic to replace mutable u16
+    pub idx: AtomicU16, // Atomic to replace mutable u16
     lock: ReentrantMutex<()>,
 }
 
@@ -31,10 +31,17 @@ impl Clone for Snowflake {
 }
 
 impl Snowflake {
-    pub fn new(machine_id: i32, node_id: i32,mode:i32) -> Snowflake {
+    pub fn new(machine_id: i32, node_id: i32, mode: i32) -> Snowflake {
         Self::with_epoch(machine_id, node_id, mode, UNIX_EPOCH)
     }
 
+    /// from epoch for example:
+    ///
+    /// ```rust
+    /// use std::time::UNIX_EPOCH;
+    /// use rbatis::snowflake::Snowflake;
+    /// let snowflake = Snowflake::with_epoch(1,1,0,UNIX_EPOCH);
+    /// ```
     pub fn with_epoch(machine_id: i32, node_id: i32, mode: i32, epoch: SystemTime) -> Snowflake {
         let last_time_millis = Self::get_time_millis(epoch);
         Snowflake {
@@ -47,8 +54,28 @@ impl Snowflake {
             lock: ReentrantMutex::new(()),
         }
     }
+
+    /// from last_timestamp for example:
+    ///
+    /// ```rust
+    /// use std::time::UNIX_EPOCH;
+    /// use rbatis::snowflake::Snowflake;
+    /// let snowflake = Snowflake::with_last_timestamp(1,1,0, 1726417159);
+    /// ```
+    pub fn with_last_timestamp(machine_id: i32, node_id: i32, mode: i32, last_timestamp: i64) -> Snowflake {
+        Snowflake {
+            epoch: UNIX_EPOCH,
+            last_timestamp: AtomicI64::new(last_timestamp),
+            machine_id,
+            node_id,
+            mode,
+            idx: AtomicU16::new(0),
+            lock: ReentrantMutex::new(()),
+        }
+    }
+
     pub fn default() -> Snowflake {
-        Snowflake::new(1, 1,0)
+        Snowflake::new(1, 1, 0)
     }
 
     #[inline]
@@ -68,9 +95,9 @@ impl Snowflake {
                 //mode = 0,this is fast mode
                 self.last_timestamp.fetch_add(1, Ordering::SeqCst);
             }
-            drop(g);
         }
         let last_time = self.last_timestamp.load(Ordering::SeqCst);
+        drop(g);
         last_time << 22
             | ((self.machine_id << 17) as i64)
             | ((self.node_id << 12) as i64)
@@ -101,7 +128,7 @@ impl Snowflake {
 
 /// Note:  if you have multiple machines/server, please modify the machine ID and node ID
 pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
-    Snowflake::new(1, 1,0)
+    Snowflake::new(1, 1, 0)
 });
 
 ///gen new snowflake_id
@@ -119,7 +146,7 @@ mod test {
 
     #[test]
     fn test_gen() {
-        let id = Snowflake::new(1, 1,0);
+        let id = Snowflake::new(1, 1, 0);
         println!("{}", id.generate());
         sleep(Duration::from_secs(1));
         println!("{}", id.generate());
@@ -127,7 +154,7 @@ mod test {
 
     #[test]
     fn test_gen1() {
-        let id = Snowflake::new(1, 1,1);
+        let id = Snowflake::new(1, 1, 1);
         println!("{}", id.generate());
         println!("{}", id.generate());
         sleep(Duration::from_secs(1));
@@ -137,7 +164,7 @@ mod test {
 
     #[test]
     fn test_race() {
-        let id_generator_generator = Snowflake::new(1, 1,0);
+        let id_generator_generator = Snowflake::new(1, 1, 0);
         let size = 1000000;
         let mut v1: Vec<i64> = Vec::with_capacity(size);
         let mut v2: Vec<i64> = Vec::with_capacity(size);
@@ -212,7 +239,7 @@ mod test {
 
     #[test]
     fn test_generate_clock_rollback() {
-        let id_generator_generator = Snowflake::new(1, 1,0);
+        let id_generator_generator = Snowflake::new(1, 1, 0);
         let initial_id = id_generator_generator.generate();
         println!("initial_id={}", initial_id);
 

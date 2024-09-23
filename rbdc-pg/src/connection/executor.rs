@@ -18,6 +18,7 @@ use futures_core::Stream;
 use futures_util::{pin_mut, TryStreamExt};
 use rbdc::{err_protocol, try_stream, Error};
 use std::sync::Arc;
+use rbdc::io::Nothing;
 
 async fn prepare(
     conn: &mut PgConnection,
@@ -62,7 +63,7 @@ async fn prepare(
     conn.stream.flush().await?;
 
     // indicates that the SQL query string is now successfully parsed and has semantic validity
-    let _ = conn
+    let _: Nothing = conn
         .stream
         .recv_expect(MessageFormat::ParseComplete)
         .await?;
@@ -198,7 +199,7 @@ impl PgConnection {
         limit: u8,
         persistent: bool,
         metadata_opt: Option<Arc<PgStatementMetadata>>,
-    ) -> Result<impl Stream<Item = Result<Either<PgQueryResult, PgRow>, Error>> + 'e, Error> {
+    ) -> Result<impl Stream<Item=Result<Either<PgQueryResult, PgRow>, Error>> + 'e, Error> {
         // before we continue, wait until we are "ready" to accept more queries
         self.wait_until_ready().await?;
 
