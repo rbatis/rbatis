@@ -34,18 +34,13 @@ impl Index<&str> for Value {
     fn index(&self, index: &str) -> &Self::Output {
         match self {
             Value::Map(m) => {
-                for (k, v) in m {
-                    if k.as_str().unwrap_or_default().eq(index) {
-                        return v;
-                    }
-                }
-                return &Value::Null;
+                m.index(index)
             }
             Value::Ext(_, ext) => {
-                return ext.index(index);
+                ext.index(index)
             }
             _ => {
-                return &Value::Null;
+                &Value::Null
             }
         }
     }

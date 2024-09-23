@@ -21,7 +21,7 @@ debug_mode = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-indexmap = "2.2.5"
+indexmap = "2.5"
 
 
 
