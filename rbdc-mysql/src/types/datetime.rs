@@ -4,7 +4,6 @@ use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
 use rbdc::datetime::DateTime;
 use rbdc::Error;
-use std::str::FromStr;
 
 impl Encode for DateTime {
     fn encode(self, buf: &mut Vec<u8>) -> Result<usize, Error> {
