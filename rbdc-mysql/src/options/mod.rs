@@ -193,6 +193,14 @@ impl MySqlConnectOptions {
     }
 
     /// set default DateTime offset sec
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///  use rbdc_mysql::options::MySqlConnectOptions;
+    ///  let options = MySqlConnectOptions::new()
+    ///     .offset_sec(fastdate::offset_sec());
+    /// ```
     pub fn offset_sec(mut self,offset_sec: i32) -> Self{
         self.offset_sec = offset_sec;
         self
