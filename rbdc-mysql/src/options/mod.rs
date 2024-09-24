@@ -28,6 +28,8 @@ pub use ssl_mode::MySqlSslMode;
 /// | `statement-cache-capacity` | `100` | The maximum number of prepared statements stored in the cache. Set to `0` to disable. |
 /// | `socket` | `None` | Path to the unix domain socket, which will be used instead of TCP if set. |
 ///
+/// ## offset_sec
+/// DateTime timezone offset sec
 #[derive(Debug, Clone)]
 pub struct MySqlConnectOptions {
     pub(crate) host: String,
