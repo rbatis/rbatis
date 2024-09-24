@@ -42,8 +42,8 @@ impl Decode for DateTime {
     fn decode(value: MySqlValue) -> Result<Self, Error> {
         Ok(match value.format() {
             MySqlValueFormat::Text => Self({
-                let s=value.as_str()?;
-                fastdate::DateTime::from_str(s)?
+                let s = value.as_str()?;
+                fastdate::DateTime::from_str_default(s, value.option.offset_sec)?
             }),
             MySqlValueFormat::Binary => {
                 let buf = value.as_bytes()?;
