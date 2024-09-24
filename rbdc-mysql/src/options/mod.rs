@@ -191,4 +191,10 @@ impl MySqlConnectOptions {
         self.collation = Some(collation.to_owned());
         self
     }
+
+    /// set default DateTime offset sec
+    pub fn offset_sec(mut self,offset_sec: i32) -> Self{
+        self.offset_sec = offset_sec;
+        self
+    }
 }
