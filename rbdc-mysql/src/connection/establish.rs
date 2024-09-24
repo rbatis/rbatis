@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::connection::{tls, DropBox, MySqlConnection, MySqlStream, MAX_PACKET_SIZE};
 use crate::options::{MySqlConnectOptions, MySqlSslMode};
 use crate::protocol::auth::AuthPlugin;
@@ -141,6 +142,7 @@ impl MySqlConnection {
                 inner: Some(stream),
             },
             cache_statement: rbdc::common::StatementCache::new(options.statement_cache_capacity),
+            option: Arc::new(options.clone()),
         })
     }
 }

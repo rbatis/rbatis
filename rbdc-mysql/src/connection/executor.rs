@@ -93,6 +93,8 @@ impl MySqlConnection {
         self.stream.waiting.push_back(Waiting::Result);
 
         Ok(Box::pin(try_stream! {
+            let option = self.option.clone();
+
             // make a slot for the shared column data
             // as long as a reference to a row is not held past one iteration, this enables us
             // to re-use this memory freely between result sets
@@ -201,6 +203,7 @@ impl MySqlConnection {
                         format,
                         columns: Arc::clone(&columns),
                         column_names: Arc::clone(&column_names),
+                        option: option.clone(),
                     });
 
                     r#yield!(v);

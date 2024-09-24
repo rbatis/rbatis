@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use fastdate::offset_sec;
 
 mod connect;
 mod parse;
@@ -40,6 +41,7 @@ pub struct MySqlConnectOptions {
     pub(crate) statement_cache_capacity: usize,
     pub(crate) charset: String,
     pub(crate) collation: Option<String>,
+    pub(crate) offset_sec: i32,
 }
 
 impl Default for MySqlConnectOptions {
@@ -63,6 +65,7 @@ impl MySqlConnectOptions {
             ssl_mode: MySqlSslMode::Disabled,
             ssl_ca: None,
             statement_cache_capacity: 100,
+            offset_sec: offset_sec(),
         }
     }
 
