@@ -11,6 +11,8 @@ use rbdc::Error;
 use rbs::Value;
 use std::fmt::{self, Debug, Formatter};
 use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
+
 
 mod auth;
 mod establish;
@@ -22,6 +24,7 @@ use crate::query::MysqlQuery;
 use crate::query_result::MySqlQueryResult;
 use crate::row::MySqlRow;
 pub(crate) use stream::MySqlStream;
+use crate::options::MySqlConnectOptions;
 
 const MAX_PACKET_SIZE: u32 = 1024;
 
@@ -33,6 +36,8 @@ pub struct MySqlConnection {
     pub stream: DropBox<MySqlStream>,
     // cache by query string to the statement id and metadata
     pub cache_statement: StatementCache<(u32, MySqlStatementMetadata)>,
+    // mysql options
+    pub option: Arc<MySqlConnectOptions>,
 }
 
 impl Debug for MySqlConnection {

@@ -9,6 +9,7 @@ use rbdc::Error;
 use rbs::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::options::MySqlConnectOptions;
 
 /// Implementation of [`Row`] for MySQL.
 #[derive(Debug)]
@@ -17,6 +18,7 @@ pub struct MySqlRow {
     pub format: MySqlValueFormat,
     pub columns: Arc<Vec<MySqlColumn>>,
     pub column_names: Arc<HashMap<UStr, (usize, MySqlTypeInfo)>>,
+    pub option: Arc<MySqlConnectOptions>,
 }
 
 impl MySqlRow {
@@ -41,6 +43,7 @@ impl MySqlRow {
             value: Some(value),
             type_info: column.type_info.clone(),
             format: self.format,
+            option: self.option.clone(),
         })
     }
 }

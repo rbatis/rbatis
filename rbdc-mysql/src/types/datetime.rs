@@ -2,7 +2,6 @@ use crate::types::date::decode_date_buf;
 use crate::types::time::decode_time;
 use crate::types::{Decode, Encode};
 use crate::value::{MySqlValue, MySqlValueFormat};
-use fastdate::offset_sec;
 use rbdc::datetime::DateTime;
 use rbdc::Error;
 use std::str::FromStr;
@@ -60,7 +59,7 @@ impl Decode for DateTime {
                         hour: 0,
                     }
                 };
-                let v = fastdate::DateTime::from((date, time, offset_sec()));
+                let v = fastdate::DateTime::from((date, time, value.option.offset_sec));
                 Self(v)
             }
         })

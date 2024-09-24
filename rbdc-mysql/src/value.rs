@@ -3,6 +3,8 @@ use crate::result_set::MySqlTypeInfo;
 use rbdc::Error;
 use std::borrow::Cow;
 use std::str::from_utf8;
+use std::sync::Arc;
+use crate::options::MySqlConnectOptions;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
@@ -17,6 +19,7 @@ pub struct MySqlValue {
     pub(crate) value: Option<Vec<u8>>,
     pub(crate) type_info: MySqlTypeInfo,
     pub(crate) format: MySqlValueFormat,
+    pub(crate) option: Arc<MySqlConnectOptions>,
 }
 
 /// Implementation of [`ValueRef`] for MySQL.
