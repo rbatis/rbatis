@@ -145,11 +145,12 @@ fast_log = "1.6"
 #### (option) 'native-tls'
 ```toml
 rbs = { version = "4.5" }
+rbatis = { version = "4.5"}
 rbdc-sqlite = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
 #rbdc-mysql={version="4.5", default-features = false, features = ["tls-native-tls"]}
 #rbdc-pg={version="4.5", default-features = false, features = ["tls-native-tls"]}
 #rbdc-mssql={version="4.5", default-features = false, features = ["tls-native-tls"]}
-rbatis = { version = "4.5"}
+
 #other deps
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
