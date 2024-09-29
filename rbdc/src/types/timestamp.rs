@@ -102,6 +102,15 @@ impl Into<DateTime> for Timestamp {
 mod test {
     use crate::timestamp::Timestamp;
     use rbs::Value;
+    use crate::DateTime;
+
+
+    #[test]
+    fn test_from_timestamp() {
+        let v = Timestamp::utc();
+        let dt:DateTime  = v.into();
+        println!("{}",dt);
+    }
 
     #[test]
     fn test_ser_de() {
