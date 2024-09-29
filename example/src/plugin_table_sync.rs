@@ -40,8 +40,16 @@ pub async fn main() {
     //let mapper = &table_sync::MysqlTableMapper{} ;
     //let mapper = &table_sync::MssqlTableMapper{} ;
 
-    // sync table to_value
-    RBatis::sync(&rb.acquire().await.unwrap(), mapper, &to_value! {"id": "INTEGER","name": "TEXT","remark": "TEXT","create_time": "TEXT","version": "TEXT","delete_flag": "INT8"}, "rb_user").await.unwrap();
+    // let table = RBUser{};
+    let table= to_value! {
+        "id": "INTEGER",
+        "name": "TEXT",
+        "remark": "TEXT",
+        "create_time": "TEXT",
+        "version": "TEXT",
+        "delete_flag": "INT8"
+    };
+    RBatis::sync(&rb.acquire().await.unwrap(), mapper, &table, "rb_user").await.unwrap();
 
     //sync table struct
     RBatis::sync(
