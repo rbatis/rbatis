@@ -25,7 +25,7 @@ impl ColumMapper for PGTableMapper {
             Value::Map(_) => "JSON".to_string(),
             Value::Ext(t, _v) => match *t {
                 "Date" => "DATE".to_string(),
-                "DateTime" => "TIMESTAMP".to_string(),
+                "DateTime" => "TIMESTAMPTZ".to_string(),
                 "Time" => "TIME".to_string(),
                 "Timestamp" => "TIMESTAMP".to_string(),
                 "Decimal" => "NUMERIC".to_string(),
