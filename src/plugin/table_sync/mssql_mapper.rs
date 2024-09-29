@@ -3,6 +3,10 @@ use rbs::Value;
 
 pub struct MssqlTableMapper {}
 impl ColumMapper for MssqlTableMapper {
+    fn driver_type(&self) -> String {
+        "mssql".to_string()
+    }
+
     fn get_column(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),

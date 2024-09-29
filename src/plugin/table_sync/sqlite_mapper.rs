@@ -4,6 +4,10 @@ use rbs::Value;
 pub struct SqliteTableMapper {}
 
 impl ColumMapper for SqliteTableMapper {
+    fn driver_type(&self) -> String {
+        "sqlite".to_string()
+    }
+
     fn get_column(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),

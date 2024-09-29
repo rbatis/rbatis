@@ -84,6 +84,10 @@ pub fn sync<'a>(
     Box::pin(async move {
         match table {
             Value::Map(m) => {
+                let db_driver_type = executor.driver_type()?;
+                if db_driver_type != mapper.driver_type() {
+                    return Err(Error::from(format!("table sync not match driver='{}',db driver='{}'", mapper.driver_type(), db_driver_type)));
+                }
                 let mut sql_create = format!("CREATE TABLE {} ", name);
                 let mut sql_column = format!("");
                 for (k, v) in &m {
@@ -148,5 +152,6 @@ pub fn sync<'a>(
 }
 
 pub trait ColumMapper: Sync + Send {
+    fn driver_type(&self) -> String;
     fn get_column(&self, column: &str, v: &Value) -> String;
 }
