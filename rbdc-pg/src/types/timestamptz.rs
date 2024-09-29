@@ -22,5 +22,6 @@ mod test {
         let v = rbs::Value::String("2024-07-26 09:03:48+00".to_string());
         println!("{:?}", v);
         let r: Timestamptz = rbs::from_value(v).unwrap();
+        println!("{:?}", r);
     }
 }
