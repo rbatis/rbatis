@@ -67,7 +67,8 @@ pub struct PgConnectOptions {
 
 impl Default for PgConnectOptions {
     fn default() -> Self {
-        Self::new_without_pgpass().apply_pgpass()
+        let d=Self::new_without_pgpass().apply_pgpass();
+        d
     }
 }
 
