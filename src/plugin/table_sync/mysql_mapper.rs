@@ -10,6 +10,10 @@ impl Default for MysqlTableMapper {
 }
 
 impl ColumMapper for MysqlTableMapper {
+
+    fn driver_type(&self) -> String {
+        "mysql".to_string()
+    }
     fn get_column(&self, column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
