@@ -29,7 +29,7 @@ impl ConnManager {
             option: Arc::new(option),
         })
     }
-    pub fn new_opt<D: Driver + 'static, Option: ConnectOptions>(driver: D, option: Option) -> Self {
+    pub fn new_option<D: Driver + 'static, Option: ConnectOptions>(driver: D, option: Option) -> Self {
         Self {
             driver: Arc::new(Box::new(driver)),
             option: Arc::new(Box::new(option)),
@@ -40,6 +40,13 @@ impl ConnManager {
         Self {
             driver: Arc::new(driver),
             option: Arc::new(option),
+        }
+    }
+
+    pub fn new_arc(driver: Arc<Box<dyn Driver>>, option: Arc<Box<dyn ConnectOptions>>) -> Self {
+        Self {
+            driver: driver,
+            option: option,
         }
     }
 
