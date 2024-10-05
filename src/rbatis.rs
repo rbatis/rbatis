@@ -8,7 +8,6 @@ use dark_std::sync::SyncVec;
 use log::LevelFilter;
 use rbdc::pool::conn_manager::ConnManager;
 use rbdc::pool::Pool;
-use rbdc::rt::tokio::sync::Mutex;
 use rbs::to_value;
 use serde::Serialize;
 use std::fmt::Debug;
@@ -158,11 +157,7 @@ impl RBatis {
     pub async fn acquire(&self) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        return Ok(RBatisConnExecutor {
-            id: new_snowflake_id(),
-            conn: Mutex::new(Box::new(conn)),
-            rb: self.clone(),
-        });
+        return Ok(RBatisConnExecutor::new(new_snowflake_id(), conn, self.clone()));
     }
 
     /// try get an DataBase Connection used for the next step
@@ -174,11 +169,7 @@ impl RBatis {
     pub async fn try_acquire_timeout(&self, d: Duration) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get_timeout(d).await?;
-        return Ok(RBatisConnExecutor {
-            id: new_snowflake_id(),
-            conn: Mutex::new(Box::new(conn)),
-            rb: self.clone(),
-        });
+        return Ok(RBatisConnExecutor::new(new_snowflake_id(), conn, self.clone()));
     }
 
     /// get an DataBase Connection,and call begin method,used for the next step
