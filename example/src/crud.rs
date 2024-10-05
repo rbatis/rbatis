@@ -25,9 +25,8 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-//custom table name
 //crud!(Activity {},"activity");
-crud!(Activity {}); // impl_insert!($table {}) + impl_select!($table {}) + impl_update!($table {}) + impl_delete!($table {});
+crud!(Activity {}); // insert + update + delete + select
 
 #[tokio::main]
 pub async fn main() {

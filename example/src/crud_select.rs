@@ -24,9 +24,8 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-crud!(Activity {});
-impl_select!(Activity{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
-impl_select!(Activity{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
+
+impl_select!(Activity{select_id_name(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 
 #[tokio::main]
 pub async fn main() {
@@ -48,19 +47,8 @@ pub async fn main() {
     // table sync done
     sync_table(&rb).await;
 
-    let data = Activity::select_all_by_id(&rb, "1", "1").await;
-    println!("select_all_by_id = {}", json!(data));
-
-    let data = Activity::select_by_id(&rb, "1").await;
-    println!("select_by_id = {}", json!(data));
-
-    let data = Activity::select_by_column(&rb, "id", "1").await;
-    println!("select_by_id = {}", json!(data));
-    if let Ok(v) = data {
-        //into HashMap
-        let map = table_field_map!(v,id);
-        println!("select_by_id hash_map= {}", json!(map));
-    }
+    let data = Activity::select_id_name(&rb, "1", "1").await;
+    println!("select_id_name = {}", json!(data));
 }
 
 async fn sync_table(rb: &RBatis) {

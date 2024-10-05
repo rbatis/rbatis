@@ -24,7 +24,7 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-crud!(Activity {});
+
 impl_delete!(Activity {delete_by_name(name:&str) => "`where name= '2'`"});
 
 #[tokio::main]
@@ -46,9 +46,6 @@ pub async fn main() {
     rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db").unwrap();
     // table sync done
     sync_table(&rb).await;
-
-    let data = Activity::delete_by_column(&rb, "id", "2").await;
-    println!("delete_by_column = {}", json!(data));
 
     let data = Activity::delete_by_name(&rb, "2").await;
     println!("delete_by_column = {}", json!(data));
