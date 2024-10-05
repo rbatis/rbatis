@@ -56,23 +56,24 @@ pub async fn main() -> Result<(), Error> {
     )
         .await;
     fast_log::logger().set_level(LevelFilter::Debug);
+
     //clear data
     let _ = Activity::delete_in_column(&rb.clone(), "id", &["3"]).await;
 
     // will forget commit
     let tx = rb.acquire_begin().await?;
-    transaction(tx, "3", true).await?;
+    transaction(tx, true).await?;
 
     // will do commit
     let conn = rb.acquire().await?;
     let tx = conn.begin().await?;
-    transaction(tx, "3", false)
+    transaction(tx, false)
         .await?;
 
     Ok(())
 }
 
-async fn transaction(tx: RBatisTxExecutor, id: &str, forget_commit: bool) -> Result<(), Error> {
+async fn transaction(tx: RBatisTxExecutor, forget_commit: bool) -> Result<(), Error> {
     let mut tx = tx.defer_async(|mut tx| async move {
         if tx.done {
             log::info!("transaction [{}] complete.",tx.tx_id);
@@ -87,7 +88,7 @@ async fn transaction(tx: RBatisTxExecutor, id: &str, forget_commit: bool) -> Res
     });
     log::info!("transaction [{}] start", tx.tx.as_ref().unwrap().tx_id);
     let _ = Activity::insert(&mut tx, &Activity {
-        id: Some(id.into()),
+        id: Some("3".into()),
         name: Some("3".into()),
         pc_link: Some("3".into()),
         h5_link: Some("3".into()),
