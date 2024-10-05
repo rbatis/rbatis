@@ -21,8 +21,9 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-rbatis::impl_insert!(Activity {});
-rbatis::impl_delete!(Activity {});
+
+rbatis::crud!(Activity {});
+
 #[tokio::main]
 pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(fast_log::Config::new().console().level(LevelFilter::Debug));
