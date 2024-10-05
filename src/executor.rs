@@ -37,8 +37,18 @@ impl RBatisRef for RBatis {
 
 pub struct RBatisConnExecutor {
     pub id: i64,
-    pub conn: Mutex<Box<dyn Connection>>,
     pub rb: RBatis,
+    pub conn: Mutex<Box<dyn Connection>>,
+}
+
+impl RBatisConnExecutor {
+    pub fn new(id: i64, conn: Box<dyn Connection>, rb: RBatis) -> Self {
+        Self {
+            id: id,
+            conn: Mutex::new(conn),
+            rb: rb,
+        }
+    }
 }
 
 impl Debug for RBatisConnExecutor {
