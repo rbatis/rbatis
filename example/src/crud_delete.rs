@@ -25,7 +25,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-impl_delete!(Activity {delete_by_name(name:&str) => "`where name= '2'`"});
+impl_delete!(Activity {delete_by_name(name:&str) => "`where name= #{name}`"});
 
 #[tokio::main]
 pub async fn main() {
