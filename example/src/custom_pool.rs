@@ -83,8 +83,8 @@ mod my_pool {
                     inner: manager,
                     conn: None,
                 })
-                .build()
-                .map_err(|e| Error::from(e.to_string()))?,
+                    .build()
+                    .map_err(|e| Error::from(e.to_string()))?,
             })
         }
 

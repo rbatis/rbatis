@@ -25,7 +25,7 @@ pub async fn main() {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db").unwrap();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
 
     println!("-----------------log level = info--------------------------------------");
     rb.get_intercept::<LogInterceptor>()

@@ -41,7 +41,7 @@ pub async fn main() {
     //let mapper = &table_sync::MssqlTableMapper{} ;
 
     // let table = RBUser{};
-    let table= to_value! {
+    let table = to_value! {
         "id": "INTEGER",
         "name": "TEXT",
         "remark": "TEXT",
@@ -67,6 +67,6 @@ pub async fn main() {
         },
         "rb_user",
     )
-    .await
-    .unwrap();
+        .await
+        .unwrap();
 }

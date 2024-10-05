@@ -1,7 +1,7 @@
 use rbatis::rbdc::DateTime;
 use rbatis::{table, table_field_btree, table_field_map, table_field_vec};
 
-#[derive(serde::Serialize, serde::Deserialize,Default,Debug,Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
 pub struct Activity {
     pub id: Option<i64>,
     pub name: Option<String>,
@@ -44,9 +44,9 @@ fn main() {
     let btree_owned = table_field_btree!(tables.clone(),id);
     println!("---btree_owned={}", rbs::to_value!(btree_owned));
     //vec<ref>
-    let ids= table_field_vec!(&tables,id);
+    let ids = table_field_vec!(&tables,id);
     println!("---ids={}", rbs::to_value!(ids));
     //vec<owned>
-    let ids= table_field_vec!(tables,id);
+    let ids = table_field_vec!(tables,id);
     println!("---ids owned={:?}", ids);
 }
