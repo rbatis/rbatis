@@ -26,7 +26,7 @@ pub struct Activity {
 }
 
 //crud!(Activity {},"activity");
-crud!(Activity {}); // insert + update + delete + select
+crud!(Activity {}); // insert + update_by_column + delete_by_column + select_by_column
 
 #[tokio::main]
 pub async fn main() {
