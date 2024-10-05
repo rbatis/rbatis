@@ -28,16 +28,15 @@ pub async fn main() {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db", ).unwrap();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
 
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
     rb.intercepts.insert(0, Arc::new(DisableLogIntercept::default()));
 
 
-    IS_SCHEDULE.scope(1, async move{
+    IS_SCHEDULE.scope(1, async move {
         //this scope will not show log
         let _r = Activity::delete_by_column(&rb, "id", "1").await;
-
     }).await;
 
     log::logger().flush();

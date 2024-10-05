@@ -28,7 +28,7 @@ pub async fn main() {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db").unwrap();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
 
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
     rb.intercepts

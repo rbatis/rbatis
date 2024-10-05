@@ -178,7 +178,7 @@ impl RBatisConnExecutor {
         Box::pin(async move {
             let mut conn = self.conn.into_inner();
             conn.begin().await?;
-            Ok(RBatisTxExecutor::new(self.rb, conn))
+            Ok(RBatisTxExecutor::new(new_snowflake_id(), self.rb, conn))
         })
     }
 
@@ -211,9 +211,9 @@ impl Debug for RBatisTxExecutor {
 }
 
 impl<'a> RBatisTxExecutor {
-    pub fn new(rb: RBatis, conn: Box<dyn Connection>) -> Self {
+    pub fn new(tx_id: i64, rb: RBatis, conn: Box<dyn Connection>) -> Self {
         RBatisTxExecutor {
-            tx_id: 0,
+            tx_id: tx_id,
             conn: Mutex::new(conn),
             rb: rb,
             done: false,
@@ -449,7 +449,7 @@ impl RBatisTxExecutor {
     /// ```
     pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
     where
-        F: Future<Output = ()> + Send + 'static,
+        F: Future<Output=()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
             tx: Some(self),
