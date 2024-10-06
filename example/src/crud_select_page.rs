@@ -1,11 +1,11 @@
-
-
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::plugin::page::PageRequest;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
+use rbatis::impl_select_page;
+use rbatis::pysql_select_page;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -37,7 +37,6 @@ impl_select_page!(Activity{select_page_by_limit(name:&str,limit_sql:&str) => "`w
 
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::table_sync::SqliteTableMapper;
-use rbexec::impl_select_page;
 
 pysql_select_page!(select_page_data(name: &str) -> Activity =>
 r#"`select * from activity where delete_flag = 0`

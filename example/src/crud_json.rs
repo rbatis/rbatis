@@ -5,7 +5,7 @@ use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{table_sync, RBatis};
 use rbs::to_value;
-use rbexec::crud;
+use rbatis::crud;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Account {
