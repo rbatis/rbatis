@@ -1,7 +1,9 @@
 pub mod intercept;
 pub mod intercept_log;
 pub mod object_id;
-pub mod page;
+
+// pub mod page;
+pub use rbatis_exec::page as page;
 pub mod snowflake;
 pub mod table_sync;
 

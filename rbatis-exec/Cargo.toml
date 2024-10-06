@@ -1,0 +1,31 @@
+[package]
+name = "rbatis-exec"
+version = "4.5.0"
+readme = "Readme.md"
+authors = ["ce <zhuxiujia@qq.com>"]
+edition = "2021"
+license = "Apache-2.0"
+categories = ["database"]
+keywords = ["database", "orm", "mysql", "postgres", "sqlite"]
+documentation = "https://docs.rs/rbatis/latest"
+repository = "https://github.com/rbatis/rbatis"
+homepage = "https://rbatis.github.io/rbatis.io"
+
+[features]
+default = ["rbatis-macro-driver/default"]
+#debug_mode feature will show decode json data
+debug_mode = ["rbatis-macro-driver/debug_mode", "rbs/debug_mode"]
+#support upper case sql keyword
+upper_case_sql_keyword = []
+
+[dependencies]
+rbs = { version = "4.5"}
+rbdc = { version = "4.5", default-features = false }
+rbatis-codegen = { version = "4.5", path = "../rbatis-codegen" }
+rbatis-macro-driver = { version = "4.5", path = "../rbatis-macro-driver", default-features = false, optional = true }
+futures-core = { version = "0.3" }
+dark-std = "0.2"
+serde = "1"
+
+[dev-dependencies]
+

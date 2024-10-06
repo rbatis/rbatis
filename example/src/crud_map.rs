@@ -1,12 +1,11 @@
-#[macro_use]
-extern crate rbatis;
+
 
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::RBatis;
+use rbatis::{impl_select, RBatis};
 use rbs::value::map::ValueMap;
 use rbs::Value;
 use serde_json::json;

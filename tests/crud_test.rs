@@ -30,6 +30,7 @@ mod test {
     use std::str::FromStr;
     use std::sync::atomic::{AtomicI32, Ordering};
     use std::sync::Arc;
+    use rbatis_exec::{impl_delete, impl_select, impl_select_page, impl_update};
 
     #[derive(Debug)]
     pub struct MockIntercept {

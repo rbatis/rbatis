@@ -76,13 +76,13 @@ QPS: 288531 QPS/s
 
 | database(crates.io)                                 | github_link                                                                    |
 |-----------------------------------------------------|--------------------------------------------------------------------------------|
-| [Mysql](https://crates.io/crates/rbdc-mysql)        | [rbatis/rbdc-mysql](https://github.com/rbatis/rbatis/tree/master/rbdc-mysql)   |
-| [Postgres](https://crates.io/crates/rbdc-pg)        | [rbatis/rbdc-pg](https://github.com/rbatis/rbatis/tree/master/rbdc-pg)         |
-| [Sqlite](https://crates.io/crates/rbdc-sqlite)      | [rbatis/rbdc-sqlite](https://github.com/rbatis/rbatis/tree/master/rbdc-sqlite) |
-| [Mssql](https://crates.io/crates/rbdc-mssql)        | [rbatis/rbdc-mssql](https://github.com/rbatis/rbatis/tree/master/rbdc-mssql)   |
-| [MariaDB](https://crates.io/crates/rbdc-mysql)      | [rbatis/rbdc-mysql](https://github.com/rbatis/rbatis/tree/master/rbdc-mysql)   |
-| [TiDB](https://crates.io/crates/rbdc-mysql)         | [rbatis/rbdc-mysql](https://github.com/rbatis/rbatis/tree/master/rbdc-mysql)   |
-| [CockroachDB](https://crates.io/crates/rbdc-pg)     | [rbatis/rbdc-pg](https://github.com/rbatis/rbatis/tree/master/rbdc-pg)         |
+| [Mysql](https://crates.io/crates/rbdc-mysql)        | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)   |
+| [Postgres](https://crates.io/crates/rbdc-pg)        | [rbatis/rbdc-pg](https://github.com/rbatis/rbdc/tree/master/rbdc-pg)         |
+| [Sqlite](https://crates.io/crates/rbdc-sqlite)      | [rbatis/rbdc-sqlite](https://github.com/rbatis/rbdc/tree/master/rbdc-sqlite) |
+| [Mssql](https://crates.io/crates/rbdc-mssql)        | [rbatis/rbdc-mssql](https://github.com/rbatis/rbdc/tree/master/rbdc-mssql)   |
+| [MariaDB](https://crates.io/crates/rbdc-mysql)      | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)   |
+| [TiDB](https://crates.io/crates/rbdc-mysql)         | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)   |
+| [CockroachDB](https://crates.io/crates/rbdc-pg)     | [rbatis/rbdc-pg](https://github.com/rbatis/rbdc/tree/master/rbdc-pg)         |
 | [Oracle](https://crates.io/crates/rbdc-oracle)      | [chenpengfan/rbdc-oracle](https://github.com/chenpengfan/rbdc-oracle)          |
 | [TDengine](https://crates.io/crates/rbdc-tdengine)  | [tdcare/rbdc-tdengine](https://github.com/tdcare/rbdc-tdengine)                |
 
@@ -130,6 +130,7 @@ async fn main(){
 ```toml
 #rbatis deps
 rbs = { version = "4.5"}
+rbatis-exec = { version = "4.5"}
 rbatis = { version = "4.5"}
 rbdc-sqlite = { version = "4.5" }
 #rbdc-mysql={version="4.5"}
@@ -145,6 +146,7 @@ fast_log = "1.6"
 #### (option) 'native-tls'
 ```toml
 rbs = { version = "4.5" }
+rbatis-exec = { version = "4.5"}
 rbatis = { version = "4.5"}
 rbdc-sqlite = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
 #rbdc-mysql={version="4.5", default-features = false, features = ["tls-native-tls"]}
@@ -161,9 +163,7 @@ fast_log = "1.6"
 #### default use
 ```rust
 //#[macro_use] define in 'root crate' or 'mod.rs' or 'main.rs'
-#[macro_use]
-extern crate rbatis;
-extern crate rbdc;
+
 use rbatis::rbdc::datetime::DateTime;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

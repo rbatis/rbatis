@@ -1,11 +1,11 @@
-#[macro_use]
-extern crate rbatis;
+
 
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{table_sync, RBatis};
 use rbs::to_value;
+use rbatis_exec::crud;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Account {
