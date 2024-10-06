@@ -130,7 +130,6 @@ async fn main(){
 ```toml
 #rbatis deps
 rbs = { version = "4.5"}
-rbexec = { version = "4.5"}
 rbatis = { version = "4.5"}
 rbdc-sqlite = { version = "4.5" }
 #rbdc-mysql={version="4.5"}
@@ -146,7 +145,6 @@ fast_log = "1.6"
 #### (option) 'native-tls'
 ```toml
 rbs = { version = "4.5" }
-rbexec = { version = "4.5"}
 rbatis = { version = "4.5"}
 rbdc-sqlite = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
 #rbdc-mysql={version="4.5", default-features = false, features = ["tls-native-tls"]}

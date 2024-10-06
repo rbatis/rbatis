@@ -44,6 +44,10 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
+    let mut path_ident = quote! {rbatis};
+    if args.path.is_some() {
+        path_ident = args.path.to_token_stream();
+    }
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
@@ -59,14 +63,14 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-        .to_token_stream();
+            .to_token_stream();
     }
     let mut decode = quote! {};
     let mut call_method = quote! {};
     let is_query = is_query(&return_ty.to_string());
     if is_query {
         call_method = quote! {query};
-        decode = quote! { Ok(rbexec::decode::decode(r)?)}
+        decode = quote! { Ok(#path_ident::decode::decode(r)?)}
     } else {
         call_method = quote! {exec};
         decode = quote! { Ok(r)}
@@ -84,7 +88,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
-           use rbexec::executor::{Executor};
+           use #path_ident::executor::{Executor};
            let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
            #decode
        }
