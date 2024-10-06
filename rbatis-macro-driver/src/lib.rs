@@ -125,7 +125,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
         let func_name_ident = target_fn.sig.ident.to_token_stream();
-        let stream_str = stream.to_string().replace("$crate", "rbatis");
+        let stream_str = stream.to_string();
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
@@ -182,7 +182,7 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
         let func_name_ident = target_fn.sig.ident.to_token_stream();
-        let stream_str = stream.to_string().replace("$crate", "rbatis");
+        let stream_str = stream.to_string();
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
