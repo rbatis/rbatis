@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate rbatis;
+
 
 use log::LevelFilter;
 use rbatis::dark_std::defer;
@@ -7,6 +6,7 @@ use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
 use serde_json::json;
+use rbatis_exec::impl_insert;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize, Clone)]

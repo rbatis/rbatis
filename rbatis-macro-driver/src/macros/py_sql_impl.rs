@@ -104,18 +104,18 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     let mut call_method = quote! {};
     if is_query {
         call_method = quote! {
-             use rbatis::executor::{Executor};
+             use rbatis_exec::executor::{Executor};
              let r=#rbatis_ident.query(&sql,rb_args).await?;
-             rbatis::decode::decode(r)
+             rbatis_exec::decode::decode(r)
         };
     } else {
         call_method = quote! {
-             use rbatis::executor::{Executor};
+             use rbatis_exec::executor::{Executor};
              #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     let gen_target_method = quote! {
-        #[rbatis::rb_py(#sql_ident)]
+        #[rbatis_exec::rb_py(#sql_ident)]
         pub fn do_py_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
@@ -136,9 +136,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
          #fn_body
-         use rbatis::executor::{RBatisRef};
-         let driver_type = #rbatis_ident.rb_ref().driver_type()?;
-         use rbatis::rbatis_codegen;
+         let driver_type = #rbatis_ident.driver_type()?;
+         use rbatis_exec::rbatis_codegen;
          #include_data
          #gen_func
          let (mut sql,rb_args) = do_py_sql(rbs::Value::Map(rb_arg_map), '?');

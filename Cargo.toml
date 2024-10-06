@@ -1,14 +1,9 @@
 [workspace]
 members = [
     "rbs",
-    "rbdc",
     "rbatis-codegen",
-    "rbdc-mysql",
-    "rbdc-pg",
-    "rbdc-sqlite",
-    "rbdc-mssql",
     "rbatis-macro-driver",
-    "rbdc-pool-fast",
+    "rbatis-exec",
     "example"
 ]
 
@@ -36,6 +31,7 @@ upper_case_sql_keyword = []
 [dependencies]
 rbatis-codegen = { version = "4.5", path = "rbatis-codegen" }
 rbatis-macro-driver = { version = "4.5", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-exec = {version = "4.5",path = "rbatis-exec"}
 serde = "1"
 #log
 log = "0.4"
@@ -44,22 +40,22 @@ futures = { version = "0.3" }
 #object_id
 hex = "0.4"
 rand = "0.8"
-rbs = { version = "4.5", path = "rbs" }
-rbdc = { version = "4.5", path = "rbdc", default-features = false }
+rbs = { version = "4.5" }
+rbdc = { version = "4.5",default-features = false }
 dark-std = "0.2"
 async-trait = "0.1.68"
 
-rbdc-pool-fast = { version = "4.5", path = "rbdc-pool-fast" }
+rbdc-pool-fast = { version = "4.5" }
 parking_lot = "0.12.3"
 
 [dev-dependencies]
 rbatis = { version = "4.5", path = ".", features = ["debug_mode"] }
 serde_json = "1"
 tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util", "macros"] }
-rbdc-mysql = { path = "rbdc-mysql" }
-rbdc-pg = { path = "rbdc-pg" }
-rbdc-sqlite = { path = "rbdc-sqlite" }
-rbdc-mssql = { path = "rbdc-mssql" }
+rbdc-mysql = {version = "*"}
+rbdc-pg = { version = "*" }
+rbdc-sqlite = {version = "*" }
+rbdc-mssql = { version = "*" }
 [profile.release]
 lto = true
 opt-level = 3

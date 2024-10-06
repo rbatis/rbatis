@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate rbatis;
+
 
 use log::LevelFilter;
 use rbatis::dark_std::defer;
@@ -8,7 +7,7 @@ use rbatis::rbatis_codegen::IntoSql;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{Error, RBatis};
+use rbatis::{Error, py_sql, RBatis};
 use serde_json::json;
 
 /// table

@@ -66,7 +66,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
     let is_query = is_query(&return_ty.to_string());
     if is_query {
         call_method = quote! {query};
-        decode = quote! { Ok(rbatis::decode::decode(r)?)}
+        decode = quote! { Ok(rbatis_exec::decode::decode(r)?)}
     } else {
         call_method = quote! {exec};
         decode = quote! { Ok(r)}
@@ -84,7 +84,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            let mut rb_args =vec![];
            #sql_args_gen
            #fn_body
-           use rbatis::executor::{Executor};
+           use rbatis_exec::executor::{Executor};
            let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
            #decode
        }

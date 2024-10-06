@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate rbatis;
+
 
 use log::LevelFilter;
 use rbatis::dark_std::defer;
@@ -38,6 +37,7 @@ impl_select_page!(Activity{select_page_by_limit(name:&str,limit_sql:&str) => "`w
 
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::table_sync::SqliteTableMapper;
+use rbatis_exec::impl_select_page;
 
 pysql_select_page!(select_page_data(name: &str) -> Activity =>
 r#"`select * from activity where delete_flag = 0`

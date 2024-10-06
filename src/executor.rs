@@ -12,14 +12,16 @@ use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
 
-/// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
-pub trait Executor: RBatisRef + Send + Sync {
-    fn name(&self) -> &str {
-        std::any::type_name::<Self>()
-    }
-    fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
-    fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
-}
+// /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
+// pub trait Executor: RBatisRef + Send + Sync {
+//     fn name(&self) -> &str {
+//         std::any::type_name::<Self>()
+//     }
+//     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
+//     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
+// }
+
+pub use rbatis_exec::Executor as Executor;
 
 pub trait RBatisRef: Send + Sync {
     fn rb_ref(&self) -> &RBatis;
@@ -174,6 +176,10 @@ impl Executor for RBatisConnExecutor {
             }
             Ok(Value::Array(result?))
         })
+    }
+
+    fn driver_type(&self) -> Result<&str, rbdc::Error> {
+        self.rb.driver_type()
     }
 }
 
@@ -367,6 +373,10 @@ impl Executor for RBatisTxExecutor {
             Ok(Value::Array(result?))
         })
     }
+
+    fn driver_type(&self) -> Result<&str, rbdc::Error> {
+        self.rb.driver_type()
+    }
 }
 
 impl RBatisRef for RBatisTxExecutor {
@@ -507,6 +517,10 @@ impl Executor for RBatisTxExecutorGuard {
             }
         })
     }
+
+    fn driver_type(&self) -> Result<&str, rbdc::Error> {
+        self.rb_ref().driver_type()
+    }
 }
 
 impl RBatis {
@@ -549,6 +563,10 @@ impl Executor for RBatis {
             let conn = self.acquire().await?;
             conn.query(&sql, args).await
         })
+    }
+
+    fn driver_type(&self) -> Result<&str, rbdc::Error> {
+        self.driver_type()
     }
 }
 
@@ -616,5 +634,9 @@ impl Executor for TempExecutor<'_> {
         self.sql.push(sql.to_string());
         self.args.push(args);
         Box::pin(async { Ok(Value::default()) })
+    }
+
+    fn driver_type(&self) -> Result<&str, rbdc::Error> {
+        self.rb.driver_type()
     }
 }

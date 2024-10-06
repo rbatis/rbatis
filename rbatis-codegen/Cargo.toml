@@ -20,7 +20,7 @@ default = []
 [dependencies]
 #serde
 serde = { version = "1", features = ["derive"] }
-rbs = { version = "4.5", path = "../rbs" }
+rbs = { version = "4.5"}
 serde_json = "1"
 
 #macro
