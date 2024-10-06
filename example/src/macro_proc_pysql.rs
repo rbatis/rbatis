@@ -9,7 +9,7 @@ use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{Error, py_sql, RBatis};
 use serde_json::json;
-use rbexec::pysql;
+use rbatis::pysql;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
