@@ -40,13 +40,14 @@ pub struct TestTable {
 crud!(rbexec, TestTable{});
 
 #[html_sql(
+rbexec,
 r#"<select id="select_by_id">
         `select * from activity`
-        <where>
+         <where>
          <if test="id != null">
               ` and id = #{id}`
          </if>
-        </where>
+         </where>
   </select>"#
 )]
 async fn select_by_id(
