@@ -21,21 +21,20 @@ struct ParseArgs {
 
 impl Parse for ParseArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        // let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
-        // Ok(Self {
-        //     sqls: r.into_iter().collect(),
-        // })
-        // 解析 path
+        // parse path
         let path = input.parse::<Path>();
-        // 确保路径后面跟着一个逗号
-        _=input.parse::<Token![,]>();
-        // 解析 sqls 列表
+        // make sure have ','
+        _ = input.parse::<Token![,]>();
+        // parse sqls list
         let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
         let sqls = r.into_iter().collect();
-        Ok(ParseArgs { path:match path {
-            Ok(v) => {Some(v)}
-            Err(_) => {None}
-        }, sqls })
+        Ok(ParseArgs {
+            path: match path {
+                Ok(v) => { Some(v) }
+                Err(_) => { None }
+            },
+            sqls,
+        })
     }
 }
 
