@@ -30,8 +30,8 @@ impl Parse for ParseArgs {
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
 ///```log
-///     use rbatis_exec::plugin;
-///     use rbatis_exec::executor::Executor;
+///     use rbexec::plugin;
+///     use rbexec::executor::Executor;
 ///     #[derive(serde::Serialize,serde::Deserialize)]
 ///     pub struct MockTable{}
 ///
@@ -56,8 +56,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// py sql create macro,this macro use RB.py_query and RB.py_exec
 ///```log
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::py_sql;
+/// use rbexec::executor::Executor;
+/// use rbexec::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///
@@ -66,8 +66,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///```
 ///  or more example:
 ///```log
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::py_sql;
+/// use rbexec::executor::Executor;
+/// use rbexec::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///
@@ -101,7 +101,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// ```
 /// or read from file
 /// ```rust
-/// //#[rbatis_exec::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
+/// //#[rbexec::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
 /// //pub async fn test_same_id(rb: &dyn Executor, id: &u64) -> Result<Value, Error> { impled!() }
 /// ```
 #[proc_macro_attribute]
@@ -127,8 +127,8 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
 /// ```log
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::html_sql;
+/// use rbexec::executor::Executor;
+/// use rbexec::html_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///

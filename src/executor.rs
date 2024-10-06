@@ -21,7 +21,7 @@ use std::fmt::{Debug, Formatter};
 //     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 // }
 
-pub use rbatis_exec::Executor as Executor;
+pub use rbexec::Executor as Executor;
 
 pub trait RBatisRef: Send + Sync {
     fn rb_ref(&self) -> &RBatis;

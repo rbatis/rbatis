@@ -7,7 +7,7 @@ use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
 use serde_json::json;
-use rbatis_exec::impl_select;
+use rbexec::impl_select;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]

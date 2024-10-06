@@ -14,7 +14,7 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let s = format!("{}", return_ty);
     if !s.contains(":: Result") && !s.starts_with("Result") {
         return_ty = quote! {
-             rbatis_exec::Result <#return_ty>
+             rbexec::Result <#return_ty>
         };
     }
     return_ty
