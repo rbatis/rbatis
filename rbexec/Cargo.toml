@@ -1,5 +1,5 @@
 [package]
-name = "rbatis-exec"
+name = "rbexec"
 version = "4.5.0"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]

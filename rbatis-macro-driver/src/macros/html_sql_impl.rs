@@ -88,18 +88,18 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     let mut call_method = quote! {};
     if is_query {
         call_method = quote! {
-             use rbatis_exec::executor::{Executor};
+             use rbexec::executor::{Executor};
              let r=#rbatis_ident.query(&sql,rb_args).await?;
-             rbatis_exec::decode::decode(r)
+             rbexec::decode::decode(r)
         };
     } else {
         call_method = quote! {
-             use rbatis_exec::executor::{Executor};
+             use rbexec::executor::{Executor};
              #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     let gen_target_method = quote! {
-        #[rbatis_exec::rb_html(#sql_ident)]
+        #[rbexec::rb_html(#sql_ident)]
         pub fn impl_html_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
@@ -140,7 +140,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          #sql_args_gen
          #fn_body
          let driver_type = #rbatis_ident.driver_type()?;
-         use rbatis_exec::rbatis_codegen;
+         use rbexec::rbatis_codegen;
          #gen_func
          let (mut sql,rb_args) = impl_html_sql(rbs::Value::Map(rb_arg_map),'?');
          #call_method

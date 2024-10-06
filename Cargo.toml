@@ -31,7 +31,7 @@ upper_case_sql_keyword = []
 [dependencies]
 rbatis-codegen = { version = "4.5", path = "rbatis-codegen" }
 rbatis-macro-driver = { version = "4.5", path = "rbatis-macro-driver", default-features = false, optional = true }
-rbatis-exec = {version = "4.5",path = "rbexec" }
+rbexec = {version = "4.5",path = "rbexec" }
 serde = "1"
 #log
 log = "0.4"

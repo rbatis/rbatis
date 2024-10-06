@@ -1,12 +1,12 @@
 ///PySql: gen select*,update*,insert*,delete* ... methods
 ///```rust
-/// use rbatis_exec::{Error, Executor};
+/// use rbexec::{Error, Executor};
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///    pub id: Option<String>
 /// }
-/// rbatis_exec::crud!(MockTable{}); //or crud!(MockTable{},"mock_table");
+/// rbexec::crud!(MockTable{}); //or crud!(MockTable{},"mock_table");
 ///
 /// //use
 /// async fn test_use(rb:&dyn Executor) -> Result<(),Error>{
@@ -47,8 +47,8 @@ macro_rules! crud {
 ///
 /// example:
 ///```rust
-/// use rbatis_exec::{Error, Executor};
-/// use rbatis_exec::impl_insert;
+/// use rbexec::{Error, Executor};
+/// use rbexec::impl_insert;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///   pub id: Option<String>
@@ -174,8 +174,8 @@ macro_rules! impl_insert {
 ///
 /// example:
 ///```rust
-/// use rbatis_exec::{Error, Executor};
-/// use rbatis_exec::impl_select;
+/// use rbexec::{Error, Executor};
+/// use rbexec::impl_select;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///   pub id: Option<String>
@@ -236,8 +236,8 @@ macro_rules! impl_select {
 
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
-/// use rbatis_exec::{Error, Executor};
-/// use rbatis_exec::impl_update;
+/// use rbexec::{Error, Executor};
+/// use rbexec::impl_update;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///   pub id: Option<String>
@@ -356,8 +356,8 @@ macro_rules! impl_update {
 /// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
 /// ```rust
-/// use rbatis_exec::{Error, Executor};
-/// use rbatis_exec::impl_delete;
+/// use rbexec::{Error, Executor};
+/// use rbexec::impl_delete;
 ///
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
@@ -440,7 +440,7 @@ macro_rules! impl_delete {
 /// do_count: default do_count is a bool param value to determine the statement type
 ///
 /// ```rust
-/// use rbatis_exec::impl_select_page;
+/// use rbexec::impl_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// impl_select_page!(MockTable{select_page() =>"
@@ -450,7 +450,7 @@ macro_rules! impl_delete {
 ///
 /// limit_sql: If the database does not support the statement `limit ${page_no},${page_size}`,You should add param 'limit_sql:&str'
 /// ```rust
-/// use rbatis_exec::impl_select_page;
+/// use rbexec::impl_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// impl_select_page!(MockTable{select_page(limit_sql:&str) =>"
@@ -563,11 +563,11 @@ macro_rules! impl_select_page {
 ///   </select>
 /// ```
 /// ```
-/// use rbatis_exec::htmlsql_select_page;
+/// use rbexec::htmlsql_select_page;
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
-/// //rbatis_exec::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
+/// //rbexec::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
 /// htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
 /// <select id="select_page_data">
 ///   `select `
@@ -625,7 +625,7 @@ macro_rules! htmlsql_select_page {
 ///                     ${ids.sql()}
 /// ```
 /// ```
-/// use rbatis_exec::pysql_select_page;
+/// use rbexec::pysql_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// pysql_select_page!(pysql_select_page(name:&str) -> MockTable =>
@@ -667,9 +667,9 @@ macro_rules! pysql_select_page {
 /// use macro wrapper #[sql]
 /// for example:
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::raw_sql;
-/// raw_sql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis_exec::Error> =>
+/// use rbexec::executor::Executor;
+/// use rbexec::raw_sql;
+/// raw_sql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
 /// "select * from table where id = ?"
 /// );
 /// ```
@@ -692,9 +692,9 @@ macro_rules! raw_sql {
 /// use macro wrapper #[py_sql]
 /// for query example:
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::pysql;
-/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis_exec::Error> =>
+/// use rbexec::executor::Executor;
+/// use rbexec::pysql;
+/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
 /// "select * from table where ${id} = 1
 ///  if id != 0:
 ///    `id = #{id}`"
@@ -702,10 +702,10 @@ macro_rules! raw_sql {
 /// ```
 /// for exec example:
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::pysql;
+/// use rbexec::executor::Executor;
+/// use rbexec::pysql;
 /// use rbdc::db::ExecResult;
-/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis_exec::Error> =>
+/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> =>
 /// "`update activity set name = '1' where id = #{id}`"
 /// );
 /// ```
@@ -728,9 +728,9 @@ macro_rules! pysql {
 /// use macro wrapper #[html_sql]
 /// for example query rbs::Value:
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::htmlsql;
-/// htmlsql!(test_select_column(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbatis_exec::Error> => r#"
+/// use rbexec::executor::Executor;
+/// use rbexec::htmlsql;
+/// htmlsql!(test_select_column(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> => r#"
 ///             <mapper>
 ///             <select id="test_same_id">
 ///               `select ${id} from my_table`
@@ -739,21 +739,21 @@ macro_rules! pysql {
 /// ```
 /// exec (from file)
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::htmlsql;
+/// use rbexec::executor::Executor;
+/// use rbexec::htmlsql;
 /// use rbdc::db::ExecResult;
-/// htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis_exec::Error> => "example/example.html");
+/// htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> => "example/example.html");
 /// ```
 /// query
 /// ```rust
-/// use rbatis_exec::executor::Executor;
-/// use rbatis_exec::htmlsql;
+/// use rbexec::executor::Executor;
+/// use rbexec::htmlsql;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MyTable{
 ///      pub id:Option<u64>,
 ///      pub name:Option<String>,
 /// }
-/// htmlsql!(test_select_table(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbatis_exec::Error> => r#"
+/// htmlsql!(test_select_table(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbexec::Error> => r#"
 ///             <mapper>
 ///               <select id="test_same_id">
 ///                 `select * from my_table`

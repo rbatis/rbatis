@@ -8,7 +8,7 @@ use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{html_sql, RBatis};
-use rbatis_exec::htmlsql;
+use rbexec::htmlsql;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
