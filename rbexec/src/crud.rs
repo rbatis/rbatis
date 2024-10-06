@@ -6,7 +6,7 @@
 /// pub struct MockTable{
 ///    pub id: Option<String>
 /// }
-/// rbexec::crud!(MockTable{}); //or crud!(MockTable{},"mock_table");
+/// rbexec::crud!(rbexec,MockTable{}); //or crud!(MockTable{},"mock_table");
 ///
 /// //use
 /// async fn test_use(rb:&dyn Executor) -> Result<(),Error>{
@@ -29,17 +29,17 @@
 /// ```
 #[macro_export]
 macro_rules! crud {
-    ($table:ty{}) => {
-        $crate::impl_insert!($table {});
-        $crate::impl_select!($table {});
-        $crate::impl_update!($table {});
-        $crate::impl_delete!($table {});
+    ($path:path,$table:ty{}) => {
+        $crate::impl_insert!($path,$table {});
+        $crate::impl_select!($path,$table {});
+        $crate::impl_update!($path,$table {});
+        $crate::impl_delete!($path,$table {});
     };
-    ($table:ty{},$table_name:expr) => {
-        $crate::impl_insert!($table {}, $table_name);
-        $crate::impl_select!($table {}, $table_name);
-        $crate::impl_update!($table {}, $table_name);
-        $crate::impl_delete!($table {}, $table_name);
+    ($path:path,$table:ty{},$table_name:expr) => {
+        $crate::impl_insert!($path,$table {}, $table_name);
+        $crate::impl_select!($path,$table {}, $table_name);
+        $crate::impl_update!($path,$table {}, $table_name);
+        $crate::impl_delete!($path,$table {}, $table_name);
     };
 }
 
@@ -53,7 +53,7 @@ macro_rules! crud {
 /// pub struct MockTable{
 ///   pub id: Option<String>
 /// }
-/// impl_insert!(MockTable{});
+/// impl_insert!(rbexec,MockTable{});
 ///
 /// //use
 /// async fn test_use(rb:&dyn Executor) -> Result<(),Error>{
@@ -66,10 +66,10 @@ macro_rules! crud {
 ///
 #[macro_export]
 macro_rules! impl_insert {
-    ($table:ty{}) => {
-        $crate::impl_insert!($table {}, "");
+    ($path:path,$table:ty{}) => {
+        $crate::impl_insert!($path,$table {}, "");
     };
-    ($table:ty{},$table_name:expr) => {
+    ($path:path,$table:ty{},$table_name:expr) => {
         impl $table {
             pub async fn insert_batch(
                 executor: &dyn $crate::executor::Executor,
@@ -105,7 +105,7 @@ macro_rules! impl_insert {
                         columns
                     }
                 }
-                #[$crate::py_sql(
+                #[$crate::py_sql($path,
                     "`insert into ${table_name} `
                     trim ',':
                      bind columns = tables.column_sets():
@@ -181,11 +181,11 @@ macro_rules! impl_insert {
 ///   pub id: Option<String>
 /// }
 /// /// default
-///impl_select!(MockTable{});
-///impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
+///impl_select!(rbexec,MockTable{});
+///impl_select!(rbexec,MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 /// /// container result
-///impl_select!(MockTable{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
-///impl_select!(MockTable{select_by_id2(id:String) -> Vec => "`where id = #{id} limit 1`"});
+///impl_select!(rbexec,MockTable{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
+///impl_select!(rbexec,MockTable{select_by_id2(id:String) -> Vec => "`where id = #{id} limit 1`"});
 ///
 /// //usage
 /// async fn test_select(rb:&dyn Executor) -> Result<(),Error>{
@@ -199,26 +199,26 @@ macro_rules! impl_insert {
 ///
 #[macro_export]
 macro_rules! impl_select {
-    ($table:ty{}) => {
-        $crate::impl_select!($table{},"");
+    ($path:path,$table:ty{}) => {
+        $crate::impl_select!($path,$table{},"");
     };
-    ($table:ty{},$table_name:expr) => {
-        $crate::impl_select!($table{select_all() => ""},$table_name);
-        $crate::impl_select!($table{select_by_column<V:serde::Serialize>(column: &str,column_value: V) -> Vec => "` where ${column} = #{column_value}`"},$table_name);
-        $crate::impl_select!($table{select_in_column<V:serde::Serialize>(column: &str,column_values: &[V]) -> Vec =>
+    ($path:path,$table:ty{},$table_name:expr) => {
+        $crate::impl_select!($path,$table{select_all() => ""},$table_name);
+        $crate::impl_select!($path,$table{select_by_column<V:serde::Serialize>(column: &str,column_value: V) -> Vec => "` where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_select!($path,$table{select_in_column<V:serde::Serialize>(column: &str,column_values: &[V]) -> Vec =>
          "` where ${column} in (`
           trim ',': for _,item in column_values:
              #{item},
           `)`"},$table_name);
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
-        $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
+    ($path:path,$table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
+        $crate::impl_select!($path,$table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
+    ($path:path,$table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
         impl $table{
             pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
-                     #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
+                     #[$crate::py_sql($path,"`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
@@ -242,7 +242,7 @@ macro_rules! impl_select {
 /// pub struct MockTable{
 ///   pub id: Option<String>
 /// }
-/// impl_update!(MockTable{});
+/// impl_update!(rbexec,MockTable{});
 /// //use
 /// async fn test_use(rb:&dyn Executor) -> Result<(),Error>{
 ///  let table = MockTable{id: Some("1".to_string())};
@@ -252,14 +252,15 @@ macro_rules! impl_select {
 /// ```
 #[macro_export]
 macro_rules! impl_update {
-    ($table:ty{}) => {
+    ($path:path,$table:ty{}) => {
         $crate::impl_update!(
+            $path,
             $table{},
             ""
         );
     };
-    ($table:ty{},$table_name:expr) => {
-        $crate::impl_update!($table{update_by_column_value(column: &str, column_value: &rbs::Value, skip_null: bool) => "`where ${column} = #{column_value}`"},$table_name);
+    ($path:path,$table:ty{},$table_name:expr) => {
+        $crate::impl_update!($path,$table{update_by_column_value(column: &str, column_value: &rbs::Value, skip_null: bool) => "`where ${column} = #{column_value}`"},$table_name);
         impl $table {
             ///  will skip null column
             pub async fn update_by_column(
@@ -311,7 +312,7 @@ macro_rules! impl_update {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($path:path,$table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
                 executor: &dyn $crate::executor::Executor,
@@ -321,7 +322,8 @@ macro_rules! impl_update {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`update ${table_name} set `
+                #[$crate::py_sql($path,
+                            "`update ${table_name} set `
                                  trim ',':
                                    for k,v in table:
                                      if k == column:
@@ -362,7 +364,7 @@ macro_rules! impl_update {
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
-/// impl_delete!(MockTable{});
+/// impl_delete!(rbexec,MockTable{});
 /// //use
 /// async fn test_use(rb:&dyn Executor) -> Result<(),Error>{
 ///  let r = MockTable::delete_by_column(rb, "id","1").await;
@@ -372,15 +374,16 @@ macro_rules! impl_update {
 /// ```
 #[macro_export]
 macro_rules! impl_delete {
-    ($table:ty{}) => {
+    ($path:path,$table:ty{}) => {
         $crate::impl_delete!(
+            $path,
             $table{},
             ""
         );
     };
-    ($table:ty{},$table_name:expr) => {
-        $crate::impl_delete!($table {delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
-        $crate::impl_delete!($table {delete_in_column<V:serde::Serialize>(column:&str,column_values: &[V]) =>
+    ($path:path,$table:ty{},$table_name:expr) => {
+        $crate::impl_delete!($path,$table {delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_delete!($path,$table {delete_in_column<V:serde::Serialize>(column:&str,column_values: &[V]) =>
         "`where ${column} in (`
           trim ',': for _,item in column_values:
              #{item},
@@ -405,7 +408,7 @@ macro_rules! impl_delete {
             }
         }
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($path:path,$table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
                 executor: &dyn $crate::executor::Executor,
@@ -414,7 +417,7 @@ macro_rules! impl_delete {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
+                #[$crate::py_sql($path,"`delete from ${table_name} `",$sql_where)]
                 async fn $fn_name$(<$($gkey: $gtype,)*>)?(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
@@ -443,7 +446,7 @@ macro_rules! impl_delete {
 /// use rbexec::impl_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
-/// impl_select_page!(MockTable{select_page() =>"
+/// impl_select_page!(rbexec,MockTable{select_page() =>"
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
@@ -461,13 +464,14 @@ macro_rules! impl_delete {
 /// you can see ${page_size} = page_size;
 #[macro_export]
 macro_rules! impl_select_page {
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
+    ($path:path,$table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
         $crate::impl_select_page!(
+            $path,
             $table{$fn_name($($param_key:$param_type,)*)=> $where_sql},
             ""
         );
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}$(,$table_name:expr)?) => {
+    ($path:path,$table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name(
                 executor: &dyn $crate::executor::Executor,
@@ -489,7 +493,7 @@ macro_rules! impl_select_page {
                 let records:Vec<$table>;
                 struct Inner{}
                 impl Inner{
-                 #[$crate::py_sql(
+                 #[$crate::py_sql($path,
                     "`select `
                     if do_count == false:
                       `${table_column}`
@@ -568,7 +572,7 @@ macro_rules! impl_select_page {
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// //rbexec::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
-/// htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
+/// htmlsql_select_page!(rbexec,select_page_data(name: &str) -> MockTable => r#"
 /// <select id="select_page_data">
 ///   `select `
 ///  <if test="do_count == true">
@@ -581,11 +585,11 @@ macro_rules! impl_select_page {
 /// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
+    ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
             pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::rbdc::Error> {
             struct Inner{}
             impl Inner{
-              #[$crate::html_sql($html_file)]
+              #[$crate::html_sql($path,$html_file)]
               pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
@@ -628,7 +632,7 @@ macro_rules! htmlsql_select_page {
 /// use rbexec::pysql_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
-/// pysql_select_page!(pysql_select_page(name:&str) -> MockTable =>
+/// pysql_select_page!(rbexec,pysql_select_page(name:&str) -> MockTable =>
 ///     r#"`select `
 ///       if do_count == true:
 ///         ` count(1) as count `
@@ -642,11 +646,11 @@ macro_rules! htmlsql_select_page {
 /// ```
 #[macro_export]
 macro_rules! pysql_select_page {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
+    ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
             pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::rbdc::Error> {
             struct Inner{}
             impl Inner{
-              #[$crate::py_sql($py_file)]
+              #[$crate::py_sql($path,$py_file)]
               pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
@@ -669,17 +673,17 @@ macro_rules! pysql_select_page {
 /// ```rust
 /// use rbexec::executor::Executor;
 /// use rbexec::raw_sql;
-/// raw_sql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
+/// raw_sql!(rbexec,test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
 /// "select * from table where id = ?"
 /// );
 /// ```
 #[macro_export]
 macro_rules! raw_sql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
+    ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
            pub struct Inner{};
            impl Inner{
-               #[$crate::sql($sql_file)]
+               #[$crate::sql($path,$sql_file)]
                pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
                  impled!()
                }
@@ -694,7 +698,7 @@ macro_rules! raw_sql {
 /// ```rust
 /// use rbexec::executor::Executor;
 /// use rbexec::pysql;
-/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
+/// pysql!(rbexec,test_same_id(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> =>
 /// "select * from table where ${id} = 1
 ///  if id != 0:
 ///    `id = #{id}`"
@@ -705,17 +709,17 @@ macro_rules! raw_sql {
 /// use rbexec::executor::Executor;
 /// use rbexec::pysql;
 /// use rbdc::db::ExecResult;
-/// pysql!(test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> =>
+/// pysql!(rbexec,test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> =>
 /// "`update activity set name = '1' where id = #{id}`"
 /// );
 /// ```
 #[macro_export]
 macro_rules! pysql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+    ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
            pub struct Inner{};
            impl Inner{
-               #[$crate::py_sql($py_file)]
+               #[$crate::py_sql($path,$py_file)]
                pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
                  impled!()
                }
@@ -730,7 +734,7 @@ macro_rules! pysql {
 /// ```rust
 /// use rbexec::executor::Executor;
 /// use rbexec::htmlsql;
-/// htmlsql!(test_select_column(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> => r#"
+/// htmlsql!(rbexec,test_select_column(rb: &dyn Executor, id: &u64)  -> Result<rbs::Value, rbexec::Error> => r#"
 ///             <mapper>
 ///             <select id="test_same_id">
 ///               `select ${id} from my_table`
@@ -742,7 +746,7 @@ macro_rules! pysql {
 /// use rbexec::executor::Executor;
 /// use rbexec::htmlsql;
 /// use rbdc::db::ExecResult;
-/// htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> => "example/example.html");
+/// htmlsql!(rbexec,update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> => "example/example.html");
 /// ```
 /// query
 /// ```rust
@@ -753,7 +757,7 @@ macro_rules! pysql {
 ///      pub id:Option<u64>,
 ///      pub name:Option<String>,
 /// }
-/// htmlsql!(test_select_table(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbexec::Error> => r#"
+/// htmlsql!(rbexec,test_select_table(rb: &dyn Executor, id: &u64)  -> Result<Vec<MyTable>, rbexec::Error> => r#"
 ///             <mapper>
 ///               <select id="test_same_id">
 ///                 `select * from my_table`
@@ -762,11 +766,11 @@ macro_rules! pysql {
 /// ```
 #[macro_export]
 macro_rules! htmlsql {
-    ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
+    ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
         pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
             pub struct Inner{};
             impl Inner{
-            #[$crate::html_sql($html_file)]
+            #[$crate::html_sql($path,$html_file)]
             pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
               impled!()
              }

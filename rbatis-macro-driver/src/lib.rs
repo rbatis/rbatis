@@ -4,7 +4,7 @@ extern crate rbatis_codegen;
 
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token};
+use syn::{parse_macro_input, ItemFn, Token, Path};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -15,15 +15,27 @@ mod macros;
 mod util;
 
 struct ParseArgs {
+    pub path: Option<syn::Path>,
     pub sqls: Vec<syn::LitStr>,
 }
 
 impl Parse for ParseArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        // let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
+        // Ok(Self {
+        //     sqls: r.into_iter().collect(),
+        // })
+        // 解析 path
+        let path = input.parse::<Path>();
+        // 确保路径后面跟着一个逗号
+        _=input.parse::<Token![,]>();
+        // 解析 sqls 列表
         let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
-        Ok(Self {
-            sqls: r.into_iter().collect(),
-        })
+        let sqls = r.into_iter().collect();
+        Ok(ParseArgs { path:match path {
+            Ok(v) => {Some(v)}
+            Err(_) => {None}
+        }, sqls })
     }
 }
 

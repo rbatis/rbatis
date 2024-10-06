@@ -112,7 +112,6 @@ fast_log = "1.7"
 #async runtime lib
 tokio = { version = "1", features = ["full"] }
 rbs = { version = "4.5" }
-rbexec = {version = "4.5",path = "../rbexec" }
 rbatis = { version = "4.5", features = ["debug_mode"], path = "../" }
 rbdc-sqlite = { version = "4.5" }
 rbdc-mysql = { version = "4.5" }

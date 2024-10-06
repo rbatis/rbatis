@@ -13,14 +13,16 @@ pub mod executor;
 // #[macro_use]
 // pub mod crud;
 
-pub use rbexec::{impl_select,crud,impl_update,impl_insert,impl_delete,impl_select_page,pysql,htmlsql,htmlsql_select_page,pysql_select_page};
-
 #[macro_use]
 pub mod error;
 // pub mod decode;
 pub use rbexec::decode as decode;
 
 pub mod sql;
+#[macro_use]
+pub mod crud;
+
+
 pub use async_trait::async_trait;
 pub use decode::*;
 pub use error::*;
