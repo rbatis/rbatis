@@ -6,11 +6,12 @@ use rbs::{to_value, Value};
 use serde::{Deserialize, Serialize};
 use rbexec::{crud, Executor};
 
-pub struct TestExecutor{}
-impl Executor for TestExecutor{
+pub struct TestExecutor {}
+
+impl Executor for TestExecutor {
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-        Box::pin(async{
-            Ok(ExecResult{
+        Box::pin(async {
+            Ok(ExecResult {
                 rows_affected: 1,
                 last_insert_id: Default::default(),
             })
@@ -18,7 +19,7 @@ impl Executor for TestExecutor{
     }
 
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
-        Box::pin(async{
+        Box::pin(async {
             Ok(to_value!([1,2,3]))
         })
     }
@@ -29,18 +30,18 @@ impl Executor for TestExecutor{
 }
 
 
-#[derive(Serialize,Deserialize)]
-pub struct TestTable{
-    pub id:Option<String>
+#[derive(Serialize, Deserialize)]
+pub struct TestTable {
+    pub id: Option<String>,
 }
 
 crud!(rbexec, TestTable{});
 #[tokio::test]
-async fn test_crud(){
-    let executor = TestExecutor{};
-    let table=TestTable{
+async fn test_crud() {
+    let executor = TestExecutor {};
+    let table = TestTable {
         id: Some(1.to_string()),
     };
-    let d= TestTable::insert(&executor,&table).await.unwrap();
-    println!("{}",d);
+    let d = TestTable::insert(&executor, &table).await.unwrap();
+    println!("{}", d);
 }
