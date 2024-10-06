@@ -456,7 +456,7 @@ macro_rules! impl_delete {
 /// use rbexec::impl_select_page;
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
-/// impl_select_page!(MockTable{select_page(limit_sql:&str) =>"
+/// impl_select_page!(rbexec,MockTable{select_page(limit_sql:&str) =>"
 ///      if do_count == false:
 ///        `order by create_time desc`"});
 /// ```
