@@ -356,7 +356,7 @@ impl<V: Send + Sync> Page<V> {
 
 #[cfg(test)]
 mod test {
-    use crate::plugin::page::Page;
+    use crate::page::Page;
 
     #[test]
     fn test_page_into_range() {
