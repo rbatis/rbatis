@@ -1,5 +1,3 @@
-
-
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbatis::RBatis;
