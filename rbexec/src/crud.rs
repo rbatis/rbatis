@@ -708,7 +708,7 @@ macro_rules! raw_sql {
 /// ```rust
 /// use rbexec::executor::Executor;
 /// use rbexec::pysql;
-/// use rbdc::db::ExecResult;
+/// use rbexec::ExecResult;
 /// pysql!(rbexec,test_same_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> =>
 /// "`update activity set name = '1' where id = #{id}`"
 /// );
@@ -745,7 +745,7 @@ macro_rules! pysql {
 /// ```rust
 /// use rbexec::executor::Executor;
 /// use rbexec::htmlsql;
-/// use rbdc::db::ExecResult;
+/// use rbexec::ExecResult;
 /// htmlsql!(rbexec,update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbexec::Error> => "example/example.html");
 /// ```
 /// query
