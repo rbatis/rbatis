@@ -4,24 +4,17 @@ use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use futures::Future;
+use futures::{Future};
 use futures_core::future::BoxFuture;
-use rbdc::db::{Connection, ExecResult};
+use rbdc::db::{Connection};
 use rbdc::rt::tokio::sync::Mutex;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
 
-// /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
-// pub trait Executor: RBatisRef + Send + Sync {
-//     fn name(&self) -> &str {
-//         std::any::type_name::<Self>()
-//     }
-//     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
-//     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
-// }
 
 pub use rbexec::Executor as Executor;
+use rbexec::executor::ExecResult;
 
 pub trait RBatisRef: Send + Sync {
     fn rb_ref(&self) -> &RBatis;
@@ -103,7 +96,10 @@ impl Executor for RBatisConnExecutor {
                         break;
                     }
                 } else {
-                    return before_result;
+                    return before_result.map(|v| ExecResult{
+                        rows_affected: v.rows_affected,
+                        last_insert_id: v.last_insert_id
+                    });
                 }
             }
             let mut args_after = args.clone();
@@ -123,10 +119,16 @@ impl Executor for RBatisConnExecutor {
                         break;
                     }
                 } else {
-                    return result;
+                    return result.map(|v| ExecResult{
+                        rows_affected: v.rows_affected,
+                        last_insert_id: v.last_insert_id
+                    });
                 }
             }
-            result
+            result.map(|v| ExecResult{
+                rows_affected: v.rows_affected,
+                last_insert_id: v.last_insert_id
+            })
         })
     }
 
@@ -299,7 +301,10 @@ impl Executor for RBatisTxExecutor {
                         break;
                     }
                 } else {
-                    return before_result;
+                    return before_result.map(|v| ExecResult{
+                        rows_affected: v.rows_affected,
+                        last_insert_id: v.last_insert_id
+                    });
                 }
             }
             let mut args_after = args.clone();
@@ -319,10 +324,16 @@ impl Executor for RBatisTxExecutor {
                         break;
                     }
                 } else {
-                    return result;
+                    return result.map(|v| ExecResult{
+                        rows_affected: v.rows_affected,
+                        last_insert_id: v.last_insert_id
+                    });
                 }
             }
-            result
+            result.map(|v| ExecResult{
+                rows_affected: v.rows_affected,
+                last_insert_id: v.last_insert_id
+            })
         })
     }
 

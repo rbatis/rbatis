@@ -2,7 +2,7 @@
 use rbs::Value;
 use serde::de::DeserializeOwned;
 
-use rbdc::Error;
+use rbs::Error;
 
 /// decode json vec to an object
 /// support decode types:

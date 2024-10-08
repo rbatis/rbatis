@@ -1,7 +1,7 @@
 pub extern crate dark_std;
 pub extern crate rbatis_codegen;
 extern crate rbatis_macro_driver;
-pub extern crate rbdc;
+// pub extern crate rbdc;
 pub mod crud;
 pub mod executor;
 pub mod page;
@@ -15,7 +15,7 @@ pub use executor::Executor;
 
 pub use decode::*;
 
-pub use rbdc::Error;
+pub use rbs::Error;
 
 
 
