@@ -79,7 +79,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         call_method = quote! {query(&#sql_ident,rb_args #page_req).await?; };
         decode = quote! { Ok(#path_ident::decode::decode(r)?)}
     } else {
-        call_method = quote! {exec(&#sql_ident,rb_args #page_req).await.map(|v|(v.rows_affected,v.last_insert_id).into())? };
+        call_method = quote! {exec(&#sql_ident,rb_args #page_req).await.map(|v|(v.rows_affected,v.last_insert_id).into())?; };
         decode = quote! { Ok(r)}
     }
     //gen rust code templete
