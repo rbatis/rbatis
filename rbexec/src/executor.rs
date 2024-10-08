@@ -2,7 +2,7 @@ use futures_core::future::BoxFuture;
 use rbs::Value;
 
 
-pub type  Error = rbs::Error;
+pub type Error = rbs::Error;
 
 /// the Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard or any impl this struct
 pub trait Executor: Send + Sync {
@@ -23,16 +23,13 @@ pub struct ExecResult {
 }
 
 #[cfg(not(feature = "rbdc"))]
-use std::fmt::{Debug, Display, Formatter};
-
-#[cfg(not(feature = "rbdc"))]
-impl Display for ExecResult {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for ExecResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         struct DisplayBox<'a> {
             inner: &'a Value,
         }
-        impl<'a> Debug for DisplayBox<'a> {
-            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        impl<'a> std::fmt::Debug for DisplayBox<'a> {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 std::fmt::Display::fmt(&self.inner, f)
             }
         }
