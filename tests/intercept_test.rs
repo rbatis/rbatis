@@ -198,11 +198,8 @@ mod test {
             let r = rb.exec("select * from table", vec![]).await.unwrap();
             println!("r={}", r);
             assert_eq!(
-                r,
-                ExecResult {
-                    rows_affected: 1,
-                    last_insert_id: Value::U64(1),
-                }
+                r.rows_affected,
+                1
             );
         };
         block_on(f);

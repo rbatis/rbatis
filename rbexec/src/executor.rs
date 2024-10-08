@@ -14,7 +14,6 @@ pub trait Executor: Send + Sync {
     fn driver_type(&self) -> Result<&str, Error>;
 }
 
-#[cfg(not(feature = "rbdc"))]
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize, Eq, PartialEq)]
 pub struct ExecResult {
     pub rows_affected: u64,
@@ -22,7 +21,6 @@ pub struct ExecResult {
     pub last_insert_id: Value,
 }
 
-#[cfg(not(feature = "rbdc"))]
 impl std::fmt::Display for ExecResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         struct DisplayBox<'a> {
@@ -44,5 +42,11 @@ impl std::fmt::Display for ExecResult {
     }
 }
 
-#[cfg(feature = "rbdc")]
-pub type ExecResult = rbdc::db::ExecResult;
+impl From<(u64, Value)> for ExecResult {
+    fn from(value: (u64, Value)) -> Self {
+        Self {
+            rows_affected: value.0,
+            last_insert_id: value.1,
+        }
+    }
+}
