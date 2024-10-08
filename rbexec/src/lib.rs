@@ -12,10 +12,10 @@ pub mod impled;
 pub use rbatis_macro_driver::{html_sql, py_sql, snake_name, sql};
 
 pub use executor::Executor;
+pub use executor::ExecResult;
+pub use executor::Error;
 
 pub use decode::*;
-
-pub use rbs::Error;
 
 
 
