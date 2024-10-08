@@ -1,10 +1,10 @@
+//you can add on Cargo.toml of `rbexec = "*"` replace this code,and do not add rbatis.
+use rbatis::rbexec as rbexec;
+
 use futures_core::future::BoxFuture;
-use rbdc::{Error};
-use rbdc::rt::tokio;
 use rbs::{to_value, Value};
 use serde::{Deserialize, Serialize};
-use rbatis_macro_driver::html_sql;
-use rbexec::{crud, ExecResult, Executor};
+use rbexec::{crud, html_sql, Executor,Error,ExecResult};
 
 pub struct TestExecutor {}
 
@@ -54,19 +54,15 @@ async fn select_by_id(
     impled!()
 }
 
-#[tokio::test]
-async fn test_crud() {
+#[tokio::main]
+pub async fn main() {
     let executor = TestExecutor {};
     let table = TestTable {
         id: Some(1.to_string()),
     };
     let d = TestTable::insert(&executor, &table).await.unwrap();
     println!("{}", d);
-}
 
-
-#[tokio::test]
-async fn test_html() {
     let executor = TestExecutor {};
     let d = select_by_id(&executor, "111").await.unwrap();
     println!("{:?}", d);
