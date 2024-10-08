@@ -42,12 +42,6 @@ impl Serialize for Value {
     }
 }
 
-impl ser::Error for Error {
-    fn custom<T: Display>(msg: T) -> Self {
-        Error::Syntax(format!("{}", msg))
-    }
-}
-
 struct Serializer;
 
 /// Convert a `T` into `rbs::Value` which is an enum that can represent any valid MessagePack data.
@@ -259,7 +253,7 @@ impl ser::Serializer for Serializer {
         _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Error> {
         //TODO impl serialize_tuple_variant
-        return Err(Error::Syntax(
+        return Err(Error::E(
             "rbs Serialize unimplemented serialize_tuple_variant".to_string(),
         ));
         // let se = SerializeTupleVariant {
@@ -299,7 +293,7 @@ impl ser::Serializer for Serializer {
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Error> {
         //TODO impl serialize_struct_variant
-        return Err(Error::Syntax(
+        return Err(Error::E(
             "rbs Serialize unimplemented serialize_struct_variant".to_string(),
         ));
         // let se = DefaultSerializeMap {
