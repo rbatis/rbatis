@@ -2,9 +2,10 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
+use proc_macro2::Span;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token, Path};
+use syn::{parse_macro_input, ItemFn, Token, Path, PathSegment};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -16,7 +17,8 @@ mod util;
 
 /// ParseArgs must be `#[xxx(crate,"sql")]`
 struct ParseArgs {
-    pub crates: Option<syn::Path>,
+    //crates default = 'rbatis' if you not set this value
+    pub crates: syn::Path,
     pub sqls: Vec<syn::LitStr>,
 }
 
@@ -31,8 +33,8 @@ impl Parse for ParseArgs {
         let sqls = r.into_iter().collect();
         Ok(ParseArgs {
             crates: match path {
-                Ok(v) => { Some(v) }
-                Err(_) => { None }
+                Ok(v) => { v }
+                Err(_) => { Path::from(PathSegment::from(proc_macro2::Ident::new("rbatis", Span::call_site()))) }
             },
             sqls,
         })
