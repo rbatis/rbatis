@@ -142,6 +142,12 @@
         </foreach>
     </select>
 
+    <select id="test_for_item">
+        <foreach collection="ids" separator="," index="k" item="v">
+            (${v.a},${v.b})
+        </foreach>
+    </select>
+
     <select id="test_trim">
         <trim prefix="(" prefixOverrides="1" suffixOverrides="2" suffix=")">
             12

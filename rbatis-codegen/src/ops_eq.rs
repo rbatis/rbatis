@@ -103,6 +103,18 @@ impl PartialEq<String> for Value {
     }
 }
 
+impl PartialEq<String> for &Value {
+    fn op_eq(&self, other: &String) -> bool {
+        eq_str(self, other.as_str())
+    }
+}
+
+impl PartialEq<&str> for &Value {
+    fn op_eq(&self, other: &&str) -> bool {
+        eq_str(self, *other)
+    }
+}
+
 impl PartialEq<Value> for String {
     fn op_eq(&self, other: &Value) -> bool {
         eq_str(other, self.as_str())
