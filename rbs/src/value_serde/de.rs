@@ -1,5 +1,5 @@
 use indexmap::IndexMap;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{self, Debug, Formatter};
 
 use crate::value::map::ValueMap;
 use crate::value::Value;
