@@ -4,7 +4,6 @@ use serde::ser::{
     self, SerializeMap, SerializeSeq, SerializeStruct, SerializeTuple, SerializeTupleStruct,
 };
 use serde::Serialize;
-use std::fmt::Display;
 
 
 impl Serialize for Value {
