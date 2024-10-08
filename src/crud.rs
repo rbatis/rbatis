@@ -30,16 +30,10 @@
 #[macro_export]
 macro_rules! crud {
     ($table:ty{}) => {
-        $crate::rbexec::impl_insert!($crate::rbexec,$table {});
-        $crate::rbexec::impl_select!($crate::rbexec,$table {});
-        $crate::rbexec::impl_update!($crate::rbexec,$table {});
-        $crate::rbexec::impl_delete!($crate::rbexec,$table {});
+        $crate::rbexec::crud!($crate::rbexec,$table {});
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::rbexec::impl_insert!($crate::rbexec,$table {}, $table_name);
-        $crate::rbexec::impl_select!($crate::rbexec,$table {}, $table_name);
-        $crate::rbexec::impl_update!($crate::rbexec,$table {}, $table_name);
-        $crate::rbexec::impl_delete!($crate::rbexec,$table {}, $table_name);
+        $crate::rbexec::crud!($crate::rbexec,$table {}, $table_name);
     };
 }
 
