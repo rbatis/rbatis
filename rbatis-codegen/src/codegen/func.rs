@@ -232,13 +232,13 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
             return Ok(Expr::Paren(b));
         }
-        //
+        //a.b
         Expr::Field(mut b) => {
             b.base = Box::new(translate(context, *b.base, ignore)?);
             match b.member {
                 Member::Named(named) => {
                     return syn::parse_str::<Expr>(&format!(
-                        "({}[\"{}\"])",
+                        "(&{}[\"{}\"])",
                         b.base.to_token_stream(),
                         named.to_token_stream()
                     ))
