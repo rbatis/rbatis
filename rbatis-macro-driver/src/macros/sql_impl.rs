@@ -65,23 +65,23 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         )
             .to_token_stream();
     }
+    let page_req = quote! {};
     let mut decode = quote! {};
     let mut call_method = quote! {};
-    let is_query = is_query(&return_ty.to_string());
-    if is_query {
-        call_method = quote! {query};
-        decode = quote! { Ok(#path_ident::decode::decode(r)?)}
-    } else {
-        call_method = quote! {exec};
-        decode = quote! { Ok(r)}
-    }
     //check use page method
     let page_req_str = String::new();
-    let page_req = quote! {};
     //append all args
     let sql_args_gen =
         filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
     let generic = target_fn.sig.generics.clone();
+    let is_query = is_query(&return_ty.to_string());
+    if is_query {
+        call_method = quote! {query(&#sql_ident,rb_args #page_req).await?; };
+        decode = quote! { Ok(#path_ident::decode::decode(r)?)}
+    } else {
+        call_method = quote! {exec(&#sql_ident,rb_args #page_req).await.map(|v|(v.rows_affected,v.last_insert_id).into())? };
+        decode = quote! { Ok(r)}
+    }
     //gen rust code templete
     let gen_token_temple = quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty{
@@ -89,7 +89,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            #sql_args_gen
            #fn_body
            use #path_ident::executor::{Executor};
-           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await.map(|v|(v.rows_affected,v.last_insert_id).into())?;
+           let r= #rbatis_ident.#call_method
            #decode
        }
     };
