@@ -46,8 +46,8 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
         panic!("[rbatis] Incorrect macro parameter length!");
     }
     let mut path_ident = quote! {rbatis};
-    if args.path.is_some() {
-        path_ident = args.path.to_token_stream();
+    if args.crates.is_some() {
+        path_ident = args.crates.to_token_stream();
     }
     // sql_ident is html or file?
     let mut file_name = sql_ident.to_string().trim().to_string();

@@ -14,8 +14,9 @@ use crate::proc_macro::TokenStream;
 mod macros;
 mod util;
 
+/// ParseArgs must be `#[xxx(crate,"sql")]`
 struct ParseArgs {
-    pub path: Option<syn::Path>,
+    pub crates: Option<syn::Path>,
     pub sqls: Vec<syn::LitStr>,
 }
 
@@ -29,7 +30,7 @@ impl Parse for ParseArgs {
         let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
         let sqls = r.into_iter().collect();
         Ok(ParseArgs {
-            path: match path {
+            crates: match path {
                 Ok(v) => { Some(v) }
                 Err(_) => { None }
             },
