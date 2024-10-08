@@ -23,13 +23,6 @@ where
     Deserialize::deserialize(val)
 }
 
-impl serde::de::Error for crate::Error {
-    #[cold]
-    fn custom<T: Display>(msg: T) -> Self {
-        crate::Error::Syntax(format!("{}", msg))
-    }
-}
-
 impl<'de> Deserialize<'de> for Value {
     #[inline]
     fn deserialize<D>(de: D) -> Result<Self, D::Error>
@@ -523,7 +516,7 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         V: Visitor<'de>,
     {
         //todo impl tuple_variant
-        return Err(crate::Error::Syntax(
+        return Err(crate::Error::E(
             "rbs Deserialize unimplemented tuple_variant".to_string(),
         ));
     }
@@ -537,7 +530,7 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         V: Visitor<'de>,
     {
         //todo impl struct_variant
-        return Err(crate::Error::Syntax(
+        return Err(crate::Error::E(
             "rbs Deserialize unimplemented struct_variant".to_string(),
         ));
     }

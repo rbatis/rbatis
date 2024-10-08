@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{ser, Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use std::num::{ParseFloatError, ParseIntError, TryFromIntError};
 use std::str::Utf8Error;
@@ -6,6 +6,17 @@ use std::str::Utf8Error;
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Error {
     E(String),
+}
+
+impl Error {
+    pub fn append(self, arg: &str) -> Error {
+        match self {
+            Error::E(mut e) => {
+                e.push_str(arg);
+                Error::E(e)
+            }
+        }
+    }
 }
 
 impl Error {
@@ -26,12 +37,16 @@ impl Display for Error {
 
 impl std::error::Error for Error {}
 
-impl serde::ser::Error for Error {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
-    {
-        Self::E(msg.to_string())
+impl ser::Error for Error {
+    fn custom<T: Display>(msg: T) -> Self {
+        Error::E(format!("{}", msg))
+    }
+}
+
+impl serde::de::Error for Error {
+    #[cold]
+    fn custom<T: Display>(msg: T) -> Self {
+        Error::E(format!("{}", msg))
     }
 }
 
