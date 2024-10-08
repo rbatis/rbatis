@@ -45,8 +45,8 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         panic!("[rbatis] Incorrect macro parameter length!");
     }
     let mut path_ident = quote! {rbatis};
-    if args.path.is_some() {
-        path_ident = args.path.to_token_stream();
+    if args.crates.is_some() {
+        path_ident = args.crates.to_token_stream();
     }
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
