@@ -20,12 +20,12 @@ upper_case_sql_keyword = []
 
 [dependencies]
 rbs = { version = "4.5"}
-rbdc = { version = "4.5", default-features = false }
 rbatis-codegen = { version = "4.5", path = "../rbatis-codegen" }
 rbatis-macro-driver = { version = "4.5", path = "../rbatis-macro-driver", default-features = false, optional = true }
 futures-core = { version = "0.3" }
 dark-std = "0.2"
 serde = "1"
-
+#if you enable rbdc,the Executor ExecResult will be use rbdc::db::ExecResult
+rbdc = {version = "4.5",default-features = false,optional = true}
 [dev-dependencies]
 

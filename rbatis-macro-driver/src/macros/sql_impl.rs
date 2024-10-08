@@ -89,7 +89,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            #sql_args_gen
            #fn_body
            use #path_ident::executor::{Executor};
-           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
+           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await.map(|v|v.into())?;
            #decode
        }
     };

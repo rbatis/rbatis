@@ -75,7 +75,7 @@ macro_rules! impl_insert {
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
                 batch_size: u64,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 pub trait ColumnSet{
                     /// take `vec![Table{"id":1}]` columns
                     fn column_sets(&self)->rbs::Value;
@@ -127,12 +127,12 @@ macro_rules! impl_insert {
                     executor: &dyn $crate::executor::Executor,
                     tables: &[$table],
                     table_name: &str,
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
+                ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error>
                 {
                     impled!()
                 }
                 if tables.is_empty() {
-                    return Err($crate::rbdc::Error::from(
+                    return Err($crate::executor::Error::from(
                         "insert can not insert empty array tables!",
                     ));
                 }
@@ -142,7 +142,7 @@ macro_rules! impl_insert {
                 if table_name.is_empty() {
                     table_name = snake_name();
                 }
-                let mut result = $crate::rbdc::db::ExecResult {
+                let mut result = $crate::executor::ExecResult {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
@@ -163,7 +163,7 @@ macro_rules! impl_insert {
             pub async fn insert(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 <$table>::insert_batch(executor, std::slice::from_ref(table), 1).await
             }
         }
@@ -216,10 +216,10 @@ macro_rules! impl_select {
     };
     ($path:path,$table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
         impl $table{
-            pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
+            pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::executor::Error>
             {
                      #[$crate::py_sql($path,"`select ${table_column} from ${table_name} `",$sql)]
-                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::executor::Error> {impled!()}
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
                      $(table_name = $table_name.to_string();)?
@@ -266,7 +266,7 @@ macro_rules! impl_update {
             pub async fn update_by_column(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
-                column: &str) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
+                column: &str) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error>{
                 <$table>::update_by_column_skip(executor,table,column,true).await
             }
 
@@ -276,7 +276,7 @@ macro_rules! impl_update {
                 tables: &[$table],
                 column: &str,
                 batch_size: u64
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
               <$table>::update_by_column_batch_skip(executor,tables,column,batch_size,true).await
             }
 
@@ -284,7 +284,7 @@ macro_rules! impl_update {
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
                 column: &str,
-                skip_null: bool) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
+                skip_null: bool) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error>{
                 let columns = rbs::to_value!(table);
                 let column_value = &columns[column];
                 <$table>::update_by_column_value(executor,table,column,column_value,skip_null).await
@@ -296,7 +296,7 @@ macro_rules! impl_update {
                 column: &str,
                 batch_size: u64,
                 skip_null: bool
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 let mut rows_affected = 0;
                 let ranges = $crate::page::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
@@ -305,7 +305,7 @@ macro_rules! impl_update {
                        rows_affected += <$table>::update_by_column_skip(executor,table,column,skip_null).await?.rows_affected;
                     }
                 }
-                Ok($crate::rbdc::db::ExecResult{
+                Ok($crate::executor::ExecResult{
                     rows_affected:rows_affected,
                     last_insert_id:rbs::Value::Null,
                 })
@@ -318,9 +318,9 @@ macro_rules! impl_update {
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
                 $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 if $sql_where.is_empty(){
-                    return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
+                    return Err($crate::executor::Error::from("sql_where can't be empty!"));
                 }
                 #[$crate::py_sql($path,
                             "`update ${table_name} set `
@@ -338,7 +338,7 @@ macro_rules! impl_update {
                       table: &rbs::Value,
                       skip_null:bool,
                       $($param_key:$param_type,)*
-                  ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                  ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                       impled!()
                   }
                   let mut table_name = String::new();
@@ -395,13 +395,13 @@ macro_rules! impl_delete {
                 column: &str,
                 values: &[V],
                 batch_size: u64,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 let mut rows_affected = 0;
                 let ranges = $crate::page::Page::<()>::make_ranges(values.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     rows_affected += <$table>::delete_in_column(executor,column,&values[offset as usize..limit as usize]).await?.rows_affected;
                 }
-                Ok($crate::rbdc::db::ExecResult{
+                Ok($crate::executor::ExecResult{
                     rows_affected: rows_affected,
                     last_insert_id: rbs::Value::Null
                 })
@@ -413,16 +413,16 @@ macro_rules! impl_delete {
             pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
                 executor: &dyn $crate::executor::Executor,
                 $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                 if $sql_where.is_empty(){
-                    return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
+                    return Err($crate::executor::Error::from("sql_where can't be empty!"));
                 }
                 #[$crate::py_sql($path,"`delete from ${table_name} `",$sql_where)]
                 async fn $fn_name$(<$($gkey: $gtype,)*>)?(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
                     $($param_key:$param_type,)*
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                ) -> std::result::Result<$crate::executor::ExecResult, $crate::executor::Error> {
                     impled!()
                 }
                 let mut table_name = String::new();
@@ -477,7 +477,7 @@ macro_rules! impl_select_page {
                 executor: &dyn $crate::executor::Executor,
                 page_request: &dyn $crate::page::IPageRequest,
                 $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::page::Page::<$table>, $crate::rbdc::Error> {
+            ) -> std::result::Result<$crate::page::Page::<$table>, $crate::executor::Error> {
                 let mut table_column = "*".to_string();
                 let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
@@ -510,7 +510,7 @@ macro_rules! impl_select_page {
                                      page_size:u64,
                                      page_offset:u64,
                                      limit_sql:&str,
-                 $($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                 $($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::executor::Error> {impled!()}
                 }
                 let mut total = 0;
                 if page_request.do_count() {
@@ -586,11 +586,11 @@ macro_rules! impl_select_page {
 #[macro_export]
 macro_rules! htmlsql_select_page {
     ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $html_file:expr) => {
-            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::rbdc::Error> {
+            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::executor::Error> {
             struct Inner{}
             impl Inner{
               #[$crate::html_sql($path,$html_file)]
-              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::executor::Error>{
                  $crate::impled!()
               }
             }
@@ -647,11 +647,11 @@ macro_rules! htmlsql_select_page {
 #[macro_export]
 macro_rules! pysql_select_page {
     ($path:path,$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $table:ty => $py_file:expr) => {
-            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::rbdc::Error> {
+            pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::page::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::page::Page<$table>, $crate::executor::Error> {
             struct Inner{}
             impl Inner{
               #[$crate::py_sql($path,$py_file)]
-              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::executor::Error>{
                  $crate::impled!()
               }
             }

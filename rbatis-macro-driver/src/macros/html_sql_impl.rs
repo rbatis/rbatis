@@ -99,7 +99,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     } else {
         call_method = quote! {
              use #path_ident::executor::{Executor};
-             #rbatis_ident.exec(&sql,rb_args).await
+             #rbatis_ident.exec(&sql,rb_args).await.map(|v|v.into())
         };
     }
     let gen_target_method = quote! {
