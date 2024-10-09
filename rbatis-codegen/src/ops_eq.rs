@@ -5,25 +5,32 @@ use std::borrow::Cow;
 use std::cmp::PartialEq as PE;
 use std::ops::Deref;
 
-impl PartialEq<Value> for &'_ Value {
+impl PartialEq<Value> for &Value {
     fn op_eq(&self, other: &Value) -> bool {
         self.eq(&other)
     }
 }
 
-impl PartialEq<&Value> for &'_ Value {
+impl PartialEq<&Value> for &Value {
     fn op_eq(&self, other: &&Value) -> bool {
         self.eq(&*other)
     }
 }
 
-impl PartialEq<&&Value> for &'_ Value {
+impl PartialEq<&&Value> for &Value {
     fn op_eq(&self, other: &&&Value) -> bool {
         self.eq(&**other)
     }
 }
 
-impl PartialEq<Value> for &&'_ Value {
+impl PartialEq<&&Value> for &&Value {
+    fn op_eq(&self, other: &&&Value) -> bool {
+        self.eq(other)
+    }
+}
+
+
+impl PartialEq<Value> for &&Value {
     fn op_eq(&self, other: &Value) -> bool {
         (*self).eq(&other)
     }

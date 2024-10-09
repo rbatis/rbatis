@@ -29,6 +29,13 @@ impl Neg for &Value {
     }
 }
 
+impl Neg for &&Value {
+    type Output = Value;
+    fn neg(self) -> Self::Output {
+        op_neg((*self).to_owned())
+    }
+}
+
 impl Neg for &mut Value {
     type Output = Value;
     fn neg(self) -> Self::Output {

@@ -252,14 +252,66 @@ impl PartialOrd<String> for String {
     }
 }
 
+impl PartialOrd<&String> for String {
+    fn op_partial_cmp(&self, rhs: &&String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+
+impl PartialOrd<&&String> for String {
+    fn op_partial_cmp(&self, rhs: &&&String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+
 impl PartialOrd<&str> for &String {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
         self.as_str().partial_cmp(rhs)
     }
 }
 
+impl PartialOrd<&&str> for &String {
+    fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs)
+    }
+}
+
+impl PartialOrd<&&&str> for &String {
+    fn op_partial_cmp(&self, rhs: &&&&str) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs)
+    }
+}
+
 impl PartialOrd<String> for &String {
     fn op_partial_cmp(&self, rhs: &String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+impl PartialOrd<&String> for &String {
+    fn op_partial_cmp(&self, rhs: &&String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+impl PartialOrd<&&String> for &String {
+    fn op_partial_cmp(&self, rhs: &&&String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+
+impl PartialOrd<String> for &&String {
+    fn op_partial_cmp(&self, rhs: &String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+
+impl PartialOrd<&String> for &&String {
+    fn op_partial_cmp(&self, rhs: &&String) -> Option<Ordering> {
+        self.as_str().partial_cmp(rhs.as_str())
+    }
+}
+
+impl PartialOrd<&&String> for &&String {
+    fn op_partial_cmp(&self, rhs: &&&String) -> Option<Ordering> {
         self.as_str().partial_cmp(rhs.as_str())
     }
 }
