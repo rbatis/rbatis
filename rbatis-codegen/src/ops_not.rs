@@ -29,6 +29,13 @@ impl Not for &Value {
     }
 }
 
+impl Not for &&Value {
+    type Output = Value;
+    fn op_not(self) -> Self::Output {
+        op_not((*self).to_owned())
+    }
+}
+
 impl Not for &mut Value {
     type Output = Value;
     fn op_not(self) -> Self::Output {

@@ -217,6 +217,13 @@ impl Div<&&Value> for &Value {
     }
 }
 
+impl Div<&&Value> for &&Value {
+    type Output = Value;
+    fn op_div(self, rhs: &&Value) -> Self::Output {
+        op_div_value((*self).to_owned(), (*rhs).to_owned())
+    }
+}
+
 macro_rules! self_div {
     ([$($ty:ty)*]) => {
         $(
