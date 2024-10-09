@@ -203,6 +203,7 @@ impl Add<String> for &Value {
     }
 }
 
+
 impl Add<Value> for &String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {
@@ -242,6 +243,14 @@ impl Add<&Value> for String {
     type Output = String;
     fn op_add(self, rhs: &Value) -> Self::Output {
         self.to_string() + &rhs.clone().string()
+    }
+}
+
+impl Add<&&Value> for String {
+    type Output = String;
+
+    fn op_add(self, rhs: &&Value) -> Self::Output {
+        self + &rhs.string()
     }
 }
 
