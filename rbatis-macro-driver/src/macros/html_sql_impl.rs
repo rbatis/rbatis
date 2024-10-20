@@ -1,8 +1,10 @@
+use std::env::current_dir;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
 use std::fs::File;
 use std::io::Read;
+use std::path::PathBuf;
 use syn::{FnArg, ItemFn};
 
 use crate::macros::py_sql_impl;
@@ -54,6 +56,17 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             .to_string();
     }
     if file_name.ends_with(".html") {
+        //relative path append realpath
+        let file_path = PathBuf::from(file_name.clone());
+        if let Ok(path) = file_path.canonicalize() {
+            file_name = path.to_str().unwrap_or_default().to_string();
+        } else {
+            if file_path.is_relative() {
+                let mut current = current_dir().unwrap_or_default();
+                current.push(file_name.clone());
+                file_name = current.to_str().unwrap_or_default().to_string();
+            }
+        }
         let mut html_data = String::new();
         let mut f = File::open(file_name.as_str())
             .expect(&format!("File Name = '{}' does not exist", file_name));
@@ -79,7 +92,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-        .to_token_stream();
+            .to_token_stream();
     }
 
     //append all args
@@ -147,5 +160,5 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          #call_method
        }
     }
-    .into();
+        .into();
 }
