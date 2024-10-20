@@ -2,7 +2,7 @@
 use rbs::Value;
 use serde::de::DeserializeOwned;
 
-use rbs::Error;
+use crate::Error;
 
 /// decode json vec to an object
 /// support decode types:
@@ -16,7 +16,7 @@ where
     let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
     if is_array {
         //decode array
-        Ok(rbs::from_value_ref(values).map_err(|e| Error::from(e.to_string()))?)
+        Ok(rbs::from_value_ref(values)?)
     } else {
         match values {
             Value::Array(datas) => Ok(try_decode_map(datas)?),
@@ -46,7 +46,7 @@ where
     }
     //single try decode
     if datas.is_empty() {
-        return Ok(rbs::from_value::<T>(Value::Null).map_err(|e| Error::from(e.to_string()))?);
+        return Ok(rbs::from_value::<T>(Value::Null)?);
     }
     let m = datas.get(0).unwrap();
     match &m {
@@ -74,13 +74,13 @@ where
                     || type_name.starts_with("core::option::Option<rbdc::types::")
                 {
                     let (_, value) = map.into_iter().next().unwrap();
-                    return Ok(rbs::from_value_ref::<T>(value).map_err(|e| Error::from(e.to_string()))?);
+                    return Ok(rbs::from_value_ref::<T>(value)?);
                 }
             }
         }
         _ => {}
     }
-    Ok(rbs::from_value_ref::<T>(m).map_err(|e| Error::from(e.to_string()))?)
+    Ok(rbs::from_value_ref::<T>(m)?)
 }
 
 pub fn is_debug_mode() -> bool {

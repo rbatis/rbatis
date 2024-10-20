@@ -55,7 +55,7 @@ impl Intercept for DisableLogIntercept {
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
-        sql: &mut String,
+        _sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
@@ -71,7 +71,7 @@ impl Intercept for DisableLogIntercept {
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
-        sql: &mut String,
+        _sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {

@@ -4,17 +4,22 @@ use crate::rbatis::RBatis;
 use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use futures::{Future};
+use futures::Future;
 use futures_core::future::BoxFuture;
-use rbdc::db::{Connection};
+use rbdc::db::{Connection, ExecResult};
 use rbdc::rt::tokio::sync::Mutex;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::fmt::{Debug, Formatter};
 
-
-pub use rbexec::Executor as Executor;
-use rbexec::executor::ExecResult;
+/// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
+pub trait Executor: RBatisRef + Send + Sync {
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
+    }
+    fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
+    fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
+}
 
 pub trait RBatisRef: Send + Sync {
     fn rb_ref(&self) -> &RBatis;
@@ -96,10 +101,7 @@ impl Executor for RBatisConnExecutor {
                         break;
                     }
                 } else {
-                    return before_result.map(|v| ExecResult{
-                        rows_affected: v.rows_affected,
-                        last_insert_id: v.last_insert_id
-                    });
+                    return before_result;
                 }
             }
             let mut args_after = args.clone();
@@ -119,16 +121,10 @@ impl Executor for RBatisConnExecutor {
                         break;
                     }
                 } else {
-                    return result.map(|v| ExecResult{
-                        rows_affected: v.rows_affected,
-                        last_insert_id: v.last_insert_id
-                    });
+                    return result;
                 }
             }
-            result.map(|v| ExecResult{
-                rows_affected: v.rows_affected,
-                last_insert_id: v.last_insert_id
-            })
+            result
         })
     }
 
@@ -178,10 +174,6 @@ impl Executor for RBatisConnExecutor {
             }
             Ok(Value::Array(result?))
         })
-    }
-
-    fn driver_type(&self) -> Result<&str, rbdc::Error> {
-        self.rb.driver_type()
     }
 }
 
@@ -301,10 +293,7 @@ impl Executor for RBatisTxExecutor {
                         break;
                     }
                 } else {
-                    return before_result.map(|v| ExecResult{
-                        rows_affected: v.rows_affected,
-                        last_insert_id: v.last_insert_id
-                    });
+                    return before_result;
                 }
             }
             let mut args_after = args.clone();
@@ -324,16 +313,10 @@ impl Executor for RBatisTxExecutor {
                         break;
                     }
                 } else {
-                    return result.map(|v| ExecResult{
-                        rows_affected: v.rows_affected,
-                        last_insert_id: v.last_insert_id
-                    });
+                    return result;
                 }
             }
-            result.map(|v| ExecResult{
-                rows_affected: v.rows_affected,
-                last_insert_id: v.last_insert_id
-            })
+            result
         })
     }
 
@@ -383,10 +366,6 @@ impl Executor for RBatisTxExecutor {
             }
             Ok(Value::Array(result?))
         })
-    }
-
-    fn driver_type(&self) -> Result<&str, rbdc::Error> {
-        self.rb.driver_type()
     }
 }
 
@@ -528,10 +507,6 @@ impl Executor for RBatisTxExecutorGuard {
             }
         })
     }
-
-    fn driver_type(&self) -> Result<&str, rbdc::Error> {
-        self.rb_ref().driver_type()
-    }
 }
 
 impl RBatis {
@@ -574,10 +549,6 @@ impl Executor for RBatis {
             let conn = self.acquire().await?;
             conn.query(&sql, args).await
         })
-    }
-
-    fn driver_type(&self) -> Result<&str, rbdc::Error> {
-        self.driver_type()
     }
 }
 
@@ -645,9 +616,5 @@ impl Executor for TempExecutor<'_> {
         self.sql.push(sql.to_string());
         self.args.push(args);
         Box::pin(async { Ok(Value::default()) })
-    }
-
-    fn driver_type(&self) -> Result<&str, rbdc::Error> {
-        self.rb.driver_type()
     }
 }
