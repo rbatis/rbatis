@@ -72,6 +72,9 @@ path = "src/macro_proc_htmlsql_page.rs"
 name = "macro_proc_htmlsql_file"
 path = "src/macro_proc_htmlsql_file.rs"
 [[bin]]
+name = "macro_proc_htmlsql_file2"
+path = "src/macro_proc_htmlsql_file2.rs"
+[[bin]]
 name = "table_extend"
 path = "src/table_extend.rs"
 [[bin]]
