@@ -35,7 +35,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for v in &args.sqls {
@@ -45,7 +45,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
-    let path_ident = args.crates.to_token_stream();
     // sql_ident is html or file?
     let mut file_name = sql_ident.to_string().trim().to_string();
     if file_name.ends_with(".html\"") {
@@ -80,7 +79,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-            .to_token_stream();
+        .to_token_stream();
     }
 
     //append all args
@@ -89,18 +88,18 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     let mut call_method = quote! {};
     if is_query {
         call_method = quote! {
-             use #path_ident::executor::{Executor};
+             use rbatis::executor::{Executor};
              let r=#rbatis_ident.query(&sql,rb_args).await?;
-             #path_ident::decode::decode(r)
+             rbatis::decode::decode(r)
         };
     } else {
         call_method = quote! {
-             use #path_ident::executor::{Executor};
-             #rbatis_ident.exec(&sql,rb_args).await.map(|v|(v.rows_affected,v.last_insert_id).into())
+             use rbatis::executor::{Executor};
+             #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     let gen_target_method = quote! {
-        #[#path_ident::rb_html(#sql_ident)]
+        #[rbatis::rb_html(#sql_ident)]
         pub fn impl_html_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
@@ -140,12 +139,13 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
          #fn_body
-         let driver_type = #rbatis_ident.driver_type()?;
-         use #path_ident::rbatis_codegen;
+         use rbatis::executor::{RBatisRef};
+         let driver_type = #rbatis_ident.rb_ref().driver_type()?;
+         use rbatis::rbatis_codegen;
          #gen_func
          let (mut sql,rb_args) = impl_html_sql(rbs::Value::Map(rb_arg_map),'?');
          #call_method
        }
     }
-        .into();
+    .into();
 }

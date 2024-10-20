@@ -15,7 +15,7 @@ use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
-/// RBatis engine (based on rbdc drivers)
+/// RBatis engine
 #[derive(Clone, Debug)]
 pub struct RBatis {
     // the connection pool

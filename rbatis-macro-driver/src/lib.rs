@@ -2,10 +2,9 @@
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
-use proc_macro2::Span;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token, Path, PathSegment};
+use syn::{parse_macro_input, ItemFn, Token};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -15,28 +14,15 @@ use crate::proc_macro::TokenStream;
 mod macros;
 mod util;
 
-/// ParseArgs must be `#[xxx(crate,"sql")]`
 struct ParseArgs {
-    //crates default = 'rbatis' if you not set this value
-    pub crates: syn::Path,
     pub sqls: Vec<syn::LitStr>,
 }
 
 impl Parse for ParseArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        // parse path
-        let path = input.parse::<Path>();
-        // make sure have ','
-        _ = input.parse::<Token![,]>();
-        // parse sqls list
         let r = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(input)?;
-        let sqls = r.into_iter().collect();
-        Ok(ParseArgs {
-            crates: match path {
-                Ok(v) => { v }
-                Err(_) => { Path::from(PathSegment::from(proc_macro2::Ident::new("rbatis", Span::call_site()))) }
-            },
-            sqls,
+        Ok(Self {
+            sqls: r.into_iter().collect(),
         })
     }
 }
@@ -44,8 +30,8 @@ impl Parse for ParseArgs {
 /// auto create sql macro,this macro use RB.query_prepare and RB.exec_prepare
 /// for example:
 ///```log
-///     use rbexec::plugin;
-///     use rbexec::executor::Executor;
+///     use rbatis::plugin;
+///     use rbatis::executor::Executor;
 ///     #[derive(serde::Serialize,serde::Deserialize)]
 ///     pub struct MockTable{}
 ///
@@ -70,8 +56,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 
 /// py sql create macro,this macro use RB.py_query and RB.py_exec
 ///```log
-/// use rbexec::executor::Executor;
-/// use rbexec::py_sql;
+/// use rbatis::executor::Executor;
+/// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///
@@ -80,8 +66,8 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///```
 ///  or more example:
 ///```log
-/// use rbexec::executor::Executor;
-/// use rbexec::py_sql;
+/// use rbatis::executor::Executor;
+/// use rbatis::py_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///
@@ -115,7 +101,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// ```
 /// or read from file
 /// ```rust
-/// //#[rbexec::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
+/// //#[rbatis::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
 /// //pub async fn test_same_id(rb: &dyn Executor, id: &u64) -> Result<Value, Error> { impled!() }
 /// ```
 #[proc_macro_attribute]
@@ -128,7 +114,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
         let func_name_ident = target_fn.sig.ident.to_token_stream();
-        let stream_str = stream.to_string();
+        let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
@@ -141,8 +127,8 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// html sql create macro,this macro use RB.py_query and RB.py_exec
 /// for example:
 /// ```log
-/// use rbexec::executor::Executor;
-/// use rbexec::html_sql;
+/// use rbatis::executor::Executor;
+/// use rbatis::html_sql;
 /// #[derive(serde::Serialize,serde::Deserialize)]
 /// pub struct MockTable{}
 ///
@@ -185,7 +171,7 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
         let func_name_ident = target_fn.sig.ident.to_token_stream();
-        let stream_str = stream.to_string();
+        let stream_str = stream.to_string().replace("$crate", "rbatis");
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());

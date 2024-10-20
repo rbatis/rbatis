@@ -1,2 +1,7 @@
 /// html_sql/py_sql impled
-pub use rbexec::impled;
+#[macro_export]
+macro_rules! impled {
+    () => {
+        unimplemented!()
+    };
+}

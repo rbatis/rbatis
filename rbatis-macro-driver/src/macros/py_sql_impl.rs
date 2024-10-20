@@ -9,7 +9,8 @@ use syn::{FnArg, ItemFn, Pat};
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
 
-///py_sql macro,
+///py_sql macro
+///support args for rb:&RBatis
 pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let mut rbatis_ident = "".to_token_stream();
@@ -35,7 +36,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for v in &args.sqls {
@@ -78,9 +79,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     } else {
         panic!("[rbatis] Incorrect macro parameter length!");
     }
-
-    let path_ident = args.crates.to_token_stream();
     include_data = include_data.clone();
+
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
@@ -96,7 +96,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
             &rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
-            .to_token_stream();
+        .to_token_stream();
     }
     //append all args
     let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
@@ -104,18 +104,18 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     let mut call_method = quote! {};
     if is_query {
         call_method = quote! {
-             use #path_ident::executor::{Executor};
+             use rbatis::executor::{Executor};
              let r=#rbatis_ident.query(&sql,rb_args).await?;
-             #path_ident::decode::decode(r)
+             rbatis::decode::decode(r)
         };
     } else {
         call_method = quote! {
-             use #path_ident::executor::{Executor};
-             #rbatis_ident.exec(&sql,rb_args).await.map(|v|(v.rows_affected,v.last_insert_id).into())
+             use rbatis::executor::{Executor};
+             #rbatis_ident.exec(&sql,rb_args).await
         };
     }
     let gen_target_method = quote! {
-        #[#path_ident::rb_py(#sql_ident)]
+        #[rbatis::rb_py(#sql_ident)]
         pub fn do_py_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
@@ -136,15 +136,16 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
          #fn_body
-         let driver_type = #rbatis_ident.driver_type()?;
-         use #path_ident::rbatis_codegen;
+         use rbatis::executor::{RBatisRef};
+         let driver_type = #rbatis_ident.rb_ref().driver_type()?;
+         use rbatis::rbatis_codegen;
          #include_data
          #gen_func
          let (mut sql,rb_args) = do_py_sql(rbs::Value::Map(rb_arg_map), '?');
          #call_method
        }
     }
-        .into();
+    .into();
 }
 
 pub(crate) fn filter_args_context_id(
@@ -168,7 +169,7 @@ pub(crate) fn filter_args_context_id(
                 item.to_string().trim_start_matches("mut "),
                 Span::call_site(),
             )
-                .to_token_stream();
+            .to_token_stream();
         }
         sql_args_gen = quote! {
              #sql_args_gen
