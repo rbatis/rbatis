@@ -25,14 +25,14 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-#[html_sql("example/example.html")]
-async fn select_by_condition(
+
+htmlsql!(select_page_data(
     rb: &dyn Executor,
     name: &str,
     dt: &DateTime,
-) -> rbatis::Result<Vec<Activity>> {
-    impled!()
-}
+    page_no: i32,
+    page_size: i32,
+) -> rbatis::Result<Vec<Activity>> => "example/example.html");
 
 #[tokio::main]
 pub async fn main() {
@@ -75,7 +75,7 @@ pub async fn main() {
         .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
-    let a = select_by_condition(&rb, "test", &DateTime::now())
+    let a = select_page_data(&rb, "test", &DateTime::now(), 0, 10)
         .await
         .unwrap();
     println!("{}", json!(a));
