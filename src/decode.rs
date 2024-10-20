@@ -40,7 +40,7 @@ where
     //decode struct
     if datas.len() > 1 {
         return Err(Error::from(format!(
-            "[rbatis] rows.rows_affected > 1,but decode one type ({})!",
+            "[rb] rows.rows_affected > 1,but decode one type ({})!",
             std::any::type_name::<T>()
         )));
     }

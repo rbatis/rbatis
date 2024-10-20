@@ -399,7 +399,7 @@ impl RBatisTxExecutorGuard {
         let v = self
             .tx
             .take()
-            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?
+            .ok_or_else(|| Error::from("[rb] tx is committed"))?
             .begin()
             .await?;
         self.tx = Some(v);
@@ -410,7 +410,7 @@ impl RBatisTxExecutorGuard {
         let tx = self
             .tx
             .as_mut()
-            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
         tx.commit().await?;
         return Ok(());
     }
@@ -419,7 +419,7 @@ impl RBatisTxExecutorGuard {
         let tx = self
             .tx
             .as_mut()
-            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
         tx.rollback().await?;
         return Ok(());
     }
@@ -438,7 +438,7 @@ impl RBatisTxExecutorGuard {
         let tx = self
             .tx
             .as_mut()
-            .ok_or_else(|| Error::from("[rbatis] tx is committed"))?;
+            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
         tx.query_decode(sql, args).await
     }
 }

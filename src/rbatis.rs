@@ -65,7 +65,7 @@ impl RBatis {
         url: &str,
     ) -> Result<(), Error> {
         if url.is_empty() {
-            return Err(Error::from("[rbatis] link url is empty!"));
+            return Err(Error::from("[rb] link url is empty!"));
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
@@ -143,7 +143,7 @@ impl RBatis {
         let p = self
             .pool
             .get()
-            .ok_or_else(|| Error::from("[rbatis] rbatis pool not inited!"))?;
+            .ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
         return Ok(p.deref());
     }
 
