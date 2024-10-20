@@ -183,9 +183,6 @@ impl<T: Send + Sync> Page<T> {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
         }
-        if total < datas.len() as u64 {
-            total = datas.len() as u64;
-        }
         if page_no < 1 {
             return Self {
                 total,
