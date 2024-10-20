@@ -14,7 +14,7 @@
             <if test="key == 'id'">
                 <continue/>
             </if>
-            ${item}
+            ${item.sql()}
         </foreach>
     </insert>
     <select id="select_by_condition">
