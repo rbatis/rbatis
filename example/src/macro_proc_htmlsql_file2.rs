@@ -5,7 +5,7 @@ use serde_json::json;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{html_sql, RBatis};
+use rbatis::{RBatis};
 use rbatis::htmlsql;
 
 /// table
