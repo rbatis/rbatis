@@ -465,9 +465,7 @@ impl RBatisTxExecutor {
             tx: Some(self),
             callback: Box::new(move |arg| {
                 let future = callback(arg);
-                rbdc::rt::spawn(async move {
-                    future.await;
-                });
+                rbdc::rt::spawn(future);
             }),
         }
     }
