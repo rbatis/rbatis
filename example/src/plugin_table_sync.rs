@@ -2,8 +2,6 @@ use rbatis::dark_std::defer;
 use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync;
-use rbatis::table_sync::ColumMapper;
-
 use rbdc_sqlite::driver::SqliteDriver;
 use rbs::to_value;
 
