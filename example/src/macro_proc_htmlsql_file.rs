@@ -6,7 +6,6 @@ use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{html_sql, RBatis};
-use rbatis::htmlsql;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -26,7 +25,7 @@ pub struct Activity {
 }
 
 #[html_sql("example/example.html")]
-async fn select_by_condition(
+pub async fn select_by_condition(
     rb: &dyn Executor,
     name: &str,
     dt: &DateTime,
