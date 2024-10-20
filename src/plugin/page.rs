@@ -95,11 +95,7 @@ pub struct PageRequest {
 
 impl PageRequest {
     pub fn new(page_no: u64, page_size: u64) -> Self {
-        return PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE);
-    }
-
-    pub fn new_option(page_no: Option<u64>, page_size: Option<u64>) -> Self {
-        return PageRequest::new(page_no.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
+        PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE)
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
@@ -183,15 +179,7 @@ impl IPageRequest for PageRequest {
 }
 
 impl<T: Send + Sync> Page<T> {
-    pub fn new(current: u64, page_size: u64) -> Self {
-        return Page::new_total(current, page_size, 0);
-    }
-
-    pub fn new_option(current: &Option<u64>, page_size: &Option<u64>) -> Self {
-        return Page::new(current.unwrap_or(1), page_size.unwrap_or(DEFAULT_PAGE_SIZE));
-    }
-
-    pub fn new_total(page_no: u64, mut page_size: u64, total: u64) -> Self {
+    pub fn new(page_no: u64, mut page_size: u64, total: u64, datas: Vec<T>) -> Self {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
         }
@@ -200,17 +188,22 @@ impl<T: Send + Sync> Page<T> {
                 total,
                 page_size: page_size,
                 page_no: 1 as u64,
-                records: vec![],
+                records: datas,
                 do_count: true,
             };
         }
-        return Self {
+        Self {
             total,
             page_size,
             page_no,
-            records: vec![],
+            records: datas,
             do_count: true,
-        };
+        }
+    }
+
+    #[deprecated(note = "please use `Page::new(1,10,0,vec![])`")]
+    pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
+        Self::new(page_no,page_size,total,vec![])
     }
 
     /// create Vec<Page> from data
@@ -219,7 +212,7 @@ impl<T: Send + Sync> Page<T> {
         let mut result = vec![];
         let pages = PageRequest::new(1, page_size).set_total(total).pages();
         for idx in 0..pages {
-            let mut current_page = Page::<T>::new_total(idx + 1, page_size, total as u64);
+            let mut current_page = Page::<T>::new(idx + 1, page_size, total, Vec::with_capacity(page_size as usize));
             for _ in current_page.offset()..current_page.offset_limit() {
                 current_page.records.push(data.remove(0));
             }
@@ -233,7 +226,7 @@ impl<T: Send + Sync> Page<T> {
         let mut result = vec![];
         let pages = PageRequest::new(1, page_size).set_total(total).pages();
         for idx in 0..pages {
-            let current_page = Page::<T>::new_total(idx + 1, page_size, total);
+            let current_page = Page::<T>::new(idx + 1, page_size, total, Vec::with_capacity(page_size as usize));
             result.push((current_page.offset(), current_page.offset_limit()));
         }
         result
@@ -256,6 +249,11 @@ impl<T: Send + Sync> Page<T> {
     /// Control whether to execute count statements to count the total number
     pub fn set_do_count(mut self, arg: bool) -> Self {
         self.do_count = arg;
+        self
+    }
+
+    pub fn set_records(mut self, arg: Vec<T>) -> Self {
+        self.records = arg;
         self
     }
 }
@@ -338,19 +336,15 @@ impl<V: Send + Sync> Page<V> {
     where
         V: From<T>,
     {
-        let mut p = Page::<V>::new(arg.page_no, arg.page_size);
-        p.page_no = arg.page_no;
-        p.page_size = arg.page_size;
-        p.total = arg.total;
-        p.do_count = arg.do_count;
-        p.records = {
-            let mut records = Vec::with_capacity(arg.records.len());
-            for x in arg.records {
-                records.push(V::from(x));
-            }
-            records
-        };
-        p
+        let mut page = Page::<V>::new(arg.page_no, arg.page_size, arg.total, Vec::with_capacity(arg.records.len()));
+        page.page_no = arg.page_no;
+        page.page_size = arg.page_size;
+        page.total = arg.total;
+        page.do_count = arg.do_count;
+        for x in arg.records {
+            page.records.push(V::from(x));
+        }
+        page
     }
 }
 
