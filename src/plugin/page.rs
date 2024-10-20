@@ -179,7 +179,7 @@ impl IPageRequest for PageRequest {
 }
 
 impl<T: Send + Sync> Page<T> {
-    pub fn new(page_no: u64, mut page_size: u64, mut total: u64, records: Vec<T>) -> Self {
+    pub fn new(page_no: u64, mut page_size: u64, total: u64, records: Vec<T>) -> Self {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
         }
@@ -225,7 +225,7 @@ impl<T: Send + Sync> Page<T> {
         let mut result = vec![];
         let pages = PageRequest::new(1, page_size).set_total(total).pages();
         for idx in 0..pages {
-            let current_page = Page::<T>::new(idx + 1, page_size, total, Vec::with_capacity(page_size as usize));
+            let current_page = PageRequest::new(idx + 1, page_size).set_total(total);
             result.push((current_page.offset(), current_page.offset_limit()));
         }
         result
