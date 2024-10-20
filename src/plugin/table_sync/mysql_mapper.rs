@@ -10,7 +10,6 @@ impl Default for MysqlTableMapper {
 }
 
 impl ColumMapper for MysqlTableMapper {
-
     fn driver_type(&self) -> String {
         "mysql".to_string()
     }
