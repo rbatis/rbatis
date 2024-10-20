@@ -58,14 +58,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     if file_name.ends_with(".html") {
         //relative path append realpath
         let file_path = PathBuf::from(file_name.clone());
-        if let Ok(path) = file_path.canonicalize() {
-            file_name = path.to_str().unwrap_or_default().to_string();
-        } else {
-            if file_path.is_relative() {
-                let mut current = current_dir().unwrap_or_default();
-                current.push(file_name.clone());
-                file_name = current.to_str().unwrap_or_default().to_string();
-            }
+        if file_path.is_relative() {
+            let mut current = current_dir().unwrap_or_default();
+            current.push(file_name.clone());
+            file_name = current.to_str().unwrap_or_default().to_string();
         }
         let mut html_data = String::new();
         let mut f = File::open(file_name.as_str())
