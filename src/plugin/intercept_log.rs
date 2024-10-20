@@ -121,7 +121,7 @@ impl Intercept for LogInterceptor {
             &sql,
             RbsValueDisplay::new(args)
         );
-        return Ok(Some(true));
+        Ok(Some(true))
     }
 
     async fn after(
@@ -165,6 +165,6 @@ impl Intercept for LogInterceptor {
                 }
             },
         }
-        return Ok(Some(true));
+        Ok(Some(true))
     }
 }

@@ -135,12 +135,12 @@ impl PageRequest {
 
 impl Default for PageRequest {
     fn default() -> Self {
-        return PageRequest {
+        PageRequest {
             total: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             do_count: true,
-        };
+        }
     }
 }
 
