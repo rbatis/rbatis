@@ -179,7 +179,7 @@ impl IPageRequest for PageRequest {
 }
 
 impl<T: Send + Sync> Page<T> {
-    pub fn new(page_no: u64, mut page_size: u64, mut total: u64, datas: Vec<T>) -> Self {
+    pub fn new(page_no: u64, mut page_size: u64, mut total: u64, records: Vec<T>) -> Self {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
         }
@@ -188,7 +188,7 @@ impl<T: Send + Sync> Page<T> {
                 total,
                 page_size,
                 page_no: 1u64,
-                records: datas,
+                records,
                 do_count: true,
             };
         }
@@ -196,7 +196,7 @@ impl<T: Send + Sync> Page<T> {
             total,
             page_size,
             page_no,
-            records: datas,
+            records,
             do_count: true,
         }
     }
