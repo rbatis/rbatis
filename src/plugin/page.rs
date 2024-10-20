@@ -53,10 +53,10 @@ pub trait IPageRequest: Send + Sync {
 
 ///Page trait
 pub trait IPage<T>: IPageRequest {
+    fn set_records(self, arg: Vec<T>) -> Self;
     fn records(&self) -> &Vec<T>;
     fn records_mut(&mut self) -> &mut Vec<T>;
-    fn set_records(self, arg: Vec<T>) -> Self;
-    fn take_records(&mut self) -> Vec<T>;
+    fn records_take(&mut self) -> Vec<T>;
 }
 
 
@@ -311,7 +311,7 @@ impl<T: Send + Sync> IPage<T> for Page<T> {
         self
     }
 
-    fn take_records(&mut self) -> Vec<T> {
+    fn records_take(&mut self) -> Vec<T> {
         let mut records = Vec::with_capacity(self.records.len());
         while let Some(v) = self.records.pop() {
             records.push(v);
