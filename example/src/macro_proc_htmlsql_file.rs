@@ -5,8 +5,8 @@ use serde_json::json;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{html_sql, RBatis};
-use rbatis::rbdc::db::ExecResult;
+use rbatis::{RBatis};
+use rbatis::htmlsql;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -25,14 +25,13 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-use rbatis::rbatis_codegen::IntoSql;
-#[html_sql("example/example.html")]
-pub async fn insert(
-    rb: &dyn Executor,
-    arg: &Activity,
-) -> rbatis::Result<ExecResult> {
-    impled!()
-}
+
+htmlsql!(select_page_data(rb: &dyn Executor,
+    name: &str,
+    dt: &DateTime,
+    page_no: i32,
+    page_size: i32,
+) -> rbatis::Result<Vec<Activity>> => "example/example.html");
 
 #[tokio::main]
 pub async fn main() {
@@ -75,20 +74,7 @@ pub async fn main() {
         .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
-    let a = insert(&rb, &Activity{
-        id: Some("1".into()),
-        name: Some("1".into()),
-        pc_link: Some("1".into()),
-        h5_link: Some("1".into()),
-        pc_banner_img: None,
-        h5_banner_img: None,
-        sort: Some("1".to_string()),
-        status: Some(1),
-        remark: Some("1".into()),
-        create_time: Some(DateTime::now()),
-        version: Some(1),
-        delete_flag: Some(1),
-    })
+    let a = select_page_data(&rb, "test", &DateTime::now(), 0, 10)
         .await
         .unwrap();
     println!("{}", json!(a));
