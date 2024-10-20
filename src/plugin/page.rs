@@ -22,7 +22,7 @@ pub trait IPageRequest: Send + Sync {
         if self.total() % self.page_size() != 0 {
             pages = pages + 1;
         }
-        return pages;
+        pages
     }
 
     ///sum offset
@@ -179,9 +179,12 @@ impl IPageRequest for PageRequest {
 }
 
 impl<T: Send + Sync> Page<T> {
-    pub fn new(page_no: u64, mut page_size: u64, total: u64, datas: Vec<T>) -> Self {
+    pub fn new(page_no: u64, mut page_size: u64, mut total: u64, datas: Vec<T>) -> Self {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
+        }
+        if total < datas.len() as u64 {
+            total = datas.len() as u64;
         }
         if page_no < 1 {
             return Self {
@@ -201,9 +204,8 @@ impl<T: Send + Sync> Page<T> {
         }
     }
 
-    #[deprecated(note = "please use `Page::new(1,10,0,vec![])`")]
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
-        Self::new(page_no,page_size,total,vec![])
+        Self::new(page_no, page_size, total, Vec::with_capacity(page_size as usize))
     }
 
     /// create Vec<Page> from data
@@ -260,13 +262,13 @@ impl<T: Send + Sync> Page<T> {
 
 impl<T: Send + Sync> Default for Page<T> {
     fn default() -> Self {
-        return Page {
+        Page {
             records: vec![],
             total: 0,
             page_size: DEFAULT_PAGE_SIZE,
             page_no: 1,
             do_count: true,
-        };
+        }
     }
 }
 
