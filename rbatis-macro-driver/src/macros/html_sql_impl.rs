@@ -35,7 +35,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  rb:&RBatis  or rb: &mut Executor  on '{}()'!", target_fn.sig.ident);
+            panic!("[rbatis] you should add rbatis ref param   `rb:&dyn Executor`  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for v in &args.sqls {
