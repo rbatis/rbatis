@@ -189,8 +189,8 @@ impl<T: Send + Sync> Page<T> {
         if page_no < 1 {
             return Self {
                 total,
-                page_size: page_size,
-                page_no: 1 as u64,
+                page_size,
+                page_no: 1u64,
                 records: datas,
                 do_count: true,
             };
