@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 /// default 10
 pub const DEFAULT_PAGE_SIZE: u64 = 10;
 
-///Page interface
+///PageRequest trait
 pub trait IPageRequest: Send + Sync {
     fn page_size(&self) -> u64;
     fn page_no(&self) -> u64;
@@ -49,37 +49,16 @@ pub trait IPageRequest: Send + Sync {
 
     ///Control execute select count(1) from table
     fn set_do_count(&mut self, arg: bool);
-
-    #[deprecated(note = "please use do_count()")]
-    fn search_count(&self) -> bool {
-        self.do_count()
-    }
-    #[deprecated(note = "please use set_do_count()")]
-    fn set_search_count(&mut self, arg: bool) {
-        self.set_do_count(arg)
-    }
 }
 
-///Page interface
+///Page trait
 pub trait IPage<T>: IPageRequest {
-    fn get_records(&self) -> &Vec<T>;
-    fn get_records_mut(&mut self) -> &mut Vec<T>;
+    fn records(&self) -> &Vec<T>;
+    fn records_mut(&mut self) -> &mut Vec<T>;
     fn set_records(self, arg: Vec<T>) -> Self;
+    fn take_records(&mut self) -> Vec<T>;
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub struct Page<T: Send + Sync> {
-    /// data
-    pub records: Vec<T>,
-    /// total num
-    pub total: u64,
-    /// current page index
-    pub page_no: u64,
-    /// default 10
-    pub page_size: u64,
-    /// Control whether to execute count statements to count the total number
-    pub do_count: bool,
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct PageRequest {
@@ -176,6 +155,21 @@ impl IPageRequest for PageRequest {
     fn set_do_count(&mut self, arg: bool) {
         self.do_count = arg;
     }
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+pub struct Page<T: Send + Sync> {
+    /// data
+    pub records: Vec<T>,
+    /// total num
+    pub total: u64,
+    /// current page index
+    pub page_no: u64,
+    /// default 10
+    pub page_size: u64,
+    /// Control whether to execute count statements to count the total number
+    pub do_count: bool,
 }
 
 impl<T: Send + Sync> Page<T> {
@@ -304,17 +298,26 @@ impl<T: Send + Sync> IPageRequest for Page<T> {
 }
 
 impl<T: Send + Sync> IPage<T> for Page<T> {
-    fn get_records(&self) -> &Vec<T> {
+    fn records(&self) -> &Vec<T> {
         self.records.as_ref()
     }
 
-    fn get_records_mut(&mut self) -> &mut Vec<T> {
+    fn records_mut(&mut self) -> &mut Vec<T> {
         self.records.as_mut()
     }
 
     fn set_records(mut self, arg: Vec<T>) -> Self {
         self.records = arg;
         self
+    }
+
+    fn take_records(&mut self) -> Vec<T> {
+        let mut records = Vec::with_capacity(self.records.len());
+        while let Some(v) = self.records.pop() {
+            records.push(v);
+        }
+        records.reverse();
+        records
     }
 }
 
