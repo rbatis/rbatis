@@ -1,9 +1,9 @@
-use crate::table_sync::ColumMapper;
+use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
 pub struct SqliteTableMapper {}
 
-impl ColumMapper for SqliteTableMapper {
+impl ColumnMapper for SqliteTableMapper {
     fn driver_type(&self) -> String {
         "sqlite".to_string()
     }

@@ -1,8 +1,8 @@
-use crate::table_sync::ColumMapper;
+use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
 pub struct MssqlTableMapper {}
-impl ColumMapper for MssqlTableMapper {
+impl ColumnMapper for MssqlTableMapper {
     fn driver_type(&self) -> String {
         "mssql".to_string()
     }
