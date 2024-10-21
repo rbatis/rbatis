@@ -2,7 +2,7 @@ use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
 use crate::snowflake::new_snowflake_id;
-use crate::table_sync::{sync, ColumMapper};
+use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
 use log::LevelFilter;
@@ -309,7 +309,7 @@ impl RBatis {
     /// ```
     pub async fn sync<T: Serialize>(
         executor: &dyn Executor,
-        column_mapper: &dyn ColumMapper,
+        column_mapper: &dyn ColumnMapper,
         table: &T,
         table_name: &str,
     ) -> Result<(), Error> {

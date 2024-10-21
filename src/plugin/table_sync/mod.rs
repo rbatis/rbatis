@@ -76,7 +76,7 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 /// ```
 pub fn sync<'a>(
     executor: &'a dyn Executor,
-    mapper: &'a dyn ColumMapper,
+    mapper: &'a dyn ColumnMapper,
     table: Value,
     table_name: &str,
 ) -> BoxFuture<'a, Result<(), Error>> {
@@ -92,11 +92,11 @@ pub fn sync<'a>(
                 let mut sql_column = format!("");
                 for (k, v) in &m {
                     let k = k.as_str().unwrap_or_default();
-                    let column_type = mapper.get_column(k, &v);
+                    let column_type_value = mapper.get_column(k, &v);
                     sql_column.push_str(k);
                     sql_column.push_str(" ");
-                    sql_column.push_str(column_type.as_str());
-                    if column_type.is_empty() && k.eq("id")
+                    sql_column.push_str(column_type_value.as_str());
+                    if column_type_value.is_empty() && k.eq("id")
                         || v.as_str().unwrap_or_default() == "id"
                     {
                         sql_column.push_str(&PRIMARY_KEY);
@@ -151,7 +151,7 @@ pub fn sync<'a>(
     })
 }
 
-pub trait ColumMapper: Sync + Send {
+pub trait ColumnMapper: Sync + Send {
     fn driver_type(&self) -> String;
     fn get_column(&self, column: &str, v: &Value) -> String;
 }

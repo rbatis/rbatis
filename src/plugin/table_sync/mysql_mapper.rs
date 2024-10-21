@@ -1,4 +1,4 @@
-use crate::table_sync::ColumMapper;
+use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
 pub struct MysqlTableMapper {}
@@ -9,7 +9,7 @@ impl Default for MysqlTableMapper {
     }
 }
 
-impl ColumMapper for MysqlTableMapper {
+impl ColumnMapper for MysqlTableMapper {
     fn driver_type(&self) -> String {
         "mysql".to_string()
     }

@@ -1,8 +1,8 @@
-use crate::table_sync::ColumMapper;
+use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
 pub struct PGTableMapper {}
-impl ColumMapper for PGTableMapper {
+impl ColumnMapper for PGTableMapper {
     fn driver_type(&self) -> String {
         "postgres".to_string()
     }
