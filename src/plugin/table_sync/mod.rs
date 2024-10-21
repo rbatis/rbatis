@@ -151,6 +151,7 @@ pub fn sync<'a>(
     })
 }
 
+/// Mapper Column and ColumnType
 pub trait ColumnMapper: Sync + Send {
     fn driver_type(&self) -> String;
     fn get_column(&self, column: &str, v: &Value) -> String;
