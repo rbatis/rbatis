@@ -119,13 +119,17 @@ pub fn sync<'a>(
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = &PRIMARY_KEY;
                                 }
+                                let mut column_type = mapper.get_column(k, &v);
+                                if column_type.eq("id") {
+                                    column_type.clear();
+                                }
                                 match executor
                                     .exec(
                                         &format!(
                                             "alter table {} add {} {} {};",
                                             name,
                                             k,
-                                            mapper.get_column(k, &v),
+                                            column_type,
                                             id_key
                                         ),
                                         vec![],
