@@ -67,6 +67,25 @@ impl Debug for ValueMap {
     }
 }
 
+fn escape_json_string(input: &str) -> String {
+    let mut escaped_string = String::new();
+
+    for c in input.chars() {
+        match c {
+            '"' => escaped_string.push_str("\\\""),
+            '\\' => escaped_string.push_str("\\\\"),
+            '\n' => escaped_string.push_str("\\n"),
+            '\r' => escaped_string.push_str("\\r"),
+            '\t' => escaped_string.push_str("\\t"),
+            '\u{08}' => escaped_string.push_str("\\b"), // backspace
+            '\u{0c}' => escaped_string.push_str("\\f"), // form feed
+            _ => escaped_string.push(c),
+        }
+    }
+
+    escaped_string
+}
+
 impl Display for ValueMap {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("{")?;
@@ -74,6 +93,10 @@ impl Display for ValueMap {
         for (k, v) in &self.0 {
             Display::fmt(k, f)?;
             f.write_str(":")?;
+            let v = match v {
+                Value::String(v) => &Value::String(escape_json_string(v)),
+                _ => v
+            };
             Display::fmt(v, f)?;
             if idx + 1 != self.len() {
                 Display::fmt(",", f)?;
