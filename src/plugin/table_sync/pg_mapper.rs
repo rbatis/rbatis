@@ -18,6 +18,9 @@ impl ColumnMapper for PGTableMapper {
             Value::F64(_) => "DOUBLE PRECISION".to_string(),
             Value::String(v) => {
                 if v != "" {
+                    if v.eq("id") {
+                        return "TEXT".to_string();
+                    }
                     v.to_string()
                 } else {
                     "TEXT".to_string()

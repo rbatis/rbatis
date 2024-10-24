@@ -25,14 +25,12 @@ impl ColumnMapper for MysqlTableMapper {
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
                 if v != "" {
+                    if v.eq("id") {
+                        return "TEXT".to_string();
+                    }
                     v.to_string()
                 } else {
-                    let column = column.to_lowercase();
-                    if column.starts_with("id") || column.ends_with("id") {
-                        "VARCHAR(50)".to_string()
-                    } else {
-                        "TEXT".to_string()
-                    }
+                    "TEXT".to_string()
                 }
             }
             Value::Binary(_) => "BLOB".to_string(),
