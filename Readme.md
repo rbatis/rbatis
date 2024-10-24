@@ -368,7 +368,7 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 * [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
-# 联系方式/捐赠,或 [rbatis](https://github.com/rbatis/rbatis) 点star
+# 联系方式/捐赠,或 [rb](https://github.com/rbatis/rbatis) 点star
 
 > 捐赠
 
