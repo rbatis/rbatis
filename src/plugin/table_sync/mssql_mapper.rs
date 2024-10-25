@@ -7,7 +7,7 @@ impl ColumnMapper for MssqlTableMapper {
         "mssql".to_string()
     }
 
-    fn get_column(&self, _column: &str, v: &Value) -> String {
+    fn get_column_type(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
             Value::Bool(_) => "BIT".to_string(),
@@ -19,6 +19,9 @@ impl ColumnMapper for MssqlTableMapper {
             Value::F64(_) => "FLOAT".to_string(),
             Value::String(v) => {
                 if v != "" {
+                    if v.eq("id") {
+                        return "NVARCHAR(MAX)".to_string();
+                    }
                     v.to_string()
                 } else {
                     "NVARCHAR(MAX)".to_string()

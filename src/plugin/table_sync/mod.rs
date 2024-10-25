@@ -92,7 +92,7 @@ pub fn sync<'a>(
                 let mut sql_column = format!("");
                 for (k, v) in &m {
                     let k = k.as_str().unwrap_or_default();
-                    let column_type_value = mapper.get_column(k, &v);
+                    let column_type_value = mapper.get_column_type(k, &v);
                     sql_column.push_str(k);
                     sql_column.push_str(" ");
                     sql_column.push_str(column_type_value.as_str());
@@ -119,28 +119,7 @@ pub fn sync<'a>(
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
                                     id_key = &PRIMARY_KEY;
                                 }
-                                let mut column_type = mapper.get_column(k, &v);
-                                if id_key == PRIMARY_KEY && v.as_str().unwrap_or_default() == "id" && column_type == "id" {
-                                    let mut v = v.clone();
-                                    match &mut v {
-                                        Value::Null => {}
-                                        Value::Bool(_) => {}
-                                        Value::I32(_) => {}
-                                        Value::I64(_) => {}
-                                        Value::U32(_) => {}
-                                        Value::U64(_) => {}
-                                        Value::F32(_) => {}
-                                        Value::F64(_) => {}
-                                        Value::String(s) => {
-                                            s.clear();
-                                        }
-                                        Value::Binary(_) => {}
-                                        Value::Array(_) => {}
-                                        Value::Map(_) => {}
-                                        Value::Ext(_, _) => {}
-                                    }
-                                    column_type = mapper.get_column(k, &v);
-                                }
+                                let column_type = mapper.get_column_type(k, &v);
                                 match executor
                                     .exec(
                                         &format!(
@@ -176,5 +155,7 @@ pub fn sync<'a>(
 /// Mapper Column and ColumnType
 pub trait ColumnMapper: Sync + Send {
     fn driver_type(&self) -> String;
-    fn get_column(&self, column: &str, v: &Value) -> String;
+
+    /// for example input `"id":i32` -> id:INT
+    fn get_column_type(&self, field: &str, v: &Value) -> String;
 }

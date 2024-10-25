@@ -8,7 +8,7 @@ impl ColumnMapper for SqliteTableMapper {
         "sqlite".to_string()
     }
 
-    fn get_column(&self, _column: &str, v: &Value) -> String {
+    fn get_column_type(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
             Value::Bool(_) => "BOOLEAN".to_string(),
@@ -20,6 +20,9 @@ impl ColumnMapper for SqliteTableMapper {
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
                 if v != "" {
+                    if v.eq("id") {
+                        return "TEXT".to_string();
+                    }
                     v.to_string()
                 } else {
                     "TEXT".to_string()
