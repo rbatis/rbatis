@@ -2,6 +2,6 @@
 #[macro_export]
 macro_rules! impled {
     () => {
-        unimplemented!()
+        Default::default()
     };
 }

@@ -55,8 +55,8 @@ async fn select_by_condition(rb: &dyn Executor, page_req: &PageRequest, name: &s
 ```
 
 ```log
-2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rbatis] [402390551883812864] query  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
-                                                      [rbatis]                      Args   ==> ["test",DateTime("2022-08-17 17:16:23")]
+2022-08-17 17:16:23.624803 INFO rbatis::plugin::log - [rb] [402390551883812864] query  ==> select * from biz_activity where name like ? and create_time < ? and id != '-1' and  name != ''
+                                                      [rb]                      Args   ==> ["test",DateTime("2022-08-17 17:16:23")]
 ```
 
 

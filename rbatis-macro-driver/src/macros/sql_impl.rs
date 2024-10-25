@@ -34,7 +34,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rbatis] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!", target_fn.sig.ident);
+            panic!("[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!", target_fn.sig.ident);
         }
         let mut s = "".to_string();
         for v in &args.sqls {
@@ -42,7 +42,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         }
         sql_ident = quote!(#s);
     } else {
-        panic!("[rbatis] Incorrect macro parameter length!");
+        panic!("[rb] Incorrect macro parameter length!");
     }
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
