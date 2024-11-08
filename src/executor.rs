@@ -481,7 +481,7 @@ impl Drop for RBatisTxExecutorGuard {
 
 impl RBatisRef for RBatisTxExecutorGuard {
     fn rb_ref(&self) -> &RBatis {
-        self.tx.as_ref().unwrap().rb_ref()
+        self.tx.as_ref().expect("tx is empty").rb_ref()
     }
 }
 
