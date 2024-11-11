@@ -1,7 +1,7 @@
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
-use crate::snowflake::new_snowflake_id;
+use crate::snowflake::{Snowflake};
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
@@ -22,6 +22,8 @@ pub struct RBatis {
     pub pool: Arc<OnceLock<Box<dyn Pool>>>,
     // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
+    //rb id gen
+    pub snowflake: Arc<Snowflake>,
 }
 
 impl Default for RBatis {
@@ -29,6 +31,7 @@ impl Default for RBatis {
         RBatis {
             pool: Arc::new(Default::default()),
             intercepts: Arc::new(SyncVec::new()),
+            snowflake: Arc::new(Snowflake::default()),
         }
     }
 }
@@ -157,7 +160,7 @@ impl RBatis {
     pub async fn acquire(&self) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        return Ok(RBatisConnExecutor::new(new_snowflake_id(), conn, self.clone()));
+        return Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()));
     }
 
     /// try get an DataBase Connection used for the next step
@@ -169,7 +172,7 @@ impl RBatis {
     pub async fn try_acquire_timeout(&self, d: Duration) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get_timeout(d).await?;
-        return Ok(RBatisConnExecutor::new(new_snowflake_id(), conn, self.clone()));
+        return Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()));
     }
 
     /// get an DataBase Connection,and call begin method,used for the next step
