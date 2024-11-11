@@ -160,7 +160,7 @@ impl RBatis {
     pub async fn acquire(&self) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        return Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()));
+        Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()))
     }
 
     /// try get an DataBase Connection used for the next step
