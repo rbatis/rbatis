@@ -22,8 +22,8 @@ pub struct RBatis {
     pub pool: Arc<OnceLock<Box<dyn Pool>>>,
     // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
-    //rb id gen
-    pub snowflake: Arc<Snowflake>,
+    //rb task id gen
+    pub task_id_generator: Arc<Snowflake>,
 }
 
 impl Default for RBatis {
@@ -31,7 +31,7 @@ impl Default for RBatis {
         RBatis {
             pool: Arc::new(Default::default()),
             intercepts: Arc::new(SyncVec::new()),
-            snowflake: Arc::new(Snowflake::default()),
+            task_id_generator: Arc::new(Snowflake::default()),
         }
     }
 }
@@ -160,7 +160,7 @@ impl RBatis {
     pub async fn acquire(&self) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get().await?;
-        Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()))
+        Ok(RBatisConnExecutor::new(self.task_id_generator.generate(), conn, self.clone()))
     }
 
     /// try get an DataBase Connection used for the next step
@@ -172,7 +172,7 @@ impl RBatis {
     pub async fn try_acquire_timeout(&self, d: Duration) -> Result<RBatisConnExecutor, Error> {
         let pool = self.get_pool()?;
         let conn = pool.get_timeout(d).await?;
-        Ok(RBatisConnExecutor::new(self.snowflake.generate(), conn, self.clone()))
+        Ok(RBatisConnExecutor::new(self.task_id_generator.generate(), conn, self.clone()))
     }
 
     /// get an DataBase Connection,and call begin method,used for the next step

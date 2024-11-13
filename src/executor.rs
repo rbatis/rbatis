@@ -83,7 +83,7 @@ impl Executor for RBatisConnExecutor {
     fn exec(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = self.rb.snowflake.generate();
+            let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
@@ -130,7 +130,7 @@ impl Executor for RBatisConnExecutor {
     fn query(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = self.rb.snowflake.generate();
+            let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
@@ -187,7 +187,7 @@ impl RBatisConnExecutor {
         Box::pin(async move {
             let mut conn = self.conn.into_inner();
             conn.begin().await?;
-            Ok(RBatisTxExecutor::new(self.rb.snowflake.generate(), self.rb, conn))
+            Ok(RBatisTxExecutor::new(self.rb.task_id_generator.generate(), self.rb, conn))
         })
     }
 
