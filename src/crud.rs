@@ -75,17 +75,17 @@ macro_rules! impl_insert {
                 tables: &[$table],
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                pub trait ColumnSet{
+                pub trait ColumnSet {
                     /// take `vec![Table{"id":1}]` columns
-                    fn column_sets(&self)->rbs::Value;
+                    fn column_sets(&self) -> rbs::Value;
                 }
                 impl ColumnSet for rbs::Value {
                     fn column_sets(&self) -> rbs::Value {
                         let len = self.len();
                         let mut column_set = std::collections::HashSet::with_capacity(len);
                         for item in self.as_array().unwrap() {
-                            for (k,v) in &item {
-                                if (*v) != rbs::Value::Null{
+                            for (k, v) in &item {
+                                if (*v) != rbs::Value::Null {
                                     column_set.insert(k);
                                 }
                             }
@@ -94,8 +94,8 @@ macro_rules! impl_insert {
                         if len > 0 {
                             let table = &self[0];
                             let mut column_datas = Vec::with_capacity(table.len());
-                            for (column,_) in table {
-                                if column_set.contains(&column){
+                            for (column, _) in table {
+                                if column_set.contains(&column) {
                                     column_datas.push(column);
                                 }
                             }
@@ -145,7 +145,8 @@ macro_rules! impl_insert {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
-                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                let ranges =
+                    $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     let exec_result = insert_batch(
                         executor,
@@ -576,18 +577,21 @@ macro_rules! htmlsql_select_page {
             pub async fn $fn_name(executor: &dyn $crate::executor::Executor, page_request: &dyn $crate::plugin::IPageRequest, $($param_key:$param_type,)*) -> std::result::Result<$crate::plugin::Page<$table>, $crate::rbdc::Error> {
             struct Inner{}
             impl Inner{
-              #[$crate::html_sql($html_file)]
-              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
-                 $crate::impled!()
+              pub async fn fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+                 #[$crate::html_sql($html_file)]
+                 pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
+                    $crate::impled!()
+                 }
+                 $fn_name(executor, do_count, page_no, page_size, $(&$param_key,)*).await
               }
             }
             let mut total = 0;
             if page_request.do_count() {
-               let total_value = Inner::$fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+               let total_value = Inner::fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                total = $crate::decode(total_value).unwrap_or(0);
             }
             let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
-            let records_value = Inner::$fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+            let records_value = Inner::fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
             page.records = rbs::from_value(records_value)?;
             Ok(page)
          }
@@ -750,12 +754,15 @@ macro_rules! htmlsql {
         pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
             pub struct Inner{};
             impl Inner{
-            #[$crate::html_sql($html_file)]
-            pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-              impled!()
+             pub async fn fn_name($($param_key: $param_type,)*) -> $return_type{
+                #[$crate::html_sql($html_file)]
+                pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
+                  impled!()
+                }
+                $fn_name($($param_key,)*).await
              }
            }
-           Inner::$fn_name($($param_key,)*).await
+           Inner::fn_name($($param_key,)*).await
         }
     }
 }
