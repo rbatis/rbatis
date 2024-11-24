@@ -13,7 +13,7 @@ impl ColumnMapper for MysqlTableMapper {
     fn driver_type(&self) -> String {
         "mysql".to_string()
     }
-    fn get_column_type(&self, column: &str, v: &Value) -> String {
+    fn get_column_type(&self, _column: &str, v: &Value) -> String {
         match v {
             Value::Null => "NULL".to_string(),
             Value::Bool(_) => "TINYINT".to_string(),
