@@ -41,7 +41,6 @@ impl Serialize for Value {
     }
 }
 
-struct Serializer;
 
 /// Convert a `T` into `rbs::Value` which is an enum that can represent any valid MessagePack data.
 ///
@@ -70,7 +69,7 @@ pub fn to_value<T: Serialize>(mut value: T) -> Result<Value, Error> {
         let addr = std::ptr::addr_of!(value);
         return Ok(unsafe { **(addr as *const _ as *const &&Value) }.clone());
     }
-    value.serialize(Serializer)
+    value.serialize(Value::Null)
 }
 
 #[inline]
@@ -78,7 +77,7 @@ pub fn to_value_def<T: Serialize>(value: T) -> Value {
     to_value(value).unwrap_or_default()
 }
 
-impl ser::Serializer for Serializer {
+impl ser::Serializer for Value {
     type Ok = Value;
     type Error = Error;
 

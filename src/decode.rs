@@ -48,7 +48,7 @@ where
     if datas.is_empty() {
         return Ok(rbs::from_value::<T>(Value::Null)?);
     }
-    let m = datas.get(0).unwrap();
+    let m = datas.get(0).unwrap_or(&Value::Null);
     match &m {
         Value::Map(map) => {
             if map.len() == 1 {
@@ -73,8 +73,9 @@ where
                     || type_name.starts_with("rbdc::types::")
                     || type_name.starts_with("core::option::Option<rbdc::types::")
                 {
-                    let (_, value) = map.into_iter().next().unwrap();
-                    return Ok(rbs::from_value_ref::<T>(value)?);
+                    if let Some((_, value)) = map.into_iter().next(){
+                        return Ok(rbs::from_value_ref::<T>(value)?);
+                    }
                 }
             }
         }

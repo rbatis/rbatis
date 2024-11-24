@@ -112,7 +112,7 @@ impl Intercept for LogInterceptor {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(Some(true));
         }
-        let level = self.to_level().unwrap();
+        let level = self.to_level().unwrap_or(Level::Debug);
         //send sql/args
         log!(
             level,
@@ -135,7 +135,7 @@ impl Intercept for LogInterceptor {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(Some(true));
         }
-        let level = self.to_level().unwrap();
+        let level = self.to_level().unwrap_or(Level::Debug);
         //ResultType
         match result {
             ResultType::Exec(result) => match result {
