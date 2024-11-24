@@ -23,16 +23,16 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 }
             }
             if fetch_from_arg {
-                return syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param))
-                    .map_err(|e| Error::from(e));
+                syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param))
+                    .map_err(|e| Error::from(e))
             } else {
-                return syn::parse_str::<Expr>(&format!("{}", param)).map_err(|e| Error::from(e));
+                syn::parse_str::<Expr>(&format!("{}", param)).map_err(|e| Error::from(e))
             }
         }
         Expr::MethodCall(mut b) => {
             //receiver is named need to convert to arg["xxx"]
             b.receiver = Box::new(translate(context, *b.receiver, ignore)?);
-            return Ok(Expr::MethodCall(b));
+            Ok(Expr::MethodCall(b))
         }
         Expr::Binary(mut b) => {
             b.left = Box::new(translate(context, *b.left, ignore)?);
@@ -214,7 +214,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                     )))
                 }
             }
-            return Ok(Expr::Binary(b));
+            Ok(Expr::Binary(b))
         }
         Expr::Unary(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
@@ -225,12 +225,16 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 ))
                     .map_err(|e| Error::from(e));
             }
-            return Ok(Expr::Unary(b));
+            if b.op.to_token_stream().to_string().trim() == "!" {
+                b.expr = Box::new(syn::parse_str::<Expr>(&format!("bool::from({})", b.expr.to_token_stream().to_string().trim()))
+                    .map_err(|e| Error::from(e))?);
+            }
+            Ok(Expr::Unary(b))
         }
         //(a-b)
         Expr::Paren(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
-            return Ok(Expr::Paren(b));
+            Ok(Expr::Paren(b))
         }
         //a.b
         Expr::Field(mut b) => {
@@ -246,24 +250,23 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 }
                 Member::Unnamed(_) => {}
             }
-            return Ok(Expr::Field(b));
+            Ok(Expr::Field(b))
         }
         Expr::Reference(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
             let result = Expr::Reference(b);
-            return Ok(result);
+            Ok(result)
         }
         Expr::Index(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
-            return syn::parse_str::<Expr>(&format!(
+            syn::parse_str::<Expr>(&format!(
                 "&{}[{}]",
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
-            ))
-                .map_err(|e| Error::from(e));
+            )).map_err(|e| Error::from(e))
         }
         Expr::Let(_let_expr) => {
-            return Err(Error::from("unsupported token `let`"));
+            Err(Error::from("unsupported token `let`"))
         }
         Expr::Lit(b) => {
             match b.lit {
@@ -285,10 +288,10 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 Lit::Verbatim(_) => {}
                 _ => {}
             }
-            return Ok(Expr::Lit(b));
+            Ok(Expr::Lit(b))
         }
         _ => {
-            return Ok(arg);
+            Ok(arg)
         }
     }
 }
@@ -340,18 +343,14 @@ pub fn impl_fn(
         result_impl = quote! {rbs::to_value({#t}).unwrap_or_default()};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
-        return quote! {
-               #result_impl
-        }
-            .to_token_stream();
+         quote!{#result_impl}
     } else {
         let func_name_ident = Ident::new(&func_name_ident.to_string(), Span::call_site());
-        return quote! {
+        quote! {
             pub fn #func_name_ident(arg:&rbs::Value) -> rbs::Value {
                use rbatis_codegen::ops::*;
                #result_impl
             }
         }
-            .to_token_stream();
     }
 }
