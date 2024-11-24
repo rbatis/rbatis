@@ -563,12 +563,16 @@ macro_rules! impl_select_page {
 /// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
 /// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
 /// <select id="select_page_data">
-///   `select `
+///   `select`
 ///  <if test="do_count == true">
-///   `count(1) from table`
+///   ` count(1) `
 ///  </if>
 ///  <if test="do_count == false">
-///  `* from table limit ${page_no},${page_size}`
+///   ` * `
+///  </if>
+/// `from table where id > 1 `
+///  <if test="do_count == false">
+///  ` limit ${page_no},${page_size} `
 ///  </if>
 /// </select>"#);
 /// ```
