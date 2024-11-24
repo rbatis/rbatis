@@ -83,11 +83,13 @@ macro_rules! impl_insert {
                     fn column_sets(&self) -> rbs::Value {
                         let len = self.len();
                         let mut column_set = std::collections::HashSet::with_capacity(len);
-                        for item in self.as_array().unwrap() {
-                            for (k, v) in &item {
-                                if (*v) != rbs::Value::Null {
+                        if let Some(array) = self.as_array(){
+                            for item in array {
+                             for (k,v) in &item {
+                                if (*v) != rbs::Value::Null{
                                     column_set.insert(k);
                                 }
+                             }
                             }
                         }
                         let mut columns = rbs::Value::Array(vec![]);
@@ -145,8 +147,7 @@ macro_rules! impl_insert {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
-                let ranges =
-                    $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     let exec_result = insert_batch(
                         executor,

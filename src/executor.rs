@@ -1,7 +1,6 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
-use crate::snowflake::new_snowflake_id;
 use crate::Error;
 use dark_std::sync::SyncVec;
 use futures::Future;
@@ -84,7 +83,7 @@ impl Executor for RBatisConnExecutor {
     fn exec(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = new_snowflake_id();
+            let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
@@ -131,7 +130,7 @@ impl Executor for RBatisConnExecutor {
     fn query(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let mut sql = sql.to_string();
         Box::pin(async move {
-            let rb_task_id = new_snowflake_id();
+            let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
             for item in self.rb_ref().intercepts.iter() {
                 let next = item
@@ -188,7 +187,7 @@ impl RBatisConnExecutor {
         Box::pin(async move {
             let mut conn = self.conn.into_inner();
             conn.begin().await?;
-            Ok(RBatisTxExecutor::new(new_snowflake_id(), self.rb, conn))
+            Ok(RBatisTxExecutor::new(self.rb.task_id_generator.generate(), self.rb, conn))
         })
     }
 
@@ -481,7 +480,7 @@ impl Drop for RBatisTxExecutorGuard {
 
 impl RBatisRef for RBatisTxExecutorGuard {
     fn rb_ref(&self) -> &RBatis {
-        self.tx.as_ref().unwrap().rb_ref()
+        self.tx.as_ref().expect("tx is empty").rb_ref()
     }
 }
 

@@ -251,17 +251,18 @@ impl<'de> Deserializer<'de> for &Value {
                 value: Some(Value::String(v.clone())),
             }),
             Value::Map(m) => {
-                if m.is_empty() || m.len() != 1 {
+                if let Some((v, _)) = m.0.iter().next() {
+                    let variant = v.as_str().unwrap_or_default();
+                    visitor.visit_enum(EnumDeserializer {
+                        variant: variant,
+                        value: Some(Value::Map(m.clone())),
+                    })
+                } else {
                     return Err(serde::de::Error::invalid_type(
                         Unexpected::Other(&format!("{:?}", m)),
                         &"must be object map {\"Key\":\"Value\"}",
                     ));
                 }
-                let variant = m.0.iter().next().unwrap().0.as_str().unwrap_or_default();
-                visitor.visit_enum(EnumDeserializer {
-                    variant: variant,
-                    value: Some(Value::Map(m.clone())),
-                })
             }
             _ => {
                 return Err(serde::de::Error::invalid_type(
@@ -324,8 +325,8 @@ impl<I> SeqDeserializer<I> {
 
 impl<'de, I, U> SeqAccess<'de> for SeqDeserializer<I>
 where
-    I: Iterator<Item = U>,
-    U: Deserializer<'de, Error = crate::Error>,
+    I: Iterator<Item=U>,
+    U: Deserializer<'de, Error=crate::Error>,
 {
     type Error = crate::Error;
 
@@ -342,8 +343,8 @@ where
 
 impl<'de, I, U> Deserializer<'de> for SeqDeserializer<I>
 where
-    I: ExactSizeIterator<Item = U>,
-    U: Deserializer<'de, Error = crate::Error>,
+    I: ExactSizeIterator<Item=U>,
+    U: Deserializer<'de, Error=crate::Error>,
 {
     type Error = crate::Error;
 
@@ -488,21 +489,22 @@ impl<'de> serde::de::VariantAccess<'de> for VariantDeserializer {
         match self.value {
             Some(v) => {
                 let m = v.into_map();
-                if m.is_none() {
-                    return Err(serde::de::Error::custom(format!(
+                if let Some(m) = m {
+                    let mut v = m.0;
+                    if let Some(item) = v.pop() {
+                        seed.deserialize(&item.1)
+                    } else {
+                        Err(serde::de::Error::custom(format!(
+                            "Deserialize newtype_variant must be {}, and len = 1",
+                            "{\"key\",\"v\"}"
+                        )))
+                    }
+                } else {
+                    Err(serde::de::Error::custom(format!(
                         "Deserialize newtype_variant must be {}, and len = 1",
                         "{\"key\",\"v\"}"
-                    )));
+                    )))
                 }
-                let m = m.unwrap();
-                if m.len() != 1 {
-                    return Err(serde::de::Error::custom(format!(
-                        "Deserialize newtype_variant must be {}, and len = 1",
-                        "{\"key\",\"v\"}"
-                    )));
-                }
-                let mut v = m.0;
-                seed.deserialize(&v.pop().unwrap().1)
             }
             None => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
