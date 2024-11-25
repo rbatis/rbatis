@@ -735,7 +735,7 @@ macro_rules! pysql {
 /// ```rust
 /// use rbatis::executor::Executor;
 /// use rbdc::db::ExecResult;
-/// rbatis::htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis::Error> => "example/example.html");
+/// rbatis::htmlsql!(update_by_id(rb: &dyn Executor, id: &u64)  -> Result<ExecResult, rbatis::Error> => "example.html");
 /// ```
 /// query
 /// ```rust
