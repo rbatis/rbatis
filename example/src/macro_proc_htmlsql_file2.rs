@@ -26,7 +26,7 @@ pub struct Activity {
 }
 
 use rbatis::rbatis_codegen::IntoSql;
-#[html_sql("example/example.html")]
+#[html_sql("example.html")]
 pub async fn insert(
     rb: &dyn Executor,
     arg: &Activity,

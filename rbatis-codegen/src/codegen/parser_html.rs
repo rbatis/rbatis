@@ -1,9 +1,9 @@
+use proc_macro2::{Ident, Span};
+use quote::{quote, ToTokens};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Read;
-
-use proc_macro2::{Ident, Span};
-use quote::{quote, ToTokens};
+use std::path::PathBuf;
 use syn::{ItemFn, LitStr};
 use url::Url;
 
@@ -99,8 +99,17 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         ),
                     );
                 }
+                let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
+                manifest_dir.push_str("/");
+                
+                
                 let path = url.host_str().unwrap_or_default().to_string()
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
+                let mut file_path = PathBuf::from(&path);
+                if file_path.is_relative(){
+                    file_path = PathBuf::from(format!("{}{}",manifest_dir , path));
+                }
+                
                 match url.scheme() {
                     "file" => {
                         let mut ref_id = ref_id.clone();
@@ -114,9 +123,10 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         if !have_ref_id {
                             panic!("not find ref_id on url {}", ref_id);
                         }
-                        let mut f = File::open(&path).expect(&format!(
+                        let mut f = File::open(&file_path).expect(&format!(
                             "[rbatis-codegen] can't find file='{}',url='{}' ",
-                            path, url
+                            file_path.to_str().unwrap_or_default(),
+                            url
                         ));
                         let mut html = String::new();
                         f.read_to_string(&mut html).expect("read fail");
@@ -129,7 +139,11 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                             }
                         }
                         if not_find {
-                            panic!("not find ref_id={} on file={}", ref_id, path);
+                            panic!(
+                                "not find ref_id={} on file={}",
+                                ref_id,
+                                file_path.to_str().unwrap_or_default()
+                            );
                         }
                     }
                     "current" => {
