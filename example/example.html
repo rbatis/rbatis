@@ -20,8 +20,6 @@
     <select id="select_by_condition">
         `select * from activity`
         <where>
-            <include refid="a"></include>
-            <include refid="file://example.html?refid=a"></include>
             <if test="name != ''">
                 ` and name like #{name}`
             </if>
