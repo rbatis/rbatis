@@ -74,7 +74,7 @@ pub async fn main() {
     println!("update_by_column = {}", json!(data));
     
     let data = Activity::update_by_column_skip(&rb, &table, "id",false).await;
-    println!("update_by_column = {}", json!(data));
+    println!("update_by_column_skip = {}", json!(data));
 
     let data = Activity::delete_by_column(&rb, "id", "2").await;
     println!("delete_by_column = {}", json!(data));
