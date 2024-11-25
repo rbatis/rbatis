@@ -55,10 +55,9 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                             std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
                         manifest_dir.push_str("/");
                         let mut current = PathBuf::from(manifest_dir);
+                        current.push(file_name.clone());
                         if !current.exists() {
                             current = current_dir().unwrap_or_default();
-                            current.push(file_name.clone());
-                        }else{
                             current.push(file_name.clone());
                         }
                         file_name = current.to_str().unwrap_or_default().to_string();
