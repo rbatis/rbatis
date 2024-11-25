@@ -26,12 +26,12 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-#[py_sql(r#"include_str!("example/example.py")"#)]
+#[py_sql(r#"include_str!("example.py")"#)]
 async fn py_select(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<Vec<Activity>, Error> {
     impled!()
 }
 
-pysql!(py_exec2(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult, Error> =>r#"include_str!("example/example.py")"# );
+pysql!(py_exec2(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult, Error> =>r#"include_str!("example.py")"# );
 
 #[tokio::main]
 pub async fn main() {
