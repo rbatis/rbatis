@@ -673,15 +673,9 @@ macro_rules! pysql_select_page {
 #[macro_export]
 macro_rules! raw_sql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $sql_file:expr) => {
+       #[$crate::sql($sql_file)]
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-           pub struct Inner{};
-           impl Inner{
-               #[$crate::sql($sql_file)]
-               pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-                 impled!()
-               }
-           }
-           Inner::$fn_name($($param_key,)*).await
+           impled!()
        }
     }
 }
@@ -707,15 +701,9 @@ macro_rules! raw_sql {
 #[macro_export]
 macro_rules! pysql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $py_file:expr) => {
+       #[$crate::py_sql($py_file)]
        pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-           pub struct Inner{};
-           impl Inner{
-               #[$crate::py_sql($py_file)]
-               pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-                 impled!()
-               }
-           }
-           Inner::$fn_name($($param_key,)*).await
+          impled!()
        }
     }
 }
@@ -755,18 +743,9 @@ macro_rules! pysql {
 #[macro_export]
 macro_rules! htmlsql {
     ($fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) -> $return_type:ty => $html_file:expr) => {
+        #[$crate::html_sql($html_file)]
         pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-            pub struct Inner{};
-            impl Inner{
-             pub async fn fn_name($($param_key: $param_type,)*) -> $return_type{
-                #[$crate::html_sql($html_file)]
-                pub async fn $fn_name($($param_key: $param_type,)*) -> $return_type{
-                  impled!()
-                }
-                $fn_name($($param_key,)*).await
-             }
-           }
-           Inner::fn_name($($param_key,)*).await
+              impled!()
         }
     }
 }
