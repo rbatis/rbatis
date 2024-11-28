@@ -23,8 +23,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 }
             }
             if fetch_from_arg {
-                syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param))
-                    .map_err(|e| Error::from(e))
+                syn::parse_str::<Expr>(&format!("&arg[\"{}\"]", param)).map_err(|e| Error::from(e))
             } else {
                 syn::parse_str::<Expr>(&format!("{}", param)).map_err(|e| Error::from(e))
             }
@@ -46,14 +45,14 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                            .map_err(|e| Error::from(e));
+                        .map_err(|e| Error::from(e));
                     } else {
                         return syn::parse_str::<Expr>(&format!(
                             "({}).op_add(&{})",
                             b.left.to_token_stream(),
                             b.right.to_token_stream()
                         ))
-                            .map_err(|e| Error::from(e));
+                        .map_err(|e| Error::from(e));
                     }
                 }
                 BinOp::And(_) => {
@@ -62,14 +61,14 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                            .expect("codegen_func fail"),
+                        .expect("codegen_func fail"),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                            .expect("codegen_func fail"),
+                        .expect("codegen_func fail"),
                     );
                 }
                 BinOp::Or(_) => {
@@ -78,14 +77,14 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                            .expect("codegen_func fail"),
+                        .expect("codegen_func fail"),
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                            .expect("codegen_func fail"),
+                        .expect("codegen_func fail"),
                     );
                 }
 
@@ -96,7 +95,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `*` operator (multiplication)
                 BinOp::Mul(_) => {
@@ -105,7 +104,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `/` operator (division)
                 BinOp::Div(_) => {
@@ -114,7 +113,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `%` operator (modulus)
                 BinOp::Rem(_) => {
@@ -123,7 +122,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `&` operator (bitwise and)
                 BinOp::BitAnd(_) => {
@@ -132,7 +131,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `|` operator (bitwise or)
                 BinOp::BitOr(_) => {
@@ -141,7 +140,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `==` operator (equality)
                 BinOp::Eq(_) => {
@@ -150,7 +149,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `<` operator (less than)
                 BinOp::Lt(_) => {
@@ -159,7 +158,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `<=` operator (less than or equal to)
                 BinOp::Le(_) => {
@@ -168,7 +167,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `!=` operator (not equal to)
                 BinOp::Ne(_) => {
@@ -177,7 +176,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `>=` operator (greater than or equal to)
                 BinOp::Ge(_) => {
@@ -186,7 +185,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `>` operator (greater than)
                 BinOp::Gt(_) => {
@@ -195,7 +194,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `^` operator (bitwise xor)
                 BinOp::BitXor(_) => {
@@ -204,7 +203,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.left.to_token_stream(),
                         b.right.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 // The `<<` operator (shift left)
                 _ => {
@@ -223,11 +222,16 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                     "0i64.op_sub({})",
                     b.expr.to_token_stream().to_string().trim()
                 ))
-                    .map_err(|e| Error::from(e));
+                .map_err(|e| Error::from(e));
             }
             if b.op.to_token_stream().to_string().trim() == "!" {
-                b.expr = Box::new(syn::parse_str::<Expr>(&format!("bool::from({})", b.expr.to_token_stream().to_string().trim()))
-                    .map_err(|e| Error::from(e))?);
+                b.expr = Box::new(
+                    syn::parse_str::<Expr>(&format!(
+                        "bool::from({})",
+                        b.expr.to_token_stream().to_string().trim()
+                    ))
+                    .map_err(|e| Error::from(e))?,
+                );
             }
             Ok(Expr::Unary(b))
         }
@@ -246,7 +250,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                         b.base.to_token_stream(),
                         named.to_token_stream()
                     ))
-                        .map_err(|e| Error::from(e));
+                    .map_err(|e| Error::from(e));
                 }
                 Member::Unnamed(_) => {}
             }
@@ -263,11 +267,10 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
                 "&{}[{}]",
                 b.expr.to_token_stream(),
                 b.index.to_token_stream()
-            )).map_err(|e| Error::from(e))
+            ))
+            .map_err(|e| Error::from(e))
         }
-        Expr::Let(_let_expr) => {
-            Err(Error::from("unsupported token `let`"))
-        }
+        Expr::Let(_let_expr) => Err(Error::from("unsupported token `let`")),
         Expr::Lit(b) => {
             match b.lit {
                 Lit::Str(_) => {}
@@ -290,9 +293,7 @@ fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error>
             }
             Ok(Expr::Lit(b))
         }
-        _ => {
-            Ok(arg)
-        }
+        _ => Ok(arg),
     }
 }
 
@@ -343,7 +344,7 @@ pub fn impl_fn(
         result_impl = quote! {rbs::to_value({#t}).unwrap_or_default()};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
-         quote!{#result_impl}
+        quote! {#result_impl}
     } else {
         let func_name_ident = Ident::new(&func_name_ident.to_string(), Span::call_site());
         quote! {

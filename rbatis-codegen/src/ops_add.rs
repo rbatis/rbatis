@@ -203,7 +203,6 @@ impl Add<String> for &Value {
     }
 }
 
-
 impl Add<Value> for &String {
     type Output = String;
     fn op_add(self, rhs: Value) -> Self::Output {

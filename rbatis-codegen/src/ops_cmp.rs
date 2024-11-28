@@ -316,8 +316,6 @@ impl PartialOrd<&&String> for &&String {
     }
 }
 
-
-
 macro_rules! cmp2 {
     ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
         $(

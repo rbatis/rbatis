@@ -1,7 +1,7 @@
 use crate::ops::PartialEq;
 use rbs::Value;
 use std::borrow::Cow;
-use std::cmp::{PartialEq as PE};
+use std::cmp::PartialEq as PE;
 use std::ops::Deref;
 
 #[inline]
@@ -38,7 +38,6 @@ fn into_f64(value: &Value) -> f64 {
 fn into_bool(value: &Value) -> bool {
     value.as_bool().unwrap_or_default()
 }
-
 
 impl PartialEq<Value> for &Value {
     fn op_eq(&self, other: &Value) -> bool {

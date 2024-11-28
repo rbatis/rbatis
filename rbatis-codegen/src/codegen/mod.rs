@@ -38,7 +38,7 @@ pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
         true,
         &[],
     )
-        .into();
+    .into();
     stream
 }
 
