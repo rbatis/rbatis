@@ -170,7 +170,7 @@ macro_rules! impl_numeric_rem {
 
 impl_numeric_rem! {
     op_rem_u64,op_rem_u64_value[u8 u16 u32 u64] -> u64
-    op_rem_i64,op_rem_i64_value[i8 i16 i32 i64 isize] -> i64
+    op_rem_i64,op_rem_i64_value[i8 i16 i32 i64 isize usize] -> i64
     op_rem_f64,op_rem_f64_value[f32 f64] -> f64
 }
 
@@ -205,5 +205,5 @@ impl Rem<&$ty> for &$ty{
     };
 }
 self_rem!([u8 u16 u32 u64]);
-self_rem!([i8 i16 i32 i64 isize]);
+self_rem!([i8 i16 i32 i64 isize usize]);
 self_rem!([f32 f64]);

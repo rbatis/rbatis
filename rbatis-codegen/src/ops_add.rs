@@ -85,7 +85,7 @@ macro_rules! impl_numeric_add {
 
 impl_numeric_add! {
     op_add_u64[u8 u16 u32 u64] -> u64
-    op_add_i64[i8 i16 i32 i64 isize] -> i64
+    op_add_i64[i8 i16 i32 i64 isize usize] -> i64
     op_add_f64[f32 f64] -> f64
 }
 
@@ -285,7 +285,7 @@ macro_rules! self_add {
     };
 }
 self_add!([u8 u16 u32 u64]);
-self_add!([i8 i16 i32 i64 isize]);
+self_add!([i8 i16 i32 i64 isize usize]);
 self_add!([f32 f64]);
 
 impl Add<String> for String {

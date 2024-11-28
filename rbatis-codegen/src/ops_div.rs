@@ -121,7 +121,7 @@ macro_rules! impl_numeric_div {
 
 impl_numeric_div! {
     op_div_u64,op_div_u64_value[u8 u16 u32 u64] -> u64
-    op_div_i64,op_div_i64_value[i8 i16 i32 i64 isize] -> i64
+    op_div_i64,op_div_i64_value[i8 i16 i32 i64 isize usize] -> i64
     op_div_f64,op_div_f64_value[f32 f64] -> f64
 }
 
@@ -255,5 +255,5 @@ impl Div<&$ty> for &$ty{
     };
 }
 self_div!([u8 u16 u32 u64]);
-self_div!([i8 i16 i32 i64 isize]);
+self_div!([i8 i16 i32 i64 isize usize]);
 self_div!([f32 f64]);
