@@ -357,7 +357,7 @@ eq2!(eq_f64[(f64,f32),]);
 
 #[cfg(test)]
 mod test {
-    use crate::ops::{Add, PartialEq};
+    use crate::ops::{Add};
     use rbs::{to_value, Value};
 
     #[test]
