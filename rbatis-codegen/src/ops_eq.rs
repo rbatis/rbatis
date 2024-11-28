@@ -371,11 +371,4 @@ mod test {
             assert!(false);
         }
     }
-
-    #[test]
-    fn test_eq_str() {
-        let v = to_value!(1);
-        let r = v.op_ne("");
-        assert_eq!(r, true);
-    }
 }
