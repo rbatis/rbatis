@@ -317,28 +317,28 @@ impl_str_eq! {
 }
 
 macro_rules! eq2 {
-     ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
+   ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
         $(
-impl PartialEq<$ty1> for $ty2{
-      fn op_eq(&self, rhs: &$ty1) -> bool {
-          rhs.eq(&(*self as $ty1))
-      }
-    }
-impl PartialEq<&$ty1> for $ty2{
-      fn op_eq(&self, rhs: &&$ty1) -> bool {
-         (*rhs).eq(&(*self as $ty1))
-      }
-    }
-impl PartialEq<$ty1> for &$ty2{
-      fn op_eq(&self, rhs: &$ty1) -> bool {
-         rhs.eq(&(**self as $ty1))
-      }
-    }
-impl PartialEq<&$ty1> for &$ty2{
-      fn op_eq(&self, rhs: &&$ty1) -> bool {
-         (*rhs).eq(&(**self as $ty1))
-      }
-    }
+        impl PartialEq<$ty1> for $ty2{
+          fn op_eq(&self, rhs: &$ty1) -> bool {
+              rhs.eq(&(*self as $ty1))
+          }
+        }
+        impl PartialEq<&$ty1> for $ty2{
+          fn op_eq(&self, rhs: &&$ty1) -> bool {
+             (*rhs).eq(&(*self as $ty1))
+          }
+        }
+        impl PartialEq<$ty1> for &$ty2{
+          fn op_eq(&self, rhs: &$ty1) -> bool {
+             rhs.eq(&(**self as $ty1))
+          }
+        }
+        impl PartialEq<&$ty1> for &$ty2{
+          fn op_eq(&self, rhs: &&$ty1) -> bool {
+             (*rhs).eq(&(**self as $ty1))
+          }
+        }
         )*
     };
 }
