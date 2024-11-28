@@ -37,7 +37,6 @@ impl Sub<&&Value> for Value {
     }
 }
 
-
 impl Sub<Value> for &Value {
     type Output = Value;
     fn op_sub(self, rhs: Value) -> Self::Output {

@@ -99,17 +99,17 @@ fn include_replace(htmls: Vec<Element>, sql_map: &mut BTreeMap<String, Element>)
                         ),
                     );
                 }
-                let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
+                let mut manifest_dir =
+                    std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
                 manifest_dir.push_str("/");
-                
-                
+
                 let path = url.host_str().unwrap_or_default().to_string()
                     + url.path().trim_end_matches("/").trim_end_matches("\\");
                 let mut file_path = PathBuf::from(&path);
-                if file_path.is_relative(){
-                    file_path = PathBuf::from(format!("{}{}",manifest_dir , path));
+                if file_path.is_relative() {
+                    file_path = PathBuf::from(format!("{}{}", manifest_dir, path));
                 }
-                
+
                 match url.scheme() {
                     "file" => {
                         let mut ref_id = ref_id.clone();

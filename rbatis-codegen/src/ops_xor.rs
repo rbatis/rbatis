@@ -47,7 +47,6 @@ impl BitXor<&&Value> for Value {
     }
 }
 
-
 impl BitXor<Value> for &Value {
     type Output = Value;
     fn op_bitxor(self, rhs: Value) -> Self::Output {
