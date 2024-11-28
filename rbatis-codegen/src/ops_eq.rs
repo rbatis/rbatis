@@ -316,7 +316,7 @@ impl_str_eq! {
     eq_str_bool[bool]
 }
 
-macro_rules! eq2 {
+macro_rules! eq_diff {
    ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
         $(
         impl PartialEq<$ty1> for $ty2{
@@ -343,17 +343,17 @@ macro_rules! eq2 {
     };
 }
 
-eq2!(eq_i64[(i64,i8),(i64,i16),(i64,i32),]);
-eq2!(eq_i64[(i64,u8),(i64,u16),(i64,u32),(i64,u64),(i64,usize),]);
-eq2!(eq_f64[(i64,f32),(i64,f64),]);
+eq_diff!(eq_i64[(i64,i8),(i64,i16),(i64,i32),]);
+eq_diff!(eq_i64[(i64,u8),(i64,u16),(i64,u32),(i64,u64),(i64,usize),]);
+eq_diff!(eq_f64[(i64,f32),(i64,f64),]);
 
-eq2!(eq_i64[(u64,i8),(u64,i16),(u64,i32),(u64,i64),]);
-eq2!(eq_u64[(u64,u8),(u64,u16),(u64,u32),(u64,usize),]);
-eq2!(eq_f64[(u64,f32),(u64,f64),]);
+eq_diff!(eq_i64[(u64,i8),(u64,i16),(u64,i32),(u64,i64),]);
+eq_diff!(eq_u64[(u64,u8),(u64,u16),(u64,u32),(u64,usize),]);
+eq_diff!(eq_f64[(u64,f32),(u64,f64),]);
 
-eq2!(eq_f64[(f64,u8),(f64,u16),(f64,u32),(f64,u64),(f64,usize),]);
-eq2!(eq_f64[(f64,i8),(f64,i16),(f64,i32),(f64,i64),]);
-eq2!(eq_f64[(f64,f32),]);
+eq_diff!(eq_f64[(f64,u8),(f64,u16),(f64,u32),(f64,u64),(f64,usize),]);
+eq_diff!(eq_f64[(f64,i8),(f64,i16),(f64,i32),(f64,i64),]);
+eq_diff!(eq_f64[(f64,f32),]);
 
 #[cfg(test)]
 mod test {
