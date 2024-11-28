@@ -154,7 +154,7 @@ macro_rules! impl_numeric_sub {
 
 impl_numeric_sub! {
     op_sub_u64,op_sub_u64_value[u8 u16 u32 u64] -> u64
-    op_sub_i64,op_sub_i64_value[i8 i16 i32 i64 isize] -> i64
+    op_sub_i64,op_sub_i64_value[i8 i16 i32 i64 isize usize] -> i64
     op_sub_f64,op_sub_f64_value[f32 f64] -> f64
 }
 
@@ -190,7 +190,7 @@ impl Sub<&$ty> for &$ty{
 }
 
 self_sub!([u8 u16 u32 u64]);
-self_sub!([i8 i16 i32 i64 isize]);
+self_sub!([i8 i16 i32 i64 isize usize]);
 self_sub!([f32 f64]);
 
 #[cfg(test)]

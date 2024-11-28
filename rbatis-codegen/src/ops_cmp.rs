@@ -197,7 +197,7 @@ macro_rules! impl_numeric_cmp {
 
 impl_numeric_cmp! {
     eq_u64[u8 u16 u32 u64]
-    eq_i64[i8 i16 i32 i64 isize]
+    eq_i64[i8 i16 i32 i64 isize usize]
     eq_f64[f32 f64]
     eq_bool[bool]
     eq_str[&str]
@@ -231,7 +231,7 @@ impl PartialOrd<&$ty> for &$ty{
 }
 
 self_cmp!(cmp_u64[u8 u16 u32 u64]);
-self_cmp!(cmp_i64[i8 i16 i32 i64 isize]);
+self_cmp!(cmp_i64[i8 i16 i32 i64 isize usize]);
 self_cmp!(cmp_f64[f32 f64]);
 
 impl PartialOrd<&str> for &str {
@@ -315,3 +315,44 @@ impl PartialOrd<&&String> for &&String {
         self.as_str().partial_cmp(rhs.as_str())
     }
 }
+
+
+
+macro_rules! cmp2 {
+    ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
+        $(
+impl PartialOrd<$ty1> for $ty2{
+      fn op_partial_cmp(&self, rhs: &$ty1) ->  Option<Ordering> {
+        $eq(*self as _, *rhs as _)
+      }
+}
+impl PartialOrd<&$ty1> for $ty2{
+      fn op_partial_cmp(&self, rhs: &&$ty1) ->  Option<Ordering> {
+        $eq(*self as _, **rhs as _)
+      }
+}
+impl PartialOrd<$ty1> for &$ty2{
+      fn op_partial_cmp(&self, rhs: &$ty1) ->  Option<Ordering> {
+        $eq(**self as _, *rhs as _)
+      }
+}
+impl PartialOrd<&$ty1> for &$ty2{
+      fn op_partial_cmp(&self, rhs: &&$ty1) ->  Option<Ordering> {
+        $eq(**self as _, **rhs as _)
+      }
+}
+        )*
+    };
+}
+
+cmp2!(cmp_i64[(i64,i8),(i64,i16),(i64,i32),]);
+cmp2!(cmp_i64[(i64,u8),(i64,u16),(i64,u32),(i64,u64),(i64,usize),]);
+cmp2!(cmp_f64[(i64,f32),(i64,f64),]);
+
+cmp2!(cmp_i64[(u64,i8),(u64,i16),(u64,i32),(u64,i64),]);
+cmp2!(cmp_u64[(u64,u8),(u64,u16),(u64,u32),(u64,usize),]);
+cmp2!(cmp_f64[(u64,f32),(u64,f64),]);
+
+cmp2!(cmp_f64[(f64,u8),(f64,u16),(f64,u32),(f64,u64),(f64,usize),]);
+cmp2!(cmp_f64[(f64,i8),(f64,i16),(f64,i32),(f64,i64),]);
+cmp2!(cmp_f64[(f64,f32),]);

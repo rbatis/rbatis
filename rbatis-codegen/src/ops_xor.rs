@@ -155,7 +155,7 @@ macro_rules! impl_numeric_sub {
 }
 
 impl_numeric_sub! {
-    op_bitxor_i64,op_bitxor_i64_value[i8 i16 i32 i64 isize] -> i64
+    op_bitxor_i64,op_bitxor_i64_value[i8 i16 i32 i64 isize usize] -> i64
     op_bitxor_f64,op_bitxor_f64_value[f32 f64] -> f64
 }
 
@@ -191,5 +191,5 @@ impl BitXor<& $ ty> for & $ ty{
 }
 
 xor_self!([u8 u16 u32 u64]);
-xor_self!([i8 i16 i32 i64 isize]);
+xor_self!([i8 i16 i32 i64 isize usize]);
 // unsupported! xor_self!([f32 f64]);

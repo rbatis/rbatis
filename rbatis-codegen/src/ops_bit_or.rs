@@ -161,7 +161,7 @@ macro_rules! impl_numeric_bitor {
 
 impl_numeric_bitor! {
     op_bit_or_u64[u8 u16 u32 u64] -> u64
-    op_bit_or_i64[i8 i16 i32 i64 isize] -> i64
+    op_bit_or_i64[i8 i16 i32 i64 isize usize] -> i64
 }
 
 macro_rules! self_bitor {
@@ -195,4 +195,4 @@ impl BitOr<&$ty> for &$ty{
     };
 }
 self_bitor!([u8 u16 u32 u64]);
-self_bitor!([i8 i16 i32 i64 isize]);
+self_bitor!([i8 i16 i32 i64 isize usize]);

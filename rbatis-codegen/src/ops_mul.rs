@@ -158,7 +158,7 @@ macro_rules! impl_numeric_mul {
 
 impl_numeric_mul! {
     op_mul_u64[u8 u16 u32 u64] -> u64
-    op_mul_i64[i8 i16 i32 i64 isize] -> i64
+    op_mul_i64[i8 i16 i32 i64 isize usize] -> i64
     op_mul_f64[f32 f64] -> f64
 }
 
@@ -193,5 +193,5 @@ impl Mul<&$ty> for &$ty{
     };
 }
 self_mul!([u8 u16 u32 u64]);
-self_mul!([i8 i16 i32 i64 isize]);
+self_mul!([i8 i16 i32 i64 isize usize]);
 self_mul!([f32 f64]);
