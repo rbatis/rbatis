@@ -67,7 +67,7 @@ mod test {
         fn connect_opt<'a>(
             &'a self,
             _option: &'a dyn ConnectOptions,
-        ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
