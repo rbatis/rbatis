@@ -324,8 +324,8 @@ impl RBatis {
     ///      let _ = RBatis::sync(conn,&MysqlTableMapper{},&table,"user").await;
     /// }
     /// ```
-    pub async fn sync<T: Serialize, E: Executor>(
-        executor: &E,
+    pub async fn sync<T: Serialize>(
+        executor: &dyn Executor,
         column_mapper: &dyn ColumnMapper,
         table: &T,
         table_name: &str,

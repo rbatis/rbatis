@@ -74,8 +74,8 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///      let _ = sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
 /// }
 /// ```
-pub fn sync<'a, E: Executor>(
-    executor: &'a E,
+pub fn sync<'a>(
+    executor: &'a dyn Executor,
     mapper: &'a dyn ColumnMapper,
     table: Value,
     table_name: &str,
