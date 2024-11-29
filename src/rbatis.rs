@@ -43,7 +43,7 @@ impl RBatis {
         let rb = RBatis::default();
         //default use LogInterceptor
         rb.intercepts
-            .push(Arc::new(LogInterceptor::new(LevelFilter::Info)));
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
         rb
     }
 
