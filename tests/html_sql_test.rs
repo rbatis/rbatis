@@ -67,7 +67,7 @@ mod test {
         fn connect_opt<'a>(
             &'a self,
             _option: &'a dyn ConnectOptions,
-        ) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -558,7 +558,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            let v = to_value!{
+            let v = to_value! {
                 "a":"a",
                 "b":"b"
             };

@@ -74,8 +74,8 @@ const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
 ///      let _ = sync(conn, &MysqlTableMapper{},to_value!(table),"user").await;
 /// }
 /// ```
-pub fn sync<'a>(
-    executor: &'a dyn Executor,
+pub fn sync<'a, E: Executor>(
+    executor: &'a E,
     mapper: &'a dyn ColumnMapper,
     table: Value,
     table_name: &str,
@@ -86,7 +86,11 @@ pub fn sync<'a>(
             Value::Map(m) => {
                 let db_driver_type = executor.driver_type()?;
                 if db_driver_type != mapper.driver_type() {
-                    return Err(Error::from(format!("table sync mapper driver='{}',db driver='{}'", mapper.driver_type(), db_driver_type)));
+                    return Err(Error::from(format!(
+                        "table sync mapper driver='{}',db driver='{}'",
+                        mapper.driver_type(),
+                        db_driver_type
+                    )));
                 }
                 let mut sql_create = format!("CREATE TABLE {} ", name);
                 let mut sql_column = format!("");
@@ -124,10 +128,7 @@ pub fn sync<'a>(
                                     .exec(
                                         &format!(
                                             "alter table {} add {} {} {};",
-                                            name,
-                                            k,
-                                            column_type,
-                                            id_key
+                                            name, k, column_type, id_key
                                         ),
                                         vec![],
                                     )
