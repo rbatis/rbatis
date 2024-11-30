@@ -40,14 +40,7 @@
     </select>
 
     <select id="select_page_data">
-        `select `
-        <if test="do_count == true">
-            `count(1)`
-        </if>
-        <if test="do_count == false">
-            `*`
-        </if>
-        ` from activity`
+        `select *  from activity `
         <where>
             <if test="name != ''">
                 ` and name like #{name}`
@@ -65,9 +58,7 @@
             <trim prefixOverrides=" and">
                 ` and name != '' `
             </trim>
-            <if test="do_count == false">
-                ` limit ${page_no},${page_size}`
-            </if>
+            ` limit ${page_no},${page_size}`
         </where>
     </select>
     <update id="update_by_id">

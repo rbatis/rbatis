@@ -559,16 +559,7 @@ macro_rules! impl_select_page {
 /// //rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => "example.html");
 /// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
 /// <select id="select_page_data">
-///  <if test="do_count == true">
-///   `select count(1) from table `
-///  </if>
-///  <if test="do_count == false">
-///   `select * from table `
-///  </if>
-/// ` where id > 1 `
-///  <if test="do_count == false">
-///  ` limit ${page_no},${page_size} `
-///  </if>
+///  `select * from table  where id > 1  limit ${page_no},${page_size} `
 /// </select>"#);
 /// ```
 #[macro_export]
@@ -581,7 +572,8 @@ macro_rules! htmlsql_select_page {
              }
              let mut total = 0;
              if page_request.do_count() {
-                let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+                let executor = <$crate::plugin::executor::PageCountExecutor>::new(executor);
+                let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                 total = $crate::decode(total_value).unwrap_or(0);
              }
              let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
@@ -617,12 +609,7 @@ macro_rules! htmlsql_select_page {
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
 /// rbatis::pysql_select_page!(pysql_select_page(name:&str) -> MockTable =>
-///     r#"`select `
-///       if do_count == true:
-///         ` count(1) as count `
-///       if do_count == false:
-///          ` * `
-///       `from activity where delete_flag = 0`
+///     r#"`select * from activity where delete_flag = 0`
 ///         if name != '':
 ///            ` and name=#{name}`
 ///       ` limit ${page_no},${page_size}`
@@ -638,7 +625,8 @@ macro_rules! pysql_select_page {
               }
               let mut total = 0;
               if page_request.do_count() {
-                 let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+                 let executor = <$crate::plugin::executor::PageCountExecutor>::new(executor);
+                 let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                  total = $crate::decode(total_value).unwrap_or(0);
               }
               let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);

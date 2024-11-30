@@ -1137,7 +1137,7 @@ mod test {
             assert_eq!(sql, "select * from table limit 0,10");
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "select count(1) from table");
+            assert_eq!(sql, "select count(1) as count from table");
         };
         block_on(f);
     }
@@ -1184,7 +1184,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "select  count(1) as count from activity where delete_flag = 0 and var1 = ? and name=?"
+                "select count(1) as count from activity where delete_flag = 0 and var1 = ? and name=?"
             );
         };
         block_on(f);
