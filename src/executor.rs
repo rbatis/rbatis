@@ -14,7 +14,7 @@ use std::fmt::{Debug, Formatter};
 
 /// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
-    fn id(&self)->i64;
+    fn id(&self) -> i64;
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
@@ -506,12 +506,10 @@ impl RBatisRef for RBatisTxExecutorGuard {
 
 impl Executor for RBatisTxExecutorGuard {
     fn id(&self) -> i64 {
-       match &self.tx {
-           None => { -1}
-           Some(v) => {
-               v.id()
-           }
-       }
+        match &self.tx {
+            None => -1,
+            Some(v) => v.id(),
+        }
     }
 
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
