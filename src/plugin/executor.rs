@@ -27,6 +27,10 @@ impl PageCountExecutor {
 }
 
 impl Executor for PageCountExecutor {
+    fn id(&self) -> i64 {
+        self.inner.id()
+    }
+
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         self.inner.exec(&sql, args)
     }
