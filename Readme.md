@@ -8,7 +8,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
 [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
-<img style="width: 200px;height: 200px;" width="200" height="200" src="logo.png" />
+<img style="width: 200px;height: 190px;" width="190" height="200" src="logo.png" />
 
 #### a compile-time code generation ORM that balances ease of writing with performance and robustness
 
