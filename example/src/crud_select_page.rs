@@ -33,7 +33,7 @@ impl_select_page!(Activity{select_page_by_name(name:&str) =>"
      if name == '':
        `where name != ''`"});
 
-impl_select_page!(Activity{select_page_by_limit(name:&str,limit_sql:&str) => "`where name != #{name}`"});
+impl_select_page!(Activity{select_page_by_limit(name:&str) => "`where name != #{name} limit 0,10 `"});
 
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::table_sync::SqliteTableMapper;
@@ -73,7 +73,7 @@ pub async fn main() {
     println!("select_page_by_name = {}", json!(data));
 
     let data =
-        Activity::select_page_by_limit(&rb, &PageRequest::new(1, 10), "2", " limit 0,10 ").await;
+        Activity::select_page_by_limit(&rb, &PageRequest::new(1, 10), "2").await;
     println!("select_page_by_limit = {}", json!(data));
 
     let data = select_page_data(&rb, &PageRequest::new(1, 10), "2").await;

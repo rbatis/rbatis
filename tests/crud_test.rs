@@ -15,6 +15,7 @@ mod test {
     use futures_core::future::BoxFuture;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
+    use rbatis::intercept_page::PageIntercept;
     use rbatis::plugin::PageRequest;
     use rbatis::{impl_delete, impl_select, impl_select_page, impl_update};
     use rbatis::{DefaultPool, Error, RBatis};
@@ -31,7 +32,6 @@ mod test {
     use std::str::FromStr;
     use std::sync::atomic::{AtomicI32, Ordering};
     use std::sync::Arc;
-    use rbatis::intercept_page::PageIntercept;
 
     #[derive(Debug)]
     pub struct MockIntercept {
@@ -917,7 +917,10 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page(&mut rb, &PageRequest::new(1, 10), "1")
                 .await
@@ -925,7 +928,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
-                "select * from mock_table order by create_time desc limit 0,10"
+                "select * from mock_table order by create_time desc limit 0,10 "
             );
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
@@ -945,14 +948,17 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_page_by_name(&mut rb, &PageRequest::new(1, 10), "", "")
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where name != '' limit 0,10");
+            assert_eq!(sql, "select * from mock_table where name != '' limit 0,10 ");
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(
@@ -1128,7 +1134,10 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(PageIntercept::new()),Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = htmlsql_select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
                 .await
@@ -1163,7 +1172,10 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(PageIntercept::new()),Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = pysql_select_page(
                 &mut rb,

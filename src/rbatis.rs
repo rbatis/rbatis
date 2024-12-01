@@ -132,7 +132,9 @@ impl RBatis {
         self.init_option::<Driver, ConnectOptions, DefaultPool>(driver, options)
     }
 
-    /// set_intercepts for many
+    /// set_intercepts for many.
+    /// notice:
+    /// do not forget add PageIntercept!
     pub fn set_intercepts(&mut self, arg: Vec<Arc<dyn Intercept>>) {
         self.intercepts = Arc::new(SyncVec::from(arg));
     }
