@@ -1178,7 +1178,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "select  * from activity where delete_flag = 0 and var1 = ? and name=?"
+                "select  * from activity where delete_flag = 0 and var1 = ? and name=? limit 0,10 "
             );
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
