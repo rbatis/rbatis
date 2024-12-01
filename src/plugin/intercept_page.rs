@@ -58,8 +58,11 @@ impl Intercept for PageIntercept {
         executor: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
+        if let ResultType::Exec(_) = result {
+            return Ok(Some(true));
+        }
         if self.count_ids.contains_key(&executor.id()) {
             self.count_ids.remove(&executor.id());
             if !(sql.contains("select ") && sql.contains(" from ")) {
