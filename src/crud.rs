@@ -1,5 +1,3 @@
-use crate::PageRequest;
-
 ///PySql: gen select*,update*,insert*,delete* ... methods
 ///```rust
 /// use rbatis::{Error, RBatis};
@@ -563,6 +561,13 @@ macro_rules! impl_select_page {
 /// <select id="select_page_data">
 ///  `select * from table  where id > 1  limit ${page_no},${page_size} `
 /// </select>"#);
+///
+/// rbatis::pysql_select_page!(pysql_select_page(name:&str) -> MockTable =>
+///     r#"`select * from activity where delete_flag = 0`
+///         if name != '':
+///            ` and name=#{name}`
+///       ` limit ${page_no},${page_size}`
+/// "#);
 /// ```
 #[macro_export]
 macro_rules! htmlsql_select_page {
@@ -586,7 +591,7 @@ macro_rules! htmlsql_select_page {
              let mut total = 0;
              if page_request.do_count() {
                 if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
-                    intercept.count_ids.insert(executor.id(),());
+                    intercept.count_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
                 }
                 let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                 total = $crate::decode(total_value).unwrap_or(0);
@@ -655,7 +660,7 @@ macro_rules! pysql_select_page {
               let mut total = 0;
               if page_request.do_count() {
                  if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
-                    intercept.count_ids.insert(executor.id(),());
+                    intercept.count_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
                  }
                  let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                  total = $crate::decode(total_value).unwrap_or(0);
