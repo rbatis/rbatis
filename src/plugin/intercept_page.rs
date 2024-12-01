@@ -13,7 +13,7 @@ use std::sync::Arc;
 /// ```rust
 ///
 /// use rbatis::{crud, Error, PageRequest, RBatis};
-/// use rbatis::page_intercept::PageIntercept;
+/// use rbatis::intercept_page::PageIntercept;
 /// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
 ///    pub id:Option<String>,
