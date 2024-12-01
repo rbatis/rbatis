@@ -25,14 +25,7 @@ pub struct Activity {
 }
 
 htmlsql_select_page!(select_page_data2(name: &str, dt: &DateTime) -> Activity => r#"<select id="select_page_data">
-        `select `
-        <if test="do_count == true">
-            `count(1)`
-        </if>
-        <if test="do_count == false">
-            `*`
-        </if>
-        ` from activity`
+        `select * from activity`
         <where>
             <if test="name != ''">
                 ` and name like #{name}`
@@ -50,9 +43,6 @@ htmlsql_select_page!(select_page_data2(name: &str, dt: &DateTime) -> Activity =>
             <trim prefixOverrides=" and">
                 ` and name != '' `
             </trim>
-            <if test="do_count == false">
-                ` limit ${page_no},${page_size}`
-            </if>
         </where>
     </select>"#);
 
