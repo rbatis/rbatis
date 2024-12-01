@@ -590,13 +590,13 @@ macro_rules! htmlsql_select_page {
               }
              let mut total = 0;
              if page_request.do_count() {
-                if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
                     intercept.count_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
                 }
                 let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                 total = $crate::decode(total_value).unwrap_or(0);
              }
-             if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+             if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
                 intercept.select_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
              }
              let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
@@ -659,13 +659,13 @@ macro_rules! pysql_select_page {
               }
               let mut total = 0;
               if page_request.do_count() {
-                 if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                 if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
                     intercept.count_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
                  }
                  let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                  total = $crate::decode(total_value).unwrap_or(0);
               }
-              if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+              if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
                  intercept.select_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
               }
               let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);

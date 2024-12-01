@@ -14,7 +14,7 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::plugin::page_intercept::PageIntercept;
+use crate::plugin::intercept_page::PageIntercept;
 
 /// RBatis engine
 #[derive(Clone, Debug)]

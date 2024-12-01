@@ -31,7 +31,7 @@ mod test {
     use std::str::FromStr;
     use std::sync::atomic::{AtomicI32, Ordering};
     use std::sync::Arc;
-    use rbatis::page_intercept::PageIntercept;
+    use rbatis::intercept_page::PageIntercept;
 
     #[derive(Debug)]
     pub struct MockIntercept {
