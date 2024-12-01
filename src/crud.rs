@@ -576,8 +576,9 @@ macro_rules! htmlsql_select_page {
                 let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                 total = $crate::decode(total_value).unwrap_or(0);
              }
+             let executor = <$crate::plugin::executor::PageSelectExecutor>::new(executor,page_request);
              let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
-             let records_value = $fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+             let records_value = $fn_name(&executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
              page.records = rbs::from_value(records_value)?;
              Ok(page)
          }
@@ -629,8 +630,9 @@ macro_rules! pysql_select_page {
                  let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                  total = $crate::decode(total_value).unwrap_or(0);
               }
+              let executor = <$crate::plugin::executor::PageSelectExecutor>::new(executor,page_request);
               let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
-              let records_value = $fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+              let records_value = $fn_name(&executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
               page.records = rbs::from_value(records_value)?;
               Ok(page)
          }
