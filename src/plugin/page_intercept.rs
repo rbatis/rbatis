@@ -1,16 +1,45 @@
-use crate::executor::{Executor};
+use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
 use crate::{Error, IPageRequest, PageRequest};
 use async_trait::async_trait;
-use dark_std::sync::{SyncHashMap};
+use dark_std::sync::SyncHashMap;
 use rbdc::db::ExecResult;
 use rbs::Value;
 use std::sync::Arc;
 
+/// make count sql remove `limit` and `order by`
+/// make select sql append limit ${page_no},${page_size}
+/// how to use?
+/// ```rust
+///
+/// use rbatis::{crud, Error, PageRequest, RBatis};
+/// use rbatis::page_intercept::PageIntercept;
+/// #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
+/// pub struct MockTable{
+///    pub id:Option<String>,
+///    pub name:Option<String>,
+/// }
+/// rbatis::htmlsql_select_page!(select_page_data(name: &str) -> MockTable => r#"
+/// <select id="select_page_data">
+///  `select * from table where name = #{name} `
+/// </select>"#);
+///
+///  async fn test_use_page_intercept(rb:&RBatis) -> Result<(),Error> {
+///     /// make sure executor id not change.
+///     let conn = rb.acquire().await?;
+///     if let Some(v) = rb.get_intercept::<PageIntercept>(){
+///        v.count_ids.insert(conn.id,PageRequest::new(1,10));
+///        v.select_ids.insert(conn.id,PageRequest::new(1,10));
+///     }
+///     let page = select_page_data(&conn,&PageRequest::new(1,10),"a").await?;
+///     println!("{:?}",page);
+///     Ok(())
+/// }
+/// ```
 #[derive(Debug)]
 pub struct PageIntercept {
-    pub select_ids: Arc<SyncHashMap<i64,PageRequest>>,
-    pub count_ids: Arc<SyncHashMap<i64,()>>,
+    pub select_ids: Arc<SyncHashMap<i64, PageRequest>>,
+    pub count_ids: Arc<SyncHashMap<i64, PageRequest>>,
 }
 
 impl PageIntercept {
@@ -50,7 +79,7 @@ impl Intercept for PageIntercept {
             }
         }
         if self.select_ids.contains_key(&executor.id()) {
-            let req= self.select_ids.remove(&executor.id());
+            let req = self.select_ids.remove(&executor.id());
             if !(sql.contains("select ") && sql.contains(" from ")) {
                 return Err(Error::from(
                     "InterceptPageExecutor sql must have select and from ",
@@ -70,7 +99,7 @@ impl Intercept for PageIntercept {
                 if let Some(req) = req {
                     templete = templete.replace("${page_no}", &req.offset().to_string());
                     templete = templete.replace("${page_size}", &req.page_size().to_string());
-                    sql.push_str(&templete);   
+                    sql.push_str(&templete);
                 }
             }
         }

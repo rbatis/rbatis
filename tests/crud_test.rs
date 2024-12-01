@@ -1128,7 +1128,7 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![Arc::new(PageIntercept::new()),Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = htmlsql_select_page_by_name(&mut rb, &PageRequest::new(1, 10), "")
                 .await
