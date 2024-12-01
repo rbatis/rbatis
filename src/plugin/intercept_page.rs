@@ -25,13 +25,7 @@ use std::sync::Arc;
 /// </select>"#);
 ///
 ///  async fn test_use_page_intercept(rb:&RBatis) -> Result<(),Error> {
-///     /// make sure executor id not change.
-///     let conn = rb.acquire().await?;
-///     if let Some(v) = rb.get_intercept::<PageIntercept>(){
-///        v.count_ids.insert(conn.id,PageRequest::new(1,10));
-///        v.select_ids.insert(conn.id,PageRequest::new(1,10));
-///     }
-///     let page = select_page_data(&conn,&PageRequest::new(1,10),"a").await?;
+///     let page = select_page_data(rb,&PageRequest::new(1,10),"a").await?;
 ///     println!("{:?}",page);
 ///     Ok(())
 /// }
