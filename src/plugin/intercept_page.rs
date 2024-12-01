@@ -85,8 +85,10 @@ impl Intercept for PageIntercept {
             let driver_type = executor.driver_type().unwrap_or_default();
             let mut templete = " limit ${page_no},${page_size} ".to_string();
             if driver_type == "pg" || driver_type == "postgres" {
+                //postgres use `limit x offset x`
                 templete = " limit ${page_size} offset ${page_no}".to_string();
             } else if driver_type == "mssql" {
+                //mssql must have `order by`, if you not add on sql.we will add this
                 if !sql.contains(" order by ") {
                     sql.push_str(" order by id desc ");
                 }
