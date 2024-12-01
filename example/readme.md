@@ -42,3 +42,8 @@ docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql
 ```
 docker run --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
 ```
+
+* mssql
+```
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=TestPass!123456" -p 1433:1433 --name sqlservercontainer -d mcr.microsoft.com/mssql/server:2022-latest
+```
