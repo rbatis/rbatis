@@ -108,7 +108,7 @@ impl Executor for PageSelectExecutor {
                 if !sql.contains(" order by ") {
                     sql.push_str(" order by id desc ");
                 }
-                templete = " OFFSET ${page_no} ROWS FETCH NEXT ${page_size} ROWS ONLY ".to_string();
+                templete = " offset ${page_no} rows fetch next ${page_size} rows only ".to_string();
             }
             if !sql.contains("limit") {
                 templete = templete.replace("${page_no}", &self.page_req.offset().to_string());
