@@ -1,3 +1,5 @@
+use crate::PageRequest;
+
 ///PySql: gen select*,update*,insert*,delete* ... methods
 ///```rust
 /// use rbatis::{Error, RBatis};
@@ -570,15 +572,30 @@ macro_rules! htmlsql_select_page {
              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
              }
+             let mut executor = executor;
+              let mut conn = None;
+              if executor.name().contains("RBatis"){
+                  conn = Some(executor.rb_ref().acquire().await?);
+                  match &conn {
+                      Some(c) => {
+                          executor = c;
+                      }
+                      None => {}
+                  }
+              }
              let mut total = 0;
              if page_request.do_count() {
-                let executor = <$crate::plugin::executor::PageCountExecutor>::new(executor);
-                let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+                if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                    intercept.count_ids.insert(executor.id(),());
+                }
+                let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                 total = $crate::decode(total_value).unwrap_or(0);
              }
-             let executor = <$crate::plugin::executor::PageSelectExecutor>::new(executor,page_request);
+             if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                intercept.select_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
+             }
              let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
-             let records_value = $fn_name(&executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+             let records_value = $fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
              page.records = rbs::from_value(records_value)?;
              Ok(page)
          }
@@ -624,15 +641,30 @@ macro_rules! pysql_select_page {
               pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
               }
+              let mut executor = executor;
+              let mut conn = None;
+              if executor.name().contains("RBatis"){
+                  conn = Some(executor.rb_ref().acquire().await?);
+                  match &conn {
+                      Some(c) => {
+                          executor = c;
+                      }
+                      None => {}
+                  }
+              }
               let mut total = 0;
               if page_request.do_count() {
-                 let executor = <$crate::plugin::executor::PageCountExecutor>::new(executor);
-                 let total_value = $fn_name(&executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+                 if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                    intercept.count_ids.insert(executor.id(),());
+                 }
+                 let total_value = $fn_name(executor, true, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
                  total = $crate::decode(total_value).unwrap_or(0);
               }
-              let executor = <$crate::plugin::executor::PageSelectExecutor>::new(executor,page_request);
+              if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::page_intercept::PageIntercept>(){
+                 intercept.select_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
+              }
               let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
-              let records_value = $fn_name(&executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
+              let records_value = $fn_name(executor, false, page_request.offset(), page_request.page_size(), $(&$param_key,)*).await?;
               page.records = rbs::from_value(records_value)?;
               Ok(page)
          }
