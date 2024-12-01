@@ -7,7 +7,7 @@ use rbdc::db::ExecResult;
 use rbs::Value;
 use std::sync::Arc;
 
-/// make count sql remove `limit` and `order by`
+/// make count sql remove `limit`
 /// make select sql append limit ${page_no},${page_size}
 /// how to use?
 /// ```rust
@@ -74,9 +74,9 @@ impl Intercept for PageIntercept {
             if let Some(idx) = sql.rfind(" limit ") {
                 *sql = (&sql[..idx]).to_string();
             }
-            if let Some(idx) = sql.rfind(" order by ") {
-                *sql = (&sql[..idx]).to_string();
-            }
+            // if let Some(idx) = sql.rfind(" order by ") {
+            //     *sql = (&sql[..idx]).to_string();
+            // }
         }
         if self.select_ids.contains_key(&executor.id()) {
             let req = self.select_ids.remove(&executor.id());

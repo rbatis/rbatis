@@ -469,6 +469,17 @@ macro_rules! impl_select_page {
                 page_request: &dyn $crate::plugin::IPageRequest,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::plugin::Page::<$table>, $crate::rbdc::Error> {
+               let mut executor = executor;
+               let mut conn = None;
+               if executor.name().eq($crate::executor::Executor::name(executor.rb_ref())){
+                  conn = Some(executor.rb_ref().acquire().await?);
+                  match &conn {
+                      Some(c) => {
+                          executor = c;
+                      }
+                      None => {}
+                  }
+                }
                 let mut table_column = "*".to_string();
                 let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
@@ -477,20 +488,9 @@ macro_rules! impl_select_page {
                 if table_name.is_empty(){
                     table_name = snake_name();
                 }
-                //pg,mssql can override this parameter to implement its own limit statement
-                let mut limit_sql = " limit ${page_no},${page_size}".to_string();
-                limit_sql=limit_sql.replace("${page_no}", &page_request.offset().to_string());
-                limit_sql=limit_sql.replace("${page_size}", &page_request.page_size().to_string());
                 let records:Vec<$table>;
                  #[$crate::py_sql(
-                    "`select `
-                    if do_count == false:
-                      `${table_column}`
-                    if do_count == true:
-                       `count(1) as count`
-                    ` from ${table_name} `\n",$where_sql,"\n
-                    if do_count == false:
-                        `${limit_sql}`")]
+                   "`select ${table_column} from ${table_name} `\n",$where_sql)]
                    async fn $fn_name(executor: &dyn $crate::executor::Executor,
                                      do_count:bool,
                                      table_column:&str,
@@ -498,9 +498,12 @@ macro_rules! impl_select_page {
                                      page_no:u64,
                                      page_size:u64,
                                      page_offset:u64,
-                                     limit_sql:&str,$($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
+                                     $($param_key:&$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error> {impled!()}
                 let mut total = 0;
                 if page_request.do_count() {
+                    if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
+                      intercept.count_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
+                    }
                     let total_value = $fn_name(executor,
                                                       true,
                                                       &table_column,
@@ -508,11 +511,13 @@ macro_rules! impl_select_page {
                                                       page_request.page_no(),
                                                       page_request.page_size(),
                                                       page_request.offset(),
-                                                      "",
                                                       $(&$param_key,)*).await?;
                     total = $crate::decode(total_value).unwrap_or(0);
                 }
                 let mut page = $crate::plugin::Page::<$table>::new(page_request.page_no(), page_request.page_size(), total,vec![]);
+                if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
+                  intercept.select_ids.insert(executor.id(),$crate::plugin::PageRequest::new(page_request.page_no(), page_request.page_size()));
+                }
                 let records_value = $fn_name(executor,
                                                     false,
                                                     &table_column,
@@ -520,7 +525,6 @@ macro_rules! impl_select_page {
                                                     page_request.page_no(),
                                                     page_request.page_size(),
                                                     page_request.offset(),
-                                                    &limit_sql,
                                                     $(&$param_key,)*).await?;
                 page.records = rbs::from_value(records_value)?;
                 Ok(page)
@@ -577,9 +581,9 @@ macro_rules! htmlsql_select_page {
              pub async fn $fn_name(executor: &dyn $crate::executor::Executor,do_count:bool,page_no:u64,page_size:u64,$($param_key: &$param_type,)*) -> std::result::Result<rbs::Value, $crate::rbdc::Error>{
                  $crate::impled!()
              }
-             let mut executor = executor;
+              let mut executor = executor;
               let mut conn = None;
-              if executor.name().contains("RBatis"){
+              if executor.name().eq($crate::executor::Executor::name(executor.rb_ref())){
                   conn = Some(executor.rb_ref().acquire().await?);
                   match &conn {
                       Some(c) => {
@@ -587,7 +591,7 @@ macro_rules! htmlsql_select_page {
                       }
                       None => {}
                   }
-              }
+             }
              let mut total = 0;
              if page_request.do_count() {
                 if let Some(intercept) = executor.rb_ref().get_intercept::<$crate::plugin::intercept_page::PageIntercept>(){
@@ -648,7 +652,7 @@ macro_rules! pysql_select_page {
               }
               let mut executor = executor;
               let mut conn = None;
-              if executor.name().contains("RBatis"){
+              if executor.name().eq($crate::executor::Executor::name(executor.rb_ref())){
                   conn = Some(executor.rb_ref().acquire().await?);
                   match &conn {
                       Some(c) => {
