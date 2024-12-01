@@ -31,6 +31,7 @@ mod test {
     use std::str::FromStr;
     use std::sync::atomic::{AtomicI32, Ordering};
     use std::sync::Arc;
+    use rbatis::page_intercept::PageIntercept;
 
     #[derive(Debug)]
     pub struct MockIntercept {
@@ -1162,7 +1163,7 @@ mod test {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.set_intercepts(vec![Arc::new(PageIntercept::new()),Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
             let r = pysql_select_page(
                 &mut rb,
