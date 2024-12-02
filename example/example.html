@@ -1,18 +1,19 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
 <mapper>
     <sql id="a">` and id != '' `</sql>
     <insert id="insert">
         `insert into activity`
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
             <if test="key == 'id'">
-                <continue/>
+                <continue></continue>
             </if>
             ${key}
         </foreach>
         ` values `
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
             <if test="key == 'id'">
-                <continue/>
+                <continue></continue>
             </if>
             ${item.sql()}
         </foreach>
@@ -40,7 +41,7 @@
     </select>
 
     <select id="select_page_data">
-        `select *  from activity `
+        `select * from activity `
         <where>
             <if test="name != ''">
                 ` and name like #{name}`
@@ -62,5 +63,11 @@
     </select>
     <update id="update_by_id">
         update activity set name = '1' where id = #{id}
+    </update>
+
+    <update id="update_by_id">
+        ` update activity `
+        <set collection="arg"></set>
+        ` where id = #{id} `
     </update>
 </mapper>

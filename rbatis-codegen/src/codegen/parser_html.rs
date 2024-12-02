@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -487,9 +487,21 @@ fn parse(
             }
 
             "set" => {
-                impl_trim(
-                    " set ", " ", " |,", " |,", x, &mut body, arg, methods, ignore, fn_name,
-                );
+                let collection = x.attrs.get("collection");
+                let skip_null = x.attrs.get("skip_null");
+                let skips = x.attrs.get("skips");
+                if let Some(collection) = collection {
+                    let elements = make_sets(collection, skip_null, skips.unwrap_or(&"id".to_string()));
+                    let code = parse(&elements, methods, ignore, fn_name);
+                    body = quote! {
+                         #body
+                         #code
+                    };
+                } else {
+                    impl_trim(
+                        " set ", " ", " |,", " |,", x, &mut body, arg, methods, ignore, fn_name,
+                    );
+                }
             }
 
             "select" => {
@@ -576,7 +588,99 @@ fn parse(
         }
     }
 
-    return body.into();
+    body.into()
+}
+
+/// make <set>
+fn make_sets(collection: &str, skip_null: Option<&String>, skips: &str) -> Vec<Element> {
+    let mut is_skip_null = true;
+    if let Some(skip_null_value) = skip_null {
+        if skip_null_value.eq("true") {
+            is_skip_null = true;
+        } else if skip_null_value.eq("false") {
+            is_skip_null = false;
+        }
+    }
+    let skip_strs: Vec<&str> = skips.split(',').collect();
+    let mut skip_element = vec![];
+    for x in skip_strs {
+        let element = Element {
+            tag: "if".to_string(),
+            data: "".to_string(),
+            attrs: {
+                let mut attr = HashMap::new();
+                attr.insert("test".to_string(), format!("k == '{}'", x.to_string()));
+                attr
+            },
+            childs: vec![Element {
+                tag: "continue".to_string(),
+                data: "".to_string(),
+                attrs: Default::default(),
+                childs: vec![],
+            }],
+        };
+        skip_element.push(element);
+    }
+    let mut for_each_body = vec![];
+    for x in skip_element {
+        for_each_body.push(x);
+    }
+    if is_skip_null {
+        for_each_body.push(Element {
+            tag: "if".to_string(),
+            data: "".to_string(),
+            attrs: {
+                let mut attr = HashMap::new();
+                attr.insert("test".to_string(), "v == null".to_string());
+                attr
+            },
+            childs: vec![],
+        });
+    }
+    for_each_body.push(Element {
+        tag: "".to_string(),
+        data: "${k}=#{v},".to_string(),
+        attrs: Default::default(),
+        childs: vec![],
+    });
+    let mut elements = vec![];
+    elements.push(Element {
+        tag: "trim".to_string(),
+        data: "".to_string(),
+        attrs: {
+            let mut attr = HashMap::new();
+            attr.insert("prefix".to_string(), " set ".to_string());
+            attr.insert("suffix".to_string(), " ".to_string());
+            attr.insert("start".to_string(), " ".to_string());
+            attr.insert("end".to_string(), " ".to_string());
+            attr
+        },
+        childs: vec![Element {
+            tag: "trim".to_string(),
+            data: "".to_string(),
+            attrs: {
+                let mut attr = HashMap::new();
+                attr.insert("prefix".to_string(), "".to_string());
+                attr.insert("suffix".to_string(), "".to_string());
+                attr.insert("start".to_string(), ",".to_string());
+                attr.insert("end".to_string(), ",".to_string());
+                attr
+            },
+            childs: vec![Element {
+                tag: "foreach".to_string(),
+                data: "".to_string(),
+                attrs: {
+                    let mut attr = HashMap::new();
+                    attr.insert("collection".to_string(), collection.to_string());
+                    attr.insert("index".to_string(), "k".to_string());
+                    attr.insert("item".to_string(), "v".to_string());
+                    attr
+                },
+                childs: for_each_body,
+            }],
+        }],
+    });
+    elements
 }
 
 fn remove_extra(txt: &str) -> String {

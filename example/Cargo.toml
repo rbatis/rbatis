@@ -101,6 +101,10 @@ path = "src/table_util.rs"
 [[bin]]
 name = "plugin_intercept_read_write_separation"
 path = "src/plugin_intercept_read_write_separation.rs"
+[[bin]]
+name = "macro_proc_htmlsql_file_update"
+path = "src/macro_proc_htmlsql_file_update.rs"
+
 [dependencies]
 #test pool custom
 deadpool = "0.12.0"
