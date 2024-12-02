@@ -60,6 +60,11 @@
                 >
         <!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
+        <!ATTLIST set
+                collection CDATA #IMPLIED
+                skips CDATA #IMPLIED
+                skip_null CDATA #IMPLIED
+                >
         <!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind | continue | break)*>
         <!ATTLIST foreach
                 collection CDATA #REQUIRED
