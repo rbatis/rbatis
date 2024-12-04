@@ -1,6 +1,7 @@
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
+use crate::plugin::intercept_page::PageIntercept;
 use crate::snowflake::Snowflake;
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
@@ -14,7 +15,6 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::plugin::intercept_page::PageIntercept;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -44,7 +44,8 @@ impl RBatis {
         let rb = RBatis::default();
         //default use LogInterceptor
         rb.intercepts.push(Arc::new(PageIntercept::new()));
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
+        rb.intercepts
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
         rb
     }
 
@@ -265,6 +266,23 @@ impl RBatis {
                 let call: &T = unsafe { std::mem::transmute_copy(&item.as_ref()) };
                 return Some(call);
             }
+        }
+        None
+    }
+
+    /// how to ge name
+    /// ```rust
+    /// pub struct Intercept{}
+    /// let name = std::any::type_name::<Intercept>();
+    /// ```
+    pub fn remove_intercept_dyn<T: Intercept>(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        let mut index = 0;
+        for item in self.intercepts.iter() {
+            if item.name() == name {
+                //this is safe
+                return self.intercepts.remove(index);
+            }
+            index += 1;
         }
         None
     }
