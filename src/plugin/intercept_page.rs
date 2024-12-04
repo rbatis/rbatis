@@ -61,7 +61,7 @@ impl Intercept for PageIntercept {
             self.count_ids.remove(&executor.id());
             if !(sql.contains("select ") && sql.contains(" from ")) {
                 return Err(Error::from(
-                    "InterceptPageExecutor sql must have select and from ",
+                    "PageIntercept sql must have select and from ",
                 ));
             }
             let start = sql.find("select ").unwrap_or(0) + "select ".len();
@@ -76,7 +76,7 @@ impl Intercept for PageIntercept {
             let req = self.select_ids.remove(&executor.id());
             if !(sql.contains("select ") && sql.contains(" from ")) {
                 return Err(Error::from(
-                    "InterceptPageExecutor sql must have select and from ",
+                    "PageIntercept sql must have select and from ",
                 ));
             }
             let driver_type = executor.driver_type().unwrap_or_default();
