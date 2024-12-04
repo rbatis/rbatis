@@ -37,7 +37,7 @@
         <!ATTLIST delete
                 id CDATA #REQUIRED
                 >
-        <!ELEMENT include ()?>
+        <!ELEMENT include EMPTY>
         <!ATTLIST include
                 refid CDATA #REQUIRED
                 >
