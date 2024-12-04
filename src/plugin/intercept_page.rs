@@ -5,7 +5,6 @@ use async_trait::async_trait;
 use dark_std::sync::SyncHashMap;
 use rbdc::db::ExecResult;
 use rbs::Value;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
 /// make count sql remove `limit`
