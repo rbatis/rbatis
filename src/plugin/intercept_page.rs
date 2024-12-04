@@ -10,6 +10,7 @@ use std::sync::Arc;
 
 /// make count sql remove `limit`
 /// make select sql append limit ${page_no},${page_size}
+/// notice: the sql must be starts with 'select ' 
 /// how to use?
 /// ```rust
 ///
@@ -68,10 +69,6 @@ impl Intercept for PageIntercept {
                 if let Some(idx) = sql.rfind(" limit ") {
                     *sql = (&sql[..idx]).to_string();
                 }
-            } else {
-                if executor.rb_ref().is_debug_mode() {
-                    log::debug!("PageIntercept unsupported sql: {}", sql);
-                }
             }
         }
         if self.select_ids.contains_key(&executor.id()) {
@@ -96,10 +93,6 @@ impl Intercept for PageIntercept {
                         templete = templete.replace("${page_size}", &req.page_size().to_string());
                         sql.push_str(&templete);
                     }
-                }
-            } else {
-                if executor.rb_ref().is_debug_mode() {
-                    log::debug!("PageIntercept unsupported sql: {}", sql);
                 }
             }
         }
