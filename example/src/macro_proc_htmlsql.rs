@@ -28,7 +28,7 @@ pub struct Activity {
 r#"<select id="select_by_condition">
         `select * from activity`
         <where>
-         <if test="a">
+            <if test="a">
                 ` and name like #{name}`
             </if>
             <if test="name != ''">
