@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 /// make count sql remove `limit`
 /// make select sql append limit ${page_no},${page_size}
-/// notice: the sql must be starts with 'select ' 
+/// notice: the sql must be starts with 'select '
 /// how to use?
 /// ```rust
 ///
@@ -61,7 +61,7 @@ impl Intercept for PageIntercept {
         }
         if self.count_ids.contains_key(&executor.id()) {
             self.count_ids.remove(&executor.id());
-            if !(sql.trim_start().starts_with("select ") && sql.contains(" from ")) {
+            if sql.trim_start().starts_with("select ") && sql.contains(" from ") {
                 let start = sql.find("select ").unwrap_or(0) + "select ".len();
                 let end = sql.find(" from ").unwrap_or(0);
                 let v = &sql[start..end];
@@ -73,7 +73,7 @@ impl Intercept for PageIntercept {
         }
         if self.select_ids.contains_key(&executor.id()) {
             let req = self.select_ids.remove(&executor.id());
-            if !(sql.trim_start().starts_with("select ") && sql.contains(" from ")) {
+            if sql.trim_start().starts_with("select ") && sql.contains(" from ") {
                 let driver_type = executor.driver_type().unwrap_or_default();
                 let mut templete = " limit ${page_no},${page_size} ".to_string();
                 if driver_type == "pg" || driver_type == "postgres" {
@@ -87,7 +87,7 @@ impl Intercept for PageIntercept {
                     templete =
                         " offset ${page_no} rows fetch next ${page_size} rows only ".to_string();
                 }
-                if !sql.contains("limit") {
+                if !sql.contains(" limit ") {
                     if let Some(req) = req {
                         templete = templete.replace("${page_no}", &req.offset().to_string());
                         templete = templete.replace("${page_size}", &req.page_size().to_string());
