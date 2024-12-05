@@ -14,7 +14,7 @@ use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-/// the rbatis's Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
+/// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
     fn id(&self) -> i64;
     fn name(&self) -> &str {
@@ -218,6 +218,13 @@ impl RBatisConnExecutor {
     }
 }
 
+/// `RBatisTxExecutor` is a type that represents an executor for transactional operations in RBatis.
+///
+/// # Type Description
+///
+/// The `RBatisTxExecutor` is responsible for executing SQL statements within the context of a transaction.
+/// It provides methods to execute queries, updates, and other SQL operations, ensuring that all operations
+/// are part of the same transactional context.
 #[derive(Clone)]
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
@@ -420,9 +427,17 @@ impl RBatisTxExecutor {
     }
 }
 
+/// `RBatisTxExecutorGuard` is a guard object that manages transactions for RBatis.
+///
+/// # Type Description
+///
+/// The `RBatisTxExecutorGuard` implements the `Drop` trait to ensure that transactions are
+/// automatically committed or rolled back when the guard goes out of scope. It encapsulates
+/// the transaction executor and provides a set of methods to manipulate database transactions.
+#[derive(Clone)]
 pub struct RBatisTxExecutorGuard {
     pub tx: RBatisTxExecutor,
-    pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send + Sync>,
+    pub callback: Arc<dyn FnMut(RBatisTxExecutor) + Send + Sync>,
 }
 
 impl Debug for RBatisTxExecutorGuard {
@@ -437,7 +452,7 @@ impl RBatisTxExecutorGuard {
     pub fn tx_id(&self) -> i64 {
         self.tx.tx_id
     }
-    
+
     pub async fn commit(&self) -> crate::Result<()> {
         self.tx.commit().await?;
         Ok(())
@@ -480,7 +495,7 @@ impl RBatisTxExecutor {
     {
         RBatisTxExecutorGuard {
             tx: self.clone(),
-            callback: Box::new(move |arg| {
+            callback: Arc::new(move |arg| {
                 let future = callback(arg);
                 rbdc::rt::spawn(future);
             }),
@@ -490,7 +505,12 @@ impl RBatisTxExecutor {
 
 impl Drop for RBatisTxExecutorGuard {
     fn drop(&mut self) {
-        (self.callback)(self.tx.clone());
+        match Arc::get_mut(&mut self.callback) {
+            None => {}
+            Some(callback) => {
+                callback(self.tx.clone());
+            }
+        }
     }
 }
 
