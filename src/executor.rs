@@ -218,9 +218,10 @@ impl RBatisConnExecutor {
     }
 }
 
+#[derive(Clone)]
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
-    pub conn: Mutex<Box<dyn Connection>>,
+    pub conn: Arc<Mutex<Box<dyn Connection>>>,
     pub rb: RBatis,
     /// please use tx.done()
     /// if tx call .commit() or .rollback() done = true.
@@ -242,7 +243,7 @@ impl<'a> RBatisTxExecutor {
     pub fn new(tx_id: i64, rb: RBatis, conn: Box<dyn Connection>) -> Self {
         RBatisTxExecutor {
             tx_id: tx_id,
-            conn: Mutex::new(conn),
+            conn: Arc::new(Mutex::new(conn)),
             rb: rb,
             done: Arc::new(AtomicBool::new(false)),
         }
@@ -409,7 +410,13 @@ impl RBatisRef for RBatisTxExecutor {
 
 impl RBatisTxExecutor {
     pub fn take_conn(self) -> Option<Box<dyn Connection>> {
-        Some(self.conn.into_inner())
+        match Arc::into_inner(self.conn) {
+            None => None,
+            Some(v) => {
+                let inner = v.into_inner();
+                Some(inner)
+            }
+        }
     }
 }
 
@@ -489,12 +496,12 @@ impl RBatisTxExecutor {
     ///     Ok(())
     /// }
     /// ```
-    pub fn defer_async<F>(self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
+    pub fn defer_async<F>(&self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
     where
         F: Future<Output = ()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
-            tx: Some(self),
+            tx: Some(self.clone()),
             callback: Box::new(move |arg| {
                 let future = callback(arg);
                 rbdc::rt::spawn(future);
