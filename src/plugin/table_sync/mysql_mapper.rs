@@ -25,8 +25,8 @@ impl ColumnMapper for MysqlTableMapper {
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
                 if v != "" {
-                    if v.eq("id") {
-                        return "TEXT".to_string();
+                    if v.eq("id") || v.ends_with("_id") || v.starts_with("id_") {
+                        return "VARCHAR(50)".to_string();
                     }
                     v.to_string()
                 } else {
