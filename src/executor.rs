@@ -209,11 +209,11 @@ impl RBatisConnExecutor {
         })
     }
 
-    pub fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async { Ok(self.conn.lock().await.rollback().await?) })
     }
 
-    pub fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+    pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async { Ok(self.conn.lock().await.commit().await?) })
     }
 }
@@ -409,7 +409,7 @@ impl RBatisRef for RBatisTxExecutor {
 
 impl RBatisTxExecutor {
     pub fn take_conn(self) -> Option<Box<dyn Connection>> {
-        return Some(self.conn.into_inner());
+        Some(self.conn.into_inner())
     }
 }
 
@@ -435,7 +435,7 @@ impl RBatisTxExecutorGuard {
             .begin()
             .await?;
         self.tx = Some(v);
-        return Ok(());
+        Ok(())
     }
 
     pub async fn commit(&self) -> crate::Result<()> {
@@ -463,13 +463,13 @@ impl RBatisTxExecutorGuard {
         }
     }
 
-    pub async fn query_decode<T>(&mut self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
         let tx = self
             .tx
-            .as_mut()
+            .as_ref()
             .ok_or_else(|| Error::from("[rb] tx is committed"))?;
         tx.query_decode(sql, args).await
     }

@@ -75,7 +75,7 @@ pub async fn main() -> Result<(), Error> {
 }
 
 async fn transaction(tx: RBatisTxExecutor, forget_commit: bool) -> Result<(), Error> {
-    let mut tx = tx.defer_async(|tx| async move {
+    let tx = tx.defer_async(|tx| async move {
         if tx.done() {
             log::info!("transaction [{}] complete.",tx.tx_id);
         } else {
