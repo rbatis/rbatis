@@ -247,9 +247,9 @@ mod test {
                 .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done, false);
+            assert_eq!(tx.done(), false);
             tx.commit().await;
-            assert_eq!(tx.done, true);
+            assert_eq!(tx.done(), true);
         };
         block_on(f);
     }
@@ -264,9 +264,9 @@ mod test {
                 .query_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done, false);
+            assert_eq!(tx.done(), false);
             tx.rollback().await;
-            assert_eq!(tx.done, true);
+            assert_eq!(tx.done(), true);
         };
         block_on(f);
     }
