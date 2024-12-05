@@ -421,7 +421,7 @@ impl RBatisTxExecutor {
 }
 
 pub struct RBatisTxExecutorGuard {
-    pub tx: Option<RBatisTxExecutor>,
+    pub tx: RBatisTxExecutor,
     pub callback: Box<dyn FnMut(RBatisTxExecutor) + Send + Sync>,
 }
 
@@ -434,51 +434,34 @@ impl Debug for RBatisTxExecutorGuard {
 }
 
 impl RBatisTxExecutorGuard {
+    pub fn tx_id(&self) -> i64 {
+        self.tx.tx_id
+    }
+
     pub async fn begin(&mut self) -> crate::Result<()> {
-        let v = self
-            .tx
-            .take()
-            .ok_or_else(|| Error::from("[rb] tx is committed"))?
-            .begin()
-            .await?;
-        self.tx = Some(v);
+        self.tx = self.tx.clone().begin().await?;
         Ok(())
     }
 
     pub async fn commit(&self) -> crate::Result<()> {
-        let tx = self
-            .tx
-            .as_ref()
-            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
-        tx.commit().await?;
+        self.tx.commit().await?;
         Ok(())
     }
 
     pub async fn rollback(&self) -> crate::Result<()> {
-        let tx = self
-            .tx
-            .as_ref()
-            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
-        tx.rollback().await?;
+        self.tx.rollback().await?;
         Ok(())
     }
 
-    pub fn take_conn(mut self) -> Option<Box<dyn Connection>> {
-        match self.tx.take() {
-            None => None,
-            Some(s) => s.take_conn(),
-        }
+    pub fn take_conn(self) -> Option<Box<dyn Connection>> {
+        self.tx.clone().take_conn()
     }
 
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        let tx = self
-            .tx
-            .as_ref()
-            .ok_or_else(|| Error::from("[rb] tx is committed"))?;
-        tx.query_decode(sql, args).await
+        self.tx.query_decode(sql, args).await
     }
 }
 
@@ -501,7 +484,7 @@ impl RBatisTxExecutor {
         F: Future<Output = ()> + Send + 'static,
     {
         RBatisTxExecutorGuard {
-            tx: Some(self.clone()),
+            tx: self.clone(),
             callback: Box::new(move |arg| {
                 let future = callback(arg);
                 rbdc::rt::spawn(future);
@@ -512,44 +495,29 @@ impl RBatisTxExecutor {
 
 impl Drop for RBatisTxExecutorGuard {
     fn drop(&mut self) {
-        if let Some(tx) = self.tx.take() {
-            (self.callback)(tx);
-        }
+        (self.callback)(self.tx.clone());
     }
 }
 
 impl RBatisRef for RBatisTxExecutorGuard {
     fn rb_ref(&self) -> &RBatis {
-        self.tx.as_ref().expect("tx is empty").rb_ref()
+        self.tx.rb_ref()
     }
 }
 
 impl Executor for RBatisTxExecutorGuard {
     fn id(&self) -> i64 {
-        match &self.tx {
-            None => -1,
-            Some(v) => v.id(),
-        }
+        self.tx.id()
     }
 
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
         let sql = sql.to_string();
-        Box::pin(async move {
-            match self.tx.as_ref() {
-                None => Err(Error::from("the tx is done!")),
-                Some(tx) => tx.exec(&sql, args).await,
-            }
-        })
+        Box::pin(async move { self.tx.exec(&sql, args).await })
     }
 
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
         let sql = sql.to_string();
-        Box::pin(async move {
-            match self.tx.as_ref() {
-                None => Err(Error::from("the tx is done!")),
-                Some(tx) => tx.query(&sql, args).await,
-            }
-        })
+        Box::pin(async move { self.tx.query(&sql, args).await })
     }
 }
 
