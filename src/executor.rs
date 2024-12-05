@@ -463,7 +463,7 @@ impl RBatisTxExecutorGuard {
         Ok(())
     }
 
-    pub fn take_conn(self) -> Option<Box<dyn Connection>> {
+    pub fn take_connection(self) -> Option<Box<dyn Connection>> {
         self.tx.clone().take_conn()
     }
 
