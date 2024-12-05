@@ -416,7 +416,7 @@ impl RBatisRef for RBatisTxExecutor {
 }
 
 impl RBatisTxExecutor {
-    pub fn take_conn(self) -> Option<Box<dyn Connection>> {
+    pub fn take_connection(self) -> Option<Box<dyn Connection>> {
         match Arc::into_inner(self.conn) {
             None => None,
             Some(v) => {
@@ -464,7 +464,7 @@ impl RBatisTxExecutorGuard {
     }
 
     pub fn take_connection(self) -> Option<Box<dyn Connection>> {
-        self.tx.clone().take_conn()
+        self.tx.clone().take_connection()
     }
 
     pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
