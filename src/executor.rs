@@ -437,12 +437,7 @@ impl RBatisTxExecutorGuard {
     pub fn tx_id(&self) -> i64 {
         self.tx.tx_id
     }
-
-    pub async fn begin(&mut self) -> crate::Result<()> {
-        self.tx = self.tx.clone().begin().await?;
-        Ok(())
-    }
-
+    
     pub async fn commit(&self) -> crate::Result<()> {
         self.tx.commit().await?;
         Ok(())
