@@ -9,7 +9,11 @@ use std::sync::Arc;
 
 /// make count sql remove `limit`
 /// make select sql append limit ${page_no},${page_size}
-/// notice: the sql must be starts with 'select '
+/// notice: 
+/// ```log
+/// sql must be starts with 'select ' and ' from '
+/// this PageIntercept only support sqlite,mysql,mssql,postgres...
+///```
 /// how to use?
 /// ```rust
 ///
