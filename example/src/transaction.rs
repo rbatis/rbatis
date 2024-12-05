@@ -75,8 +75,8 @@ pub async fn main() -> Result<(), Error> {
 }
 
 async fn transaction(tx: RBatisTxExecutor, forget_commit: bool) -> Result<(), Error> {
-    let mut tx = tx.defer_async(|mut tx| async move {
-        if tx.done {
+    let mut tx = tx.defer_async(|tx| async move {
+        if tx.done() {
             log::info!("transaction [{}] complete.",tx.tx_id);
         } else {
             let r = tx.rollback().await;
@@ -88,7 +88,7 @@ async fn transaction(tx: RBatisTxExecutor, forget_commit: bool) -> Result<(), Er
         }
     });
     log::info!("transaction [{}] start", tx.tx.as_ref().unwrap().tx_id);
-    let _ = Activity::insert(&mut tx, &Activity {
+    let _ = Activity::insert(&tx, &Activity {
         id: Some("3".into()),
         name: Some("3".into()),
         pc_link: Some("3".into()),
