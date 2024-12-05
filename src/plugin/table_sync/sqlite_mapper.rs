@@ -20,9 +20,6 @@ impl ColumnMapper for SqliteTableMapper {
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
                 if v != "" {
-                    if v.eq("id") {
-                        return "TEXT".to_string();
-                    }
                     v.to_string()
                 } else {
                     "TEXT".to_string()
