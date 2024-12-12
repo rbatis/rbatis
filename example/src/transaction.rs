@@ -33,7 +33,11 @@ pub async fn main() -> Result<(), Error> {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     // table sync done
     fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
@@ -55,7 +59,7 @@ pub async fn main() -> Result<(), Error> {
         },
         "activity",
     )
-        .await;
+    .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
     //clear data
@@ -68,8 +72,7 @@ pub async fn main() -> Result<(), Error> {
     // will do commit
     let conn = rb.acquire().await?;
     let tx = conn.begin().await?;
-    transaction(tx, false)
-        .await?;
+    transaction(tx, false).await?;
 
     Ok(())
 }
@@ -77,31 +80,35 @@ pub async fn main() -> Result<(), Error> {
 async fn transaction(tx: RBatisTxExecutor, forget_commit: bool) -> Result<(), Error> {
     let tx = tx.defer_async(|tx| async move {
         if tx.done() {
-            log::info!("transaction [{}] complete.",tx.tx_id);
+            log::info!("transaction [{}] complete.", tx.tx_id);
         } else {
             let r = tx.rollback().await;
             if let Err(e) = r {
-                log::error!("transaction [{}] rollback fail={}" ,tx.tx_id, e);
+                log::error!("transaction [{}] rollback fail={}", tx.tx_id, e);
             } else {
                 log::info!("transaction [{}] rollback", tx.tx_id);
             }
         }
     });
-    log::info!("transaction [{}] start", tx.tx.as_ref().unwrap().tx_id);
-    let _ = Activity::insert(&tx, &Activity {
-        id: Some("3".into()),
-        name: Some("3".into()),
-        pc_link: Some("3".into()),
-        h5_link: Some("3".into()),
-        pc_banner_img: None,
-        h5_banner_img: None,
-        sort: None,
-        status: Some(3),
-        remark: Some("3".into()),
-        create_time: Some(DateTime::now()),
-        version: Some(1),
-        delete_flag: Some(1),
-    }).await;
+    log::info!("transaction [{}] start", tx.tx_id());
+    let _ = Activity::insert(
+        &tx,
+        &Activity {
+            id: Some("3".into()),
+            name: Some("3".into()),
+            pc_link: Some("3".into()),
+            h5_link: Some("3".into()),
+            pc_banner_img: None,
+            h5_banner_img: None,
+            sort: None,
+            status: Some(3),
+            remark: Some("3".into()),
+            create_time: Some(DateTime::now()),
+            version: Some(1),
+            delete_flag: Some(1),
+        },
+    )
+    .await;
     //if not commit or rollback,tx.done = false,
     if !forget_commit {
         tx.commit().await?;
