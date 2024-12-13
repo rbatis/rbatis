@@ -30,7 +30,7 @@ impl ColumnMapper for MysqlTableMapper {
                     if column.eq("id") || column.ends_with("_id") || column.starts_with("id_") {
                         return "VARCHAR(50)".to_string();
                     }
-                    "TEXT".to_string()
+                    "VARCHAR(100)".to_string()
                 }
             }
             Value::Binary(_) => "BLOB".to_string(),
@@ -43,7 +43,7 @@ impl ColumnMapper for MysqlTableMapper {
                 "Timestamp" => "TIMESTAMP".to_string(),
                 "Decimal" => "DECIMAL".to_string(),
                 "Json" => "JSON".to_string(),
-                "Uuid" => "TEXT".to_string(),
+                "Uuid" => "VARCHAR(50)".to_string(),
                 _ => "NULL".to_string(),
             },
         }
