@@ -79,6 +79,22 @@ pub async fn main() {
     let data = Activity::delete_by_column(&rb, "id", "2").await;
     println!("delete_by_column = {}", json!(data));
 
+    let data = Activity::select_by_table(&rb, Activity{
+        id: Some("2".into()),
+        name: Some("2".into()),
+        pc_link: None,
+        h5_link: None,
+        pc_banner_img: None,
+        h5_banner_img: None,
+        sort: None,
+        status: None,
+        remark: None,
+        create_time: None,
+        version: None,
+        delete_flag: None,
+    }).await;
+    println!("select_by_table = {}", json!(data));
+
     let data = Activity::select_in_column(&rb, "id", &["1", "2", "3"]).await;
     println!("select_in_column = {}", json!(data));
 

@@ -205,6 +205,11 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
         $crate::impl_select!($table{select_by_column<V:serde::Serialize>(column: &str,column_value: V) -> Vec => "` where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_select!($table{select_by_map(condition:rbs::Value) -> Vec =>
+        "` where `
+         trim ' and ': for key,item in condition:
+             ` and ${key} = #{item}`
+        "},$table_name);
         $crate::impl_select!($table{select_in_column<V:serde::Serialize>(column: &str,column_values: &[V]) -> Vec =>
          "` where ${column} in (`
           trim ',': for _,item in column_values:
@@ -258,6 +263,13 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
+        $crate::impl_update!($table{update_by_map(condition:rbs::Value, skip_null: bool) =>
+        "` where `
+         trim ' and ': for key,item in condition:
+             ` and ${key} = #{item}`
+        "
+        },$table_name);
+
         $crate::impl_update!($table{update_by_column_value(column: &str, column_value: &rbs::Value, skip_null: bool) => "`where ${column} = #{column_value}`"},$table_name);
         impl $table {
             ///  will skip null column
@@ -376,7 +388,12 @@ macro_rules! impl_delete {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_delete!($table {delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_delete!($table{ delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
+        $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
+        "` where `
+         trim ' and ': for key,item in condition:
+             ` and ${key} = #{item}`
+        "},$table_name);
         $crate::impl_delete!($table {delete_in_column<V:serde::Serialize>(column:&str,column_values: &[V]) =>
         "`where ${column} in (`
           trim ',': for _,item in column_values:
