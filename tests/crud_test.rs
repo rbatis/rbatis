@@ -693,6 +693,33 @@ mod test {
     }
 
     #[test]
+    fn test_delete_by_table() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable::delete_by_map(
+                &mut rb,
+                to_value!{
+                    "id":"1",
+                    "name":"1",
+                },
+            )
+            .await
+            .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql,
+                "delete from mock_table  where id = ? and name = ?"
+            );
+            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_delete_by_column_batch() {
         #[derive(Debug)]
         pub struct TestIntercept {
@@ -983,6 +1010,33 @@ mod test {
             println!("{}", sql);
             assert_eq!(sql.trim(), "select * from mock_table  where id = ?");
             assert_eq!(args, vec![to_value!("1")]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_select_by_table() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable::select_by_map(
+                &mut rb,
+                to_value!{
+                    "id":"1",
+                    "name":"1",
+                },
+            )
+            .await
+            .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql.trim(),
+                "select * from mock_table  where id = ? and name = ?"
+            );
+            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
         };
         block_on(f);
     }
