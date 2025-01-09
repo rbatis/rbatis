@@ -43,7 +43,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_sql(&target_fn, &args);
-    #[cfg(feature = "debug_mode")]
+    #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
         let func_name_ident = target_fn.sig.ident.to_token_stream();
@@ -109,7 +109,7 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_py_sql(&target_fn, args);
-    #[cfg(feature = "debug_mode")]
+    #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
@@ -166,7 +166,7 @@ pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
     let stream = impl_macro_html_sql(&target_fn, &args);
-    #[cfg(feature = "debug_mode")]
+    #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
         use rust_format::{Formatter, RustFmt};
