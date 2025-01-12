@@ -2,10 +2,9 @@ use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{crud, RBatis};
+use rbatis::RBatis;
 use serde_json::json;
 use rbatis::impl_select;
-use rbatis::rbdc::db::ExecResult;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -23,7 +22,7 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-crud!(Activity{});
+
 impl_select!(Activity{select_id_name(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 
 #[tokio::main]
@@ -44,7 +43,7 @@ pub async fn main() {
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
     //rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
-    let data = Activity::select_in_column::<i32>(&rb, "id", &[]).await;
+    let data = Activity::select_id_name(&rb, "1", "1").await;
     println!("select_id_name = {}", json!(data));
 }
 
