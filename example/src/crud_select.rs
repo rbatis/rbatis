@@ -2,9 +2,10 @@ use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::RBatis;
+use rbatis::{crud, RBatis};
 use serde_json::json;
 use rbatis::impl_select;
+use rbatis::rbdc::db::ExecResult;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -22,7 +23,7 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-
+crud!(Activity{});
 impl_select!(Activity{select_id_name(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
 
 #[tokio::main]
@@ -38,38 +39,13 @@ pub async fn main() {
 
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
+     rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    //rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
-    sync_table(&rb).await;
-
-    let data = Activity::select_id_name(&rb, "1", "1").await;
+    let data = Activity::select_in_column::<i32>(&rb, "id", &[]).await;
     println!("select_id_name = {}", json!(data));
 }
 
-async fn sync_table(rb: &RBatis) {
-    fast_log::logger().set_level(LevelFilter::Off);
-    _ = RBatis::sync(
-        &rb.acquire().await.unwrap(),
-        &SqliteTableMapper {},
-        &Activity {
-            id: Some(String::new()),
-            name: Some(String::new()),
-            pc_link: Some(String::new()),
-            h5_link: Some(String::new()),
-            pc_banner_img: Some(String::new()),
-            h5_banner_img: Some(String::new()),
-            sort: Some(String::new()),
-            status: Some(0),
-            remark: Some(String::new()),
-            create_time: Some(DateTime::now()),
-            version: Some(0),
-            delete_flag: Some(0),
-        },
-        "activity",
-    )
-        .await;
-    fast_log::logger().set_level(LevelFilter::Debug);
-}
+
