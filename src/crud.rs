@@ -214,17 +214,20 @@ macro_rules! impl_select {
          "` where ${column} in (`
           trim ',': for _,item in column_values:
              #{item},
-          `)`"},$table_name);
+          `)`"},$table_name => { if column_values.is_empty() { return Ok(vec![]); }} );
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?  $( => $cond:expr)? ) => {
         impl $table{
             pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+
+                     $($cond)?
+
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
                      $(table_name = $table_name.to_string();)?
@@ -398,7 +401,7 @@ macro_rules! impl_delete {
         "`where ${column} in (`
           trim ',': for _,item in column_values:
              #{item},
-          `)`"},$table_name);
+          `)`"},$table_name => { if column_values.is_empty() { return Ok($crate::rbdc::db::ExecResult::default()); }} );
 
         impl $table {
             pub async fn delete_by_column_batch<V:serde::Serialize>(
@@ -419,7 +422,7 @@ macro_rules! impl_delete {
             }
         }
     };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)? $( => $cond:expr)?) => {
         impl $table {
             pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
                 executor: &dyn $crate::executor::Executor,
@@ -436,6 +439,7 @@ macro_rules! impl_delete {
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                     impled!()
                 }
+                $($cond)?
                 let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
                 #[$crate::snake_name($table)]
