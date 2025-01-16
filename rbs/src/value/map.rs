@@ -129,13 +129,21 @@ impl Index<i64> for ValueMap {
 
 impl IndexMut<&str> for ValueMap {
     fn index_mut(&mut self, index: &str) -> &mut Self::Output {
-        self.0.index_mut(&Value::String(index.to_string()))
+        let key = Value::String(index.to_string());
+        if !self.0.contains_key(&key) {
+            self.0.insert(key.clone(), Value::Null);
+        }
+        self.0.get_mut(&key).unwrap()
     }
 }
 
 impl IndexMut<i64> for ValueMap {
     fn index_mut(&mut self, index: i64) -> &mut Self::Output {
-        self.0.index_mut(&Value::I64(index))
+        let key = Value::I64(index);
+        if !self.0.contains_key(&key) {
+            self.0.insert(key.clone(), Value::Null);
+        }
+        self.0.get_mut(&key).unwrap()
     }
 }
 
@@ -179,6 +187,7 @@ macro_rules! value_map {
 
 #[cfg(test)]
 mod test {
+    use crate::to_value;
     use crate::value::map::ValueMap;
 
     #[test]
@@ -187,5 +196,12 @@ mod test {
         m.insert("1".into(), 1.into());
         m.insert("2".into(), 2.into());
         assert_eq!(m.to_string(), r#"{"1":1,"2":2}"#);
+    }
+
+    #[test]
+    fn test_to_value_map() {
+        let mut v = ValueMap::new();
+        v["a"]=to_value!("");
+        assert_eq!(v.to_string(), "{\"a\":\"\"}");
     }
 }
