@@ -1,6 +1,6 @@
 [package]
 name = "rbatis-codegen"
-version = "4.5.29"
+version = "4.5.30"
 edition = "2021"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL gen system"
 readme = "Readme.md"
