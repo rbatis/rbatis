@@ -37,7 +37,7 @@ futures-core = { version = "0.3" }
 futures = { version = "0.3" }
 #object_id
 hex = "0.4"
-rand = "0.8"
+rand = "0.9"
 rbs = { version = "4.5"}
 rbdc = { version = "4.5", default-features = false }
 dark-std = "0.2"
