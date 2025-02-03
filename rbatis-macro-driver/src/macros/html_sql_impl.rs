@@ -12,10 +12,11 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-use std::sync::OnceLock;
+use std::sync::LazyLock;
 use syn::{FnArg, ItemFn};
 
-static HTML_LOAD_CACHE: OnceLock<SyncHashMap<String, BTreeMap<String, Element>>> = OnceLock::new();
+static HTML_LOAD_CACHE: LazyLock<SyncHashMap<String, BTreeMap<String, Element>>> =
+    LazyLock::new(|| SyncHashMap::new());
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -64,10 +65,10 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             .to_string();
     }
     if file_name.ends_with(".html") {
-        let html_channel = HTML_LOAD_CACHE.get_or_init(|| SyncHashMap::new());
-        let data = html_channel.get(&file_name);
+        let data = HTML_LOAD_CACHE.get(&file_name);
         match data {
             None => {
+                let raw_name = file_name.clone();
                 //relative path append realpath
                 let file_path = PathBuf::from(file_name.clone());
                 if file_path.is_relative() {
@@ -89,7 +90,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
                     .expect(&format!("{} read_to_string fail", file_name));
                 let htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
                     .expect("load html content fail");
-                html_channel.insert(file_name.clone(), htmls.clone());
+                HTML_LOAD_CACHE.insert(raw_name.clone(), htmls.clone());
                 let token = htmls.get(&func_name_ident.to_string()).expect("");
                 let token = format!("{}", token);
                 sql_ident = token.to_token_stream();
