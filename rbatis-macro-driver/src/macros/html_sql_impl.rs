@@ -65,7 +65,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             .to_string();
     }
     if file_name.ends_with(".html") {
-        let mut html_channel = HTML_CACHE.get_or_init(|| SyncHashMap::new());
+        let html_channel = HTML_CACHE.get_or_init(|| SyncHashMap::new());
         let data = html_channel.get(&file_name);
         match data {
             None => {
