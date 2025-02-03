@@ -1,16 +1,22 @@
-use proc_macro2::{Ident, Span};
-use quote::quote;
-use quote::ToTokens;
-use std::env::current_dir;
-use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
-use syn::{FnArg, ItemFn};
-
 use crate::macros::py_sql_impl;
 use crate::proc_macro::TokenStream;
 use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
 use crate::ParseArgs;
+use dark_std::sync::SyncHashMap;
+use proc_macro2::{Ident, Span};
+use quote::quote;
+use quote::ToTokens;
+use rbatis_codegen::codegen::loader_html::Element;
+use std::collections::BTreeMap;
+use std::env::current_dir;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
+use std::sync::OnceLock;
+use syn::{FnArg, ItemFn};
+
+// 静态缓存HTML内容
+static HTML_CACHE: OnceLock<SyncHashMap<String, BTreeMap<String, Element>>> = OnceLock::new();
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -59,30 +65,42 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             .to_string();
     }
     if file_name.ends_with(".html") {
-        //relative path append realpath
-        let file_path = PathBuf::from(file_name.clone());
-        if file_path.is_relative() {
-            let mut manifest_dir =
-                std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
-            manifest_dir.push_str("/");
-            let mut current = PathBuf::from(manifest_dir);
-            current.push(file_name.clone());
-            if !current.exists() {
-                current = current_dir().unwrap_or_default();
-                current.push(file_name.clone());
+        let mut html_channel = HTML_CACHE.get_or_init(|| SyncHashMap::new());
+        let data = html_channel.get(&file_name);
+        match data {
+            None => {
+                //relative path append realpath
+                let file_path = PathBuf::from(file_name.clone());
+                if file_path.is_relative() {
+                    let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
+                        .expect("Failed to read CARGO_MANIFEST_DIR");
+                    manifest_dir.push_str("/");
+                    let mut current = PathBuf::from(manifest_dir);
+                    current.push(file_name.clone());
+                    if !current.exists() {
+                        current = current_dir().unwrap_or_default();
+                        current.push(file_name.clone());
+                    }
+                    file_name = current.to_str().unwrap_or_default().to_string();
+                }
+                let mut html_data = String::new();
+                let mut f = File::open(file_name.as_str())
+                    .expect(&format!("File Name = '{}' does not exist", file_name));
+                f.read_to_string(&mut html_data)
+                    .expect(&format!("{} read_to_string fail", file_name));
+                let htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
+                    .expect("load html content fail");
+                html_channel.insert(file_name.clone(), htmls.clone());
+                let token = htmls.get(&func_name_ident.to_string()).expect("");
+                let token = format!("{}", token);
+                sql_ident = token.to_token_stream();
             }
-            file_name = current.to_str().unwrap_or_default().to_string();
+            Some(htmls) => {
+                let token = htmls.get(&func_name_ident.to_string()).expect("");
+                let token = format!("{}", token);
+                sql_ident = token.to_token_stream();
+            }
         }
-        let mut html_data = String::new();
-        let mut f = File::open(file_name.as_str())
-            .expect(&format!("File Name = '{}' does not exist", file_name));
-        f.read_to_string(&mut html_data)
-            .expect(&format!("{} read_to_string fail", file_name));
-        let mut htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
-            .expect("load html content fail");
-        let token = htmls.remove(&func_name_ident.to_string()).expect("");
-        let token = format!("{}", token);
-        sql_ident = token.to_token_stream();
     }
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
@@ -100,7 +118,6 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
         )
         .to_token_stream();
     }
-
     //append all args
     let sql_args_gen = py_sql_impl::filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
     let is_query = is_query(&return_ty.to_string());
