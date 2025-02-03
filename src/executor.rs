@@ -375,7 +375,7 @@ impl Executor for RBatisTxExecutor {
                     )
                     .await?;
                 if let Some(next) = next {
-                    if next {
+                    if !next {
                         break;
                     }
                 } else {
