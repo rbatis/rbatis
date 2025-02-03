@@ -15,8 +15,7 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use syn::{FnArg, ItemFn};
 
-// 静态缓存HTML内容
-static HTML_CACHE: OnceLock<SyncHashMap<String, BTreeMap<String, Element>>> = OnceLock::new();
+static HTML_LOAD_CACHE: OnceLock<SyncHashMap<String, BTreeMap<String, Element>>> = OnceLock::new();
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -65,7 +64,7 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
             .to_string();
     }
     if file_name.ends_with(".html") {
-        let html_channel = HTML_CACHE.get_or_init(|| SyncHashMap::new());
+        let html_channel = HTML_LOAD_CACHE.get_or_init(|| SyncHashMap::new());
         let data = html_channel.get(&file_name);
         match data {
             None => {
