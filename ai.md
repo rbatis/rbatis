@@ -2654,47 +2654,92 @@ let ts_micros = dt1.unix_timestamp_micros(); // Microseconds
 
 ### 8.5.3 Json Type
 
-The `Json` type helps manage JSON data in databases, especially for columns with JSON type.
+When working with JSON data in Rbatis, the preferred approach is to use native Rust structs and collections directly. Rbatis is smart enough to automatically detect and properly handle `struct` or `Vec<struct>` types as JSON when serializing to the database.
 
 ```rust
-use rbatis::rbdc::types::{Json, JsonV};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
-// Basic JSON string handling
-let json_str = r#"{"name":"John","age":30}"#;
-let json = Json::from_str(json_str).unwrap();
-println!("{}", json); // Prints the JSON string
+// Define your data structure
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct UserSettings {
+    theme: String,
+    notifications_enabled: bool,
+    preferences: HashMap<String, String>,
+}
 
-// Creating from serde_json values
-let serde_value = serde_json::json!({"status": "success", "code": 200});
-let json2 = Json::from(serde_value);
-
-// For working with structured data, use JsonV
+// In your entity definition
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct User {
     id: Option<String>,
-    name: String,
-    age: i32,
+    username: String,
+    // ✅ RECOMMENDED: Use the struct directly for JSON columns
+    // Rbatis will automatically handle serialization/deserialization
+    settings: Option<UserSettings>,
 }
 
-// Creating JsonV with structured data
-let user = User {
-    id: Some("1".to_string()),
-    name: "Alice".to_string(),
-    age: 25,
-};
-let json_v = JsonV(user);
+// For collections, use Vec<T> directly
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct Product {
+    id: Option<String>,
+    name: String,
+    // ✅ RECOMMENDED: Use Vec<T> directly for JSON array columns
+    tags: Vec<String>,
+    // Array of objects
+    variants: Vec<ProductVariant>,
+}
 
-// In entity definitions for JSON columns
+// Working with the data is natural and type-safe
+let user = User {
+    id: None,
+    username: "alice".to_string(),
+    settings: Some(UserSettings {
+        theme: "dark".to_string(),
+        notifications_enabled: true,
+        preferences: HashMap::new(),
+    }),
+};
+
+// Insert/update operations will automatically handle JSON serialization
+user.insert(rb).await?;
+```
+
+While Rbatis provides specialized JSON types (`Json` and `JsonV`), they are mainly useful for specific cases:
+
+```rust
+use rbatis::rbdc::types::{Json, JsonV};
+use std::str::FromStr;
+
+// For dynamic or unstructured JSON content
+let json_str = r#"{"name":"John","age":30}"#;
+let json = Json::from_str(json_str).unwrap();
+
+// JsonV is a thin wrapper around any serializable type
+// Useful for explicit typing but generally not necessary
+let user_settings = UserSettings { 
+    theme: "light".to_string(),
+    notifications_enabled: false,
+    preferences: HashMap::new(),
+};
+let json_v = JsonV(user_settings);
+
+// For deserializing mixed JSON content (string or object)
+// This helper is useful when the database might contain either
+// JSON strings or native JSON objects
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct UserProfile {
     id: Option<String>,
-    // Use deserialize_with for JSON fields
     #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
-    settings: User,
+    settings: UserSettings,
 }
 ```
+
+**Best Practices for JSON Handling in Rbatis:**
+
+1. **Use native Rust types directly** - Let Rbatis handle the serialization/deserialization.
+2. **Define proper struct types** - Create proper structs with appropriate types rather than using generic JSON objects.
+3. **Use `Option<T>` for nullable JSON fields**.
+4. **Only use `deserialize_maybe_str` when needed** - Use this for columns that might contain either JSON strings or native JSON objects.
+5. **Avoid unnecessary wrappers** - The `JsonV` wrapper is rarely needed as Rbatis can work directly with your types.
 
 ### 8.5.4 Date, Time, and Timestamp Types
 

@@ -2654,47 +2654,91 @@ let ts_micros = dt1.unix_timestamp_micros(); // 微秒
 
 ### 8.5.3 Json类型
 
-`Json`类型帮助管理数据库中的JSON数据，特别是对于具有JSON类型的列。
+在Rbatis中处理JSON数据时，推荐的方法是直接使用原生Rust结构体和集合。Rbatis足够智能，能在序列化到数据库时自动检测并正确处理`struct`或`Vec<struct>`类型的数据作为JSON。
 
 ```rust
-use rbatis::rbdc::types::{Json, JsonV};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
-// 基本JSON字符串处理
-let json_str = r#"{"name":"张三","age":30}"#;
-let json = Json::from_str(json_str).unwrap();
-println!("{}", json); // 打印JSON字符串
+// 定义数据结构
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct UserSettings {
+    theme: String,
+    notifications_enabled: bool,
+    preferences: HashMap<String, String>,
+}
 
-// 从serde_json值创建
-let serde_value = serde_json::json!({"status": "success", "code": 200});
-let json2 = Json::from(serde_value);
-
-// 对于结构化数据，使用JsonV
+// 在实体定义中
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct User {
     id: Option<String>,
-    name: String,
-    age: i32,
+    username: String,
+    // ✅ 推荐：直接使用结构体表示JSON列
+    // Rbatis会自动处理序列化/反序列化
+    settings: Option<UserSettings>,
 }
 
-// 使用结构化数据创建JsonV
-let user = User {
-    id: Some("1".to_string()),
-    name: "张三".to_string(),
-    age: 25,
-};
-let json_v = JsonV(user);
+// 对于集合，直接使用Vec<T>
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct Product {
+    id: Option<String>,
+    name: String,
+    // ✅ 推荐：直接使用Vec<T>表示JSON数组列
+    tags: Vec<String>,
+    // 对象数组
+    variants: Vec<ProductVariant>,
+}
 
-// 在实体定义中使用JSON列
+// 使用数据类型自然且类型安全
+let user = User {
+    id: None,
+    username: "alice".to_string(),
+    settings: Some(UserSettings {
+        theme: "dark".to_string(),
+        notifications_enabled: true,
+        preferences: HashMap::new(),
+    }),
+};
+
+// 插入/更新操作会自动处理JSON序列化
+user.insert(rb).await?;
+```
+
+虽然Rbatis提供了专门的JSON类型（`Json`和`JsonV`），但它们主要用于特定情况：
+
+```rust
+use rbatis::rbdc::types::{Json, JsonV};
+use std::str::FromStr;
+
+// 用于动态或非结构化的JSON内容
+let json_str = r#"{"name":"张三","age":30}"#;
+let json = Json::from_str(json_str).unwrap();
+
+// JsonV是任何可序列化类型的简单包装
+// 对于显式类型有用，但通常不必要
+let user_settings = UserSettings { 
+    theme: "light".to_string(),
+    notifications_enabled: false,
+    preferences: HashMap::new(),
+};
+let json_v = JsonV(user_settings);
+
+// 用于反序列化混合JSON内容（字符串或对象）
+// 当数据库可能包含JSON字符串或原生JSON对象时，此辅助函数非常有用
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct UserProfile {
     id: Option<String>,
-    // 对JSON字段使用deserialize_with
     #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
-    settings: User,
+    settings: UserSettings,
 }
 ```
+
+**Rbatis中JSON处理的最佳实践：**
+
+1. **直接使用原生Rust类型** - 让Rbatis处理序列化/反序列化。
+2. **定义适当的结构体类型** - 创建具有适当类型的结构体，而不是使用通用JSON对象。
+3. **对可空的JSON字段使用`Option<T>`**。
+4. **仅在需要时使用`deserialize_maybe_str`** - 仅用于可能包含JSON字符串或原生JSON对象的列。
+5. **避免不必要的包装器** - 很少需要`JsonV`包装器，因为Rbatis可以直接处理您的类型。
 
 ### 8.5.4 Date、Time和Timestamp类型
 
