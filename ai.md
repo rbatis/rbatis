@@ -2,6 +2,40 @@
 
 > This documentation is based on Rbatis 4.5+ and provides detailed instructions for using the Rbatis ORM framework. Rbatis is a high-performance Rust asynchronous ORM framework that supports multiple databases and provides compile-time dynamic SQL capabilities similar to MyBatis.
 
+## Important Version Notes and Best Practices
+
+Rbatis 4.5+ has significant improvements over previous versions. Here are the key changes and recommended best practices:
+
+1. **Use macros instead of traits**: In current versions, use `crud!` and `impl_*` macros instead of implementing the `CRUDTable` trait (which was used in older 3.0 versions).
+
+2. **Preferred pattern for defining models and operations**:
+   ```rust
+   // 1. Define your model
+   #[derive(Clone, Debug, Serialize, Deserialize)]
+   pub struct User {
+       pub id: Option<String>,
+       pub name: Option<String>,
+       // other fields...
+   }
+   
+   // 2. Generate basic CRUD operations
+   crud!(User {});  // or crud!(User {}, "custom_table_name");
+   
+   // 3. Define custom methods using impl_* macros
+   impl_select!(User {select_by_name(name: &str) -> Vec => "` where name = #{name}`"});
+   impl_select!(User {select_by_id(id: &str) -> Option => "` where id = #{id} limit 1`"});
+   impl_update!(User {update_status_by_id(id: &str, status: i32) => "` set status = #{status} where id = #{id}`"});
+   impl_delete!(User {delete_by_name(name: &str) => "` where name = #{name}`"});
+   ```
+
+3. **Use lowercase SQL keywords**: Always use lowercase for SQL keywords like `select`, `where`, `and`, etc.
+
+4. **Proper backtick usage**: Enclose dynamic SQL fragments in backticks (`) to preserve spaces.
+
+5. **Async-first approach**: All database operations should be awaited with `.await`.
+
+Please refer to the examples below for the current recommended approaches.
+
 ## 1. Introduction to Rbatis
 
 Rbatis is an ORM (Object-Relational Mapping) framework written in Rust that provides rich database operation functionality. It supports multiple database types, including but not limited to MySQL, PostgreSQL, SQLite, MS SQL Server, and more.
@@ -130,16 +164,14 @@ pub struct User {
     pub status: Option<i32>,
 }
 
-// Implement CRUDTable trait to customize table name and column name
-impl CRUDTable for User {
-    fn table_name() -> String {
-        "user".to_string()
-    }
-    
-    fn table_columns() -> String {
-        "id,username,password,create_time,status".to_string()
-    }
-}
+// Note: In Rbatis 4.5+, using the crud! macro is the recommended approach
+// rather than implementing the CRUDTable trait (which was used in older versions)
+// Instead of implementing CRUDTable, use the following approach:
+
+// Generate CRUD methods for the User struct
+crud!(User {});
+// Or specify a custom table name
+// crud!(User {}, "users");
 ```
 
 ### 4.3 Custom Table Name
@@ -1654,6 +1686,101 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 This complete example shows how to use Rbatis to build a Web application containing data model, data access layer, business logic layer, and API interface layer, covering various Rbatis features, including basic CRUD operations, dynamic SQL, transaction management, paging query, etc. Through this example, developers can quickly understand how to effectively use Rbatis in actual projects.
+
+## 11.8 Modern Rbatis 4.5+ Example
+
+Here's a concise example that shows the recommended way to use Rbatis 4.5+:
+
+```rust
+use rbatis::{crud, impl_select, impl_update, impl_delete, RBatis};
+use rbdc_sqlite::driver::SqliteDriver;
+use serde::{Deserialize, Serialize};
+use rbatis::rbdc::datetime::DateTime;
+
+// Define your data model
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct User {
+    id: Option<String>,
+    username: Option<String>,
+    email: Option<String>,
+    status: Option<i32>,
+    create_time: Option<DateTime>,
+}
+
+// Generate basic CRUD methods
+crud!(User {});
+
+// Define custom query methods
+impl_select!(User{find_by_username(username: &str) -> Option => 
+    "` where username = #{username} limit 1`"});
+
+impl_select!(User{find_active_users() -> Vec => 
+    "` where status = 1 order by create_time desc`"});
+
+impl_update!(User{update_status(id: &str, status: i32) =>
+    "` set status = #{status} where id = #{id}`"});
+
+impl_delete!(User{remove_inactive() =>
+    "` where status = 0`"});
+
+// Define a page query
+impl_select_page!(User{find_by_email_page(email: &str) =>
+    "` where email like #{email}`"});
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize logging
+    fast_log::init(fast_log::Config::new().console()).unwrap();
+    
+    // Create RBatis instance and connect to database
+    let rb = RBatis::new();
+    rb.link(SqliteDriver {}, "sqlite://test.db").await?;
+    
+    // Create a new user
+    let user = User {
+        id: Some("1".to_string()),
+        username: Some("test_user".to_string()),
+        email: Some("test@example.com".to_string()),
+        status: Some(1),
+        create_time: Some(DateTime::now()),
+    };
+    
+    // Insert the user
+    User::insert(&rb, &user).await?;
+    
+    // Find user by username (returns Option<User>)
+    let found_user = User::find_by_username(&rb, "test_user").await?;
+    println!("Found user: {:?}", found_user);
+    
+    // Find all active users (returns Vec<User>)
+    let active_users = User::find_active_users(&rb).await?;
+    println!("Active users count: {}", active_users.len());
+    
+    // Update user status
+    User::update_status(&rb, "1", 2).await?;
+    
+    // Paginated query (returns Page<User>)
+    use rbatis::plugin::page::PageRequest;
+    let page_req = PageRequest::new(1, 10);
+    let user_page = User::find_by_email_page(&rb, &page_req, "%example%").await?;
+    println!("Total users: {}, Current page: {}", user_page.total, user_page.page_no);
+    
+    // Delete by column
+    User::delete_by_column(&rb, "id", "1").await?;
+    
+    // Delete inactive users using custom method
+    User::remove_inactive(&rb).await?;
+    
+    Ok(())
+}
+```
+
+This example shows the modern approach to using Rbatis 4.5+:
+1. Define your model using `#[derive]` attributes
+2. Generate basic CRUD methods using the `crud!` macro
+3. Define custom queries using the appropriate `impl_*` macros
+4. Use strong typing for method returns (Option, Vec, Page, etc.)
+5. Use async/await for all database operations
 
 # 12. Summary
 
