@@ -240,6 +240,110 @@ This will generate the following methods for the User structure:
 - `User::select_all`: Query all records
 - `User::select_by_map`: Query records based on mapping conditions
 
+### 5.1.1 Detailed CRUD Macro Reference
+
+The `crud!` macro automatically generates a complete set of CRUD (Create, Read, Update, Delete) operations for your data model. Under the hood, it expands to call these four implementation macros:
+
+```rust
+// Equivalent to 
+impl_insert!(User {});
+impl_select!(User {});
+impl_update!(User {});
+impl_delete!(User {});
+```
+
+#### Generated Methods
+
+When you use `crud!(User {})`, the following methods are generated:
+
+##### Insert Methods
+- **`async fn insert(executor: &dyn Executor, table: &User) -> Result<ExecResult, Error>`**  
+  Inserts a single record.
+  
+- **`async fn insert_batch(executor: &dyn Executor, tables: &[User], batch_size: u64) -> Result<ExecResult, Error>`**  
+  Inserts multiple records with batch processing. The `batch_size` parameter controls how many records are inserted in each batch operation.
+
+##### Select Methods
+- **`async fn select_all(executor: &dyn Executor) -> Result<Vec<User>, Error>`**  
+  Retrieves all records from the table.
+  
+- **`async fn select_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<Vec<User>, Error>`**  
+  Retrieves records where the specified column equals the given value.
+  
+- **`async fn select_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<Vec<User>, Error>`**  
+  Retrieves records matching a map of column-value conditions (AND logic).
+  
+- **`async fn select_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<Vec<User>, Error>`**  
+  Retrieves records where the specified column's value is in the given list of values (IN operator).
+
+##### Update Methods
+- **`async fn update_by_column(executor: &dyn Executor, table: &User, column: &str) -> Result<ExecResult, Error>`**  
+  Updates a record based on the specified column (used as a WHERE condition). Null values are skipped.
+  
+- **`async fn update_by_column_batch(executor: &dyn Executor, tables: &[User], column: &str, batch_size: u64) -> Result<ExecResult, Error>`**  
+  Updates multiple records in batches, using the specified column as the condition.
+  
+- **`async fn update_by_column_skip(executor: &dyn Executor, table: &User, column: &str, skip_null: bool) -> Result<ExecResult, Error>`**  
+  Updates a record with control over whether null values should be skipped.
+  
+- **`async fn update_by_map(executor: &dyn Executor, table: &User, condition: rbs::Value, skip_null: bool) -> Result<ExecResult, Error>`**  
+  Updates records matching a map of column-value conditions.
+
+##### Delete Methods
+- **`async fn delete_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<ExecResult, Error>`**  
+  Deletes records where the specified column equals the given value.
+  
+- **`async fn delete_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<ExecResult, Error>`**  
+  Deletes records matching a map of column-value conditions.
+  
+- **`async fn delete_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<ExecResult, Error>`**  
+  Deletes records where the specified column's value is in the given list (IN operator).
+  
+- **`async fn delete_by_column_batch<V: Serialize>(executor: &dyn Executor, column: &str, values: &[V], batch_size: u64) -> Result<ExecResult, Error>`**  
+  Deletes multiple records in batches, based on specified column values.
+
+#### Example Usage
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize RBatis
+    let rb = RBatis::new();
+    rb.link(SqliteDriver {}, "sqlite://test.db").await?;
+    
+    // Insert a single record
+    let user = User {
+        id: Some("1".to_string()),
+        username: Some("john_doe".to_string()),
+        // other fields...
+    };
+    User::insert(&rb, &user).await?;
+    
+    // Batch insert multiple records
+    let users = vec![user1, user2, user3];
+    User::insert_batch(&rb, &users, 100).await?;
+    
+    // Select by column
+    let active_users: Vec<User> = User::select_by_column(&rb, "status", 1).await?;
+    
+    // Select with IN clause
+    let specific_users = User::select_in_column(&rb, "id", &["1", "2", "3"]).await?;
+    
+    // Update a record
+    let mut user_to_update = active_users[0].clone();
+    user_to_update.status = Some(2);
+    User::update_by_column(&rb, &user_to_update, "id").await?;
+    
+    // Delete a record
+    User::delete_by_column(&rb, "id", "1").await?;
+    
+    // Delete multiple records with IN clause
+    User::delete_in_column(&rb, "status", &[0, -1]).await?;
+    
+    Ok(())
+}
+```
+
 ### 5.2 CRUD Operation Example
 
 ```rust
@@ -279,6 +383,16 @@ async fn main() {
 ## 6. Dynamic SQL
 
 Rbatis supports dynamic SQL, which can dynamically build SQL statements based on conditions. Rbatis provides two styles of dynamic SQL: HTML style and Python style.
+
+> ⚠️ **IMPORTANT WARNING**
+> 
+> When using Rbatis XML format, do NOT use MyBatis-style `BaseResultMap` or `Base_Column_List`!
+> 
+> Unlike MyBatis, Rbatis does not require or support:
+> - `<result id="BaseResultMap" column="id,name,status"/>`
+> - `<sql id="Base_Column_List">id,name,status</sql>`
+> 
+> Rbatis automatically maps database columns to Rust struct fields, so these constructs are unnecessary and may cause errors. Always write complete SQL statements with explicit column selections or use `SELECT *`.
 
 ### 6.1 HTML Style Dynamic SQL
 
@@ -322,7 +436,60 @@ async fn select_by_condition(
 }
 ```
 
-#### 6.1.1 Space Handling Mechanism
+#### 6.1.1 Valid XML Structure
+
+When using HTML/XML style in Rbatis, it's important to follow the correct structure defined in the DTD:
+
+```
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+```
+
+**Important Notes:**
+
+1. **Valid top-level elements**: The `<mapper>` element can only contain: `<sql>`, `<insert>`, `<update>`, `<delete>`, or `<select>` elements.
+
+2. **Do not use BaseResultMap**: Unlike MyBatis, Rbatis doesn't use `<resultMap>` or `BaseResultMap`. Rbatis automatically maps columns to struct fields.
+
+3. **Always use actual SQL queries**: Instead of using column lists, directly write SQL queries.
+
+❌ **INCORRECT** (Do not use):
+```xml
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
+<mapper>
+    <!-- Incorrect: result is not a valid direct child of mapper -->
+    <result id="BaseResultMap" column="id,name,status"/>
+    <!-- Incorrect: column lists should be in SQL -->
+    <sql id="Base_Column_List">id,name,status</sql>
+</mapper>
+```
+
+✅ **CORRECT** (Use this approach):
+```xml
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
+<mapper>
+    <!-- Correct: use select with direct SQL -->
+    <select id="select_by_id">
+        select * from user where id = #{id}
+    </select>
+    
+    <!-- Correct: sql can be used for SQL fragments -->
+    <sql id="where_clause">
+        <where>
+            <if test="name != null">
+                ` and name like #{name} `
+            </if>
+        </where>
+    </sql>
+    
+    <select id="select_with_where">
+        select * from user
+        <include refid="where_clause"/>
+    </select>
+</mapper>
+```
+
+#### 6.1.2 Space Handling Mechanism
 
 In HTML style dynamic SQL, **backticks (`) are the key to handling spaces**:
 
@@ -1739,6 +1906,51 @@ impl_delete!(User{remove_inactive() =>
 impl_select_page!(User{find_by_email_page(email: &str) =>
     "` where email like #{email}`"});
 
+// Using HTML style SQL for complex queries
+#[html_sql(r#"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
+    <select id="find_users_by_criteria">
+        select * from user
+        <where>
+            <if test="username != null">
+                ` and username like #{username} `
+            </if>
+            <if test="email != null">
+                ` and email like #{email} `
+            </if>
+            <if test="status_list != null and status_list.len > 0">
+                ` and status in `
+                <foreach collection="status_list" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <choose>
+                <when test="sort_by == 'name'">
+                    ` order by username `
+                </when>
+                <when test="sort_by == 'date'">
+                    ` order by create_time `
+                </when>
+                <otherwise>
+                    ` order by id `
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
+"#)]
+async fn find_users_by_criteria(
+    rb: &dyn rbatis::executor::Executor,
+    username: Option<&str>,
+    email: Option<&str>,
+    status_list: Option<&[i32]>,
+    sort_by: &str
+) -> rbatis::Result<Vec<User>> {
+    impled!()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
@@ -1777,6 +1989,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_page = User::find_by_email_page(&rb, &page_req, "%example%").await?;
     println!("Total users: {}, Current page: {}", user_page.total, user_page.page_no);
     
+    // Complex query using HTML SQL
+    let status_list = vec![1, 2, 3];
+    let users = find_users_by_criteria(&rb, Some("test%"), None, Some(&status_list), "name").await?;
+    println!("Found {} users matching criteria", users.len());
+    
     // Delete by column
     User::delete_by_column(&rb, "id", "1").await?;
     
@@ -1793,6 +2010,7 @@ This example shows the modern approach to using Rbatis 4.5+:
 3. Define custom queries using the appropriate `impl_*` macros
 4. Use strong typing for method returns (Option, Vec, Page, etc.)
 5. Use async/await for all database operations
+6. For complex queries, use properly formatted HTML SQL with correct mapper structure
 
 ## 12. Handling Related Data (Associations)
 
