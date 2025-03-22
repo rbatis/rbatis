@@ -2563,3 +2563,222 @@ impl_select!(DiscountTask {find_by_type(task_type: &str) -> Vec =>
 ### 6.5.3 Why This Matters
 
 The Rbatis proc-macro system parses the macro content at compile time. When documentation comments are placed inside the macro, they interfere with the parsing process, leading to compilation errors. By placing documentation comments outside the macro, they're properly attached to the generated method while avoiding parser issues.
+
+## 8.5 Rbatis Data Types (rbatis::rbdc::types)
+
+Rbatis provides a set of specialized data types in the `rbatis::rbdc::types` module for better database integration and interoperability. These types handle the conversion between Rust native types and database-specific data formats. Proper understanding and usage of these types is essential for correct data handling, especially regarding ownership and conversion methods.
+
+### 8.5.1 Decimal Type
+
+The `Decimal` type represents arbitrary precision decimal numbers, particularly useful for financial applications.
+
+```rust
+use rbatis::rbdc::types::Decimal;
+use std::str::FromStr;
+
+// Creating Decimal instances
+let d1 = Decimal::from(100i32); // From integer (Note: Use `from` not `from_i32`)
+let d2 = Decimal::from_str("123.45").unwrap(); // From string
+let d3 = Decimal::new("67.89").unwrap(); // Another way from string
+let d4 = Decimal::from_f64(12.34).unwrap(); // From f64 (returns Option<Decimal>)
+
+// ❌ INCORRECT - These will not work
+// let wrong1 = Decimal::from_i32(100); // Error: method doesn't exist
+// let mut wrong2 = Decimal::from(0); wrong2 = wrong2 + 1; // Error: using moved value
+
+// ✅ CORRECT - Ownership handling
+let decimal1 = Decimal::from(10i32);
+let decimal2 = Decimal::from(20i32);
+let sum = decimal1.clone() + decimal2; // Need to clone() as operations consume the value
+
+// Rounding and scale operations
+let amount = Decimal::from_str("123.456789").unwrap();
+let rounded = amount.clone().round(2); // Rounds to 2 decimal places: 123.46
+let scaled = amount.with_scale(3); // Sets scale to 3 decimal places: 123.457
+
+// Conversion to primitive types
+let as_f64 = amount.to_f64().unwrap_or(0.0);
+let as_i64 = amount.to_i64().unwrap_or(0);
+```
+
+**Important Notes about Decimal:**
+- `Decimal` wraps the `BigDecimal` type from the `bigdecimal` crate
+- It doesn't implement `Copy` trait, only `Clone`
+- Most operations consume the value, so you may need to use `clone()`
+- Use `Decimal::from(i32)` instead of non-existent `from_i32` methods
+- Always handle the `Option` or `Result` returned by conversion functions
+
+### 8.5.2 DateTime Type
+
+The `DateTime` type handles date and time values with timezone information.
+
+```rust
+use rbatis::rbdc::types::DateTime;
+use std::str::FromStr;
+use std::time::Duration;
+
+// Creating DateTime instances
+let now = DateTime::now(); // Current local time
+let utc = DateTime::utc(); // Current UTC time
+let dt1 = DateTime::from_str("2023-12-25 13:45:30").unwrap(); // From string
+let dt2 = DateTime::from_timestamp(1640430000); // From Unix timestamp (seconds)
+let dt3 = DateTime::from_timestamp_millis(1640430000000); // From milliseconds
+
+// Formatting
+let formatted = dt1.format("%Y-%m-%d %H:%M:%S"); // "2023-12-25 13:45:30"
+let iso_format = dt1.to_string(); // ISO 8601 format
+
+// Date/time components
+let year = dt1.year();
+let month = dt1.mon();
+let day = dt1.day();
+let hour = dt1.hour();
+let minute = dt1.minute();
+let second = dt1.sec();
+
+// Manipulating DateTime
+let tomorrow = now.clone().add(Duration::from_secs(86400));
+let yesterday = now.clone().sub(Duration::from_secs(86400));
+let later = now.clone().add_sub_sec(3600); // Add 1 hour
+
+// Comparison
+if dt1.before(&dt2) {
+    println!("dt1 is earlier than dt2");
+}
+
+// Converting to timestamp
+let ts_secs = dt1.unix_timestamp(); // Seconds since Unix epoch
+let ts_millis = dt1.unix_timestamp_millis(); // Milliseconds
+let ts_micros = dt1.unix_timestamp_micros(); // Microseconds
+```
+
+### 8.5.3 Json Type
+
+The `Json` type helps manage JSON data in databases, especially for columns with JSON type.
+
+```rust
+use rbatis::rbdc::types::{Json, JsonV};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+
+// Basic JSON string handling
+let json_str = r#"{"name":"John","age":30}"#;
+let json = Json::from_str(json_str).unwrap();
+println!("{}", json); // Prints the JSON string
+
+// Creating from serde_json values
+let serde_value = serde_json::json!({"status": "success", "code": 200});
+let json2 = Json::from(serde_value);
+
+// For working with structured data, use JsonV
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct User {
+    id: Option<String>,
+    name: String,
+    age: i32,
+}
+
+// Creating JsonV with structured data
+let user = User {
+    id: Some("1".to_string()),
+    name: "Alice".to_string(),
+    age: 25,
+};
+let json_v = JsonV(user);
+
+// In entity definitions for JSON columns
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct UserProfile {
+    id: Option<String>,
+    // Use deserialize_with for JSON fields
+    #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
+    settings: User,
+}
+```
+
+### 8.5.4 Date, Time, and Timestamp Types
+
+Rbatis provides specialized types for working with date, time, and timestamp data.
+
+```rust
+use rbatis::rbdc::types::{Date, Time, Timestamp};
+use std::str::FromStr;
+
+// Date type (date only)
+let today = Date::now();
+let christmas = Date::from_str("2023-12-25").unwrap();
+println!("{}", christmas); // "2023-12-25"
+
+// Time type (time only)
+let current_time = Time::now();
+let noon = Time::from_str("12:00:00").unwrap();
+println!("{}", noon); // "12:00:00"
+
+// Timestamp type (Unix timestamp)
+let ts = Timestamp::now();
+let custom_ts = Timestamp::from(1640430000);
+println!("{}", custom_ts); // Unix timestamp in seconds
+```
+
+### 8.5.5 Bytes and UUID Types
+
+For binary data and UUIDs, Rbatis provides the following types:
+
+```rust
+use rbatis::rbdc::types::{Bytes, Uuid};
+use std::str::FromStr;
+
+// Bytes for binary data
+let data = vec![1, 2, 3, 4, 5];
+let bytes = Bytes::from(data.clone());
+let bytes2 = Bytes::new(data);
+println!("Length: {}", bytes.len());
+
+// UUID
+let uuid = Uuid::from_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
+let new_uuid = Uuid::random(); // Generate a new random UUID
+println!("{}", uuid); // "550e8400-e29b-41d4-a716-446655440000"
+```
+
+### 8.5.6 Best Practices for Working with Rbatis Data Types
+
+1. **Handle Ownership Correctly**: Most of the Rbatis types don't implement `Copy`, so be mindful of ownership and use `clone()` when needed.
+
+2. **Use the Correct Creation Methods**: Pay attention to the available constructor methods. For example, use `Decimal::from(123)` instead of non-existent `Decimal::from_i32(123)`.
+
+3. **Error Handling**: Most conversion and parsing methods return `Result` or `Option`, always handle these properly.
+
+4. **Data Persistence**: When defining structs for database tables, use `Option<T>` for nullable fields.
+
+5. **Type Conversion**: Be aware of the automatic type conversions that happen when reading from databases. Use the appropriate Rbatis types for your database schema.
+
+6. **Test Boundary Cases**: Test your code with edge cases like very large numbers for `Decimal` or extreme dates for `DateTime`.
+
+```rust
+// Example of a well-designed entity using Rbatis types
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Transaction {
+    pub id: Option<String>,
+    pub user_id: String,
+    pub amount: rbatis::rbdc::types::Decimal,
+    pub timestamp: rbatis::rbdc::types::DateTime,
+    pub notes: Option<String>,
+    #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
+    pub metadata: UserMetadata,
+}
+
+// Proper usage in a function
+async fn record_transaction(rb: &dyn rbatis::executor::Executor, user_id: &str, amount_str: &str) -> Result<(), Error> {
+    let transaction = Transaction {
+        id: None,
+        user_id: user_id.to_string(),
+        amount: rbatis::rbdc::types::Decimal::from_str(amount_str)?,
+        timestamp: rbatis::rbdc::types::DateTime::now(),
+        notes: None,
+        metadata: UserMetadata::default(),
+    };
+    
+    transaction.insert(rb).await?;
+    Ok(())
+}
+```
