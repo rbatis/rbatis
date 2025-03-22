@@ -272,13 +272,13 @@ impl PartialOrd<&str> for &String {
 
 impl PartialOrd<&&str> for &String {
     fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(rhs)
+        self.as_str().partial_cmp(*rhs)
     }
 }
 
 impl PartialOrd<&&&str> for &String {
     fn op_partial_cmp(&self, rhs: &&&&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(rhs)
+        self.as_str().partial_cmp(**rhs)
     }
 }
 
