@@ -2563,3 +2563,222 @@ async fn get_students_with_courses(rb: &RBatis) -> rbatis::Result<Vec<StudentWit
 3. **高效性** - 预分配集合的优化操作
 4. **可读性** - 使数据转换的意图更清晰
 5. **更符合惯用法** - 利用Rbatis的内置工具进行常见操作
+
+## 8.5 Rbatis数据类型 (rbatis::rbdc::types)
+
+Rbatis在`rbatis::rbdc::types`模块中提供了一系列专用数据类型，用于更好地实现数据库集成和互操作性。这些类型处理Rust原生类型与数据库特定数据格式之间的转换。正确理解和使用这些类型对于正确处理数据至关重要，特别是在处理所有权和转换方法方面。
+
+### 8.5.1 Decimal类型
+
+`Decimal`类型表示任意精度的十进制数，特别适用于金融应用。
+
+```rust
+use rbatis::rbdc::types::Decimal;
+use std::str::FromStr;
+
+// 创建Decimal实例
+let d1 = Decimal::from(100i32); // 从整数创建（注意：使用`from`而不是`from_i32`）
+let d2 = Decimal::from_str("123.45").unwrap(); // 从字符串创建
+let d3 = Decimal::new("67.89").unwrap(); // 另一种从字符串创建的方式
+let d4 = Decimal::from_f64(12.34).unwrap(); // 从f64创建（返回Option<Decimal>）
+
+// ❌ 错误用法 - 这些将不会工作
+// let wrong1 = Decimal::from_i32(100); // 错误：方法不存在
+// let mut wrong2 = Decimal::from(0); wrong2 = wrong2 + 1; // 错误：使用了已移动的值
+
+// ✅ 正确的所有权处理
+let decimal1 = Decimal::from(10i32);
+let decimal2 = Decimal::from(20i32);
+let sum = decimal1.clone() + decimal2; // 需要clone()，因为操作会消耗值
+
+// 四舍五入和小数位操作
+let amount = Decimal::from_str("123.456789").unwrap();
+let rounded = amount.clone().round(2); // 四舍五入到2位小数：123.46
+let scaled = amount.with_scale(3); // 设置3位小数：123.457
+
+// 转换为原始类型
+let as_f64 = amount.to_f64().unwrap_or(0.0);
+let as_i64 = amount.to_i64().unwrap_or(0);
+```
+
+**关于Decimal的重要说明：**
+- `Decimal`是对`bigdecimal`包中`BigDecimal`类型的封装
+- 它没有实现`Copy`特性，只实现了`Clone`
+- 大多数操作会消耗值，所以你可能需要使用`clone()`
+- 使用`Decimal::from(i32)`而不是不存在的`from_i32`方法
+- 始终处理转换函数返回的`Option`或`Result`
+
+### 8.5.2 DateTime类型
+
+`DateTime`类型处理带有时区信息的日期和时间值。
+
+```rust
+use rbatis::rbdc::types::DateTime;
+use std::str::FromStr;
+use std::time::Duration;
+
+// 创建DateTime实例
+let now = DateTime::now(); // 当前本地时间
+let utc = DateTime::utc(); // 当前UTC时间
+let dt1 = DateTime::from_str("2023-12-25 13:45:30").unwrap(); // 从字符串创建
+let dt2 = DateTime::from_timestamp(1640430000); // 从Unix时间戳（秒）创建
+let dt3 = DateTime::from_timestamp_millis(1640430000000); // 从毫秒创建
+
+// 格式化
+let formatted = dt1.format("%Y-%m-%d %H:%M:%S"); // "2023-12-25 13:45:30"
+let iso_format = dt1.to_string(); // ISO 8601格式
+
+// 日期/时间组件
+let year = dt1.year();
+let month = dt1.mon();
+let day = dt1.day();
+let hour = dt1.hour();
+let minute = dt1.minute();
+let second = dt1.sec();
+
+// 操作DateTime
+let tomorrow = now.clone().add(Duration::from_secs(86400));
+let yesterday = now.clone().sub(Duration::from_secs(86400));
+let later = now.clone().add_sub_sec(3600); // 增加1小时
+
+// 比较
+if dt1.before(&dt2) {
+    println!("dt1比dt2早");
+}
+
+// 转换为时间戳
+let ts_secs = dt1.unix_timestamp(); // 自Unix纪元以来的秒数
+let ts_millis = dt1.unix_timestamp_millis(); // 毫秒
+let ts_micros = dt1.unix_timestamp_micros(); // 微秒
+```
+
+### 8.5.3 Json类型
+
+`Json`类型帮助管理数据库中的JSON数据，特别是对于具有JSON类型的列。
+
+```rust
+use rbatis::rbdc::types::{Json, JsonV};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+
+// 基本JSON字符串处理
+let json_str = r#"{"name":"张三","age":30}"#;
+let json = Json::from_str(json_str).unwrap();
+println!("{}", json); // 打印JSON字符串
+
+// 从serde_json值创建
+let serde_value = serde_json::json!({"status": "success", "code": 200});
+let json2 = Json::from(serde_value);
+
+// 对于结构化数据，使用JsonV
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct User {
+    id: Option<String>,
+    name: String,
+    age: i32,
+}
+
+// 使用结构化数据创建JsonV
+let user = User {
+    id: Some("1".to_string()),
+    name: "张三".to_string(),
+    age: 25,
+};
+let json_v = JsonV(user);
+
+// 在实体定义中使用JSON列
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct UserProfile {
+    id: Option<String>,
+    // 对JSON字段使用deserialize_with
+    #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
+    settings: User,
+}
+```
+
+### 8.5.4 Date、Time和Timestamp类型
+
+Rbatis提供了专门的类型用于处理日期、时间和时间戳数据。
+
+```rust
+use rbatis::rbdc::types::{Date, Time, Timestamp};
+use std::str::FromStr;
+
+// Date类型（仅日期）
+let today = Date::now();
+let christmas = Date::from_str("2023-12-25").unwrap();
+println!("{}", christmas); // "2023-12-25"
+
+// Time类型（仅时间）
+let current_time = Time::now();
+let noon = Time::from_str("12:00:00").unwrap();
+println!("{}", noon); // "12:00:00"
+
+// Timestamp类型（Unix时间戳）
+let ts = Timestamp::now();
+let custom_ts = Timestamp::from(1640430000);
+println!("{}", custom_ts); // 以秒为单位的Unix时间戳
+```
+
+### 8.5.5 Bytes和UUID类型
+
+对于二进制数据和UUID，Rbatis提供了以下类型：
+
+```rust
+use rbatis::rbdc::types::{Bytes, Uuid};
+use std::str::FromStr;
+
+// 用于二进制数据的Bytes
+let data = vec![1, 2, 3, 4, 5];
+let bytes = Bytes::from(data.clone());
+let bytes2 = Bytes::new(data);
+println!("长度: {}", bytes.len());
+
+// UUID
+let uuid = Uuid::from_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
+let new_uuid = Uuid::random(); // 生成新的随机UUID
+println!("{}", uuid); // "550e8400-e29b-41d4-a716-446655440000"
+```
+
+### 8.5.6 使用Rbatis数据类型的最佳实践
+
+1. **正确处理所有权**：大多数Rbatis类型没有实现`Copy`，所以要注意所有权并在需要时使用`clone()`。
+
+2. **使用正确的创建方法**：注意可用的构造方法。例如，使用`Decimal::from(123)`而不是不存在的`Decimal::from_i32(123)`。
+
+3. **错误处理**：大多数转换和解析方法返回`Result`或`Option`，始终正确处理这些结果。
+
+4. **数据持久化**：为数据库表定义结构体时，对可空字段使用`Option<T>`。
+
+5. **类型转换**：了解从数据库读取时发生的自动类型转换。为你的数据库模式使用适当的Rbatis类型。
+
+6. **测试边界情况**：使用边界情况测试你的代码，例如`Decimal`的极大数字或`DateTime`的极端日期。
+
+```rust
+// 使用Rbatis类型的设计良好的实体示例
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Transaction {
+    pub id: Option<String>,
+    pub user_id: String,
+    pub amount: rbatis::rbdc::types::Decimal,
+    pub timestamp: rbatis::rbdc::types::DateTime,
+    pub notes: Option<String>,
+    #[serde(deserialize_with = "rbatis::rbdc::types::deserialize_maybe_str")]
+    pub metadata: UserMetadata,
+}
+
+// 在函数中正确使用
+async fn record_transaction(rb: &dyn rbatis::executor::Executor, user_id: &str, amount_str: &str) -> Result<(), Error> {
+    let transaction = Transaction {
+        id: None,
+        user_id: user_id.to_string(),
+        amount: rbatis::rbdc::types::Decimal::from_str(amount_str)?,
+        timestamp: rbatis::rbdc::types::DateTime::now(),
+        notes: None,
+        metadata: UserMetadata::default(),
+    };
+    
+    transaction.insert(rb).await?;
+    Ok(())
+}
+```
