@@ -361,9 +361,9 @@ You are welcome to submit the merge, and make sure that any functionality you ad
 
 # Ask AI For Help(AI帮助)
 
-You can feed [ai.md (English)](ai.md) or [ai_cn.md (中文)](ai_cn.md) to Large Language Models like Claude or GPT to get help with using Rbatis.
+You can feed [ai.md (English)](ai.md)  to Large Language Models like Claude or GPT to get help with using Rbatis.
 
-我们准备了详细的文档 [ai_cn.md (中文)](ai_cn.md) 和 [ai.md (English)](ai.md)，您可以将它们提供给Claude或GPT等大型语言模型，以获取关于使用Rbatis的帮助。
+我们准备了详细的文档  [ai.md (English)](ai.md)，您可以将它们提供给Claude或GPT等大型语言模型，以获取关于使用Rbatis的帮助。
 
 You can download these files directly:
 - [Download ai.md (English)](https://raw.githubusercontent.com/rbatis/rbatis/master/ai.md)
