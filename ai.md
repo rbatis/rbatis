@@ -765,138 +765,258 @@ Rbatis expression engine supports multiple operators and functions:
   - `print(value)`: Print value (for debugging)
   - `to_string(value)`: Convert to string
 
-Expression example:
+Expression examples:
 ```rust
 <if test="user.age >= 18 && (user.role == 'admin' || user.vip)">
     ` and is_adult = 1 `
 </if>
 
-if (page_size * (page_no - 1)) <= total && !items.is_empty():
-    ` limit #{page_size} offset #{page_size * (page_no - 1)} `
+<if test="!is_empty(ids)">
+    ` and id in ${ids.sql()} `
+</if>
 ```
 
-### 6.5 Parameter Binding Mechanism
+### 6.5 Important Differences Between Rbatis and MyBatis Expression Syntax
 
-Rbatis provides two parameter binding methods:
+While Rbatis draws inspiration from MyBatis, there are **critical differences** in the expression syntax that must be understood to avoid compilation errors:
 
-1. **Named Parameters**: Use `#{name}` format, automatically prevent SQL injection
-   ```rust
-   ` select * from user where username = #{username} `
+#### 1. Logical Operators: Use `&&` and `||`, NOT `and` and `or`
+
+```xml
+<!-- ✅ CORRECT: Using Rbatis operators -->
+<if test="name != null && name != ''">
+    ` and name = #{name}`
+</if>
+
+<!-- ❌ WRONG: Using MyBatis style operators -->
+<if test="name != null and name != ''">  <!-- This will cause compilation errors! -->
+    ` and name = #{name}`
+</if>
+```
+
+Rbatis directly translates expressions to Rust code, where logical operators are `&&` and `||`. The keywords `and` and `or` are not recognized by the Rbatis expression engine.
+
+#### 2. Null Comparison: Use `== null` or `!= null`
+
+```xml
+<!-- ✅ CORRECT -->
+<if test="user != null && user.name != null">
+    ` and user_name = #{user.name}`
+</if>
+
+<!-- Another correct approach for null checks -->
+<if test="user == null || user.name == null">
+    ` and user_name = 'Guest'`
+</if>
+```
+
+#### 3. String Comparison: Use `==` and `!=` with quotes
+
+```xml
+<!-- ✅ CORRECT -->
+<if test="status == 'active'">
+    ` and status = 1`
+</if>
+
+<!-- ✅ CORRECT: Empty string check -->
+<if test="name != ''">
+    ` and name like #{name}`
+</if>
+```
+
+#### 4. Expression Grouping: Use parentheses for complex conditions
+
+```xml
+<!-- ✅ CORRECT: Using parentheses for clarity and proper precedence -->
+<if test="(age > 18 || vip == true) && status != 'banned'">
+    ` and can_access = true`
+</if>
+```
+
+#### 5. Collection Operations: Use appropriate functions
+
+```xml
+<!-- ✅ CORRECT: Checking if a collection is empty -->
+<if test="!is_empty(permissions)">
+    ` and permission in ${permissions.sql()}`
+</if>
+
+<!-- ✅ CORRECT: Using collection length -->
+<if test="len(items) > 0">
+    ` and has_items = true`
+</if>
+```
+
+### 6.5.1 Rbatis Expression Engine Internals
+
+Understanding how Rbatis parses and processes expressions is crucial for writing correct dynamic SQL. The following details explain the internal workings of the Rbatis expression system:
+
+#### Expression Processing Mechanism
+
+Rbatis processes expressions in a fundamentally different way than MyBatis:
+
+1. **Direct Rust Code Generation**: Expressions in `test` attributes are directly translated to Rust code at compile time. For example, `name != null && name != ''` is converted to Rust code that operates on the `Value` type.
+
+2. **No Runtime OGNL Parsing**: Unlike MyBatis which uses OGNL to interpret expressions at runtime, Rbatis performs all expression parsing during compilation.
+
+3. **Type Conversion System**: Expressions are evaluated through a system of operator overloading and type conversions implemented for the `Value` type.
+
+```rust
+// Internal conversion in test="user.age >= 18 && user.role == 'admin'"
+(&arg["user"]["age"]).op_gt(&Value::from(18)) && (&arg["user"]["role"]).op_eq(&Value::from("admin"))
+```
+
+#### Expression Syntax Rules
+
+The expression syntax in Rbatis follows these strict rules:
+
+1. **Strict Rust-like Operators**:
+   - Logical operators: `&&` (AND), `||` (OR), `!` (NOT)
+   - Comparison operators: `==`, `!=`, `>`, `<`, `>=`, `<=`
+   - Mathematical operators: `+`, `-`, `*`, `/`, `%`
+   
+2. **Path Navigation**:
+   - Access object properties using dot notation: `user.name`
+   - Access array elements using brackets: `items[0]`
+   - Internally converted to: `arg["user"]["name"]` and `arg["items"][0]`
+
+3. **Null Handling**:
+   - Use `null` keyword for null checks: `item == null` or `item != null`
+   - Empty string checks: `str == ''` or `str != ''`
+
+4. **String Literals**:
+   - Must be enclosed in single quotes: `name == 'John'`
+   - Internally converted to: `arg["name"].op_eq(&Value::from("John"))`
+
+5. **Function Calls**:
+   - Functions are translated into method calls on the `Value` type
+   - Example: `len(items) > 0` becomes `arg["items"].len() > 0`
+
+#### Available Expression Functions
+
+Rbatis provides a set of built-in functions that can be used in expressions:
+
+```rust
+// Collection functions
+len(collection)           // Get length of collection
+is_empty(collection)      // Check if collection is empty
+contains(collection, item) // Check if collection contains item
+
+// String functions
+trim(string)              // Remove leading/trailing spaces
+starts_with(string, prefix) // Check if string starts with prefix
+ends_with(string, suffix)  // Check if string ends with suffix
+to_string(value)          // Convert value to string
+
+// SQL generation
+value.sql()               // Generate SQL fragment (for IN clauses)
+value.csv()               // Generate comma-separated value list
+```
+
+#### Expression Context and Variable Scope
+
+In Rbatis expressions:
+
+1. **Root Context**: All variables are accessed from the root argument context.
+   
+2. **Variable Binding**: The `<bind>` tag creates new variables in the context.
+   ```xml
+   <bind name="pattern" value="'%' + name + '%'" />
+   <!-- Creates a new variable 'pattern' in the context -->
    ```
 
-2. **Position Parameters**: Use `?` placeholder, bind in order
-   ```rust
-   ` select * from user where username = ? and age > ? `
+3. **Loop Variables**: In `<foreach>` loops, the `item` and `index` variables are available only within the loop scope.
+   ```xml
+   <foreach collection="items" item="item" index="index">
+     <!-- 'item' and 'index' are available only here -->
+   </foreach>
    ```
 
-3. **Raw Interpolation**: Use `${expr}` format, directly insert expression result (**Use with caution**)
-   ```rust
-   ` select * from ${table_name} where id > 0 ` # Used for dynamic table name
+#### Common Expression Patterns
+
+Here are some patterns for common expression needs in Rbatis:
+
+```xml
+<!-- Null or empty string check -->
+<if test="name != null && name.trim() != ''">
+  ` and name = #{name}`
+</if>
+
+<!-- Collection emptiness check -->
+<if test="!is_empty(ids)">
+  ` and id in ${ids.sql()}`
+</if>
+
+<!-- Complex condition with grouping -->
+<if test="(status == 'active' || status == 'pending') && create_time != null">
+  ` and (status = #{status} or status = 'review') and create_time > #{create_time}`
+</if>
+
+<!-- Numeric comparisons -->
+<if test="min_age != null && max_age != null && min_age < max_age">
+  ` and age between #{min_age} and #{max_age}`
+</if>
+
+<!-- String operations -->
+<if test="name != null && name.trim() != '' && starts_with(name, 'A')">
+  ` and name like #{name}%`
+</if>
+```
+
+#### Error Handling in Expressions
+
+Common expression errors and how to avoid them:
+
+1. **Type Mismatch Errors**:
+   ```xml
+   <!-- ❌ WRONG: Type mismatch -->
+   <if test="count + 'string'">
+     <!-- Will cause compilation error -->
+   </if>
+   
+   <!-- ✅ CORRECT: Consistent types -->
+   <if test="to_string(count) + 'string' != ''">
+     <!-- Properly converts types -->
+   </if>
    ```
 
-**Safety Tips**:
-- `#{}` binding will automatically escape parameters, prevent SQL injection, recommended for binding values
-- `${}` directly inserts content, exists SQL injection risk, only used for table name, column name, etc. structure elements
-- For IN statements, use `.sql()` method to generate safe IN clause
+2. **Operator Precedence Issues**:
+   ```xml
+   <!-- ❌ WRONG: Ambiguous precedence -->
+   <if test="a && b || c">
+     <!-- Might not behave as expected -->
+   </if>
+   
+   <!-- ✅ CORRECT: Clear precedence with parentheses -->
+   <if test="(a && b) || c">
+     <!-- Explicit grouping -->
+   </if>
+   ```
 
-Core difference:
-- **`#{}` binding**:
-  - Converts value to parameter placeholder, actual value placed in parameter array
-  - Automatically handles type conversion and NULL values
-  - Prevent SQL injection
+3. **Null Safety**:
+   ```xml
+   <!-- ❌ WRONG: Potential null reference -->
+   <if test="user.address.city == 'New York'">
+     <!-- Crashes if user or address is null -->
+   </if>
+   
+   <!-- ✅ CORRECT: Null-safe navigation -->
+   <if test="user != null && user.address != null && user.address.city == 'New York'">
+     <!-- Properly checks for null before accessing properties -->
+   </if>
+   ```
 
-- **`${}` binding**:
-  - Directly converts expression result to string inserted into SQL
-  - Used for dynamic table name, column name, etc. structure elements
-  - Does not handle SQL injection risk
+### 6.6 Common Mistakes to Avoid
 
-### 6.6 Dynamic SQL Practical Tips
+1. **Using MyBatis keywords**: Rbatis doesn't support MyBatis OGNL expressions like `and`, `or`, etc.
 
-#### 6.6.1 Complex Condition Construction
+2. **Ignoring operator case sensitivity**: Operators in Rbatis are case-sensitive; use `&&` not `AND` or `And`.
 
-```rust
-#[py_sql(r#"
-select * from user
-where 1=1
-if name != None and name.trim() != '':  # Check empty string
-    ` and name like #{name} `
-if ids != None and !ids.is_empty():     # Use built-in function
-    ` and id in ${ids.sql()} `           # Use .sql() method to generate in statement
-if (age_min != None and age_max != None) and (age_min < age_max):
-    ` and age between #{age_min} and #{age_max} `
-if age_min != None:
-    ` and age >= #{age_min} `
-if age_max != None:
-    ` and age <= #{age_max} `
-"#)]
-```
+3. **Omitting spaces**: Ensure proper spacing around operators: `a&&b` should be `a && b`.
 
-#### 6.6.2 Dynamic Sorting and Grouping
+4. **Forgetting backticks**: Wrap SQL fragments in backticks to ensure proper space handling.
 
-```rust
-#[py_sql(r#"
-select * from user
-where status = 1
-if order_field != None:
-    if order_field == "name":
-        ` order by name `
-    if order_field == "age":
-        ` order by age `
-    if order_field != "name" and order_field != "age":
-        ` order by id `
-    
-    if desc == true:
-        ` desc `
-    if desc != true:
-        ` asc `
-"#)]
-```
-
-#### 6.6.3 Dynamic Table Name and Column Name
-
-```rust
-#[py_sql(r#"
-select ${select_fields} from ${table_name}
-where ${where_condition}
-"#)]
-async fn dynamic_query(
-    rb: &dyn Executor,
-    select_fields: &str,  // Must be safe value
-    table_name: &str,     // Must be safe value
-    where_condition: &str, // Must be safe value
-) -> rbatis::Result<Vec<Value>> {
-    impled!()
-}
-```
-
-#### 6.6.4 General Fuzzy Query
-
-```rust
-#[html_sql(r#"
-<select id="fuzzy_search">
-    select * from user
-    <where>
-        <if test="search_text != null and search_text != ''">
-            `(name like #{search_text_like} or 
-             email like #{search_text_like} or 
-             phone like #{search_text_like})`
-        </if>
-    </where>
-    order by create_time desc
-</select>
-"#)]
-async fn fuzzy_search(
-    rb: &dyn Executor,
-    search_text: Option<&str>,
-    search_text_like: Option<&str>, // Preprocess as %text%
-) -> rbatis::Result<Vec<User>> {
-    impled!()
-}
-
-// Usage example
-let search = "test";
-let result = fuzzy_search(&rb, Some(search), Some(&format!("%{}%", search))).await?;
-```
+5. **Using non-existent functions**: Only use functions that are explicitly supported by Rbatis.
 
 ### 6.7 Dynamic SQL Usage Example
 
@@ -2827,3 +2947,668 @@ async fn record_transaction(rb: &dyn rbatis::executor::Executor, user_id: &str, 
     Ok(())
 }
 ```
+
+## 7. HTML Template SQL
+
+// ... existing code ...
+
+### 7.3 Handle Space in SQL 
+
+// ... existing code ...
+
+### 7.4 XML Mapper DTD Structure
+
+When using HTML/XML style mappings in Rbatis, it's important to understand the correct structure. Unlike MyBatis, Rbatis has specific rules for XML elements and their arrangement.
+
+#### Valid Element Structure
+
+The XML mapper structure in Rbatis follows these rules:
+
+1. **Root Element**: The root element must be `<mapper>`.
+
+2. **Valid Top-Level Elements**: The following elements are valid direct children of the `<mapper>` element:
+   - `<select>`
+   - `<update>`
+   - `<insert>`
+   - `<delete>`
+   - `<sql>`
+   
+3. **Invalid Elements**: Unlike MyBatis, Rbatis does not support:
+   - `<resultMap>` or `<BaseResultMap>` as top-level elements
+
+#### XML Structure Example
+
+```xml
+<!-- ❌ INCORRECT: Using BaseResultMap -->
+<mapper>
+    <BaseResultMap id="BaseResultMap" type="User">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+    </BaseResultMap>
+    
+    <select id="selectById">
+        select * from user where id = #{id}
+    </select>
+</mapper>
+
+<!-- ✅ CORRECT: Valid structure -->
+<mapper>
+    <sql id="userColumns">id, name, age, email</sql>
+    
+    <select id="selectById">
+        select * from user where id = #{id}
+    </select>
+    
+    <insert id="insert">
+        insert into user (name, age) values (#{name}, #{age})
+    </insert>
+    
+    <update id="update">
+        update user set name = #{name}, age = #{age} where id = #{id}
+    </update>
+    
+    <delete id="delete">
+        delete from user where id = #{id}
+    </delete>
+</mapper>
+```
+
+#### Include Tag Usage
+
+The `<include>` tag is supported for reusing SQL fragments:
+
+```xml
+<mapper>
+    <sql id="userColumns">id, name, age, email</sql>
+    
+    <select id="selectById">
+        select 
+        <include refid="userColumns"/> 
+        from user 
+        where id = #{id}
+    </select>
+</mapper>
+```
+
+#### External References
+
+You can include SQL fragments from external files:
+
+```xml
+<mapper>
+    <select id="selectUsers">
+        select 
+        <include refid="file://src/mapper/common.xml?refid=userColumns"/>
+        from user
+        where status = #{status}
+    </select>
+</mapper>
+```
+
+#### Important Notes About XML Mappers
+
+1. **SQL Queries, Not Column Lists**: In Rbatis, you should include the actual SQL query in your elements, not just column lists.
+
+2. **No ResultMap-Based Mappings**: Unlike MyBatis, Rbatis doesn't support result mappings through XML. It uses Rust struct definitions instead.
+
+3. **Case Sensitivity**: Element and attribute names are case-sensitive.
+
+4. **Document Validation**: Rbatis performs validation during compilation, not at runtime.
+
+5. **Processing Flow**: XML mappers are parsed at compile time and converted to Rust code that generates SQL at runtime.
+
+#### Parsing Process
+
+The XML mapping follows this internal process:
+
+1. Parse XML structure at compile time
+2. Generate Rust functions that build dynamic SQL
+3. Convert expressions in `test` attributes to Rust code
+4. Handle parameter binding for `#{}` and `${}` placeholders
+5. Apply whitespace handling for elements like `<trim>` and `<where>`
+
+Understanding this structure helps avoid common errors when writing XML mappings for Rbatis.
+
+### 7.5 Advanced Dynamic Elements Usage
+
+Rbatis provides several powerful dynamic elements that can greatly simplify SQL generation. Understanding their full capabilities and attributes is essential for effective use.
+
+#### The `<foreach>` Element in Detail
+
+The `<foreach>` element is used to iterate over collections and generate repeated SQL fragments. It supports the following attributes:
+
+```xml
+<foreach 
+  collection="collection_expression" 
+  item="item_name" 
+  index="index_name" 
+  open="opening_string" 
+  close="closing_string" 
+  separator="separator_string">
+  <!-- Content to repeat -->
+</foreach>
+```
+
+| Attribute | Description | Default | Required |
+|-----------|-------------|---------|----------|
+| `collection` | Expression pointing to the collection to iterate | - | Yes |
+| `item` | Name of variable for current item | "item" | No |
+| `index` | Name of variable for current index | "index" | No |
+| `open` | String to prepend to the entire result | "" | No |
+| `close` | String to append to the entire result | "" | No |
+| `separator` | String to insert between items | "" | No |
+
+**Examples:**
+
+```xml
+<!-- Basic IN clause -->
+<select id="selectByIds">
+  select * from user where id in 
+  <foreach collection="ids" item="id" open="(" close=")" separator=",">
+    #{id}
+  </foreach>
+</select>
+
+<!-- Multi-value insert -->
+<insert id="batchInsert">
+  insert into user (name, age) values 
+  <foreach collection="users" item="user" separator=",">
+    (#{user.name}, #{user.age})
+  </foreach>
+</insert>
+
+<!-- Complex case with index -->
+<select id="complexQuery">
+  select * from user where 
+  <foreach collection="conditions" item="condition" index="field" separator=" AND ">
+    ${field} = #{condition}
+  </foreach>
+</select>
+```
+
+#### The `<set>` Element in Detail
+
+The `<set>` element is primarily used in UPDATE statements to handle dynamic column updates. It offers both a simple and an advanced collection-based form:
+
+**Simple form:**
+
+```xml
+<update id="updateUser">
+  update user 
+  <set>
+    <if test="name != null">name = #{name},</if>
+    <if test="age != null">age = #{age},</if>
+    <if test="email != null">email = #{email},</if>
+  </set>
+  where id = #{id}
+</update>
+```
+
+**Advanced collection-based form:**
+
+```xml
+<update id="updateDynamic">
+  update user 
+  <set collection="updates" skip_null="true" skips="id,created_at">
+  </set>
+  where id = #{id}
+</update>
+```
+
+| Attribute | Description | Default | Required for Advanced Form |
+|-----------|-------------|---------|----------|
+| `collection` | Map or object to generate SET clause from | - | Yes |
+| `skip_null` | Whether to skip null values | "true" | No |
+| `skips` | Comma-separated list of fields to skip | "id" | No |
+
+The collection-based form iterates through all properties of the given object or map, generating `key=value` pairs for the SET clause automatically. This is extremely useful for handling complex or unpredictable update structures.
+
+**Example with a dynamic map:**
+
+```rust
+// In your Rust service code
+let mut updates = HashMap::new();
+updates.insert("name".to_string(), "John Doe".to_string());
+updates.insert("age".to_string(), 30);
+// Only fields present in the map will be updated
+rb.exec("updateDynamic", rbs::to_value!({"updates": updates, "id": 1})).await?;
+```
+
+#### The `<trim>` Element in Detail
+
+The `<trim>` element provides fine-grained control over whitespace and delimiters:
+
+```xml
+<trim prefix="WHERE" prefixOverrides="AND |OR " suffix="" suffixOverrides=",">
+  <!-- Content -->
+</trim>
+```
+
+| Attribute | Description |
+|-----------|-------------|
+| `prefix` | String to prepend if the content is not empty |
+| `suffix` | String to append if the content is not empty |
+| `prefixOverrides` | Pipe-separated list of strings to remove from the beginning |
+| `suffixOverrides` | Pipe-separated list of strings to remove from the end |
+
+Aliases for compatibility:
+- `start` is an alias for `prefixOverrides`
+- `end` is an alias for `suffixOverrides`
+
+**Example:**
+
+```xml
+<select id="customSearch">
+  select * from user
+  <trim prefix="WHERE" prefixOverrides="AND |OR ">
+    <if test="name != null">
+      AND name like #{name}
+    </if>
+    <if test="age != null">
+      AND age >= #{age}
+    </if>
+  </trim>
+</select>
+```
+
+#### The `<bind>` Element for Variable Creation
+
+The `<bind>` element creates new variables that can be used in the SQL:
+
+```xml
+<select id="searchByPattern">
+  <bind name="pattern" value="'%' + name + '%'" />
+  select * from user where name like #{pattern}
+</select>
+```
+
+This is particularly useful for preparing values before using them in SQL statements.
+
+## 8. Json Template SQL
+
+// ... existing code ...
+
+## 12. Additional Resources
+
+// ... existing code ...
+
+### 12.6 Example Code Patterns
+
+Below are real-world examples extracted from the Rbatis example directory. These demonstrate recommended patterns and anti-patterns for common Rbatis operations.
+
+#### 12.6.1 CRUD Operations with `crud!` Macro
+
+The preferred way to implement CRUD operations is using the `crud!` macro, as shown in this example from `crud.rs`:
+
+```rust
+use rbatis::crud;
+
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct Activity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<rbatis::rbdc::datetime::DateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
+
+// Choose one of these approaches:
+crud!(Activity {}); // Uses the struct name 'activity' as table name
+// crud!(Activity {}, "activity"); // Explicitly specify table name
+
+// Example usage:
+async fn crud_examples(rb: &RBatis) -> Result<(), rbatis::Error> {
+    let table = Activity {
+        id: Some("1".into()),
+        name: Some("Test Activity".into()),
+        status: Some(1),
+        // ... other fields
+        create_time: Some(rbatis::rbdc::datetime::DateTime::now()),
+        version: Some(1),
+        delete_flag: Some(0),
+    };
+    
+    // Insert a single record
+    let insert_result = Activity::insert(rb, &table).await?;
+    
+    // Batch insert
+    let tables = vec![table.clone(), Activity { 
+        id: Some("2".to_string()), 
+        ..table.clone() 
+    }];
+    let batch_result = Activity::insert_batch(rb, &tables, 10).await?;
+    
+    // Update by column
+    let update_result = Activity::update_by_column(rb, &table, "id").await?;
+    
+    // Update by column with skip null fields
+    let update_skip_result = Activity::update_by_column_skip(rb, &table, "id", false).await?;
+    
+    // Select by map (multiple conditions)
+    let select_result: Vec<Activity> = Activity::select_by_map(rb, rbs::to_value!{
+        "id": "1",
+        "status": 1,
+    }).await?;
+    
+    // Select with IN clause
+    let in_result = Activity::select_in_column(rb, "id", &["1", "2", "3"]).await?;
+    
+    // Delete by column
+    let delete_result = Activity::delete_by_column(rb, "id", "1").await?;
+    
+    // Delete with IN clause
+    let delete_in_result = Activity::delete_in_column(rb, "id", &["1", "2", "3"]).await?;
+    
+    Ok(())
+}
+```
+
+**Key Benefits:**
+- Automatically generates all CRUD methods
+- Type-safe operations
+- No SQL required for basic operations
+- Handles null/Some values correctly
+- Support for bulk operations
+
+**Anti-patterns to Avoid:**
+```rust
+// ❌ AVOID: Directly implementing CRUDTable trait (use crud! macro instead)
+impl CRUDTable for Activity {
+    // ...
+}
+
+// ❌ AVOID: Raw SQL for simple operations that crud! can handle
+let result = rb.exec("INSERT INTO activity (id, name) VALUES (?, ?)", 
+                    vec![to_value!("1"), to_value!("name")]).await?;
+```
+
+#### 12.6.2 Table Utility Macros
+
+The `table_util.rs` example demonstrates how to use Rbatis' table utility macros for data transformation:
+
+```rust
+use rbatis::{table, table_field_btree, table_field_map, table_field_vec};
+
+#[derive(serde::Serialize, serde::Deserialize, Default, Debug, Clone)]
+pub struct Activity {
+    pub id: Option<i64>,
+    pub name: Option<String>,
+    // ... other fields
+}
+
+fn process_activities() {
+    // Create a table with only needed fields initialized
+    let tables: Vec<Activity> = vec![
+        table!(Activity {
+            id: Some(1),
+            name: Some("Activity 1".to_string()),
+        }),
+        table!(Activity {
+            id: Some(2),
+            name: Some("Activity 2".to_string()),
+        }),
+        table!(Activity {
+            id: Some(3),
+            name: Some("Activity 3".to_string()),
+        })
+    ];
+    
+    // Create a HashMap with ID as key (references)
+    let id_map = table_field_map!(&tables, id);
+    // Usage: id_map.get(&1) returns reference to first Activity
+    
+    // Create a HashMap with ID as key (owned)
+    let id_map_owned = table_field_map!(tables.clone(), id);
+    
+    // Create a BTreeMap with ID as key (ordered, references)
+    let id_btree = table_field_btree!(&tables, id);
+    
+    // Create a BTreeMap with ID as key (ordered, owned)
+    let id_btree_owned = table_field_btree!(tables.clone(), id);
+    
+    // Extract a vector of IDs from tables (references)
+    let ids_refs = table_field_vec!(&tables, id);
+    
+    // Extract a vector of IDs from tables (owned)
+    let ids = table_field_vec!(tables, id);
+    // ids contains [Some(1), Some(2), Some(3)]
+}
+```
+
+**Key Benefits:**
+- Simplifies data transformation
+- Creates lookup maps efficiently 
+- Works with both references and owned values
+- Better than manual loops for common operations
+
+**Anti-patterns to Avoid:**
+```rust
+// ❌ AVOID: Manual loops for data transformation
+let mut id_map = HashMap::new();
+for table in &tables {
+    if let Some(id) = table.id {
+        id_map.insert(id, table);
+    }
+}
+
+// ❌ AVOID: Manual extraction of fields
+let mut ids = Vec::new();
+for table in tables {
+    ids.push(table.id);
+}
+```
+
+#### 12.6.3 XML Mapper Examples
+
+The `example.html` file demonstrates proper XML mapper structure and dynamic SQL generation:
+
+```xml
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+        "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
+    <!-- Reusable SQL fragment -->
+    <sql id="whereClause">
+        ` and id != '' `
+    </sql>
+    
+    <!-- INSERT with dynamic columns -->
+    <insert id="insert">
+        `insert into activity`
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            <if test="key == 'id'">
+                <continue></continue>
+            </if>
+            ${key}
+        </foreach>
+        ` values `
+        <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
+            <if test="key == 'id'">
+                <continue></continue>
+            </if>
+            ${item.sql()}
+        </foreach>
+    </insert>
+    
+    <!-- SELECT with WHERE, IF, CHOOSE conditions -->
+    <select id="select_by_condition">
+        `select * from activity`
+        <where>
+            <if test="name != ''">
+                ` and name like #{name}`
+            </if>
+            <if test="dt >= '2009-12-12 00:00:00'">
+                ` and create_time < #{dt}`
+            </if>
+            <choose>
+                <when test="true">
+                    ` and id != '-1'`
+                </when>
+                <otherwise>and id != -2</otherwise>
+            </choose>
+            ` and `
+            <trim prefixOverrides=" and">
+                ` and name != '' `
+            </trim>
+        </where>
+    </select>
+    
+    <!-- UPDATE with dynamic SET -->
+    <update id="update_by_id">
+        ` update activity `
+        <set collection="arg"></set>
+        ` where id = #{id} `
+    </update>
+</mapper>
+```
+
+**Usage in Rust:**
+```rust
+use rbatis::RBatis;
+
+async fn use_xml_mapper(rb: &RBatis) -> Result<(), rbatis::Error> {
+    // First, load the HTML file
+    rb.load_html("example/example.html").await?;
+    
+    // Then use the XML mapper methods
+    let params = rbs::to_value!({
+        "name": "test%",
+        "dt": "2023-01-01 00:00:00"
+    });
+    
+    let results: Vec<Activity> = rb.fetch("select_by_condition", &params).await?;
+    
+    // For the dynamic update
+    let update_params = rbs::to_value!({
+        "id": 1,
+        "name": "Updated Name",
+        "status": 2
+    });
+    
+    let update_result = rb.exec("update_by_id", &update_params).await?;
+    
+    Ok(())
+}
+```
+
+**Key Benefits:**
+- Clean separation of SQL from Rust code
+- Dynamic SQL generation
+- Support for complex queries
+- Reusable SQL fragments
+
+**Anti-patterns to Avoid:**
+```xml
+<!-- ❌ AVOID: Using ResultMap in Rbatis -->
+<mapper>
+    <resultMap id="BaseResultMap" type="Activity">
+        <!-- This is NOT supported in Rbatis -->
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+    </resultMap>
+</mapper>
+
+<!-- ❌ AVOID: Missing backticks for SQL keywords -->
+<select id="badSql">
+    SELECT * FROM activity WHERE id = #{id}
+</select>
+```
+
+#### 12.6.4 Raw SQL Operations
+
+When the CRUD macros and HTML mappers aren't sufficient, you can use raw SQL as shown in `raw_sql.rs`:
+
+```rust
+use rbatis::RBatis;
+use rbs::to_value;
+
+async fn raw_sql_examples(rb: &RBatis) -> Result<(), rbatis::Error> {
+    // Query with parameters and decode to struct
+    let activity: Option<Activity> = rb
+        .query_decode("select * from activity where id = ? limit 1", 
+                     vec![to_value!("1")])
+        .await?;
+    
+    // Query multiple rows
+    let activities: Vec<Activity> = rb
+        .query_decode("select * from activity where status = ?", 
+                     vec![to_value!(1)])
+        .await?;
+    
+    // Execute statement without returning results
+    let affected_rows = rb
+        .exec("update activity set status = ? where id = ?", 
+             vec![to_value!(0), to_value!("1")])
+        .await?;
+    
+    // Execute insert
+    let insert_result = rb
+        .exec("insert into activity (id, name, status) values (?, ?, ?)", 
+             vec![to_value!("3"), to_value!("New Activity"), to_value!(1)])
+        .await?;
+    
+    // Execute delete
+    let delete_result = rb
+        .exec("delete from activity where id = ?", 
+             vec![to_value!("3")])
+        .await?;
+    
+    Ok(())
+}
+```
+
+**Key Benefits:**
+- Full control over SQL
+- Useful for complex queries
+- Good for migrations and schema changes
+- Handles any SQL the driver supports
+
+**Anti-patterns to Avoid:**
+```rust
+// ❌ AVOID: String concatenation for SQL (SQL injection risk)
+let id = "1";
+let unsafe_sql = format!("select * from activity where id = '{}'", id);
+let result = rb.query_decode(unsafe_sql, vec![]).await?;
+
+// ❌ AVOID: Raw SQL for standard CRUD operations
+// Use Activity::insert(rb, &activity) instead of:
+rb.exec("insert into activity (id, name) values (?, ?)", 
+       vec![to_value!(activity.id), to_value!(activity.name)]).await?;
+```
+
+#### 12.6.5 Common Mistakes and Best Practices
+
+Based on the example code, here are some general best practices and common mistakes:
+
+**Best Practices:**
+1. **Use the `crud!` macro** for standard CRUD operations
+2. **Leverage table utilities** for data transformation
+3. **Use HTML mappers** for complex queries
+4. **Place SQL keywords in backticks** when using HTML mappers
+5. **Use parameter binding** (`#{param}` or `?`) rather than string concatenation
+6. **Always check for nulls** in dynamic SQL
+7. **Prefer `select_in_column`** over complex JOIN operations
+8. **Use `table!` macro** to create partially initialized structs
+
+**Common Mistakes:**
+1. **❌ Implementing `CRUDTable` manually** instead of using `crud!`
+2. **❌ Using `ResultMap` elements** which aren't supported in Rbatis XML
+3. **❌ Forgetting backticks** around SQL keywords in HTML mappers
+4. **❌ String concatenation for SQL parameters** (SQL injection risk)
+5. **❌ Complex JOINs** instead of using `select_in_column` and merging in Rust
+6. **❌ Inefficient loops** instead of using table utility macros
+7. **❌ Missing DOCTYPE declaration** in HTML mapper files
+8. **❌ Unnecessary raw SQL** for operations supported by macros
+
+Remember that Rbatis is designed to be Rust-idiomatic, and it often differs from other ORMs like MyBatis. Following these patterns will help you use Rbatis effectively and avoid common pitfalls.
+
+## 13. Conclusion
+
+// ... existing code ...
