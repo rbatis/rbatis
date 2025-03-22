@@ -2,6 +2,40 @@
 
 > 本文档基于Rbatis 4.5+ 版本，提供了Rbatis ORM框架的详细使用说明。Rbatis是一个高性能的Rust异步ORM框架，支持多种数据库，提供了编译时动态SQL和类似MyBatis的功能。
 
+## 重要版本说明和最佳实践
+
+Rbatis 4.5+相比之前的版本有显著改进。以下是主要变化和推荐的最佳实践：
+
+1. **使用宏替代特质**：在当前版本中，使用`crud!`和`impl_*`宏替代实现`CRUDTable`特质（这是旧版3.0中使用的方式）。
+
+2. **定义模型和操作的首选模式**：
+   ```rust
+   // 1. 定义你的数据模型
+   #[derive(Clone, Debug, Serialize, Deserialize)]
+   pub struct User {
+       pub id: Option<String>,
+       pub name: Option<String>,
+       // 其他字段...
+   }
+   
+   // 2. 生成基本的CRUD操作
+   crud!(User {});  // 或 crud!(User {}, "自定义表名");
+   
+   // 3. 使用impl_*宏定义自定义方法
+   impl_select!(User {select_by_name(name: &str) -> Vec => "` where name = #{name}`"});
+   impl_select!(User {select_by_id(id: &str) -> Option => "` where id = #{id} limit 1`"});
+   impl_update!(User {update_status_by_id(id: &str, status: i32) => "` set status = #{status} where id = #{id}`"});
+   impl_delete!(User {delete_by_name(name: &str) => "` where name = #{name}`"});
+   ```
+
+3. **使用小写SQL关键字**：SQL关键字始终使用小写，如`select`、`where`、`and`等。
+
+4. **正确使用反引号**：用反引号(`)包裹动态SQL片段以保留空格。
+
+5. **异步优先方法**：所有数据库操作都应使用`.await`等待完成。
+
+请参考下面的示例了解当前推荐的使用方法。
+
 ## 1. Rbatis简介
 
 Rbatis是一个Rust语言编写的ORM(对象关系映射)框架，提供了丰富的数据库操作功能。它支持多种数据库类型，包括但不限于MySQL、PostgreSQL、SQLite、MS SQL Server等。
@@ -130,16 +164,14 @@ pub struct User {
     pub status: Option<i32>,
 }
 
-// 实现CRUDTable特性可以自定义表名和列名
-impl CRUDTable for User {
-    fn table_name() -> String {
-        "user".to_string()
-    }
-    
-    fn table_columns() -> String {
-        "id,username,password,create_time,status".to_string()
-    }
-}
+// 注意：在Rbatis 4.5+中，建议使用crud!宏
+// 而不是实现CRUDTable特质（这是旧版本中的做法）
+// 应该使用以下方式：
+
+// 为User结构体生成CRUD方法
+crud!(User {});
+// 或指定自定义表名
+// crud!(User {}, "users");
 ```
 
 ### 4.3 自定义表名
@@ -1654,6 +1686,101 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 这个完整示例展示了如何使用Rbatis构建一个包含数据模型、数据访问层、业务逻辑层和API接口层的Web应用，覆盖了Rbatis的各种特性，包括基本CRUD操作、动态SQL、事务管理、分页查询等。通过这个示例，开发者可以快速理解如何在实际项目中有效使用Rbatis。
+
+## 11.8 现代Rbatis 4.5+示例
+
+以下是一个简洁的示例，展示了Rbatis 4.5+的推荐使用方法：
+
+```rust
+use rbatis::{crud, impl_select, impl_update, impl_delete, RBatis};
+use rbdc_sqlite::driver::SqliteDriver;
+use serde::{Deserialize, Serialize};
+use rbatis::rbdc::datetime::DateTime;
+
+// 定义数据模型
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct User {
+    id: Option<String>,
+    username: Option<String>,
+    email: Option<String>,
+    status: Option<i32>,
+    create_time: Option<DateTime>,
+}
+
+// 生成基本CRUD方法
+crud!(User {});
+
+// 定义自定义查询方法
+impl_select!(User{find_by_username(username: &str) -> Option => 
+    "` where username = #{username} limit 1`"});
+
+impl_select!(User{find_active_users() -> Vec => 
+    "` where status = 1 order by create_time desc`"});
+
+impl_update!(User{update_status(id: &str, status: i32) =>
+    "` set status = #{status} where id = #{id}`"});
+
+impl_delete!(User{remove_inactive() =>
+    "` where status = 0`"});
+
+// 定义分页查询
+impl_select_page!(User{find_by_email_page(email: &str) =>
+    "` where email like #{email}`"});
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 初始化日志
+    fast_log::init(fast_log::Config::new().console()).unwrap();
+    
+    // 创建RBatis实例并连接数据库
+    let rb = RBatis::new();
+    rb.link(SqliteDriver {}, "sqlite://test.db").await?;
+    
+    // 创建新用户
+    let user = User {
+        id: Some("1".to_string()),
+        username: Some("test_user".to_string()),
+        email: Some("test@example.com".to_string()),
+        status: Some(1),
+        create_time: Some(DateTime::now()),
+    };
+    
+    // 插入用户
+    User::insert(&rb, &user).await?;
+    
+    // 通过用户名查找用户（返回Option<User>）
+    let found_user = User::find_by_username(&rb, "test_user").await?;
+    println!("查找到的用户: {:?}", found_user);
+    
+    // 查找所有活跃用户（返回Vec<User>）
+    let active_users = User::find_active_users(&rb).await?;
+    println!("活跃用户数量: {}", active_users.len());
+    
+    // 更新用户状态
+    User::update_status(&rb, "1", 2).await?;
+    
+    // 分页查询（返回Page<User>）
+    use rbatis::plugin::page::PageRequest;
+    let page_req = PageRequest::new(1, 10);
+    let user_page = User::find_by_email_page(&rb, &page_req, "%example%").await?;
+    println!("总用户数: {}, 当前页: {}", user_page.total, user_page.page_no);
+    
+    // 按列删除
+    User::delete_by_column(&rb, "id", "1").await?;
+    
+    // 使用自定义方法删除非活跃用户
+    User::remove_inactive(&rb).await?;
+    
+    Ok(())
+}
+```
+
+这个示例展示了使用Rbatis 4.5+的现代方法：
+1. 使用`#[derive]`属性定义数据模型
+2. 使用`crud!`宏生成基本CRUD方法
+3. 使用适当的`impl_*`宏定义自定义查询
+4. 为方法返回使用强类型（Option、Vec、Page等）
+5. 对所有数据库操作使用async/await
 
 # 12. 总结
 
