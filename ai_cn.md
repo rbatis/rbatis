@@ -22,9 +22,17 @@ Rbatis 4.5+相比之前的版本有显著改进。以下是主要变化和推荐
    crud!(User {});  // 或 crud!(User {}, "自定义表名");
    
    // 3. 使用impl_*宏定义自定义方法
+   // 注意：文档注释必须放在impl_*宏的上面，而不是里面
+   /// 按名称查询用户
    impl_select!(User {select_by_name(name: &str) -> Vec => "` where name = #{name}`"});
+   
+   /// 按ID获取用户
    impl_select!(User {select_by_id(id: &str) -> Option => "` where id = #{id} limit 1`"});
+   
+   /// 根据ID更新用户状态
    impl_update!(User {update_status_by_id(id: &str, status: i32) => "` set status = #{status} where id = #{id}`"});
+   
+   /// 按名称删除用户
    impl_delete!(User {delete_by_name(name: &str) => "` where name = #{name}`"});
    ```
 
@@ -33,6 +41,10 @@ Rbatis 4.5+相比之前的版本有显著改进。以下是主要变化和推荐
 4. **正确使用反引号**：用反引号(`)包裹动态SQL片段以保留空格。
 
 5. **异步优先方法**：所有数据库操作都应使用`.await`等待完成。
+
+6. **使用雪花ID或ObjectId作为主键**：Rbatis提供了内置的ID生成机制，应该用于主键。
+
+7. **优先使用select_in_column而非JOIN**：为了更好的性能和可维护性，避免复杂的JOIN查询，使用Rbatis的select_in_column获取关联数据，然后在服务层合并它们。
 
 请参考下面的示例了解当前推荐的使用方法。
 
@@ -1794,3 +1806,542 @@ Rbatis是一个功能强大且灵活的ORM框架，适用于多种数据库类�
 2. **正确处理空格**：使用反引号（`）包裹SQL片段以保留前导空格。
 3. **类型安全**：充分利用Rust的类型系统，使用`Option<T>`处理可空字段。
 4. **遵循异步编程模型**：Rbatis是异步ORM，所有数据库操作都应使用`.await`等待完成。 
+
+# 3.5 ID生成
+
+Rbatis提供了内置的ID生成机制，推荐用于数据库表的主键。使用这些机制可以确保全局唯一的ID，并为分布式系统提供更好的性能。
+
+## 3.5.1 雪花ID (SnowflakeId)
+
+雪花ID是由Twitter最初开发的分布式ID生成算法。它生成由以下部分组成的64位ID：
+- 时间戳
+- 机器ID
+- 序列号
+
+```rust
+use rbatis::snowflake::new_snowflake_id;
+
+// 在模型定义中
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct User {
+    // 使用i64存储雪花ID
+    pub id: Option<i64>,
+    pub username: Option<String>,
+    // 其他字段...
+}
+
+// 创建新记录时
+async fn create_user(rb: &RBatis, username: &str) -> rbatis::Result<User> {
+    let mut user = User {
+        id: Some(new_snowflake_id()), // 生成新的雪花ID
+        username: Some(username.to_string()),
+        // 初始化其他字段...
+    };
+    
+    User::insert(rb, &user).await?;
+    Ok(user)
+}
+```
+
+## 3.5.2 ObjectId
+
+ObjectId受MongoDB的ObjectId启发，提供了由以下部分组成的12字节标识符：
+- 4字节时间戳
+- 3字节机器标识符
+- 2字节进程ID
+- 3字节计数器
+
+```rust
+use rbatis::object_id::ObjectId;
+
+// 在模型定义中
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Document {
+    // 可以使用String存储ObjectId
+    pub id: Option<String>,
+    pub title: Option<String>,
+    // 其他字段...
+}
+
+// 创建新记录时
+async fn create_document(rb: &RBatis, title: &str) -> rbatis::Result<Document> {
+    let mut doc = Document {
+        id: Some(ObjectId::new().to_string()), // 生成新的ObjectId作为字符串
+        title: Some(title.to_string()),
+        // 初始化其他字段...
+    };
+    
+    Document::insert(rb, &doc).await?;
+    Ok(doc)
+}
+
+// 或者，你可以直接在模型中使用ObjectId
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DocumentWithObjectId {
+    pub id: Option<ObjectId>,
+    pub title: Option<String>,
+    // 其他字段...
+}
+
+async fn create_document_with_object_id(rb: &RBatis, title: &str) -> rbatis::Result<DocumentWithObjectId> {
+    let mut doc = DocumentWithObjectId {
+        id: Some(ObjectId::new()), // 生成新的ObjectId
+        title: Some(title.to_string()),
+        // 初始化其他字段...
+    };
+    
+    DocumentWithObjectId::insert(rb, &doc).await?;
+    Ok(doc)
+}
+```
+
+## 6.5 文档和注释
+
+使用Rbatis宏时，遵循一定的文档和注释约定很重要。
+
+### 6.5.1 为impl_*宏添加文档
+
+为`impl_*`宏生成的方法添加文档注释时，注释**必须**放在宏的**上面**，而不是里面：
+
+```rust
+// 正确：文档注释在宏的上面
+/// 根据状态查找用户
+/// @param status: 要搜索的用户状态
+impl_select!(User {find_by_status(status: i32) -> Vec => 
+    "` where status = #{status}`"});
+
+// 错误：会导致编译错误
+impl_select!(User {
+    /// 宏内的这个注释会导致错误
+    find_by_name(name: &str) -> Vec => 
+        "` where name = #{name}`"
+});
+```
+
+### 6.5.2 注释的常见错误
+
+一个常见的错误是在宏内部放置文档注释：
+
+```rust
+// 这会导致编译错误
+impl_select!(DiscountTask {
+    /// 按类型查询折扣任务
+    find_by_type(task_type: &str) -> Vec => 
+        "` where task_type = #{task_type} and state = 'published' and deleted = 0 and end_time > now() order by discount_percent desc`"
+});
+```
+
+正确的方法是：
+
+```rust
+// 这样可以正常工作
+/// 按类型查询折扣任务
+impl_select!(DiscountTask {find_by_type(task_type: &str) -> Vec => 
+    "` where task_type = #{task_type} and state = 'published' and deleted = 0 and end_time > now() order by discount_percent desc`"});
+```
+
+### 6.5.3 为什么这很重要
+
+Rbatis过程宏系统在编译时解析宏内容。当文档注释放在宏内部时，它们会干扰解析过程，导致编译错误。通过将文档注释放在宏外部，它们会正确地附加到生成的方法上，同时避免解析器问题。 
+
+## 12. 处理关联数据
+
+在处理表之间的关联数据（如一对多或多对多关系）时，Rbatis建议使用`select_in_column`而不是复杂的JOIN查询。这种方法在大多数情况下更高效且更易于维护。
+
+### 12.1 JOIN查询的问题
+
+虽然SQL JOIN功能强大，但它们可能会导致几个问题：
+- 难以维护的复杂查询
+- 大数据集的性能问题
+- 处理嵌套关系的困难
+- 将平面结果集映射到对象层次结构的挑战
+
+### 12.2 Rbatis方法：select_in_column
+
+Rbatis建议，不要使用JOIN，而是：
+1. 先查询主实体
+2. 从主实体中提取ID
+3. 使用`select_in_column`批量获取关联实体
+4. 在服务层合并数据
+
+这种方法有几个优点：
+- 大数据集的性能更好
+- 代码更清晰，更易于维护
+- 更好地控制获取的数据
+- 避免N+1查询问题
+
+### 12.3 示例：一对多关系
+
+```rust
+// 实体
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Order {
+    pub id: Option<String>,
+    pub user_id: Option<String>,
+    pub total: Option<f64>,
+    // 其他字段...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct OrderItem {
+    pub id: Option<String>,
+    pub order_id: Option<String>,
+    pub product_id: Option<String>,
+    pub quantity: Option<i32>,
+    pub price: Option<f64>,
+    // 其他字段...
+}
+
+// 生成CRUD操作
+crud!(Order {});
+crud!(OrderItem {});
+
+// OrderItem的自定义方法
+impl_select!(OrderItem {
+    select_by_order_ids(order_ids: &[String]) -> Vec =>
+        "` where order_id in ${order_ids.sql()} order by id asc`"
+});
+
+// 服务层
+pub struct OrderService {
+    rb: RBatis,
+}
+
+impl OrderService {
+    // 获取订单及其项目
+    pub async fn get_orders_with_items(&self, user_id: &str) -> rbatis::Result<Vec<OrderWithItems>> {
+        // 步骤1：获取用户的所有订单
+        let orders = Order::select_by_column(&self.rb, "user_id", user_id).await?;
+        if orders.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        // 步骤2：提取订单ID
+        let order_ids: Vec<String> = orders
+            .iter()
+            .filter_map(|order| order.id.clone())
+            .collect();
+            
+        // 步骤3：在单个查询中获取所有订单项
+        let items = OrderItem::select_by_order_ids(&self.rb, &order_ids).await?;
+        
+        // 步骤4：按order_id分组项目以便快速查找
+        let mut items_map: HashMap<String, Vec<OrderItem>> = HashMap::new();
+        for item in items {
+            if let Some(order_id) = &item.order_id {
+                items_map
+                    .entry(order_id.clone())
+                    .or_insert_with(Vec::new)
+                    .push(item);
+            }
+        }
+        
+        // 步骤5：将订单与其项目组合
+        let result = orders
+            .into_iter()
+            .map(|order| {
+                let order_id = order.id.clone().unwrap_or_default();
+                let order_items = items_map.get(&order_id).cloned().unwrap_or_default();
+                
+                OrderWithItems {
+                    order,
+                    items: order_items,
+                }
+            })
+            .collect();
+            
+        Ok(result)
+    }
+}
+
+// 组合数据结构
+pub struct OrderWithItems {
+    pub order: Order,
+    pub items: Vec<OrderItem>,
+}
+```
+
+### 12.4 示例：多对多关系
+
+```rust
+// 实体
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Student {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    // 其他字段...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Course {
+    pub id: Option<String>,
+    pub title: Option<String>,
+    // 其他字段...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct StudentCourse {
+    pub id: Option<String>,
+    pub student_id: Option<String>,
+    pub course_id: Option<String>,
+    pub enrollment_date: Option<DateTime>,
+}
+
+// 生成CRUD操作
+crud!(Student {});
+crud!(Course {});
+crud!(StudentCourse {});
+
+// 自定义方法
+impl_select!(StudentCourse {
+    select_by_student_ids(student_ids: &[String]) -> Vec =>
+        "` where student_id in ${student_ids.sql()}`"
+});
+
+impl_select!(Course {
+    select_by_ids(ids: &[String]) -> Vec =>
+        "` where id in ${ids.sql()}`"
+});
+
+// 服务层函数，获取学生及其课程
+async fn get_students_with_courses(rb: &RBatis) -> rbatis::Result<Vec<StudentWithCourses>> {
+    // 步骤1：获取所有学生
+    let students = Student::select_all(rb).await?;
+    
+    // 步骤2：提取学生ID
+    let student_ids: Vec<String> = students
+        .iter()
+        .filter_map(|s| s.id.clone())
+        .collect();
+        
+    // 步骤3：获取这些学生的所有选课记录
+    let enrollments = StudentCourse::select_by_student_ids(rb, &student_ids).await?;
+    
+    // 步骤4：从选课记录中提取课程ID
+    let course_ids: Vec<String> = enrollments
+        .iter()
+        .filter_map(|e| e.course_id.clone())
+        .collect();
+        
+    // 步骤5：在一个查询中获取所有课程
+    let courses = Course::select_by_ids(rb, &course_ids).await?;
+    
+    // 步骤6：创建查找映射
+    let mut enrollment_map: HashMap<String, Vec<StudentCourse>> = HashMap::new();
+    for enrollment in enrollments {
+        if let Some(student_id) = &enrollment.student_id {
+            enrollment_map
+                .entry(student_id.clone())
+                .or_insert_with(Vec::new)
+                .push(enrollment);
+        }
+    }
+    
+    let course_map: HashMap<String, Course> = courses
+        .into_iter()
+        .filter_map(|course| {
+            course.id.clone().map(|id| (id, course))
+        })
+        .collect();
+    
+    // 步骤7：组合所有内容
+    let result = students
+        .into_iter()
+        .map(|student| {
+            let student_id = student.id.clone().unwrap_or_default();
+            let student_enrollments = enrollment_map.get(&student_id).cloned().unwrap_or_default();
+            
+            let student_courses = student_enrollments
+                .iter()
+                .filter_map(|enrollment| {
+                    enrollment.course_id.clone().and_then(|course_id| {
+                        course_map.get(&course_id).cloned()
+                    })
+                })
+                .collect();
+                
+            StudentWithCourses {
+                student,
+                courses: student_courses,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+
+// 组合数据结构
+pub struct StudentWithCourses {
+    pub student: Student,
+    pub courses: Vec<Course>,
+}
+```
+
+通过使用这种方法，你可以：
+1. 避免复杂的JOIN查询
+2. 最小化数据库查询次数（避免N+1问题）
+3. 保持数据访问和业务逻辑之间的清晰分离
+4. 更好地控制数据获取和转换
+5. 轻松处理更复杂的嵌套关系
+
+### 12.5 使用Rbatis表工具宏进行数据关联
+
+Rbatis在`table_util.rs`中提供了几个强大的工具宏，可以在合并相关实体数据时显著简化数据处理。这些宏是SQL JOIN的更高效替代方案：
+
+#### 12.5.1 可用的表工具宏
+
+1. **`table_field_vec!`** - 将集合中的特定字段提取到新的Vec中：
+   ```rust
+   // 从用户角色集合中提取所有角色ID
+   let role_ids: Vec<String> = table_field_vec!(user_roles, role_id);
+   // 使用引用（不克隆）
+   let role_ids_ref: Vec<&String> = table_field_vec!(&user_roles, role_id);
+   ```
+
+2. **`table_field_set!`** - 将特定字段提取到HashSet中（适用于唯一值）：
+   ```rust
+   // 提取唯一的角色ID
+   let role_ids: HashSet<String> = table_field_set!(user_roles, role_id);
+   // 使用引用
+   let role_ids_ref: HashSet<&String> = table_field_set!(&user_roles, role_id);
+   ```
+
+3. **`table_field_map!`** - 创建以特定字段为键的HashMap：
+   ```rust
+   // 创建以role_id为键、UserRole为值的HashMap
+   let role_map: HashMap<String, SysUserRole> = table_field_map!(user_roles, role_id);
+   ```
+
+4. **`table_field_btree!`** - 创建以特定字段为键的BTreeMap（有序映射）：
+   ```rust
+   // 创建以role_id为键的BTreeMap
+   let role_btree: BTreeMap<String, SysUserRole> = table_field_btree!(user_roles, role_id);
+   ```
+
+5. **`table!`** - 通过使用Default特性简化表构造：
+   ```rust
+   // 创建一个特定字段已初始化的新实例
+   let user = table!(User { id: new_snowflake_id(), name: "张三".to_string() });
+   ```
+
+#### 12.5.2 改进示例：一对多关系
+
+以下是如何使用这些工具简化一对多示例：
+
+```rust
+// 导入
+use std::collections::HashMap;
+use rbatis::{table_field_vec, table_field_map};
+
+// 服务方法
+pub async fn get_orders_with_items(&self, user_id: &str) -> rbatis::Result<Vec<OrderWithItems>> {
+    // 获取用户的所有订单
+    let orders = Order::select_by_column(&self.rb, "user_id", user_id).await?;
+    if orders.is_empty() {
+        return Ok(vec![]);
+    }
+    
+    // 使用table_field_vec!宏提取订单ID - 更简洁！
+    let order_ids = table_field_vec!(orders, id);
+    
+    // 在单个查询中获取所有订单项
+    let items = OrderItem::select_by_order_ids(&self.rb, &order_ids).await?;
+    
+    // 使用table_field_map!按order_id分组项目 - 自动分组！
+    let mut items_map: HashMap<String, Vec<OrderItem>> = HashMap::new();
+    for (order_id, item) in table_field_map!(items, order_id) {
+        items_map.entry(order_id).or_insert_with(Vec::new).push(item);
+    }
+    
+    // 将订单映射到结果
+    let result = orders
+        .into_iter()
+        .map(|order| {
+            let order_id = order.id.clone().unwrap_or_default();
+            let order_items = items_map.get(&order_id).cloned().unwrap_or_default();
+            
+            OrderWithItems {
+                order,
+                items: order_items,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+```
+
+#### 12.5.3 简化的多对多示例
+
+对于多对多关系，这些工具也能简化代码：
+
+```rust
+// 导入
+use std::collections::{HashMap, HashSet};
+use rbatis::{table_field_vec, table_field_set, table_field_map};
+
+// 多对多的服务函数
+async fn get_students_with_courses(rb: &RBatis) -> rbatis::Result<Vec<StudentWithCourses>> {
+    // 获取所有学生
+    let students = Student::select_all(rb).await?;
+    
+    // 使用工具宏提取学生ID
+    let student_ids = table_field_vec!(students, id);
+    
+    // 获取这些学生的选课记录
+    let enrollments = StudentCourse::select_by_student_ids(rb, &student_ids).await?;
+    
+    // 使用set提取唯一课程ID（自动去除重复）
+    let course_ids = table_field_set!(enrollments, course_id);
+    
+    // 在一个查询中获取所有课程
+    let courses = Course::select_by_ids(rb, &course_ids.into_iter().collect::<Vec<_>>()).await?;
+    
+    // 使用工具宏创建查找映射
+    let course_map = table_field_map!(courses, id);
+    
+    // 创建学生->选课记录的映射
+    let mut student_enrollments: HashMap<String, Vec<StudentCourse>> = HashMap::new();
+    for enrollment in enrollments {
+        if let Some(student_id) = &enrollment.student_id {
+            student_enrollments
+                .entry(student_id.clone())
+                .or_insert_with(Vec::new)
+                .push(enrollment);
+        }
+    }
+    
+    // 构建结果
+    let result = students
+        .into_iter()
+        .map(|student| {
+            let student_id = student.id.clone().unwrap_or_default();
+            let enrollments = student_enrollments.get(&student_id).cloned().unwrap_or_default();
+            
+            // 将选课记录映射到课程
+            let student_courses = enrollments
+                .iter()
+                .filter_map(|enrollment| {
+                    enrollment.course_id.as_ref().and_then(|course_id| {
+                        course_map.get(course_id).cloned()
+                    })
+                })
+                .collect();
+                
+            StudentWithCourses {
+                student,
+                courses: student_courses,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+```
+
+使用这些工具宏提供了几个优势：
+1. **更简洁的代码** - 减少提取和映射数据的模板代码
+2. **类型安全** - 保持Rust的强类型特性
+3. **高效性** - 预分配集合的优化操作
+4. **可读性** - 使数据转换的意图更清晰
+5. **更符合惯用法** - 利用Rbatis的内置工具进行常见操作

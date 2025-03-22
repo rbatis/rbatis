@@ -22,9 +22,17 @@ Rbatis 4.5+ has significant improvements over previous versions. Here are the ke
    crud!(User {});  // or crud!(User {}, "custom_table_name");
    
    // 3. Define custom methods using impl_* macros
+   // Note: Doc comments must be placed ABOVE the impl_* macro, not inside it
+   /// Select users by name
    impl_select!(User {select_by_name(name: &str) -> Vec => "` where name = #{name}`"});
+   
+   /// Get user by ID
    impl_select!(User {select_by_id(id: &str) -> Option => "` where id = #{id} limit 1`"});
+   
+   /// Update user status by ID
    impl_update!(User {update_status_by_id(id: &str, status: i32) => "` set status = #{status} where id = #{id}`"});
+   
+   /// Delete users by name
    impl_delete!(User {delete_by_name(name: &str) => "` where name = #{name}`"});
    ```
 
@@ -33,6 +41,10 @@ Rbatis 4.5+ has significant improvements over previous versions. Here are the ke
 4. **Proper backtick usage**: Enclose dynamic SQL fragments in backticks (`) to preserve spaces.
 
 5. **Async-first approach**: All database operations should be awaited with `.await`.
+
+6. **Use SnowflakeId or ObjectId for IDs**: Rbatis provides built-in ID generation mechanisms that should be used for primary keys.
+
+7. **Prefer select_in_column over JOIN**: For better performance and maintainability, avoid complex JOINs and use Rbatis' select_in_column to fetch related data, then combine them in your service layer.
 
 Please refer to the examples below for the current recommended approaches.
 
@@ -885,7 +897,7 @@ When debugging complex expressions, you can use the following tips:
 
 2. **Enable Detailed Logging**:
    ```rust
-   fast_log::init(fast_log::Config::new().console().level(LevelFilter::Debug)).unwrap();
+   fast_log::init(fast_log::Config::new().console()).unwrap();
    ```
 
 3. **Expression Decomposition**: Decompose complex expressions into multiple simple expressions, gradually verify
@@ -1782,6 +1794,408 @@ This example shows the modern approach to using Rbatis 4.5+:
 4. Use strong typing for method returns (Option, Vec, Page, etc.)
 5. Use async/await for all database operations
 
+## 12. Handling Related Data (Associations)
+
+When dealing with related data between tables (like one-to-many or many-to-many relationships), Rbatis recommends using `select_in_column` rather than complex JOIN queries. This approach is more efficient and maintainable in most cases.
+
+### 12.1 The Problem with JOINs
+
+While SQL JOINs are powerful, they can lead to several issues:
+- Complex queries that are hard to maintain
+- Performance problems with large datasets
+- Difficulty handling nested relationships
+- Mapping challenges from flat result sets to object hierarchies
+
+### 12.2 Rbatis Approach: select_in_column
+
+Instead of JOINs, Rbatis recommends:
+1. Query the main entity first
+2. Extract IDs from the main entities
+3. Use `select_in_column` to fetch related entities in a batch
+4. Combine the data in your service layer
+
+This approach has several advantages:
+- Better performance for large datasets
+- Cleaner, more maintainable code
+- Better control over exactly what data is fetched
+- Avoids N+1 query problems
+
+### 12.3 Example: One-to-Many Relationship
+
+```rust
+// Entities
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Order {
+    pub id: Option<String>,
+    pub user_id: Option<String>,
+    pub total: Option<f64>,
+    // Other fields...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct OrderItem {
+    pub id: Option<String>,
+    pub order_id: Option<String>,
+    pub product_id: Option<String>,
+    pub quantity: Option<i32>,
+    pub price: Option<f64>,
+    // Other fields...
+}
+
+// Generate CRUD operations
+crud!(Order {});
+crud!(OrderItem {});
+
+// Custom methods for OrderItem
+impl_select!(OrderItem {
+    select_by_order_ids(order_ids: &[String]) -> Vec =>
+        "` where order_id in ${order_ids.sql()} order by id asc`"
+});
+
+// Service layer
+pub struct OrderService {
+    rb: RBatis,
+}
+
+impl OrderService {
+    // Get orders with their items
+    pub async fn get_orders_with_items(&self, user_id: &str) -> rbatis::Result<Vec<OrderWithItems>> {
+        // Step 1: Get all orders for the user
+        let orders = Order::select_by_column(&self.rb, "user_id", user_id).await?;
+        if orders.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        // Step 2: Extract order IDs
+        let order_ids: Vec<String> = orders
+            .iter()
+            .filter_map(|order| order.id.clone())
+            .collect();
+            
+        // Step 3: Fetch all order items in a single query
+        let items = OrderItem::select_by_order_ids(&self.rb, &order_ids).await?;
+        
+        // Step 4: Group items by order_id for quick lookup
+        let mut items_map: HashMap<String, Vec<OrderItem>> = HashMap::new();
+        for item in items {
+            if let Some(order_id) = &item.order_id {
+                items_map
+                    .entry(order_id.clone())
+                    .or_insert_with(Vec::new)
+                    .push(item);
+            }
+        }
+        
+        // Step 5: Combine orders with their items
+        let result = orders
+            .into_iter()
+            .map(|order| {
+                let order_id = order.id.clone().unwrap_or_default();
+                let order_items = items_map.get(&order_id).cloned().unwrap_or_default();
+                
+                OrderWithItems {
+                    order,
+                    items: order_items,
+                }
+            })
+            .collect();
+            
+        Ok(result)
+    }
+}
+
+// Combined data structure
+pub struct OrderWithItems {
+    pub order: Order,
+    pub items: Vec<OrderItem>,
+}
+```
+
+### 12.4 Example: Many-to-Many Relationship
+
+```rust
+// Entities
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Student {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    // Other fields...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Course {
+    pub id: Option<String>,
+    pub title: Option<String>,
+    // Other fields...
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct StudentCourse {
+    pub id: Option<String>,
+    pub student_id: Option<String>,
+    pub course_id: Option<String>,
+    pub enrollment_date: Option<DateTime>,
+}
+
+// Generate CRUD operations
+crud!(Student {});
+crud!(Course {});
+crud!(StudentCourse {});
+
+// Custom methods
+impl_select!(StudentCourse {
+    select_by_student_ids(student_ids: &[String]) -> Vec =>
+        "` where student_id in ${student_ids.sql()}`"
+});
+
+impl_select!(Course {
+    select_by_ids(ids: &[String]) -> Vec =>
+        "` where id in ${ids.sql()}`"
+});
+
+// Service layer function to get students with their courses
+async fn get_students_with_courses(rb: &RBatis) -> rbatis::Result<Vec<StudentWithCourses>> {
+    // Step 1: Get all students
+    let students = Student::select_all(rb).await?;
+    
+    // Step 2: Extract student IDs
+    let student_ids: Vec<String> = students
+        .iter()
+        .filter_map(|s| s.id.clone())
+        .collect();
+        
+    // Step 3: Get all enrollments for these students
+    let enrollments = StudentCourse::select_by_student_ids(rb, &student_ids).await?;
+    
+    // Step 4: Extract course IDs from enrollments
+    let course_ids: Vec<String> = enrollments
+        .iter()
+        .filter_map(|e| e.course_id.clone())
+        .collect();
+        
+    // Step 5: Get all courses in one query
+    let courses = Course::select_by_ids(rb, &course_ids).await?;
+    
+    // Step 6: Create lookup maps
+    let mut enrollment_map: HashMap<String, Vec<StudentCourse>> = HashMap::new();
+    for enrollment in enrollments {
+        if let Some(student_id) = &enrollment.student_id {
+            enrollment_map
+                .entry(student_id.clone())
+                .or_insert_with(Vec::new)
+                .push(enrollment);
+        }
+    }
+    
+    let course_map: HashMap<String, Course> = courses
+        .into_iter()
+        .filter_map(|course| {
+            course.id.clone().map(|id| (id, course))
+        })
+        .collect();
+    
+    // Step 7: Combine everything
+    let result = students
+        .into_iter()
+        .map(|student| {
+            let student_id = student.id.clone().unwrap_or_default();
+            let student_enrollments = enrollment_map.get(&student_id).cloned().unwrap_or_default();
+            
+            let student_courses = student_enrollments
+                .iter()
+                .filter_map(|enrollment| {
+                    enrollment.course_id.clone().and_then(|course_id| {
+                        course_map.get(&course_id).cloned()
+                    })
+                })
+                .collect();
+                
+            StudentWithCourses {
+                student,
+                courses: student_courses,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+
+// Combined data structure
+pub struct StudentWithCourses {
+    pub student: Student,
+    pub courses: Vec<Course>,
+}
+```
+
+By using this approach, you:
+1. Avoid complex JOIN queries
+2. Minimize the number of database queries (avoiding N+1 issues)
+3. Keep clear separation between data access and business logic
+4. Have more control over data fetching and transformation
+5. Can easily handle more complex nested relationships
+
+### 12.5 Using Rbatis Table Utility Macros for Data Joining
+
+Rbatis provides several powerful utility macros in `table_util.rs` that can significantly simplify data processing when combining related entities. These macros are more efficient alternatives to SQL JOINs:
+
+#### 12.5.1 Available Table Utility Macros
+
+1. **`table_field_vec!`** - Extract a specific field from a collection into a new Vec:
+   ```rust
+   // Extract all role_ids from a collection of user roles
+   let role_ids: Vec<String> = table_field_vec!(user_roles, role_id);
+   // Using references (no cloning)
+   let role_ids_ref: Vec<&String> = table_field_vec!(&user_roles, role_id);
+   ```
+
+2. **`table_field_set!`** - Extract a specific field into a HashSet (useful for unique values):
+   ```rust
+   // Extract unique role_ids
+   let role_ids: HashSet<String> = table_field_set!(user_roles, role_id);
+   // Using references
+   let role_ids_ref: HashSet<&String> = table_field_set!(&user_roles, role_id);
+   ```
+
+3. **`table_field_map!`** - Create a HashMap with a specific field as the key:
+   ```rust
+   // Create a HashMap with role_id as key and UserRole as value
+   let role_map: HashMap<String, SysUserRole> = table_field_map!(user_roles, role_id);
+   ```
+
+4. **`table_field_btree!`** - Create a BTreeMap (ordered map) with a specific field as the key:
+   ```rust
+   // Create a BTreeMap with role_id as key
+   let role_btree: BTreeMap<String, SysUserRole> = table_field_btree!(user_roles, role_id);
+   ```
+
+5. **`table!`** - Simplify table construction by using Default trait:
+   ```rust
+   // Create a new instance with specific fields initialized
+   let user = table!(User { id: new_snowflake_id(), name: "John".to_string() });
+   ```
+
+#### 12.5.2 Improved Example: One-to-Many Relationship
+
+Here's how to use these utilities to simplify the one-to-many example:
+
+```rust
+// Imports
+use std::collections::HashMap;
+use rbatis::{table_field_vec, table_field_map};
+
+// Service method
+pub async fn get_orders_with_items(&self, user_id: &str) -> rbatis::Result<Vec<OrderWithItems>> {
+    // Get all orders for the user
+    let orders = Order::select_by_column(&self.rb, "user_id", user_id).await?;
+    if orders.is_empty() {
+        return Ok(vec![]);
+    }
+    
+    // Extract order IDs using table_field_vec! macro - much cleaner!
+    let order_ids = table_field_vec!(orders, id);
+    
+    // Fetch all order items in a single query
+    let items = OrderItem::select_by_order_ids(&self.rb, &order_ids).await?;
+    
+    // Group items by order_id using table_field_map! - automatic grouping!
+    let mut items_map: HashMap<String, Vec<OrderItem>> = HashMap::new();
+    for (order_id, item) in table_field_map!(items, order_id) {
+        items_map.entry(order_id).or_insert_with(Vec::new).push(item);
+    }
+    
+    // Map orders to result
+    let result = orders
+        .into_iter()
+        .map(|order| {
+            let order_id = order.id.clone().unwrap_or_default();
+            let order_items = items_map.get(&order_id).cloned().unwrap_or_default();
+            
+            OrderWithItems {
+                order,
+                items: order_items,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+```
+
+#### 12.5.3 Simplified Many-to-Many Example
+
+For many-to-many relationships, these utilities also simplify the code:
+
+```rust
+// Imports
+use std::collections::{HashMap, HashSet};
+use rbatis::{table_field_vec, table_field_set, table_field_map};
+
+// Service function for many-to-many
+async fn get_students_with_courses(rb: &RBatis) -> rbatis::Result<Vec<StudentWithCourses>> {
+    // Get all students
+    let students = Student::select_all(rb).await?;
+    
+    // Extract student IDs using the utility macro
+    let student_ids = table_field_vec!(students, id);
+    
+    // Get enrollments for these students
+    let enrollments = StudentCourse::select_by_student_ids(rb, &student_ids).await?;
+    
+    // Extract unique course IDs using set (removes duplicates automatically)
+    let course_ids = table_field_set!(enrollments, course_id);
+    
+    // Get all courses in one query
+    let courses = Course::select_by_ids(rb, &course_ids.into_iter().collect::<Vec<_>>()).await?;
+    
+    // Create lookup maps using utility macros
+    let course_map = table_field_map!(courses, id);
+    
+    // Create a student -> enrollments map
+    let mut student_enrollments: HashMap<String, Vec<StudentCourse>> = HashMap::new();
+    for enrollment in enrollments {
+        if let Some(student_id) = &enrollment.student_id {
+            student_enrollments
+                .entry(student_id.clone())
+                .or_insert_with(Vec::new)
+                .push(enrollment);
+        }
+    }
+    
+    // Build the result
+    let result = students
+        .into_iter()
+        .map(|student| {
+            let student_id = student.id.clone().unwrap_or_default();
+            let enrollments = student_enrollments.get(&student_id).cloned().unwrap_or_default();
+            
+            // Map enrollments to courses
+            let student_courses = enrollments
+                .iter()
+                .filter_map(|enrollment| {
+                    enrollment.course_id.as_ref().and_then(|course_id| {
+                        course_map.get(course_id).cloned()
+                    })
+                })
+                .collect();
+                
+            StudentWithCourses {
+                student,
+                courses: student_courses,
+            }
+        })
+        .collect();
+        
+    Ok(result)
+}
+```
+
+Using these utility macros provides several advantages:
+1. **Cleaner code** - Reduces boilerplate for extracting and mapping data
+2. **Type safety** - Maintains Rust's strong typing
+3. **Efficiency** - Optimized operations with pre-allocated collections
+4. **Readability** - Makes the intent of data transformations clear
+5. **More idiomatic** - Leverages Rbatis' built-in tools for common operations
+
 # 12. Summary
 
 Rbatis is a powerful and flexible ORM framework that is suitable for multiple database types. It provides rich dynamic SQL capabilities, supports multiple parameter binding methods, and provides plugin and interceptor mechanisms. Rbatis' expression engine is the core of dynamic SQL, responsible for parsing and processing expressions at compile time, and converting to Rust code. Through in-depth understanding of Rbatis' working principles, developers can more effectively write dynamic SQL, fully utilize Rust's type safety and compile-time checks, while maintaining SQL's flexibility and expressiveness.
@@ -1793,4 +2207,141 @@ Following best practices can fully leverage Rbatis framework advantages to build
 1. **Use lowercase SQL keywords**: Rbatis processing mechanism is based on lowercase SQL keywords, all SQL statements must use lowercase form of `select`, `insert`, `update`, `delete`, `where`, `from`, `order by`, etc., do not use uppercase form.
 2. **Correct space handling**: Use backticks (`) to enclose SQL fragments to preserve leading spaces.
 3. **Type safety**: Fully utilize Rust's type system, use `Option<T>` to handle nullable fields.
-4. **Follow asynchronous programming model**: Rbatis is asynchronous ORM, all database operations should use `.await` to wait for completion. 
+4. **Follow asynchronous programming model**: Rbatis is asynchronous ORM, all database operations should use `.await` to wait for completion.
+
+# 3.5 ID Generation
+
+Rbatis provides built-in ID generation mechanisms that are recommended for primary keys in your database tables. Using these mechanisms ensures globally unique IDs and better performance for distributed systems.
+
+## 3.5.1 SnowflakeId
+
+SnowflakeId is a distributed ID generation algorithm originally developed by Twitter. It generates 64-bit IDs that are composed of:
+- Timestamp
+- Machine ID
+- Sequence number
+
+```rust
+use rbatis::snowflake::new_snowflake_id;
+
+// In your model definition
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct User {
+    // Use i64 for snowflake IDs
+    pub id: Option<i64>,
+    pub username: Option<String>,
+    // other fields...
+}
+
+// When creating a new record
+async fn create_user(rb: &RBatis, username: &str) -> rbatis::Result<User> {
+    let mut user = User {
+        id: Some(new_snowflake_id()), // Generate a new snowflake ID
+        username: Some(username.to_string()),
+        // initialize other fields...
+    };
+    
+    User::insert(rb, &user).await?;
+    Ok(user)
+}
+```
+
+## 3.5.2 ObjectId
+
+ObjectId is inspired by MongoDB's ObjectId, providing a 12-byte identifier that consists of:
+- 4-byte timestamp
+- 3-byte machine identifier
+- 2-byte process ID
+- 3-byte counter
+
+```rust
+use rbatis::object_id::ObjectId;
+
+// In your model definition
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Document {
+    // Can use String for ObjectId
+    pub id: Option<String>,
+    pub title: Option<String>,
+    // other fields...
+}
+
+// When creating a new record
+async fn create_document(rb: &RBatis, title: &str) -> rbatis::Result<Document> {
+    let mut doc = Document {
+        id: Some(ObjectId::new().to_string()), // Generate a new ObjectId as string
+        title: Some(title.to_string()),
+        // initialize other fields...
+    };
+    
+    Document::insert(rb, &doc).await?;
+    Ok(doc)
+}
+
+// Alternatively, you can use ObjectId directly in your model
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DocumentWithObjectId {
+    pub id: Option<ObjectId>,
+    pub title: Option<String>,
+    // other fields...
+}
+
+async fn create_document_with_object_id(rb: &RBatis, title: &str) -> rbatis::Result<DocumentWithObjectId> {
+    let mut doc = DocumentWithObjectId {
+        id: Some(ObjectId::new()), // Generate a new ObjectId
+        title: Some(title.to_string()),
+        // initialize other fields...
+    };
+    
+    DocumentWithObjectId::insert(rb, &doc).await?;
+    Ok(doc)
+}
+```
+
+## 6.5 Documentation and Comments
+
+When working with Rbatis macros, it's important to follow certain conventions for documentation and comments.
+
+### 6.5.1 Documenting impl_* Macros
+
+When adding documentation comments to methods generated by `impl_*` macros, the comments **must** be placed **above** the macro, not inside it:
+
+```rust
+// CORRECT: Documentation comment above the macro
+/// Find users by status
+/// @param status: User status to search for
+impl_select!(User {find_by_status(status: i32) -> Vec => 
+    "` where status = #{status}`"});
+
+// INCORRECT: Will cause compilation errors
+impl_select!(User {
+    /// This comment inside the macro will cause errors
+    find_by_name(name: &str) -> Vec => 
+        "` where name = #{name}`"
+});
+```
+
+### 6.5.2 Common Error with Comments
+
+One common error is placing documentation comments inside the macro:
+
+```rust
+// This will cause compilation errors
+impl_select!(DiscountTask {
+    /// Query discount tasks by type
+    find_by_type(task_type: &str) -> Vec => 
+        "` where task_type = #{task_type} and state = 'published' and deleted = 0 and end_time > now() order by discount_percent desc`"
+});
+```
+
+Instead, the correct approach is:
+
+```rust
+// This will work correctly
+/// Query discount tasks by type
+impl_select!(DiscountTask {find_by_type(task_type: &str) -> Vec => 
+    "` where task_type = #{task_type} and state = 'published' and deleted = 0 and end_time > now() order by discount_percent desc`"});
+```
+
+### 6.5.3 Why This Matters
+
+The Rbatis proc-macro system parses the macro content at compile time. When documentation comments are placed inside the macro, they interfere with the parsing process, leading to compilation errors. By placing documentation comments outside the macro, they're properly attached to the generated method while avoiding parser issues.
