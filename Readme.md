@@ -365,11 +365,6 @@ You can feed [ai.md (English)](ai.md) or [ai_cn.md (中文)](ai_cn.md) to Large 
 
 我们准备了详细的文档 [ai_cn.md (中文)](ai_cn.md) 和 [ai.md (English)](ai.md)，您可以将它们提供给Claude或GPT等大型语言模型，以获取关于使用Rbatis的帮助。
 
-<a href="https://chatglm.cn/main/gdetail/6604ffe818d17f1aaa8d9cf8">
-<img style="width: 200px;height: 290px;" width="200" height="290" src="ai.jpg" alt="" />
-</a>
-
-
 * [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
 # 联系方式/捐赠,或 [rb](https://github.com/rbatis/rbatis) 点star
