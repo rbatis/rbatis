@@ -212,7 +212,7 @@ rbatis::impl_select!(BizActivity{select_by_id(table_name:&str,table_column:&str,
 
 Rbatis提供了多种方式执行CRUD（创建、读取、更新、删除）操作。
 
-> **注意**：Rbatis处理时要求SQL关键字使用小写形式（select、insert、update、delete等），这与某些SQL样式指南可能不同。在使用Rbatis时，始终使用小写的SQL关键字，以确保正确解析和执行。
+> **注意**：Rbatis处理机制要求SQL关键字使用小写形式（select、insert、update、delete等），这可能与某些SQL样式指南不同。使用Rbatis时，请始终使用小写SQL关键字以确保正确解析和执行。
 
 ### 5.1 使用CRUD宏
 
@@ -222,23 +222,127 @@ Rbatis提供了多种方式执行CRUD（创建、读取、更新、删除）操�
 use rbatis::crud;
 
 // 为User结构体自动生成CRUD方法
-// 如果指定了表名，就使用指定的表名，否则使用结构体名称的蛇形命名法作为表名
+// 如果指定了表名，则使用指定的表名；否则，使用结构体名称的蛇形命名法作为表名
 crud!(User {}); // 表名为user
-// 或者
+// 或
 crud!(User {}, "users"); // 表名为users
 ```
 
 这将为User结构体生成以下方法：
 - `User::insert`：插入单条记录
 - `User::insert_batch`：批量插入记录
-- `User::update_by_column`：根据指定列更新记录
+- `User::update_by_column`：基于指定列更新记录
 - `User::update_by_column_batch`：批量更新记录
-- `User::delete_by_column`：根据指定列删除记录
+- `User::delete_by_column`：基于指定列删除记录
 - `User::delete_in_column`：删除列值在指定集合中的记录
-- `User::select_by_column`：根据指定列查询记录
+- `User::select_by_column`：基于指定列查询记录
 - `User::select_in_column`：查询列值在指定集合中的记录
 - `User::select_all`：查询所有记录
-- `User::select_by_map`：根据映射条件查询记录
+- `User::select_by_map`：基于映射条件查询记录
+
+### 5.1.1 CRUD宏详细参考
+
+`crud!`宏自动为您的数据模型生成一套完整的CRUD（创建、读取、更新、删除）操作。在底层，它展开为调用这四个实现宏：
+
+```rust
+// 等同于 
+impl_insert!(User {});
+impl_select!(User {});
+impl_update!(User {});
+impl_delete!(User {});
+```
+
+#### 生成的方法
+
+当您使用`crud!(User {})`时，将生成以下方法：
+
+##### 插入方法
+- **`async fn insert(executor: &dyn Executor, table: &User) -> Result<ExecResult, Error>`**  
+  插入单条记录。
+  
+- **`async fn insert_batch(executor: &dyn Executor, tables: &[User], batch_size: u64) -> Result<ExecResult, Error>`**  
+  批量插入多条记录。`batch_size`参数控制每批操作插入的记录数。
+
+##### 查询方法
+- **`async fn select_all(executor: &dyn Executor) -> Result<Vec<User>, Error>`**  
+  从表中检索所有记录。
+  
+- **`async fn select_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<Vec<User>, Error>`**  
+  检索指定列等于给定值的记录。
+  
+- **`async fn select_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<Vec<User>, Error>`**  
+  检索匹配列值条件映射的记录（AND逻辑）。
+  
+- **`async fn select_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<Vec<User>, Error>`**  
+  检索指定列的值在给定值列表中的记录（IN操作符）。
+
+##### 更新方法
+- **`async fn update_by_column(executor: &dyn Executor, table: &User, column: &str) -> Result<ExecResult, Error>`**  
+  基于指定列（用作WHERE条件）更新记录。空值将被跳过。
+  
+- **`async fn update_by_column_batch(executor: &dyn Executor, tables: &[User], column: &str, batch_size: u64) -> Result<ExecResult, Error>`**  
+  批量更新多条记录，使用指定列作为条件。
+  
+- **`async fn update_by_column_skip(executor: &dyn Executor, table: &User, column: &str, skip_null: bool) -> Result<ExecResult, Error>`**  
+  更新记录，可控制是否跳过空值。
+  
+- **`async fn update_by_map(executor: &dyn Executor, table: &User, condition: rbs::Value, skip_null: bool) -> Result<ExecResult, Error>`**  
+  更新匹配列值条件映射的记录。
+
+##### 删除方法
+- **`async fn delete_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<ExecResult, Error>`**  
+  删除指定列等于给定值的记录。
+  
+- **`async fn delete_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<ExecResult, Error>`**  
+  删除匹配列值条件映射的记录。
+  
+- **`async fn delete_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<ExecResult, Error>`**  
+  删除指定列的值在给定列表中的记录（IN操作符）。
+  
+- **`async fn delete_by_column_batch<V: Serialize>(executor: &dyn Executor, column: &str, values: &[V], batch_size: u64) -> Result<ExecResult, Error>`**  
+  基于指定列值批量删除多条记录。
+
+#### 使用示例
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 初始化RBatis
+    let rb = RBatis::new();
+    rb.link(SqliteDriver {}, "sqlite://test.db").await?;
+    
+    // 插入单条记录
+    let user = User {
+        id: Some("1".to_string()),
+        username: Some("john_doe".to_string()),
+        // 其他字段...
+    };
+    User::insert(&rb, &user).await?;
+    
+    // 批量插入多条记录
+    let users = vec![user1, user2, user3];
+    User::insert_batch(&rb, &users, 100).await?;
+    
+    // 按列查询
+    let active_users: Vec<User> = User::select_by_column(&rb, "status", 1).await?;
+    
+    // 使用IN子句查询
+    let specific_users = User::select_in_column(&rb, "id", &["1", "2", "3"]).await?;
+    
+    // 更新记录
+    let mut user_to_update = active_users[0].clone();
+    user_to_update.status = Some(2);
+    User::update_by_column(&rb, &user_to_update, "id").await?;
+    
+    // 删除记录
+    User::delete_by_column(&rb, "id", "1").await?;
+    
+    // 使用IN子句删除多条记录
+    User::delete_in_column(&rb, "status", &[0, -1]).await?;
+    
+    Ok(())
+}
+```
 
 ### 5.2 CRUD操作示例
 
@@ -279,6 +383,16 @@ async fn main() {
 ## 6. 动态SQL
 
 Rbatis支持动态SQL，可以根据条件动态构建SQL语句。Rbatis提供了两种风格的动态SQL：HTML风格和Python风格。
+
+> ⚠️ **重要警告**
+> 
+> 在使用Rbatis XML格式时，请不要使用MyBatis风格的`BaseResultMap`或`Base_Column_List`！
+> 
+> 与MyBatis不同，Rbatis不需要也不支持：
+> - `<result id="BaseResultMap" column="id,name,status"/>`
+> - `<sql id="Base_Column_List">id,name,status</sql>`
+> 
+> Rbatis自动将数据库列映射到Rust结构体字段，因此这些结构是不必要的，并且可能导致错误。请始终编写完整的SQL语句，明确选择列或使用`SELECT *`。
 
 ### 6.1 HTML风格动态SQL
 
@@ -322,7 +436,60 @@ async fn select_by_condition(
 }
 ```
 
-#### 6.1.1 空格处理机制
+#### 6.1.1 有效的XML结构
+
+在Rbatis中使用HTML/XML风格时，必须遵循DTD中定义的正确结构：
+
+```
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+```
+
+**重要说明：**
+
+1. **有效的顶级元素**：`<mapper>`元素只能包含：`<sql>`、`<insert>`、`<update>`、`<delete>`或`<select>`元素。
+
+2. **不要使用BaseResultMap**：与MyBatis不同，Rbatis不使用`<resultMap>`或`BaseResultMap`。Rbatis自动将列映射到结构体字段。
+
+3. **始终使用实际SQL查询**：不要使用列列表，直接编写SQL查询。
+
+❌ **错误用法**（不要使用）：
+```xml
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
+<mapper>
+    <!-- 错误：result不是mapper的有效直接子元素 -->
+    <result id="BaseResultMap" column="id,name,status"/>
+    <!-- 错误：列列表应该在SQL中直接使用 -->
+    <sql id="Base_Column_List">id,name,status</sql>
+</mapper>
+```
+
+✅ **正确用法**（使用这种方式）：
+```xml
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
+<mapper>
+    <!-- 正确：使用select元素直接编写SQL -->
+    <select id="select_by_id">
+        select * from user where id = #{id}
+    </select>
+    
+    <!-- 正确：sql元素用于SQL片段 -->
+    <sql id="where_clause">
+        <where>
+            <if test="name != null">
+                ` and name like #{name} `
+            </if>
+        </where>
+    </sql>
+    
+    <select id="select_with_where">
+        select * from user
+        <include refid="where_clause"/>
+    </select>
+</mapper>
+```
+
+#### 6.1.2 空格处理机制
 
 在HTML风格的动态SQL中，**反引号（`）是处理空格的关键**：
 
@@ -1739,6 +1906,51 @@ impl_delete!(User{remove_inactive() =>
 impl_select_page!(User{find_by_email_page(email: &str) =>
     "` where email like #{email}`"});
 
+// 使用HTML风格SQL进行复杂查询
+#[html_sql(r#"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
+    <select id="find_users_by_criteria">
+        select * from user
+        <where>
+            <if test="username != null">
+                ` and username like #{username} `
+            </if>
+            <if test="email != null">
+                ` and email like #{email} `
+            </if>
+            <if test="status_list != null and status_list.len > 0">
+                ` and status in `
+                <foreach collection="status_list" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <choose>
+                <when test="sort_by == 'name'">
+                    ` order by username `
+                </when>
+                <when test="sort_by == 'date'">
+                    ` order by create_time `
+                </when>
+                <otherwise>
+                    ` order by id `
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
+"#)]
+async fn find_users_by_criteria(
+    rb: &dyn rbatis::executor::Executor,
+    username: Option<&str>,
+    email: Option<&str>,
+    status_list: Option<&[i32]>,
+    sort_by: &str
+) -> rbatis::Result<Vec<User>> {
+    impled!()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 初始化日志
@@ -1777,6 +1989,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_page = User::find_by_email_page(&rb, &page_req, "%example%").await?;
     println!("总用户数: {}, 当前页: {}", user_page.total, user_page.page_no);
     
+    // 使用HTML SQL进行复杂查询
+    let status_list = vec![1, 2, 3];
+    let users = find_users_by_criteria(&rb, Some("test%"), None, Some(&status_list), "name").await?;
+    println!("符合条件的用户数: {}", users.len());
+    
     // 按列删除
     User::delete_by_column(&rb, "id", "1").await?;
     
@@ -1793,6 +2010,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 3. 使用适当的`impl_*`宏定义自定义查询
 4. 为方法返回使用强类型（Option、Vec、Page等）
 5. 对所有数据库操作使用async/await
+6. 对于复杂查询，使用格式正确的HTML SQL，遵循正确的mapper结构
 
 # 12. 总结
 
