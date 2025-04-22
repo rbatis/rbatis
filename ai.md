@@ -176,9 +176,9 @@ pub struct User {
     pub status: Option<i32>,
 }
 
-// Note: In Rbatis 4.5+, using the crud! macro is the recommended approach
-// rather than implementing the CRUDTable trait (which was used in older versions)
-// Instead of implementing CRUDTable, use the following approach:
+// Note: In Rbatis 4.5+, using the crud! macro is the standard approach
+// The CRUDTable trait no longer exists in current versions.
+// Use the following macros to generate CRUD methods:
 
 // Generate CRUD methods for the User struct
 crud!(User {});
@@ -546,7 +546,7 @@ Rbatis' HTML style has several key differences from MyBatis:
    <if test="list != null and list.size() > 0">
 
    <!-- Rbatis -->
-   <if test="list != null and list.len > 0">
+   <if test="list != null && list.len > 0">
    ```
 
 3. **Special Tag Attributes**: Rbatis' foreach tag attributes are slightly different from MyBatis
@@ -1409,6 +1409,33 @@ async fn main() {
     
     println!("Table synchronization completed");
 }
+
+// 修改为：
+
+use rbatis::table_sync::SqliteTableMapper;
+use rbatis::RBatis;
+
+#[tokio::main]
+async fn main() {
+    let rb = RBatis::new();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://test.db").unwrap();
+    
+    // Get database connection
+    let conn = rb.acquire().await.unwrap();
+    
+    // Synchronize table structure based on User structure
+    // Parameters: connection, database mapper, entity instance, table name
+    RBatis::sync(
+        &conn,
+        &SqliteTableMapper {},
+        &User::default(),  // Use default() instead of creating instance with empty values
+        "user",
+    )
+    .await
+    .unwrap();
+    
+    println!("Table synchronization completed");
+}
 ```
 
 Different databases need to use different table mappers:
@@ -1517,7 +1544,6 @@ src/
 
 ```rust
 // models/user.rs
-use rbatis::crud::CRUDTable;
 use rbatis::rbdc::datetime::DateTime;
 use serde::{Deserialize, Serialize};
 
@@ -1531,15 +1557,11 @@ pub struct User {
     pub status: Option<i32>,
 }
 
-impl CRUDTable for User {
-    fn table_name() -> String {
-        "user".to_string()
-    }
-    
-    fn table_columns() -> String {
-        "id,username,email,password,create_time,status".to_string()
-    }
-}
+// 使用宏生成 CRUD 方法
+crud!(User{}, "user");
+
+// 你可以添加自定义方法
+impl_select!(User{find_by_email(email: &str) -> Option => "` where email = #{email} limit 1`"});
 ```
 
 ### 11.3 Data Access Layer
@@ -1589,11 +1611,11 @@ impl UserRepository {
     #[html_sql(r#"
         select * from user
         where 1=1
-        <if test="username != null and username != ''">
-          and username like #{username}
+        <if test="username != null && username != ''">
+          ` and username like #{username} `
         </if>
         <if test="status != null">
-          and status = #{status}
+          ` and status = #{status} `
         </if>
         order by create_time desc
     "#)]
