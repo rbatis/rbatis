@@ -6,47 +6,71 @@
 
 Rbatis 4.5+ has significant improvements over previous versions. Here are the key changes and recommended best practices:
 
-1. **Use macros instead of traits**: In current versions, use `crud!` and `impl_*` macros instead of implementing the `CRUDTable` trait (which was used in older 3.0 versions).
-
-2. **Preferred pattern for defining models and operations**:
+1. **✅ Use macros instead of traits (v4.0+)**: 
    ```rust
-   // 1. Define your model
-   #[derive(Clone, Debug, Serialize, Deserialize)]
-   pub struct User {
-       pub id: Option<String>,
-       pub name: Option<String>,
-       // other fields...
-   }
+   // ❌ Old approach (pre-v4.0):
+   impl CRUDTable for User { ... }
    
-   // 2. Generate basic CRUD operations
-   crud!(User {});  // or crud!(User {}, "custom_table_name");
-   
-   // 3. Define custom methods using impl_* macros
-   // Note: Doc comments must be placed ABOVE the impl_* macro, not inside it
-   /// Select users by name
-   impl_select!(User {select_by_name(name: &str) -> Vec => "` where name = #{name}`"});
-   
-   /// Get user by ID
-   impl_select!(User {select_by_id(id: &str) -> Option => "` where id = #{id} limit 1`"});
-   
-   /// Update user status by ID
-   impl_update!(User {update_status_by_id(id: &str, status: i32) => "` set status = #{status} where id = #{id}`"});
-   
-   /// Delete users by name
-   impl_delete!(User {delete_by_name(name: &str) => "` where name = #{name}`"});
+   // ✅ New approach (v4.0+):
+   crud!(User {});  // Generate all CRUD methods
+   impl_select!(User {select_by_name(name: &str) -> Vec => "..."});  // Custom methods
    ```
 
-3. **Use lowercase SQL keywords**: Always use lowercase for SQL keywords like `select`, `where`, `and`, etc.
+2. **✅ Place documentation comments ABOVE macros (v4.0+)**:
+   ```rust
+   // ❌ INCORRECT - will cause compilation errors
+   impl_select!(User {
+       /// This comment inside causes errors
+       find_by_name(name: &str) -> Vec => "..."
+   });
+   
+   // ✅ CORRECT
+   /// Find users by name
+   impl_select!(User {find_by_name(name: &str) -> Vec => "..."});
+   ```
+   
+3. **✅ Use Rust-style logical operators (v4.0+)**:
+   ```rust
+   // ❌ INCORRECT - MyBatis style operators will fail
+   <if test="name != null and name != ''">
+   
+   // ✅ CORRECT - Use Rust operators
+   <if test="name != null && name != ''">
+   ```
 
-4. **Proper backtick usage**: Enclose dynamic SQL fragments in backticks (`) to preserve spaces.
+4. **✅ Use backticks for SQL fragments (v4.0+)**:
+   ```rust
+   // ❌ INCORRECT - spaces might be lost
+   <if test="status != null">
+       and status = #{status}
+   </if>
+   
+   // ✅ CORRECT - backticks preserve spaces
+   <if test="status != null">
+       ` and status = #{status} `
+   </if>
+   ```
 
-5. **Async-first approach**: All database operations should be awaited with `.await`.
+5. **✅ Use lowercase SQL keywords (all versions)**:
+   ```rust
+   // ❌ INCORRECT
+   SELECT * FROM users
+   
+   // ✅ CORRECT
+   select * from users
+   ```
 
-6. **Use SnowflakeId or ObjectId for IDs**: Rbatis provides built-in ID generation mechanisms that should be used for primary keys.
-
-7. **Prefer select_in_column over JOIN**: For better performance and maintainability, avoid complex JOINs and use Rbatis' select_in_column to fetch related data, then combine them in your service layer.
-
-Please refer to the examples below for the current recommended approaches.
+6. **✅ Prefer separate queries over complex JOINs (v4.0+)**:
+   ```rust
+   // ❌ DISCOURAGED - Complex JOIN
+   let users_with_orders = rb.query("select u.*, o.* from users u join orders o on u.id = o.user_id", vec![]).await?;
+   
+   // ✅ RECOMMENDED - Separate efficient queries with in-memory joining
+   let users = User::select_all(&rb).await?;
+   let user_ids = table_field_vec!(users, id);
+   let orders = Order::select_in_column(&rb, "user_id", &user_ids).await?;
+   // Then combine in memory
+   ```
 
 ## 1. Introduction to Rbatis
 
@@ -1410,7 +1434,7 @@ async fn main() {
     println!("Table synchronization completed");
 }
 
-// 修改为：
+// 替换为：
 
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
@@ -1503,605 +1527,31 @@ async fn handle_user_operation() -> Result<User, Error> {
     
     Ok(user)
 }
-```
 
-### 10.3 Test Strategy
+// 替换为：
 
-- Unit Test: Use Mock database for business logic testing
-- Integration Test: Use test container (e.g., Docker) to create temporary database environment
-- Performance Test: Simulate high concurrency scenario to test system performance and stability
-
-## 11. Complete Example
-
-The following is a complete Web application example that uses Rbatis to build, showing how to organize code and use various Rbatis features.
-
-### 11.1 Project Structure
-
-```
-src/
-├── main.rs                 # Application entry
-├── config.rs               # Configuration management
-├── error.rs                # Error definition
-├── models/                 # Data model
-│   ├── mod.rs
-│   ├── user.rs
-│   └── order.rs
-├── repositories/           # Data access layer
-│   ├── mod.rs
-│   ├── user_repository.rs
-│   └── order_repository.rs
-├── services/               # Business logic layer
-│   ├── mod.rs
-│   ├── user_service.rs
-│   └── order_service.rs
-└── api/                    # API interface layer
-    ├── mod.rs
-    ├── user_controller.rs
-    └── order_controller.rs
-```
-
-### 11.2 Data Model Layer
-
-```rust
-// models/user.rs
-use rbatis::rbdc::datetime::DateTime;
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct User {
-    pub id: Option<String>,
-    pub username: String,
-    pub email: String,
-    pub password: String,
-    pub create_time: Option<DateTime>,
-    pub status: Option<i32>,
-}
-
-// 使用宏生成 CRUD 方法
-crud!(User{}, "user");
-
-// 你可以添加自定义方法
-impl_select!(User{find_by_email(email: &str) -> Option => "` where email = #{email} limit 1`"});
-```
-
-### 11.3 Data Access Layer
-
-```rust
-// repositories/user_repository.rs
-use crate::models::user::User;
-use rbatis::executor::Executor;
-use rbatis::rbdc::Error;
-use rbatis::rbdc::db::ExecResult;
-use rbatis::plugin::page::{Page, PageRequest};
-
-pub struct UserRepository;
-
-impl UserRepository {
-    pub async fn find_by_id(rb: &dyn Executor, id: &str) -> Result<Option<User>, Error> {
-        rb.query_by_column("id", id).await
-    }
-    
-    pub async fn find_all(rb: &dyn Executor) -> Result<Vec<User>, Error> {
-        rb.query("select * from user").await
-    }
-    
-    pub async fn find_by_status(
-        rb: &dyn Executor, 
-        status: i32,
-        page_req: &PageRequest
-    ) -> Result<Page<User>, Error> {
-        let wrapper = rb.new_wrapper()
-            .eq("status", status);
-        rb.fetch_page_by_wrapper(wrapper, page_req).await
-    }
-    
-    pub async fn save(rb: &dyn Executor, user: &User) -> Result<ExecResult, Error> {
-        rb.save(user).await
-    }
-    
-    pub async fn update(rb: &dyn Executor, user: &User) -> Result<ExecResult, Error> {
-        rb.update_by_column("id", user).await
-    }
-    
-    pub async fn delete(rb: &dyn Executor, id: &str) -> Result<ExecResult, Error> {
-        rb.remove_by_column::<User, _>("id", id).await
-    }
-    
-    // Use HTML style dynamic SQL for advanced query
-    #[html_sql(r#"
-        select * from user
-        where 1=1
-        <if test="username != null && username != ''">
-          ` and username like #{username} `
-        </if>
-        <if test="status != null">
-          ` and status = #{status} `
-        </if>
-        order by create_time desc
-    "#)]
-    pub async fn search(
-        rb: &dyn Executor,
-        username: Option<String>,
-        status: Option<i32>,
-    ) -> Result<Vec<User>, Error> {
-        todo!()
-    }
-}
-```
-
-### 11.4 Business Logic Layer
-
-```rust
-// services/user_service.rs
-use crate::models::user::User;
-use crate::repositories::user_repository::UserRepository;
-use rbatis::rbatis::RBatis;
-use rbatis::rbdc::Error;
-use rbatis::plugin::page::{Page, PageRequest};
-
-pub struct UserService {
-    rb: RBatis,
-}
-
-impl UserService {
-    pub fn new(rb: RBatis) -> Self {
-        Self { rb }
-    }
-    
-    pub async fn get_user_by_id(&self, id: &str) -> Result<Option<User>, Error> {
-        UserRepository::find_by_id(&self.rb, id).await
-    }
-    
-    pub async fn list_users(&self) -> Result<Vec<User>, Error> {
-        UserRepository::find_all(&self.rb).await
-    }
-    
-    pub async fn create_user(&self, user: &mut User) -> Result<(), Error> {
-        // Add business logic, such as password encryption, data validation, etc.
-        if user.status.is_none() {
-            user.status = Some(1); // Default status
-        }
-        user.create_time = Some(rbatis::rbdc::datetime::DateTime::now());
-        
-        // Start transaction processing
-        let tx = self.rb.acquire_begin().await?;
-        
-        // Check if username already exists
-        let exist_users = UserRepository::search(
-            &tx, 
-            Some(user.username.clone()), 
-            None
-        ).await?;
-        
-        if !exist_users.is_empty() {
-            tx.rollback().await?;
-            return Err(Error::from("Username already exists"));
-        }
-        
-        // Save user
-        UserRepository::save(&tx, user).await?;
-        
-        // Commit transaction
-        tx.commit().await?;
-        
-        Ok(())
-    }
-    
-    pub async fn update_user(&self, user: &User) -> Result<(), Error> {
-        if user.id.is_none() {
-            return Err(Error::from("User ID cannot be empty"));
-        }
-        
-        // Check if user exists
-        let exist = UserRepository::find_by_id(&self.rb, user.id.as_ref().unwrap()).await?;
-        if exist.is_none() {
-            return Err(Error::from("User does not exist"));
-        }
-        
-        UserRepository::update(&self.rb, user).await?;
-        Ok(())
-    }
-    
-    pub async fn delete_user(&self, id: &str) -> Result<(), Error> {
-        UserRepository::delete(&self.rb, id).await?;
-        Ok(())
-    }
-    
-    pub async fn search_users(
-        &self,
-        username: Option<String>,
-        status: Option<i32>,
-        page: u64,
-        page_size: u64
-    ) -> Result<Page<User>, Error> {
-        if let Some(username_str) = &username {
-            // Fuzzy query processing
-            let like_username = format!("%{}%", username_str);
-            UserRepository::search(&self.rb, Some(like_username), status).await
-                .map(|users| {
-                    // Manual paging processing
-                    let total = users.len() as u64;
-                    let start = (page - 1) * page_size;
-                    let end = std::cmp::min(start + page_size, total);
-                    
-                    let records = if start < total {
-                        users[start as usize..end as usize].to_vec()
-                    } else {
-                        vec![]
-                    };
-                    
-                    Page {
-                        records,
-                        page_no: page,
-                        page_size,
-                        total,
-                    }
-                })
-        } else {
-            // Use built-in paging query
-            let page_req = PageRequest::new(page, page_size);
-            UserRepository::find_by_status(&self.rb, status.unwrap_or(1), &page_req).await
-        }
-    }
-}
-```
-
-### 11.5 API Interface Layer
-
-```rust
-// api/user_controller.rs
-use actix_web::{web, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
-
-use crate::models::user::User;
-use crate::services::user_service::UserService;
-
-#[derive(Deserialize)]
-pub struct UserQuery {
-    username: Option<String>,
-    status: Option<i32>,
-    page: Option<u64>,
-    page_size: Option<u64>,
-}
-
-#[derive(Serialize)]
-pub struct ApiResponse<T> {
-    code: i32,
-    message: String,
-    data: Option<T>,
-}
-
-impl<T> ApiResponse<T> {
-    pub fn success(data: T) -> Self {
-        Self {
-            code: 0,
-            message: "success".to_string(),
-            data: Some(data),
-        }
-    }
-    
-    pub fn error(code: i32, message: String) -> Self {
-        Self {
-            code,
-            message,
-            data: None,
-        }
-    }
-}
-
-pub async fn get_user(
-    path: web::Path<String>,
-    user_service: web::Data<UserService>,
-) -> impl Responder {
-    let id = path.into_inner();
-    
-    match user_service.get_user_by_id(&id).await {
-        Ok(Some(user)) => HttpResponse::Ok().json(ApiResponse::success(user)),
-        Ok(None) => HttpResponse::NotFound().json(
-            ApiResponse::<()>::error(404, "User does not exist".to_string())
-        ),
-        Err(e) => HttpResponse::InternalServerError().json(
-            ApiResponse::<()>::error(500, format!("Server error: {}", e))
-        ),
-    }
-}
-
-pub async fn list_users(
-    query: web::Query<UserQuery>,
-    user_service: web::Data<UserService>,
-) -> impl Responder {
-    let page = query.page.unwrap_or(1);
-    let page_size = query.page_size.unwrap_or(10);
-    
-    match user_service.search_users(
-        query.username.clone(),
-        query.status,
-        page,
-        page_size
-    ).await {
-        Ok(users) => HttpResponse::Ok().json(ApiResponse::success(users)),
-        Err(e) => HttpResponse::InternalServerError().json(
-            ApiResponse::<()>::error(500, format!("Server error: {}", e))
-        ),
-    }
-}
-
-pub async fn create_user(
-    user: web::Json<User>,
-    user_service: web::Data<UserService>,
-) -> impl Responder {
-    let mut new_user = user.into_inner();
-    
-    match user_service.create_user(&mut new_user).await {
-        Ok(_) => HttpResponse::Created().json(ApiResponse::success(new_user)),
-        Err(e) => {
-            if e.to_string().contains("Username already exists") {
-                HttpResponse::BadRequest().json(
-                    ApiResponse::<()>::error(400, e.to_string())
-                )
-            } else {
-                HttpResponse::InternalServerError().json(
-                    ApiResponse::<()>::error(500, format!("Server error: {}", e))
-                )
-            }
-        }
-    }
-}
-
-pub async fn update_user(
-    user: web::Json<User>,
-    user_service: web::Data<UserService>,
-) -> impl Responder {
-    match user_service.update_user(&user).await {
-        Ok(_) => HttpResponse::Ok().json(ApiResponse::<()>::success(())),
-        Err(e) => {
-            if e.to_string().contains("User does not exist") {
-                HttpResponse::NotFound().json(
-                    ApiResponse::<()>::error(404, e.to_string())
-                )
-            } else {
-                HttpResponse::InternalServerError().json(
-                    ApiResponse::<()>::error(500, format!("Server error: {}", e))
-                )
-            }
-        }
-    }
-}
-
-pub async fn delete_user(
-    path: web::Path<String>,
-    user_service: web::Data<UserService>,
-) -> impl Responder {
-    let id = path.into_inner();
-    
-    match user_service.delete_user(&id).await {
-        Ok(_) => HttpResponse::Ok().json(ApiResponse::<()>::success(())),
-        Err(e) => HttpResponse::InternalServerError().json(
-            ApiResponse::<()>::error(500, format!("Server error: {}", e))
-        ),
-    }
-}
-```
-
-### 11.6 Application Configuration and Startup
-
-```rust
-// main.rs
-use actix_web::{web, App, HttpServer};
-use rbatis::rbatis::RBatis;
-
-mod api;
-mod models;
-mod repositories;
-mod services;
-mod config;
-mod error;
-
-use crate::api::user_controller;
-use crate::services::user_service::UserService;
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    // Initialize log
-    env_logger::init();
-    
-    // Initialize database connection
-    let rb = RBatis::new();
-    rb.init(
-        rbdc_mysql::driver::MysqlDriver{}, 
-        &config::get_database_url()
-    ).unwrap();
-    
-    // Run table synchronization (Optional)
-    rb.sync(models::user::User {
-        id: None,
-        username: "".to_string(),
-        email: "".to_string(),
-        password: "".to_string(),
-        create_time: None,
-        status: None,
-    }).await.unwrap();
-    
-    // Create service
-    let user_service = UserService::new(rb.clone());
-    
-    // Start HTTP server
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(user_service.clone()))
-            .service(
-                web::scope("/api")
-                    .service(
-                        web::scope("/users")
-                            .route("", web::get().to(user_controller::list_users))
-                            .route("", web::post().to(user_controller::create_user))
-                            .route("", web::put().to(user_controller::update_user))
-                            .route("/{id}", web::get().to(user_controller::get_user))
-                            .route("/{id}", web::delete().to(user_controller::delete_user))
-                    )
-            )
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
-}
-```
-
-### 11.7 Client Call Example
-
-```rust
-// Use reqwest client to call API
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-struct User {
-    id: Option<String>,
-    username: String,
-    email: String,
-    password: String,
-    status: Option<i32>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ApiResponse<T> {
-    code: i32,
-    message: String,
-    data: Option<T>,
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::new();
-    
-    // Create user
-    let new_user = User {
-        id: None,
-        username: "test_user".to_string(),
-        email: "test@example.com".to_string(),
-        password: "password123".to_string(),
-        status: Some(1),
-    };
-    
-    let resp = client.post("http://localhost:8080/api/users")
-        .json(&new_user)
-        .send()
-        .await?
-        .json::<ApiResponse<User>>()
-        .await?;
-    
-    println!("Create user response: {:?}", resp);
-    
-    // Query user list
-    let resp = client.get("http://localhost:8080/api/users")
-        .query(&[("page", "1"), ("page_size", "10")])
-        .send()
-        .await?
-        .json::<ApiResponse<Vec<User>>>()
-        .await?;
-    
-    println!("User list: {:?}", resp);
-    
-    Ok(())
-}
-```
-
-This complete example shows how to use Rbatis to build a Web application containing data model, data access layer, business logic layer, and API interface layer, covering various Rbatis features, including basic CRUD operations, dynamic SQL, transaction management, paging query, etc. Through this example, developers can quickly understand how to effectively use Rbatis in actual projects.
-
-## 11.8 Modern Rbatis 4.5+ Example
-
-Here's a concise example that shows the recommended way to use Rbatis 4.5+:
-
-```rust
-use rbatis::{crud, impl_select, impl_update, impl_delete, RBatis};
-use rbdc_sqlite::driver::SqliteDriver;
-use serde::{Deserialize, Serialize};
-use rbatis::rbdc::datetime::DateTime;
-
-// Define your data model
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct User {
-    id: Option<String>,
-    username: Option<String>,
-    email: Option<String>,
-    status: Option<i32>,
-    create_time: Option<DateTime>,
-}
-
-// Generate basic CRUD methods
-crud!(User {});
-
-// Define custom query methods
-impl_select!(User{find_by_username(username: &str) -> Option => 
-    "` where username = #{username} limit 1`"});
-
-impl_select!(User{find_active_users() -> Vec => 
-    "` where status = 1 order by create_time desc`"});
-
-impl_update!(User{update_status(id: &str, status: i32) =>
-    "` set status = #{status} where id = #{id}`"});
-
-impl_delete!(User{remove_inactive() =>
-    "` where status = 0`"});
-
-// Define a page query
-impl_select_page!(User{find_by_email_page(email: &str) =>
-    "` where email like #{email}`"});
-
-// Using HTML style SQL for complex queries
-#[html_sql(r#"
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
-"https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
-<mapper>
-    <select id="find_users_by_criteria">
-        select * from user
-        <where>
-            <if test="username != null">
-                ` and username like #{username} `
-            </if>
-            <if test="email != null">
-                ` and email like #{email} `
-            </if>
-            <if test="status_list != null and status_list.len > 0">
-                ` and status in `
-                <foreach collection="status_list" item="item" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <choose>
-                <when test="sort_by == 'name'">
-                    ` order by username `
-                </when>
-                <when test="sort_by == 'date'">
-                    ` order by create_time `
-                </when>
-                <otherwise>
-                    ` order by id `
-                </otherwise>
-            </choose>
-        </where>
-    </select>
-</mapper>
-"#)]
-async fn find_users_by_criteria(
-    rb: &dyn rbatis::executor::Executor,
-    username: Option<&str>,
-    email: Option<&str>,
-    status_list: Option<&[i32]>,
-    sort_by: &str
-) -> rbatis::Result<Vec<User>> {
-    impled!()
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize logging
-    fast_log::init(fast_log::Config::new().console()).unwrap();
-    
-    // Create RBatis instance and connect to database
+/// ✅ RECOMMENDED: Error handling patterns for Rbatis (v4.5+)
+async fn handle_user_operation() -> Result<User, Error> {
+    // Initialize connection
     let rb = RBatis::new();
     rb.link(SqliteDriver {}, "sqlite://test.db").await?;
     
+    // Option 1: Simple propagation with ?
+    let user = User::select_by_id(&rb, "1").await?;
+    
+    // Option 2: Custom error mapping with map_err
+    User::update_by_column(&rb, &user, "id").await
+        .map_err(|e| {
+            log::error!("Failed to update user: {}", e);
+            Error::from(format!("Database error: {}", e))
+        })?;
+    
+    // Option 3: Transaction with error handling
+    let mut tx = rb.acquire_begin().await?;
+    
+    let result = (|| async {
+        // Multiple operations in transaction
+        User::insert(&mut tx, &user).await?;
     // Create a new user
     let user = User {
         id: Some("1".to_string()),
