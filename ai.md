@@ -30,7 +30,7 @@ Rbatis 4.5+ has significant improvements over previous versions. Here are the ke
    ```
    
 3. **✅ Use Rust-style logical operators (v4.0+)**:
-   ```rust
+   ```html
    // ❌ INCORRECT - MyBatis style operators will fail
    <if test="name != null and name != ''">
    
@@ -39,7 +39,7 @@ Rbatis 4.5+ has significant improvements over previous versions. Here are the ke
    ```
 
 4. **✅ Use backticks for SQL fragments (v4.0+)**:
-   ```rust
+   ```html
    // ❌ INCORRECT - spaces might be lost
    <if test="status != null">
        and status = #{status}
@@ -52,7 +52,7 @@ Rbatis 4.5+ has significant improvements over previous versions. Here are the ke
    ```
 
 5. **✅ Use lowercase SQL keywords (all versions)**:
-   ```rust
+   ```html
    // ❌ INCORRECT
    SELECT * FROM users
    
@@ -478,7 +478,7 @@ When using HTML/XML style in Rbatis, it's important to follow the correct struct
 3. **Always use actual SQL queries**: Instead of using column lists, directly write SQL queries.
 
 ❌ **INCORRECT** (Do not use):
-```xml
+```html
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
 <mapper>
     <!-- Incorrect: result is not a valid direct child of mapper -->
@@ -489,7 +489,7 @@ When using HTML/XML style in Rbatis, it's important to follow the correct struct
 ```
 
 ✅ **CORRECT** (Use this approach):
-```xml
+```html
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "...">
 <mapper>
     <!-- Correct: use select with direct SQL -->
@@ -523,7 +523,7 @@ In HTML style dynamic SQL, **backticks (`) are the key to handling spaces**:
 - **Complete enclosure**: Backticks should enclose the entire SQL fragment, not just the beginning part
 
 Incorrect use of backticks example:
-```rust
+```html
 <if test="status != null">
     and status = #{status} <!-- No backticks, leading spaces will be lost -->
 </if>
@@ -534,12 +534,12 @@ Incorrect use of backticks example:
 ```
 
 Correct use of backticks example:
-```rust
+```html
 <if test="status != null">
     ` and status = #{status} ` <!-- Complete enclosure, all spaces preserved -->
 </if>
 
-<if test="items != null and items.len > 0">
+<if test="items != null && items.len > 0">
     ` and item_id in `
     <foreach collection="items" item="item" open="(" close=")" separator=",">
         #{item}
@@ -711,14 +711,14 @@ Python style provides some specific convenient features:
 HTML style supports the following tags:
 
 1. **`<if>`**：Conditional judgment
-   ```xml
+   ```html
    <if test="condition">
        SQL fragment
    </if>
    ```
 
 2. **`<choose>/<when>/<otherwise>`**：Multi-condition selection (similar to switch statement)
-   ```xml
+   ```html
    <choose>
        <when test="condition1">
            SQL fragment1
@@ -733,21 +733,21 @@ HTML style supports the following tags:
    ```
 
 3. **`<trim>`**：Remove prefix or suffix
-   ```xml
+   ```html
    <trim prefixOverrides="AND|OR" suffixOverrides=",">
        SQL fragment
    </trim>
    ```
 
 4. **`<foreach>`**：Loop processing
-   ```xml
+   ```html
    <foreach collection="items" item="item" index="index" separator=",">
        #{item}
    </foreach>
    ```
 
 5. **`<where>`**：Automatically handle WHERE clause (will smartly remove leading AND/OR)
-   ```xml
+   ```html
    <where>
        <if test="id != null">
            and id = #{id}
@@ -756,7 +756,7 @@ HTML style supports the following tags:
    ```
 
 6. **`<set>`**：Automatically handle SET clause (will smartly manage commas)
-   ```xml
+   ```html
    <set>
        <if test="name != null">
            name = #{name},
@@ -768,7 +768,7 @@ HTML style supports the following tags:
    ```
 
 7. **`<bind>`**：Variable binding
-   ```xml
+   ```html
    <bind name="pattern" value="'%' + name + '%'" />
    ```
 
@@ -806,7 +806,7 @@ While Rbatis draws inspiration from MyBatis, there are **critical differences** 
 
 #### 1. Logical Operators: Use `&&` and `||`, NOT `and` and `or`
 
-```xml
+```html
 <!-- ✅ CORRECT: Using Rbatis operators -->
 <if test="name != null && name != ''">
     ` and name = #{name}`
@@ -822,7 +822,7 @@ Rbatis directly translates expressions to Rust code, where logical operators are
 
 #### 2. Null Comparison: Use `== null` or `!= null`
 
-```xml
+```html
 <!-- ✅ CORRECT -->
 <if test="user != null && user.name != null">
     ` and user_name = #{user.name}`
@@ -836,7 +836,7 @@ Rbatis directly translates expressions to Rust code, where logical operators are
 
 #### 3. String Comparison: Use `==` and `!=` with quotes
 
-```xml
+```html
 <!-- ✅ CORRECT -->
 <if test="status == 'active'">
     ` and status = 1`
@@ -850,7 +850,7 @@ Rbatis directly translates expressions to Rust code, where logical operators are
 
 #### 4. Expression Grouping: Use parentheses for complex conditions
 
-```xml
+```html
 <!-- ✅ CORRECT: Using parentheses for clarity and proper precedence -->
 <if test="(age > 18 || vip == true) && status != 'banned'">
     ` and can_access = true`
@@ -859,7 +859,7 @@ Rbatis directly translates expressions to Rust code, where logical operators are
 
 #### 5. Collection Operations: Use appropriate functions
 
-```xml
+```html
 <!-- ✅ CORRECT: Checking if a collection is empty -->
 <if test="!is_empty(permissions)">
     ` and permission in ${permissions.sql()}`
@@ -944,13 +944,13 @@ In Rbatis expressions:
 1. **Root Context**: All variables are accessed from the root argument context.
    
 2. **Variable Binding**: The `<bind>` tag creates new variables in the context.
-   ```xml
+   ```html
    <bind name="pattern" value="'%' + name + '%'" />
    <!-- Creates a new variable 'pattern' in the context -->
    ```
 
 3. **Loop Variables**: In `<foreach>` loops, the `item` and `index` variables are available only within the loop scope.
-   ```xml
+   ```html
    <foreach collection="items" item="item" index="index">
      <!-- 'item' and 'index' are available only here -->
    </foreach>
@@ -960,7 +960,7 @@ In Rbatis expressions:
 
 Here are some patterns for common expression needs in Rbatis:
 
-```xml
+```html
 <!-- Null or empty string check -->
 <if test="name != null && name.trim() != ''">
   ` and name = #{name}`
@@ -992,7 +992,7 @@ Here are some patterns for common expression needs in Rbatis:
 Common expression errors and how to avoid them:
 
 1. **Type Mismatch Errors**:
-   ```xml
+   ```html
    <!-- ❌ WRONG: Type mismatch -->
    <if test="count + 'string'">
      <!-- Will cause compilation error -->
@@ -1005,7 +1005,7 @@ Common expression errors and how to avoid them:
    ```
 
 2. **Operator Precedence Issues**:
-   ```xml
+   ```html
    <!-- ❌ WRONG: Ambiguous precedence -->
    <if test="a && b || c">
      <!-- Might not behave as expected -->
@@ -1018,7 +1018,7 @@ Common expression errors and how to avoid them:
    ```
 
 3. **Null Safety**:
-   ```xml
+   ```html
    <!-- ❌ WRONG: Potential null reference -->
    <if test="user.address.city == 'New York'">
      <!-- Crashes if user or address is null -->
@@ -2450,7 +2450,7 @@ The XML mapper structure in Rbatis follows these rules:
 
 #### XML Structure Example
 
-```xml
+```html
 <!-- ❌ INCORRECT: Using BaseResultMap -->
 <mapper>
     <BaseResultMap id="BaseResultMap" type="User">
@@ -2490,7 +2490,7 @@ The XML mapper structure in Rbatis follows these rules:
 
 The `<include>` tag is supported for reusing SQL fragments:
 
-```xml
+```html
 <mapper>
     <sql id="userColumns">id, name, age, email</sql>
     
@@ -2507,7 +2507,7 @@ The `<include>` tag is supported for reusing SQL fragments:
 
 You can include SQL fragments from external files:
 
-```xml
+```html
 <mapper>
     <select id="selectUsers">
         select 
@@ -2550,7 +2550,7 @@ Rbatis provides several powerful dynamic elements that can greatly simplify SQL 
 
 The `<foreach>` element is used to iterate over collections and generate repeated SQL fragments. It supports the following attributes:
 
-```xml
+```html
 <foreach 
   collection="collection_expression" 
   item="item_name" 
@@ -2573,7 +2573,7 @@ The `<foreach>` element is used to iterate over collections and generate repeate
 
 **Examples:**
 
-```xml
+```html
 <!-- Basic IN clause -->
 <select id="selectByIds">
   select * from user where id in 
@@ -2605,7 +2605,7 @@ The `<set>` element is primarily used in UPDATE statements to handle dynamic col
 
 **Simple form:**
 
-```xml
+```html
 <update id="updateUser">
   update user 
   <set>
@@ -2619,7 +2619,7 @@ The `<set>` element is primarily used in UPDATE statements to handle dynamic col
 
 **Advanced collection-based form:**
 
-```xml
+```html
 <update id="updateDynamic">
   update user 
   <set collection="updates" skip_null="true" skips="id,created_at">
@@ -2651,7 +2651,7 @@ rb.exec("updateDynamic", rbs::to_value!({"updates": updates, "id": 1})).await?;
 
 The `<trim>` element provides fine-grained control over whitespace and delimiters:
 
-```xml
+```html
 <trim prefix="WHERE" prefixOverrides="AND |OR " suffix="" suffixOverrides=",">
   <!-- Content -->
 </trim>
@@ -2670,7 +2670,7 @@ Aliases for compatibility:
 
 **Example:**
 
-```xml
+```html
 <select id="customSearch">
   select * from user
   <trim prefix="WHERE" prefixOverrides="AND |OR ">
@@ -2688,7 +2688,7 @@ Aliases for compatibility:
 
 The `<bind>` element creates new variables that can be used in the SQL:
 
-```xml
+```html
 <select id="searchByPattern">
   <bind name="pattern" value="'%' + name + '%'" />
   select * from user where name like #{pattern}
@@ -2882,7 +2882,7 @@ for table in tables {
 
 The `example.html` file demonstrates proper XML mapper structure and dynamic SQL generation:
 
-```xml
+```html
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
         "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
 <mapper>
@@ -2977,7 +2977,7 @@ async fn use_xml_mapper(rb: &RBatis) -> Result<(), rbatis::Error> {
 - Reusable SQL fragments
 
 **Anti-patterns to Avoid:**
-```xml
+```html
 <!-- ❌ AVOID: Using ResultMap in Rbatis -->
 <mapper>
     <resultMap id="BaseResultMap" type="Activity">
