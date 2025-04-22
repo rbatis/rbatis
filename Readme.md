@@ -1,4 +1,4 @@
-# Rbatis
+# rbatis
 
 [Website](https://rbatis.github.io/rbatis.io) | [Showcase](https://github.com/rbatis/rbatis/network/dependents) | [Examples](https://github.com/rbatis/rbatis/tree/master/example)
 
@@ -14,7 +14,7 @@
 
 ## Introduction
 
-Rbatis is a high-performance ORM framework for Rust based on compile-time code generation. It perfectly balances development efficiency, performance, and stability, functioning as both an ORM and a dynamic SQL compiler.
+rbatis is a high-performance ORM framework for Rust based on compile-time code generation. It perfectly balances development efficiency, performance, and stability, functioning as both an ORM and a dynamic SQL compiler.
 
 ## Core Advantages
 
@@ -80,9 +80,9 @@ Rbatis is a high-performance ORM framework for Rust based on compile-time code g
 | `serde_json::Value` and other serde types                               | ✓       |
 | Driver-specific types from rbdc-mysql, rbdc-pg, rbdc-sqlite, rbdc-mssql | ✓       |
 
-## How Rbatis Works
+## How rbatis Works
 
-Rbatis uses compile-time code generation through the `rbatis-codegen` crate, which means:
+rbatis uses compile-time code generation through the `rbatis-codegen` crate, which means:
 
 1. **Zero Runtime Overhead**: Dynamic SQL is converted to Rust code during compilation, not at runtime. This provides performance similar to handwritten code.
 
@@ -94,7 +94,7 @@ Rbatis uses compile-time code generation through the `rbatis-codegen` crate, whi
 
 3. **Build Process Integration**: The entire process runs during the `cargo build` phase as part of Rust's procedural macro compilation. The generated code is returned to the Rust compiler for LLVM compilation to produce machine code.
 
-4. **Dynamic SQL Without Runtime Cost**: Unlike most ORMs that interpret dynamic SQL at runtime, Rbatis performs all this work at compile-time, resulting in efficient and type-safe code.
+4. **Dynamic SQL Without Runtime Cost**: Unlike most ORMs that interpret dynamic SQL at runtime, rbatis performs all this work at compile-time, resulting in efficient and type-safe code.
 
 ## Performance Benchmarks
 
@@ -199,7 +199,7 @@ async fn main() {
 
 ## Creating a Custom Database Driver
 
-To implement a custom database driver for Rbatis:
+To implement a custom database driver for rbatis:
 
 1. Define your driver project with dependencies:
 ```toml
