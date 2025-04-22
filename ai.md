@@ -552,7 +552,7 @@ Correct use of backticks example:
 Rbatis' HTML style has several key differences from MyBatis:
 
 1. **No need for CDATA**: Rbatis does not need to use CDATA blocks to escape special characters
-   ```rust
+   ```html
    <!-- MyBatis needs CDATA -->
    <if test="age > 18">
        <![CDATA[ AND age > 18 ]]>
@@ -565,7 +565,7 @@ Rbatis' HTML style has several key differences from MyBatis:
    ```
 
 2. **Expression Syntax**: Rbatis uses Rust style expression syntax
-   ```rust
+   ```html
    <!-- MyBatis -->
    <if test="list != null and list.size() > 0">
 
