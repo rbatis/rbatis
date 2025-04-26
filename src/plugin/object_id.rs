@@ -1,6 +1,6 @@
 //! ObjectId
 use hex::FromHexError;
-use rand::{thread_rng, Rng};
+use rand::{rng, Rng};
 use std::sync::OnceLock;
 use std::{
     error, fmt, result,
@@ -179,7 +179,7 @@ impl ObjectId {
     fn gen_process_id() -> [u8; 5] {
         pub static BUF: OnceLock<[u8; 5]> = OnceLock::new();
         let r = BUF.get_or_init(|| {
-            let rng = thread_rng().gen_range(0..MAX_U24) as u32;
+            let rng = rng().random_range(0..MAX_U24) as u32;
             let mut buf: [u8; 5] = [0; 5];
             buf[0..4].copy_from_slice(&rng.to_be_bytes());
             buf
