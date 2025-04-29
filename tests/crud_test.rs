@@ -21,7 +21,7 @@ mod test {
     use rbatis::{DefaultPool, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
-    use rbdc::pool::conn_manager::ConnManager;
+    use rbdc::pool::ConnectionManager;
     use rbdc::pool::Pool;
     use rbdc::rt::block_on;
     use rbs::{from_value, to_value, Value};
@@ -315,7 +315,7 @@ mod test {
             let mut rb = RBatis::new();
             let mut opts = MockConnectOptions {};
             opts.set_uri("test");
-            let pool = DefaultPool::new(ConnManager::new_opt_box(
+            let pool = DefaultPool::new(ConnectionManager::new_opt_box(
                 Box::new(MockDriver {}),
                 Box::new(opts),
             ))

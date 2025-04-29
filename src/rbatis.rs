@@ -7,7 +7,7 @@ use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
 use log::LevelFilter;
-use rbdc::pool::conn_manager::ConnManager;
+use rbdc::pool::ConnectionManager;
 use rbdc::pool::Pool;
 use rbs::to_value;
 use serde::Serialize;
@@ -74,7 +74,7 @@ impl RBatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = DefaultPool::new(ConnManager::new_arc(
+        let pool = DefaultPool::new(ConnectionManager::new_arc(
             Arc::new(Box::new(driver)),
             Arc::new(option),
         ))?;
@@ -104,7 +104,7 @@ impl RBatis {
         driver: Driver,
         option: ConnectOptions,
     ) -> Result<(), Error> {
-        let pool = Pool::new(ConnManager::new_arc(
+        let pool = Pool::new(ConnectionManager::new_arc(
             Arc::new(Box::new(driver)),
             Arc::new(Box::new(option)),
         ))?;
