@@ -36,15 +36,13 @@ mod my_pool {
     use futures_core::future::BoxFuture;
     use rbatis::async_trait;
     use rbatis::rbdc::db::{Connection, ExecResult, Row};
-    use rbatis::rbdc::pool::conn_box::ConnectionBox;
-    use rbatis::rbdc::pool::conn_manager::ConnManager;
-    use rbatis::rbdc::pool::Pool;
     use rbatis::rbdc::{db, Error};
     use rbs::value::map::ValueMap;
     use rbs::{to_value, Value};
     use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
     use std::time::Duration;
+    use rbatis::rbdc::pool::{ConnectionGuard, ConnectionManager, Pool};
 
     pub struct DeadPool {
         pub manager: ConnManagerProxy,
@@ -70,7 +68,7 @@ mod my_pool {
 
     #[async_trait]
     impl Pool for DeadPool {
-        fn new(manager: ConnManager) -> Result<Self, Error>
+        fn new(manager: ConnectionManager) -> Result<Self, Error>
         where
             Self: Sized,
         {
@@ -145,12 +143,12 @@ mod my_pool {
     }
 
     pub struct ConnManagerProxy {
-        pub inner: ConnManager,
+        pub inner: ConnectionManager,
         pub conn: Option<Object<ConnManagerProxy>>,
     }
 
     impl deadpool::managed::Manager for ConnManagerProxy {
-        type Type = ConnectionBox;
+        type Type = ConnectionGuard;
 
         type Error = Error;
 
