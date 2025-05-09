@@ -163,32 +163,32 @@ macro_rules! impl_numeric_cmp {
 
             impl PartialOrd<Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-                    $eq(rhs, *self as _)
+                    $eq(rhs, *self as _).map(|ord| ord.reverse())
                 }
             }
 
             impl PartialOrd<&Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
-                    $eq(*rhs, *self as _)
+                    $eq(*rhs, *self as _).map(|ord| ord.reverse())
                 }
             }
 
             impl PartialOrd<Value> for &$ty {
                 fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-                    $eq(rhs, **self as _)
+                    $eq(rhs, **self as _).map(|ord| ord.reverse())
                 }
             }
 
             impl PartialOrd<&Value> for &$ty {
                 fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
-                    $eq(*rhs, **self as _)
+                    $eq(*rhs, **self as _).map(|ord| ord.reverse())
                 }
             }
 
             // for unary
             impl PartialOrd<&&Value> for $ty {
                 fn op_partial_cmp(&self, rhs: &&&Value)  -> Option<Ordering> {
-                    $eq(*rhs, *self as _)
+                    $eq(**rhs, *self as _).map(|ord| ord.reverse())
                 }
             }
         )*)*
