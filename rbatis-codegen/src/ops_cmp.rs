@@ -236,13 +236,13 @@ self_cmp!(cmp_f64[f32 f64]);
 
 impl PartialOrd<&str> for &str {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
-        self.partial_cmp(rhs)
+        (*self).partial_cmp(*rhs)
     }
 }
 
 impl PartialOrd<&str> for String {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(rhs)
+        self.as_str().partial_cmp(*rhs)
     }
 }
 
@@ -266,19 +266,19 @@ impl PartialOrd<&&String> for String {
 
 impl PartialOrd<&str> for &String {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(rhs)
+        self.as_str().partial_cmp(*rhs)
     }
 }
 
 impl PartialOrd<&&str> for &String {
     fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(*rhs)
+        self.as_str().partial_cmp(**rhs)
     }
 }
 
 impl PartialOrd<&&&str> for &String {
     fn op_partial_cmp(&self, rhs: &&&&str) -> Option<Ordering> {
-        self.as_str().partial_cmp(**rhs)
+        self.as_str().partial_cmp(***rhs)
     }
 }
 
