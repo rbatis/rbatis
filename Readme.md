@@ -216,28 +216,31 @@ tokio = { version = "1", features = ["full"] }
 
 2. Implement the required traits:
 ```rust
-// Implement the following traits from rbdc
-use rbdc::db::{ConnectOptions, Connection, ExecResult, MetaData, Placeholder, Row};
+use rbdc::db::{Driver, MetaData, Row, Connection, ConnectOptions, Placeholder};
 
-// Implementation details for your database driver...
-struct YourDatabaseDriver;
+pub struct YourDriver{}
+impl Driver for YourDriver{}
 
-// Example implementation (simplified)
-impl ConnectOptions for YourDatabaseDriver {
-    // Implementation details
-}
+pub struct YourMetaData{}
+impl MetaData for YourMetaData{}
 
-impl Connection for YourDatabaseDriver {
-    // Implementation details
-}
+pub struct YourRow{}
+impl Row for YourRow{}
 
-// Implement other required traits
+pub struct YourConnection{}
+impl Connection for YourConnection{}
+
+pub struct YourConnectOptions{}
+impl ConnectOptions for YourConnectOptions{}
+
+pub struct YourPlaceholder{}
+impl Placeholder for YourPlaceholder{}
 
 // Then use your driver:
 #[tokio::main]
 async fn main() {
   let rb = rbatis::RBatis::new();
-  rb.init(YourDatabaseDriver {}, "yourdatabase://username:password@host:port/dbname").unwrap();
+  rb.init(YourDatabaseDriver {}, "database://username:password@host:port/dbname").unwrap();
 }
 ```
 
