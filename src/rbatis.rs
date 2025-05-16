@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
 use crate::intercept_log::LogInterceptor;
 use crate::plugin::intercept::Intercept;
@@ -262,9 +263,8 @@ impl RBatis {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
-                //this is safe
-                let call: &T = unsafe { std::mem::transmute_copy(&item.as_ref()) };
-                return Some(call);
+                let v:Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
+                return v;
             }
         }
         None

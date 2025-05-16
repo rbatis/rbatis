@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub extern crate dark_std;
 pub extern crate rbatis_codegen;
 extern crate rbatis_macro_driver;
