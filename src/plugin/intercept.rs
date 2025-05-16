@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::executor::Executor;
 use crate::Error;
 use async_trait::async_trait;
@@ -50,7 +51,7 @@ impl<A, B> ResultType<A, B> {
 /// }
 /// ```
 #[async_trait]
-pub trait Intercept: Send + Sync + Debug {
+pub trait Intercept: Any + Send + Sync + Debug {
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
