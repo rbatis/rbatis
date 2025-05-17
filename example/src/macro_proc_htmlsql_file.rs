@@ -1,7 +1,6 @@
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use serde_json::json;
-
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
