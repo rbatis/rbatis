@@ -77,5 +77,5 @@ fn test_bitxor_ref_variants() {
     assert_eq!(i1.op_bitxor(v3), 6i64);  // 原始类型需要Value而不是&Value
     
     let v4 = Value::I32(3);
-    assert_eq!((&Value::I32(5)).op_bitxor(3i32), 6i64);  // &Value需要原始类型而不是&原始类型
+    assert_eq!((&Value::I32(5)).op_bitxor(v4), rbs::Value::I32(6));  // &Value需要原始类型而不是&原始类型
 } 
