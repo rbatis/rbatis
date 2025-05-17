@@ -3080,7 +3080,3 @@ Based on the example code, here are some general best practices and common mista
 8. **❌ Unnecessary raw SQL** for operations supported by macros
 
 Remember that Rbatis is designed to be Rust-idiomatic, and it often differs from other ORMs like MyBatis. Following these patterns will help you use Rbatis effectively and avoid common pitfalls.
-
-## 13. Conclusion
-
-// ... existing code ...
