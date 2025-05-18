@@ -97,8 +97,8 @@ impl IntoSql for Value {
                 }
                 if arr.len() != 0 {
                     sql.pop();
-                    sql.push_str(")");
                 }
+                sql.push_str(")");
                 sql
             }
             x => {
@@ -154,8 +154,8 @@ impl IntoSql for &Value {
                 }
                 if arr.len() != 0 {
                     sql.pop();
-                    sql.push_str(")");
                 }
+                sql.push_str(")");
                 sql
             }
             x => {
