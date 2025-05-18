@@ -23,7 +23,7 @@ mod tests {
         let n = 42;
         assert_eq!(to_value!(n), Value::I32(42));
     }
-    
+
 
     #[test]
     fn test_to_value_vec_i32() {
@@ -39,7 +39,7 @@ mod tests {
                 "name": "Alice"
             }
         };
-        assert_eq!(to_value!(v).to_string(), r#"[{["id"]:[1],["user"]:{["name"]:["Alice"]}}]"#);
+        assert_eq!(to_value!(v).to_string(), r#"{"id":1,"user":{"name":"Alice"}}"#);
     }
     
 
