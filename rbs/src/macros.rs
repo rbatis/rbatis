@@ -72,14 +72,6 @@ macro_rules! to_value {
         }
     };
     
-    // Array syntax: to_value![a, b, c]
-    [$($v:expr),* $(,)*] => {
-        {
-            // Use to_value function directly to handle arrays, avoiding recursive expansion
-            $crate::to_value(vec![$($v),*]).unwrap_or_default()
-        }
-    };
-    
     // Internal helper rule: handle key-value pairs in a map
     (@map_entry $map:ident $k:tt {$($ik:tt: $iv:tt),* $(,)*}) => {
         // Process nested object
@@ -95,5 +87,13 @@ macro_rules! to_value {
     // Handle single expression
     ($arg:expr) => {
         $crate::to_value($arg).unwrap_or_default()
+    };
+    
+    // Array syntax: to_value![a, b, c]
+    [$($v:expr),* $(,)*] => {
+        {
+            // Use to_value function directly to handle arrays, avoiding recursive expansion
+            $crate::to_value(vec![$($v),*]).unwrap_or_default()
+        }
     };
 }
