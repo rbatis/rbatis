@@ -89,8 +89,7 @@ impl Value {
 /// ```
 #[macro_export]
 macro_rules! to_value {
-    // 处理对象内部结构 - 递归规则
-    // 通过花括号识别对象
+    // object inner {}
     {$($k:tt: {$($ik:tt: $iv:tt),* $(,)*}),* $(,)*} => {
         {
             let mut map = $crate::value::map::ValueMap::new();
@@ -102,7 +101,7 @@ macro_rules! to_value {
         }
     };
     
-    // 处理对象
+    // object
     ({$($k:tt: $v:tt),* $(,)*}) => {
         {
             let mut map = $crate::value::map::ValueMap::new();
@@ -113,7 +112,7 @@ macro_rules! to_value {
         }
     };
     
-    // 处理基本键值对
+    // k-v
     ($($k:tt: $v:expr),* $(,)?) => {
         {
             let mut map = $crate::value::map::ValueMap::new();
@@ -123,7 +122,7 @@ macro_rules! to_value {
             $crate::Value::Map(map)
         }
     };
-    // 处理表达式
+    // expr/ident
     ($arg:expr) => {
         $crate::to_value($arg).unwrap_or_default()
     };
