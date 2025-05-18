@@ -2,12 +2,10 @@
 mod tests {
     use rbs::{to_value, Value};
     use rbs::value::map::ValueMap;
-
-    // 后续将在此处添加测试函数
-
+    
     #[test]
     fn test_to_value_basic_literals() {
-        assert_eq!(to_value!(()), Value::Null);
+        assert_eq!(to_value!(Option::<i32>::None), Value::Null);
         assert_eq!(to_value!(true), Value::Bool(true));
         assert_eq!(to_value!(false), Value::Bool(false));
         assert_eq!(to_value!(123), Value::I32(123));
@@ -32,6 +30,18 @@ mod tests {
         let bytes_vec: Vec<i32> = vec![4, 5, 6];
         assert_eq!(to_value!(bytes_vec), to_value![4, 5, 6]);
     }
+
+    #[test]
+    fn test_to_value_basic_use() {
+        let v = rbs::to_value! {
+            "id": 1,
+            "user": {
+                "name": "Alice"
+            }
+        };
+        assert_eq!(to_value!(v).to_string(), r#"[{["id"]:[1],["user"]:{["name"]:["Alice"]}}]"#);
+    }
+    
 
     #[test]
     fn test_to_value_simple_map_implicit_braces() {
