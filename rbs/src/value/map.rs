@@ -182,13 +182,16 @@ impl IntoIterator for ValueMap {
     }
 }
 
+// 保留一个简单的value_map!宏实现，用于向后兼容
 #[macro_export]
 macro_rules! value_map {
-      {$($k:tt:$v:expr $(,)+ )*} => {
+    ($($k:tt:$v:expr),* $(,)*) => {
         {
-        let mut m  = $crate::value::map::ValueMap::with_capacity(50);
-        $(m.insert($crate::to_value!($k),$crate::to_value!($v));)*
-        m
+            let mut m = $crate::value::map::ValueMap::with_capacity(50);
+            $(
+                m.insert($crate::to_value!($k), $crate::to_value!($v));
+            )*
+            m
         }
     };
 }
@@ -212,4 +215,4 @@ mod test {
         v["a"]=to_value!("");
         assert_eq!(v.to_string(), "{\"a\":\"\"}");
     }
-}
+} 
