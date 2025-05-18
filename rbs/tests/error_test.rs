@@ -2,7 +2,6 @@ use rbs::Error;
 use std::error::Error as StdError;
 use std::io;
 use std::io::{Error as IoError, ErrorKind};
-use std::num::{ParseFloatError, ParseIntError, TryFromIntError};
 
 #[test]
 fn test_error_creation() {
@@ -28,7 +27,7 @@ fn test_error_creation() {
 #[test]
 fn test_error_box() {
     // 测试从Error转换为Box<dyn StdError>
-    let err = Error::from("test error");
+    let _err = Error::from("test error");
     let boxed: Box<dyn StdError> = Box::new(Error::from("test error"));
     
     // 测试从Error转换为Box<dyn StdError + Send>
@@ -50,7 +49,7 @@ fn test_error_source() {
     let err = Error::from(io_err);
     
     // 测试source方法 - 注意：当前实现可能不保留源错误
-    let source = err.source();
+    let _source = err.source();
     
     // 我们不对source结果做具体断言，因为Error实现可能不保留源
     // 这个测试主要是确保调用source方法不会崩溃
@@ -157,10 +156,11 @@ fn test_error_from_io_error() {
     assert!(err.to_string().contains("file not found"));
 }
 
+#[allow(invalid_from_utf8)]
 #[test]
 fn test_error_from_utf8_error() {
-    let bytes = [0, 159, 146, 150]; // 无效的 UTF-8 序列
-    let utf8_err = std::str::from_utf8(&bytes).unwrap_err();
+    // 无效的 UTF-8 序列
+    let utf8_err = std::str::from_utf8(&[0, 159, 146, 150]).unwrap_err();
     let err = Error::from(utf8_err);
     assert!(err.to_string().contains("invalid utf-8"));
 }
