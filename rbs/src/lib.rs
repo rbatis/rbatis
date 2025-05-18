@@ -90,6 +90,18 @@ impl Value {
 #[macro_export]
 macro_rules! to_value {
     // object inner {}
+    ({$($k:tt: {$($ik:tt: $iv:tt),* $(,)*}),* $(,)*}) => {
+        {
+            let mut map = $crate::value::map::ValueMap::new();
+            $(
+                let inner_value = $crate::to_value!({$($ik: $iv),*});
+                map.insert($crate::to_value!($k), inner_value);
+            )*
+            $crate::Value::Map(map)
+        }
+    };
+    
+    // object inner {}
     {$($k:tt: {$($ik:tt: $iv:tt),* $(,)*}),* $(,)*} => {
         {
             let mut map = $crate::value::map::ValueMap::new();
@@ -122,9 +134,14 @@ macro_rules! to_value {
             $crate::Value::Map(map)
         }
     };
+    
     // expr/ident
     ($arg:expr) => {
         $crate::to_value($arg).unwrap_or_default()
+    };
+    
+    [$($arg:tt),*] => {
+        $crate::to_value([$($arg),*]).unwrap_or_default()
     };
 }
 
