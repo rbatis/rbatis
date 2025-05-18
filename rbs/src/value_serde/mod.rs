@@ -12,6 +12,9 @@ mod test {
 
     #[test]
     fn test_ser() {
+        let s = to_value(1);
+        assert_eq!(s.unwrap(), Value::I32(1));
+        
         let s = to_value!(1);
         assert_eq!(s, Value::I32(1));
     }
