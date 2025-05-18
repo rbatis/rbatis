@@ -72,6 +72,9 @@ impl IntoSql for Value {
                         sql.push_str(&v.string());
                         sql.push_str("'");
                         sql.push_str(" ");
+                    } else if v.is_array() {
+                        sql.push_str(&v.sql());
+                        sql.push_str(" ");
                     } else {
                         sql.push_str(&v.string());
                         sql.push_str(" ");
@@ -125,6 +128,9 @@ impl IntoSql for &Value {
                         sql.push_str("'");
                         sql.push_str(&v.string());
                         sql.push_str("'");
+                        sql.push_str(" ");
+                    } else if v.is_array() {
+                        sql.push_str(&v.sql());
                         sql.push_str(" ");
                     } else {
                         sql.push_str(&v.string());
