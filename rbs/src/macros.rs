@@ -93,7 +93,7 @@ macro_rules! to_value {
     [$($v:expr),* $(,)*] => {
         {
             // Use to_value function directly to handle arrays, avoiding recursive expansion
-            $crate::to_value(vec![$($v),*]).unwrap_or_default()
+            $crate::to_value(vec![$($crate::to_value($v).unwrap_or_default()),*]).unwrap_or_default()
         }
     };
 }
