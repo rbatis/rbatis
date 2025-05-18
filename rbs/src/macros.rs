@@ -67,6 +67,7 @@ macro_rules! to_value {
         $crate::to_value($arg).unwrap_or_default()
     };
     
+    // array [*,*]
     [$($arg:tt),*] => {
         $crate::to_value([$($arg),*]).unwrap_or_default()
     };
