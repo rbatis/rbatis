@@ -37,15 +37,15 @@ jobs:
           command: test
           args: --workspace
       - name: Run cargo tarpaulin
-        if: matrix.os == 'ubuntu-latest' && matrix.version == 'stable'
+        if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         run: |
           cargo install cargo-tarpaulin
-          cargo tarpaulin --out xml
+          cargo tarpaulin --out Xml --output-dir ./coverage
       - name: Upload coverage reports to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.version == 'stable'
+        if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          file: cobertura.xml
+          directory: ./coverage
 
