@@ -109,6 +109,10 @@ impl ValueMap {
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+    
+    pub fn get(&self,k:&Value) -> &Value {
+       self.0.get(k).unwrap_or_else(|| &Value::Null)
+    }
 }
 
 impl Index<&str> for ValueMap {
