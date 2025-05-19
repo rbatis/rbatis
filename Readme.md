@@ -83,10 +83,10 @@ Rbatis is a high-performance ORM framework for Rust based on compile-time code g
 
 ## Member crates
 
-| crate                                               | GitHub Link                                     |
-|-----------------------------------------------------|-------------------------------------------------|
-| [RBDC](https://crates.io/crates/rbdc)               | [rbdc](https://github.com/rbatis/rbdc)          |
-| [rbs](https://crates.io/crates/rbs)                 | [rbs](https://crates.io/crates/rbs)             |
+| crate                                 | GitHub Link                                     |
+|---------------------------------------|-------------------------------------------------|
+| [rbdc](https://crates.io/crates/rbdc) | [rbdc](https://github.com/rbatis/rbdc)          |
+| [rbs](https://crates.io/crates/rbs)   | [rbs](https://crates.io/crates/rbs)             |
 
 
 
