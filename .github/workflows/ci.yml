@@ -40,7 +40,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         run: |
           cargo install cargo-tarpaulin
-          cargo tarpaulin --out Xml --output-dir ./coverage
+          cargo tarpaulin --out Xml --output-dir ./coverage --exclude-files 'benches/*'
       - name: Upload coverage reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         uses: codecov/codecov-action@v3
