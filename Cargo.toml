@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "rbs",
     "rbatis-codegen",
     "rbatis-macro-driver",
     "example"
