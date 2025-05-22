@@ -576,6 +576,15 @@ pub trait Neg {
     fn neg(self) -> Self::Output;
 }
 
+
+/// string contains method
+pub trait StringContain{
+    fn contains(self, other: &str) -> bool;
+    fn starts_with(self, other: &str) -> bool;
+    fn ends_with(self, other: &str) -> bool;
+}
+
+
 #[cfg(test)]
 mod test {
     use crate::ops::AsProxy;
