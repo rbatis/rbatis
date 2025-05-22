@@ -4,7 +4,7 @@ use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
 use rbatis::{async_trait, crud, Error, RBatis};
-use rbs::Value;
+use rbs::{value, Value};
 use std::sync::Arc;
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -38,7 +38,7 @@ pub async fn main() {
     intercept.skip_sql.push("delete from".to_string());
 
     //will not show log
-    let _r = Activity::delete_by_column(&rb, "id", "1").await;
+    let _r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
 
     log::logger().flush();
     println!("this is no log print by 'DisableLogIntercept'");

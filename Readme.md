@@ -129,10 +129,10 @@ QPS: 288531 QPS/s
 ```toml
 # Cargo.toml
 [dependencies]
-rbs = { version = "4.5"}
-rbatis = { version = "4.5"}
+rbs = { version = "4.6"}
+rbatis = { version = "4.6"}
+#drivers
 rbdc-sqlite = { version = "4.5" }
-# Or other database drivers
 # rbdc-mysql = { version = "4.5" }
 # rbdc-pg = { version = "4.5" }
 # rbdc-mssql = { version = "4.5" }
@@ -218,7 +218,7 @@ default = ["tls-rustls"]
 tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 [dependencies]
-rbs = { version = "4.5"}
+rbs = { version = "4.6"}
 rbdc = { version = "4.5", default-features = false, optional = true }
 fastdate = { version = "0.3" }
 tokio = { version = "1", features = ["full"] }

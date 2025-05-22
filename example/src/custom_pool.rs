@@ -38,7 +38,7 @@ mod my_pool {
     use rbatis::rbdc::db::{Connection, ExecResult, Row};
     use rbatis::rbdc::{db, Error};
     use rbs::value::map::ValueMap;
-    use rbs::{to_value, Value};
+    use rbs::{value, Value};
     use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
     use std::time::Duration;
@@ -134,10 +134,10 @@ mod my_pool {
         async fn state(&self) -> Value {
             let mut m = ValueMap::new();
             let state = self.status();
-            m.insert(to_value!("max_size"), to_value!(state.max_size));
-            m.insert(to_value!("size"), to_value!(state.size));
-            m.insert(to_value!("available"), to_value!(state.available));
-            m.insert(to_value!("waiting"), to_value!(state.waiting));
+            m.insert(value!("max_size"), value!(state.max_size));
+            m.insert(value!("size"), value!(state.size));
+            m.insert(value!("available"), value!(state.available));
+            m.insert(value!("waiting"), value!(state.waiting));
             Value::Map(m)
         }
     }

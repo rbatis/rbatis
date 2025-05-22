@@ -1,5 +1,6 @@
 ///PySql: gen select*,update*,insert*,delete* ... methods
 ///```rust
+/// use rbs::value;
 /// use rbatis::{Error, RBatis};
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
@@ -14,13 +15,13 @@
 ///  let r = MockTable::insert(rb, &table).await;
 ///  let r = MockTable::insert_batch(rb, std::slice::from_ref(&table),10).await;
 ///
-///  let tables = MockTable::select_by_column(rb,"id","1").await;
+///  let tables = MockTable::select_by_map(rb,value!{"id":"1"}).await;
 ///  let tables = MockTable::select_all(rb).await;
-///  let tables = MockTable::select_in_column(rb,"id", &vec!["1","2","3"]).await;
+///  let tables = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await;
 ///
-///  let r = MockTable::update_by_column(rb, &table,"id").await;
+///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
 ///
-///  let r = MockTable::delete_by_column(rb, "id","1").await;
+///  let r = MockTable::delete_by_map(rb, value!{"id":"1"}).await;
 ///  //... and more
 ///  Ok(())
 /// }
@@ -175,6 +176,7 @@ macro_rules! impl_insert {
 ///
 /// example:
 ///```rust
+/// use rbs::value;
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
@@ -189,7 +191,7 @@ macro_rules! impl_insert {
 ///
 /// //usage
 /// async fn test_select(rb:&RBatis) -> Result<(),Error>{
-///    let r = MockTable::select_by_column(rb,"id","1").await?;
+///    let r = MockTable::select_by_map(rb,value!{"id":"1"}).await?;
 ///    let r = MockTable::select_all_by_id(rb,"1","xxx").await?;
 ///    let r:Option<MockTable> = MockTable::select_by_id(rb,"1".to_string()).await?;
 ///    let r:Vec<MockTable> = MockTable::select_by_id2(rb,"1".to_string()).await?;
@@ -204,17 +206,17 @@ macro_rules! impl_select {
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
-        $crate::impl_select!($table{select_by_column<V:serde::Serialize>(column: &str,column_value: V) -> Vec => "` where ${column} = #{column_value}`"},$table_name);
-        $crate::impl_select!($table{select_by_map(condition:rbs::Value) -> Vec =>
+        $crate::impl_select!($table{select_by_map(condition: rbs::Value) -> Vec =>
         "` where `
          trim ' and ': for key,item in condition:
-             ` and ${key} = #{item}`
+                          if !item.is_array():
+                            ` and ${key} = #{item}`
+                          if item.is_array():
+                            ` and ${key} in (`
+                               trim ',': for _,item_array in item:
+                                    #{item_array},
+                            `)`
         "},$table_name);
-        $crate::impl_select!($table{select_in_column<V:serde::Serialize>(column: &str,column_values: &[V]) -> Vec =>
-         "` where ${column} in (`
-          trim ',': for _,item in column_values:
-             #{item},
-          `)`"},$table_name => { if column_values.is_empty() { return Ok(vec![]); }} );
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
@@ -244,6 +246,7 @@ macro_rules! impl_select {
 
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
 /// ```rust
+/// use rbs::value;
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
@@ -253,7 +256,7 @@ macro_rules! impl_select {
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
 ///  let table = MockTable{id: Some("1".to_string())};
-///  let r = MockTable::update_by_column(rb, &table,"id").await;
+///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
 ///  Ok(())
 /// }
 /// ```
@@ -266,64 +269,18 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_update!($table{update_by_map(condition:rbs::Value, skip_null: bool) =>
+         $crate::impl_update!($table{update_by_map(condition:rbs::Value) =>
         "` where `
          trim ' and ': for key,item in condition:
-             ` and ${key} = #{item}`
+                          if !item.is_array():
+                            ` and ${key} = #{item}`
+                          if item.is_array():
+                            ` and ${key} in (`
+                               trim ',': for _,item_array in item:
+                                    #{item_array},
+                            `)`
         "
         },$table_name);
-
-        $crate::impl_update!($table{update_by_column_value(column: &str, column_value: &rbs::Value, skip_null: bool) => "`where ${column} = #{column_value}`"},$table_name);
-        impl $table {
-            ///  will skip null column
-            pub async fn update_by_column(
-                executor: &dyn $crate::executor::Executor,
-                table: &$table,
-                column: &str) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
-                <$table>::update_by_column_skip(executor,table,column,true).await
-            }
-
-            ///will skip null column
-            pub async fn update_by_column_batch(
-                executor: &dyn $crate::executor::Executor,
-                tables: &[$table],
-                column: &str,
-                batch_size: u64
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-              <$table>::update_by_column_batch_skip(executor,tables,column,batch_size,true).await
-            }
-
-            pub async fn update_by_column_skip(
-                executor: &dyn $crate::executor::Executor,
-                table: &$table,
-                column: &str,
-                skip_null: bool) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>{
-                let columns = rbs::to_value!(table);
-                let column_value = &columns[column];
-                <$table>::update_by_column_value(executor,table,column,column_value,skip_null).await
-            }
-
-            pub async fn update_by_column_batch_skip(
-                executor: &dyn $crate::executor::Executor,
-                tables: &[$table],
-                column: &str,
-                batch_size: u64,
-                skip_null: bool
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                let mut rows_affected = 0;
-                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
-                for (offset, limit) in ranges {
-                    //todo better way impl batch?
-                    for table in &tables[offset as usize..limit as usize]{
-                       rows_affected += <$table>::update_by_column_skip(executor,table,column,skip_null).await?.rows_affected;
-                    }
-                }
-                Ok($crate::rbdc::db::ExecResult{
-                    rows_affected:rows_affected,
-                    last_insert_id:rbs::Value::Null,
-                })
-            }
-        }
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
@@ -340,7 +297,7 @@ macro_rules! impl_update {
                                    for k,v in table:
                                      if k == column:
                                         continue:
-                                     if skip_null == true && v == null:
+                                     if v == null || k == 'id':
                                         continue:
                                      `${k}=#{v},`
                                  ` `",$sql_where)]
@@ -348,7 +305,6 @@ macro_rules! impl_update {
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
                       table: &rbs::Value,
-                      skip_null:bool,
                       $($param_key:$param_type,)*
                   ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                       impled!()
@@ -360,8 +316,8 @@ macro_rules! impl_update {
                   if table_name.is_empty(){
                          table_name = snake_name();
                   }
-                  let table = rbs::to_value!(table);
-                  $fn_name(executor, table_name, &table, true, $($param_key,)*).await
+                  let table = rbs::value!(table);
+                  $fn_name(executor, table_name, &table, $($param_key,)*).await
             }
         }
     };
@@ -370,6 +326,7 @@ macro_rules! impl_update {
 /// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
 ///
 /// ```rust
+/// use rbs::value;
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{}
@@ -377,7 +334,7 @@ macro_rules! impl_update {
 ///
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let r = MockTable::delete_by_column(rb, "id","1").await;
+///  let r = MockTable::delete_by_map(rb, value!{"id":"1"}).await;
 ///  //... and more
 ///  Ok(())
 /// }
@@ -391,36 +348,18 @@ macro_rules! impl_delete {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_delete!($table{ delete_by_column<V:serde::Serialize>(column:&str,column_value: V) => "`where ${column} = #{column_value}`"},$table_name);
         $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
         "` where `
          trim ' and ': for key,item in condition:
-             ` and ${key} = #{item}`
-        "},$table_name);
-        $crate::impl_delete!($table {delete_in_column<V:serde::Serialize>(column:&str,column_values: &[V]) =>
-        "`where ${column} in (`
-          trim ',': for _,item in column_values:
-             #{item},
-          `)`"},$table_name => { if column_values.is_empty() { return Ok($crate::rbdc::db::ExecResult::default()); }} );
-
-        impl $table {
-            pub async fn delete_by_column_batch<V:serde::Serialize>(
-                executor: &dyn $crate::executor::Executor,
-                column: &str,
-                values: &[V],
-                batch_size: u64,
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                let mut rows_affected = 0;
-                let ranges = $crate::plugin::Page::<()>::make_ranges(values.len() as u64, batch_size);
-                for (offset, limit) in ranges {
-                    rows_affected += <$table>::delete_in_column(executor,column,&values[offset as usize..limit as usize]).await?.rows_affected;
-                }
-                Ok($crate::rbdc::db::ExecResult{
-                    rows_affected: rows_affected,
-                    last_insert_id: rbs::Value::Null
-                })
-            }
-        }
+                          if !item.is_array():
+                            ` and ${key} = #{item}`
+                          if item.is_array():
+                            ` and ${key} in (`
+                               trim ',': for _,item_array in item:
+                                    #{item_array},
+                            `)`
+        "
+        },$table_name);
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)? $( => $cond:expr)?) => {
         impl $table {

@@ -24,7 +24,7 @@ mod test {
     use rbdc::pool::ConnectionManager;
     use rbdc::pool::Pool;
     use rbdc::rt::block_on;
-    use rbs::{from_value, to_value, Value};
+    use rbs::{from_value, value, Value};
     use std::any::Any;
     use std::collections::HashMap;
     use std::future::Future;
@@ -365,16 +365,16 @@ mod test {
             assert_eq!(
                 args,
                 vec![
-                    to_value!(t.id),
-                    to_value!(t.name),
-                    to_value!(t.pc_link),
-                    to_value!(t.h5_link),
-                    to_value!(t.status),
-                    to_value!(t.remark),
-                    to_value!(t.create_time),
-                    to_value!(t.version),
-                    to_value!(t.delete_flag),
-                    to_value!(t.count),
+                    value!(t.id),
+                    value!(t.name),
+                    value!(t.pc_link),
+                    value!(t.h5_link),
+                    value!(t.status),
+                    value!(t.remark),
+                    value!(t.create_time),
+                    value!(t.version),
+                    value!(t.delete_flag),
+                    value!(t.count),
                 ]
             );
         };
@@ -414,26 +414,26 @@ mod test {
             assert_eq!(
                 args,
                 vec![
-                    to_value!(&ts[0].id),
-                    to_value!(&ts[0].name),
-                    to_value!(&ts[0].pc_link),
-                    to_value!(&ts[0].h5_link),
-                    to_value!(&ts[0].status),
-                    to_value!(&ts[0].remark),
-                    to_value!(&ts[0].create_time),
-                    to_value!(&ts[0].version),
-                    to_value!(&ts[0].delete_flag),
-                    to_value!(&ts[0].count),
-                    to_value!(&ts[1].id),
-                    to_value!(&ts[1].name),
-                    to_value!(&ts[1].pc_link),
-                    to_value!(&ts[1].h5_link),
-                    to_value!(&ts[1].status),
-                    to_value!(&ts[1].remark),
-                    to_value!(&ts[1].create_time),
-                    to_value!(&ts[1].version),
-                    to_value!(&ts[1].delete_flag),
-                    to_value!(&ts[1].count),
+                    value!(&ts[0].id),
+                    value!(&ts[0].name),
+                    value!(&ts[0].pc_link),
+                    value!(&ts[0].h5_link),
+                    value!(&ts[0].status),
+                    value!(&ts[0].remark),
+                    value!(&ts[0].create_time),
+                    value!(&ts[0].version),
+                    value!(&ts[0].delete_flag),
+                    value!(&ts[0].count),
+                    value!(&ts[1].id),
+                    value!(&ts[1].name),
+                    value!(&ts[1].pc_link),
+                    value!(&ts[1].h5_link),
+                    value!(&ts[1].status),
+                    value!(&ts[1].remark),
+                    value!(&ts[1].create_time),
+                    value!(&ts[1].version),
+                    value!(&ts[1].delete_flag),
+                    value!(&ts[1].count),
                 ]
             );
         };
@@ -462,202 +462,33 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_column(&mut rb, &t, "id")
+            let r = MockTable::update_by_map(&mut rb, &t,  value!{"id":"2"})
                 .await
                 .unwrap();
 
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
+            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=?  where id = ?");
             assert_eq!(args.len(), 10);
             assert_eq!(
                 args,
                 vec![
-                    to_value!(t.name),
-                    to_value!(t.pc_link),
-                    to_value!(t.h5_link),
-                    to_value!(t.status),
-                    to_value!(t.remark),
-                    to_value!(t.create_time),
-                    to_value!(t.version),
-                    to_value!(t.delete_flag),
-                    to_value!(t.count),
-                    to_value!(t.id),
+                    value!(t.name),
+                    value!(t.pc_link),
+                    value!(t.h5_link),
+                    value!(t.status),
+                    value!(t.remark),
+                    value!(t.create_time),
+                    value!(t.version),
+                    value!(t.delete_flag),
+                    value!(t.count),
+                    value!(t.id),
                 ]
             );
         };
         block_on(f);
     }
 
-    #[test]
-    fn test_update_by_column_skip_null() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
-                version: Some(1),
-                delete_flag: Some(1),
-                count: 0,
-            };
-            let r = MockTable::update_by_column_skip(&mut rb, &t, "id", false)
-                .await
-                .unwrap();
-
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,pc_banner_img=?,h5_banner_img=?,sort=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
-            assert_eq!(args.len(), 13);
-            assert_eq!(
-                args,
-                vec![
-                    to_value!(t.name),
-                    to_value!(t.pc_link),
-                    to_value!(t.h5_link),
-                    to_value!(t.pc_banner_img),
-                    to_value!(t.h5_banner_img),
-                    to_value!(t.sort),
-                    to_value!(t.status),
-                    to_value!(t.remark),
-                    to_value!(t.create_time),
-                    to_value!(t.version),
-                    to_value!(t.delete_flag),
-                    to_value!(t.count),
-                    to_value!(t.id),
-                ]
-            );
-        };
-        block_on(f);
-    }
-
-    #[test]
-    fn test_update_by_column_batch() {
-        #[derive(Debug)]
-        pub struct TestIntercept {
-            pub num: AtomicI32,
-        }
-
-        #[async_trait]
-        impl Intercept for TestIntercept {
-            async fn before(
-                &self,
-                _task_id: i64,
-                _rb: &dyn Executor,
-                sql: &mut String,
-                args: &mut Vec<Value>,
-                _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-            ) -> Result<Option<bool>, Error> {
-                assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = ?");
-                let num = self.num.load(Ordering::Relaxed) + 1;
-                println!("{}", sql);
-                println!("{}", Value::Array(args.clone()));
-                assert_eq!(
-                    args,
-                    &[
-                        Value::String(num.to_string()),
-                        Value::String(num.to_string()),
-                        Value::String(num.to_string()),
-                        Value::I32(num),
-                        Value::String(num.to_string()),
-                        Value::Ext(
-                            "DateTime",
-                            Box::new(Value::String("2023-10-10T00:00:00+08:00".to_string()))
-                        ),
-                        Value::I64(num as i64),
-                        Value::I32(num),
-                        Value::U64(num as u64),
-                        Value::String(num.to_string())
-                    ]
-                );
-                self.num.fetch_add(1, Ordering::Relaxed);
-                return Ok(Some(true));
-            }
-        }
-        let f = async move {
-            let mut rb = RBatis::new();
-            rb.set_intercepts(vec![Arc::new(TestIntercept {
-                num: Default::default(),
-            })]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let tables = vec![
-                MockTable {
-                    id: Some("1".into()),
-                    name: Some("1".into()),
-                    pc_link: Some("1".into()),
-                    h5_link: Some("1".into()),
-                    pc_banner_img: None,
-                    h5_banner_img: None,
-                    sort: None,
-                    status: Some(1),
-                    remark: Some("1".into()),
-                    create_time: Some(DateTime::from_str("2023-10-10 00:00:00+08:00").unwrap()),
-                    version: Some(1),
-                    delete_flag: Some(1),
-                    count: 1,
-                },
-                MockTable {
-                    id: Some("2".into()),
-                    name: Some("2".into()),
-                    pc_link: Some("2".into()),
-                    h5_link: Some("2".into()),
-                    pc_banner_img: None,
-                    h5_banner_img: None,
-                    sort: None,
-                    status: Some(2),
-                    remark: Some("2".into()),
-                    create_time: Some(DateTime::from_str("2023-10-10 00:00:00+08:00").unwrap()),
-                    version: Some(2),
-                    delete_flag: Some(2),
-                    count: 2,
-                },
-                MockTable {
-                    id: Some("3".into()),
-                    name: Some("3".into()),
-                    pc_link: Some("3".into()),
-                    h5_link: Some("3".into()),
-                    pc_banner_img: None,
-                    h5_banner_img: None,
-                    sort: None,
-                    status: Some(3),
-                    remark: Some("3".into()),
-                    create_time: Some(DateTime::from_str("2023-10-10 00:00:00+08:00").unwrap()),
-                    version: Some(3),
-                    delete_flag: Some(3),
-                    count: 3,
-                },
-                MockTable {
-                    id: Some("4".into()),
-                    name: Some("4".into()),
-                    pc_link: Some("4".into()),
-                    h5_link: Some("4".into()),
-                    pc_banner_img: None,
-                    h5_banner_img: None,
-                    sort: None,
-                    status: Some(4),
-                    remark: Some("4".into()),
-                    create_time: Some(DateTime::from_str("2023-10-10 00:00:00+08:00").unwrap()),
-                    version: Some(4),
-                    delete_flag: Some(4),
-                    count: 4,
-                },
-            ];
-            let r = MockTable::update_by_column_batch(&mut rb, &tables, "id", 2)
-                .await
-                .unwrap();
-        };
-        block_on(f);
-    }
 
     #[test]
     fn test_select_all() {
@@ -675,24 +506,6 @@ mod test {
     }
 
     #[test]
-    fn test_delete_by_column() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_by_column(&mut rb, "1", &Value::String("1".to_string()))
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table where 1 = ?");
-            assert_eq!(args, vec![to_value!("1")]);
-        };
-        block_on(f);
-    }
-
-    #[test]
     fn test_delete_by_table() {
         let f = async move {
             let mut rb = RBatis::new();
@@ -701,7 +514,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::delete_by_map(
                 &mut rb,
-                to_value!{
+                value!{
                     "id":"1",
                     "name":"1",
                 },
@@ -714,48 +527,7 @@ mod test {
                 sql,
                 "delete from mock_table  where id = ? and name = ?"
             );
-            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
-        };
-        block_on(f);
-    }
-
-    #[test]
-    fn test_delete_by_column_batch() {
-        #[derive(Debug)]
-        pub struct TestIntercept {
-            pub num: AtomicI32,
-        }
-
-        #[async_trait]
-        impl Intercept for TestIntercept {
-            async fn before(
-                &self,
-                _task_id: i64,
-                _rb: &dyn Executor,
-                sql: &mut String,
-                args: &mut Vec<Value>,
-                _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-            ) -> Result<Option<bool>, Error> {
-                if self.num.load(Ordering::Relaxed) == 0 {
-                    assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
-                    assert_eq!(args, &vec![to_value!("1"), to_value!("2")]);
-                } else {
-                    assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
-                    assert_eq!(args, &vec![to_value!("3"), to_value!("4")]);
-                }
-                self.num.fetch_add(1, Ordering::Relaxed);
-                return Ok(Some(true));
-            }
-        }
-        let f = async move {
-            let mut rb = RBatis::new();
-            rb.set_intercepts(vec![Arc::new(TestIntercept {
-                num: Default::default(),
-            })]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_by_column_batch(&mut rb, "1", &["1", "2", "3", "4"], 2)
-                .await
-                .unwrap();
+            assert_eq!(args, vec![value!("1"), value!("1")]);
         };
         block_on(f);
     }
@@ -774,7 +546,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select * from mock_table where id = ? and name = ?");
-            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
+            assert_eq!(args, vec![value!("1"), value!("1")]);
         };
         block_on(f);
     }
@@ -790,7 +562,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select * from mock_table where id = ? limit 1");
-            assert_eq!(args, vec![to_value!("1")]);
+            assert_eq!(args, vec![value!("1")]);
         };
         block_on(f);
     }
@@ -849,20 +621,19 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
+            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
             assert_eq!(
                 args,
                 vec![
-                    to_value!(t.id),
-                    to_value!(t.name),
-                    to_value!(t.pc_link),
-                    to_value!(t.h5_link),
-                    to_value!(t.status),
-                    to_value!(t.remark),
-                    to_value!(t.create_time),
-                    to_value!(t.version),
-                    to_value!(t.delete_flag),
-                    to_value!(t.count),
+                    value!(t.name),
+                    value!(t.pc_link),
+                    value!(t.h5_link),
+                    value!(t.status),
+                    value!(t.remark),
+                    value!(t.create_time),
+                    value!(t.version),
+                    value!(t.delete_flag),
+                    value!(t.count),
                 ]
             );
         };
@@ -903,20 +674,19 @@ mod test {
             .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set id=?,name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
+            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
             assert_eq!(
                 args,
                 vec![
-                    to_value!(t.id),
-                    to_value!(t.name),
-                    to_value!(t.pc_link),
-                    to_value!(t.h5_link),
-                    to_value!(t.status),
-                    to_value!(t.remark),
-                    to_value!(t.create_time),
-                    to_value!(t.version),
-                    to_value!(t.delete_flag),
-                    to_value!(t.count),
+                    value!(t.name),
+                    value!(t.pc_link),
+                    value!(t.h5_link),
+                    value!(t.status),
+                    value!(t.remark),
+                    value!(t.create_time),
+                    value!(t.version),
+                    value!(t.delete_flag),
+                    value!(t.count),
                 ]
             );
         };
@@ -997,24 +767,6 @@ mod test {
     }
 
     #[test]
-    fn test_select_by_column() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_by_column(&mut rb, "id", "1")
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql.trim(), "select * from mock_table  where id = ?");
-            assert_eq!(args, vec![to_value!("1")]);
-        };
-        block_on(f);
-    }
-
-    #[test]
     fn test_select_by_table() {
         let f = async move {
             let mut rb = RBatis::new();
@@ -1023,7 +775,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let r = MockTable::select_by_map(
                 &mut rb,
-                to_value!{
+                value!{
                     "id":"1",
                     "name":"1",
                 },
@@ -1036,7 +788,7 @@ mod test {
                 sql.trim(),
                 "select * from mock_table  where id = ? and name = ?"
             );
-            assert_eq!(args, vec![to_value!("1"), to_value!("1")]);
+            assert_eq!(args, vec![value!("1"), value!("1")]);
         };
         block_on(f);
     }
@@ -1056,7 +808,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select * from mock_table2 where id = ?");
-            assert_eq!(args, vec![to_value!("1")]);
+            assert_eq!(args, vec![value!("1")]);
         };
         block_on(f);
     }
@@ -1076,7 +828,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select id,name from mock_table where id = ?");
-            assert_eq!(args, vec![to_value!("1")]);
+            assert_eq!(args, vec![value!("1")]);
         };
         block_on(f);
     }
@@ -1088,13 +840,13 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_in_column(&mut rb, "1", &["1", "2"])
+            let r = MockTable::select_by_map(&mut rb, value!{"1": ["1", "2"]})
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select * from mock_table  where 1 in (?,?)");
-            assert_eq!(args, vec![to_value!("1"), to_value!("2")]);
+            assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
     }
@@ -1106,13 +858,13 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_in_column(&mut rb, "1", &["1", "2"])
+            let r = MockTable::delete_by_map(&mut rb,value!{"1": ["1", "2"]})
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
-            assert_eq!(args, vec![to_value!("1"), to_value!("2")]);
+            assert_eq!(sql, "delete from mock_table  where 1 in (?,?)");
+            assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
     }

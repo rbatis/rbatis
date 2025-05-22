@@ -3,7 +3,7 @@ use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync;
 use rbdc_sqlite::driver::SqliteDriver;
-use rbs::to_value;
+use rbs::{value};
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RBUser {
@@ -39,7 +39,7 @@ pub async fn main() {
     //let mapper = &table_sync::MssqlTableMapper{} ;
 
     // let table = RBUser{};
-    let table = to_value! {
+    let table = value! {
         "id": "INTEGER",
         "name": "TEXT",
         "remark": "TEXT",

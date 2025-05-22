@@ -3,7 +3,7 @@ use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
-use rbs::to_value;
+use rbs::{value};
 use serde_json::json;
 
 /// table
@@ -62,7 +62,7 @@ pub async fn main() {
     fast_log::logger().set_level(LevelFilter::Debug);
     //query
     let table: Option<Activity> = rb
-        .query_decode("select * from activity limit ?", vec![to_value!(1)])
+        .query_decode("select * from activity limit ?", vec![value!(1)])
         .await
         .unwrap();
     println!(">>>>> table={}", json!(table));

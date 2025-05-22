@@ -6,7 +6,7 @@ use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{async_trait, crud, Error, RBatis};
-use rbs::Value;
+use rbs::{value, Value};
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Instant;
@@ -104,8 +104,8 @@ pub async fn main() {
     let intercept = rb.get_intercept::<CountTimeIntercept>().unwrap();
     println!("intercept name = {}", intercept.name());
     //query
-    let r = Activity::delete_by_column(&rb, "id", "1").await;
+    let r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
     println!("{}", json!(r));
-    let record = Activity::select_by_column(&rb, "id", "1").await;
+    let record = Activity::select_by_map(&rb, value!{"id":"1"}).await;
     println!("{}", json!(record));
 }

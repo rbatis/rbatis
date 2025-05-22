@@ -579,13 +579,13 @@ pub trait Neg {
 #[cfg(test)]
 mod test {
     use crate::ops::AsProxy;
-    use rbs::to_value;
+    use rbs::{value};
 
     #[test]
     fn test_cast() {
-        let b = to_value!(u64::MAX);
+        let b = value!(u64::MAX);
         assert_eq!(b.i64(), -1);
-        let b = to_value!(100u64);
+        let b = value!(100u64);
         assert_eq!(b.i64(), 100i64);
     }
 }

@@ -1,4 +1,5 @@
 use log::LevelFilter;
+use rbs::{value};
 use rbatis::dark_std::defer;
 use rbatis::executor::RBatisTxExecutor;
 use rbatis::rbdc::datetime::DateTime;
@@ -63,7 +64,7 @@ pub async fn main() -> Result<(), Error> {
     fast_log::logger().set_level(LevelFilter::Debug);
 
     //clear data
-    let _ = Activity::delete_in_column(&rb.clone(), "id", &["3"]).await;
+    let _ = Activity::delete_by_map(&rb.clone(),  value!{"id":["3"]}).await;
 
     // will forget commit
     let tx = rb.acquire_begin().await?;

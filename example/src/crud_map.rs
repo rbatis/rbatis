@@ -1,11 +1,9 @@
 use log::LevelFilter;
 use rbatis::dark_std::defer;
-use rbatis::rbatis_codegen::IntoSql;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{impl_select, RBatis};
-use rbs::value::map::ValueMap;
-use rbs::Value;
+use rbatis::{crud, RBatis};
+use rbs::{value};
 use serde_json::json;
 
 /// table
@@ -24,8 +22,7 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-
-impl_select!(Activity{select_by_map(logic:ValueMap) -> Option => "`where ${logic.sql()} limit 1`"});
+crud!(Activity{});
 
 #[tokio::main]
 pub async fn main() {
@@ -46,11 +43,10 @@ pub async fn main() {
     rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
     sync_table(&rb).await;
-
-    let mut logic = ValueMap::new();
-    logic.insert("id = ".into(), Value::String("221".to_string()));
-    logic.insert("and id != ".into(), Value::String("222".to_string()));
-    let data = Activity::select_by_map(&rb, logic).await;
+    let data = Activity::select_by_map(&rb, value!{
+        "id": "1",
+        "ids": ["1","2","3"]
+    }).await;
     println!("select_by_method = {}", json!(data));
 }
 

@@ -341,7 +341,7 @@ pub fn impl_fn(
     let t = t.expect("codegen_func fail");
     let mut result_impl = quote! { {#t} };
     if serialize_result {
-        result_impl = quote! {rbs::to_value({#t}).unwrap_or_default()};
+        result_impl = quote! {rbs::value({#t}).unwrap_or_default()};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
         quote! {#result_impl}

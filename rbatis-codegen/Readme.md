@@ -102,9 +102,9 @@ pub async fn select_by_condition(
     let mut rb_arg_map = rbs::value::map::ValueMap::new();
     rb_arg_map.insert(
         "name".to_string().into(),
-        rbs::to_value(name).unwrap_or_default(),
+        rbs::value(name).unwrap_or_default(),
     );
-    rb_arg_map.insert("a".to_string().into(), rbs::to_value(a).unwrap_or_default());
+    rb_arg_map.insert("a".to_string().into(), rbs::value(a).unwrap_or_default());
     use rbatis::executor::RBatisRef;
     let driver_type = rb.driver_type()?;
     use rbatis::rbatis_codegen;
@@ -117,7 +117,7 @@ pub async fn select_by_condition(
             .to_owned()
             .into()
         {
-            args.push(rbs::to_value({ &arg["name"] }).unwrap_or_default());
+            args.push(rbs::value({ &arg["name"] }).unwrap_or_default());
             sql.push_str(" name like ?");
         }
         return (sql, args);

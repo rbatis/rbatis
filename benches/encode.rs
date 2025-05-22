@@ -8,13 +8,13 @@ use test::Bencher;
 fn bench_rbs_encode(b: &mut Bencher) {
     let v = rbdc::types::datetime::DateTime::now();
     b.iter(|| {
-        rbs::to_value!(&v);
+        rbs::value!(&v);
     });
 }
 
 #[bench]
 fn bench_rbs_from(b: &mut Bencher) {
-    let v = rbs::to_value! {
+    let v = rbs::value! {
         "a":1,
         "b":2,
     };

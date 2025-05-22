@@ -1,5 +1,5 @@
 use log::LevelFilter;
-use rbs::to_value;
+use rbs::{value};
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
@@ -68,29 +68,17 @@ pub async fn main() {
     let data = Activity::insert_batch(&rb, &tables, 10).await;
     println!("insert_batch = {}", json!(data));
 
-    let data = Activity::update_by_column_batch(&rb, &tables, "id", 1).await;
-    println!("update_by_column_batch = {}", json!(data));
-
-    let data = Activity::update_by_column(&rb, &table, "id").await;
-    println!("update_by_column = {}", json!(data));
+    let data = Activity::update_by_map(&rb, &table, value!{ "id": "1" }).await;
+    println!("update_by_map = {}", json!(data));
     
-    let data = Activity::update_by_column_skip(&rb, &table, "id",false).await;
-    println!("update_by_column_skip = {}", json!(data));
-
-    let data = Activity::delete_by_column(&rb, "id", "2").await;
-    println!("delete_by_column = {}", json!(data));
-
-    let data = Activity::select_by_map(&rb, to_value!{
-        "id":"2",
-        "name":"2",
-    }).await;
+    let data = Activity::select_by_map(&rb, value!{"id":"2","name":"2"}).await;
     println!("select_by_map1 = {}", json!(data));
 
-    let data = Activity::select_in_column(&rb, "id", &["1", "2", "3"]).await;
+    let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
     println!("select_in_column = {}", json!(data));
 
-    let data = Activity::delete_in_column(&rb, "id", &["1", "2", "3"]).await;
-    println!("delete_in_column = {}", json!(data));
+    let data = Activity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    println!("delete_by_map = {}", json!(data));
 }
 
 async fn sync_table(rb: &RBatis) {

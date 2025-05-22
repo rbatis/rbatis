@@ -33,19 +33,19 @@ fn main() {
         })];
     //map ref
     let hash = table_field_map!(&tables,id);
-    println!("---hash={}", rbs::to_value!(hash));
+    println!("---hash={}", rbs::value!(hash));
     //map owned
     let hash_owned = table_field_map!(tables.clone(),id);
-    println!("---hash={}", rbs::to_value!(hash_owned));
+    println!("---hash={}", rbs::value!(hash_owned));
     //btree ref
     let btree = table_field_btree!(&tables,id);
-    println!("---btree={}", rbs::to_value!(btree));
+    println!("---btree={}", rbs::value!(btree));
     //btree owned
     let btree_owned = table_field_btree!(tables.clone(),id);
-    println!("---btree_owned={}", rbs::to_value!(btree_owned));
+    println!("---btree_owned={}", rbs::value!(btree_owned));
     //vec<ref>
     let ids = table_field_vec!(&tables,id);
-    println!("---ids={}", rbs::to_value!(ids));
+    println!("---ids={}", rbs::value!(ids));
     //vec<owned>
     let ids = table_field_vec!(tables,id);
     println!("---ids owned={:?}", ids);

@@ -10,7 +10,7 @@ use dark_std::sync::SyncVec;
 use log::LevelFilter;
 use rbdc::pool::ConnectionManager;
 use rbdc::pool::Pool;
-use rbs::to_value;
+use rbs::value;
 use serde::Serialize;
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -297,7 +297,7 @@ impl RBatis {
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table(conn: &dyn Executor){
-    ///       let map = rbs::to_value!{
+    ///       let map = rbs::value!{
     ///             "id":"INT",
     ///             "name":"TEXT",
     ///      };
@@ -351,6 +351,6 @@ impl RBatis {
         table: &T,
         table_name: &str,
     ) -> Result<(), Error> {
-        sync(executor, column_mapper, to_value!(table), table_name).await
+        sync(executor, column_mapper, value!(table), table_name).await
     }
 }

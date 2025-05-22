@@ -2,7 +2,7 @@ use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{table_sync, RBatis};
-use rbs::to_value;
+use rbs::{value};
 use rbatis::crud;
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -55,8 +55,8 @@ pub async fn main() {
     let v = User::insert(&rb.clone(), &user).await;
     println!("insert:{:?}", v);
 
-    let users = User::select_by_column(&rb.clone(), "id", 1).await;
-    println!("select:{}", to_value!(users));
+    let users = User::select_by_map(&rb.clone(), value!{"id":1}).await;
+    println!("select:{}", value!(users));
 }
 
 async fn create_table(rb: &RBatis) {
@@ -64,11 +64,11 @@ async fn create_table(rb: &RBatis) {
     defer!(|| {
         fast_log::logger().set_level(LevelFilter::Info);
     });
-    let table = to_value! {
+    let table = value! {
         "id":"INTEGER PRIMARY KEY AUTOINCREMENT",
         "account1":"JSON",
         "account2":"JSON",
     };
     let conn = rb.acquire().await.unwrap();
-    _ = table_sync::sync(&conn, &SqliteTableMapper {}, to_value!(&table), "user").await;
+    _ = table_sync::sync(&conn, &SqliteTableMapper {}, value!(&table), "user").await;
 }

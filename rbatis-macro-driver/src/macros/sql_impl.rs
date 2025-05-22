@@ -120,7 +120,7 @@ fn filter_args_context_id(
         }
         sql_args_gen = quote! {
              #sql_args_gen
-             rb_args.push(rbs::to_value(#item)?);
+             rb_args.push(rbs::value(#item)?);
         };
     }
     sql_args_gen
