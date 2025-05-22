@@ -180,7 +180,7 @@ macro_rules! impl_select {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} = #{item}`
+                            ` and ${key} ${item.operator_sql()} #{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
@@ -195,6 +195,7 @@ macro_rules! impl_select {
         impl $table{
             pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
+                     use rbatis::crud_traits::ValueOperatorSql;
                      #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
                      async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
 
