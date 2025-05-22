@@ -1,4 +1,3 @@
-use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::plugin::page::PageRequest;
 use rbatis::rbdc::datetime::DateTime;
