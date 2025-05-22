@@ -1,4 +1,3 @@
-use std::collections::LinkedList;
 use rbatis_codegen::codegen::string_util::{find_convert_string, count_string_num, un_packing_string};
 
 #[test]

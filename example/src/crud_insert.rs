@@ -42,8 +42,6 @@ pub async fn main() {
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
     rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
-    // table sync done
-    sync_table(&rb).await;
 
     let table = Activity {
         id: Some("1".into()),
@@ -95,29 +93,4 @@ pub async fn main() {
     ];
     let data = Activity::insert_batch(&rb, &tables, 10).await;
     println!("insert_batch = {}", json!(data));
-}
-
-async fn sync_table(rb: &RBatis) {
-    fast_log::logger().set_level(LevelFilter::Off);
-    _ = RBatis::sync(
-        &rb.acquire().await.unwrap(),
-        &SqliteTableMapper {},
-        &Activity {
-            id: Some(String::new()),
-            name: Some(String::new()),
-            pc_link: Some(String::new()),
-            h5_link: Some(String::new()),
-            pc_banner_img: Some(String::new()),
-            h5_banner_img: Some(String::new()),
-            sort: Some(String::new()),
-            status: Some(0),
-            remark: Some(String::new()),
-            create_time: Some(DateTime::now()),
-            version: Some(0),
-            delete_flag: Some(0),
-        },
-        "activity",
-    )
-        .await;
-    fast_log::logger().set_level(LevelFilter::Debug);
 }

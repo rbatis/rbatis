@@ -124,3 +124,14 @@ rbdc-sqlite = { version = "4.6" }
 rbdc-mysql = { version = "4.6" }
 rbdc-pg = { version = "4.6"}
 rbdc-mssql = { version = "4.6" }
+
+[build-dependencies]
+serde = { version = "1", features = ["derive"] }
+rbs = { version = "4.6" }
+rbatis = { version = "4.6", features = ["debug_mode"], path = "../" }
+rbdc-sqlite = { version = "4.6" }
+
+log = "0.4"
+fast_log = "1.7"
+
+tokio = { version = "1", features = ["full"] }
