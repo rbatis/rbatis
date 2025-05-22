@@ -273,6 +273,12 @@ let result = User::update_by_map(&rb, &user, value!{ "id": "1" }).await?;
 // 通过map条件查询
 let users = User::select_by_map(&rb, value!{"id":"2","name":"test"}).await?;
 
+// LIKE查询
+let users = User::select_by_map(&rb, value!{"name like ":"%test%"}).await?;
+
+// 大于条件查询
+let users = User::select_by_map(&rb, value!{"id > ":"2"}).await?;
+
 // IN查询（查询id在列表中的记录）
 let users = User::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await?;
 
@@ -366,20 +372,52 @@ async fn main() {
     };
     
     // 插入数据
-    let result = User::insert(&rb, &user).await.unwrap();
-    println!("插入记录数: {}", result.rows_affected);
+    let data = User::insert(&rb, &user).await.unwrap();
+    println!("insert = {}", json!(data));
     
-    // 查询数据 - 使用新的map API
-    let users: Vec<User> = User::select_by_map(&rb, value!{"id":"1"}).await.unwrap();
-    println!("查询用户: {:?}", users);
+    // 批量插入
+    let users = vec![
+        User {
+            id: Some("2".to_string()),
+            username: Some("user2".to_string()),
+            password: Some("password2".to_string()),
+            create_time: Some(DateTime::now()),
+            status: Some(1),
+        },
+        User {
+            id: Some("3".to_string()),
+            username: Some("user3".to_string()),
+            password: Some("password3".to_string()),
+            create_time: Some(DateTime::now()),
+            status: Some(1),
+        },
+    ];
+    let data = User::insert_batch(&rb, &users, 10).await.unwrap();
+    println!("insert_batch = {}", json!(data));
     
-    // 更新数据
-    let mut user_to_update = users[0].clone();
-    user_to_update.username = Some("updated_user".to_string());
-    User::update_by_map(&rb, &user_to_update, value!{"id":"1"}).await.unwrap();
+    // 通过map条件更新
+    let data = User::update_by_map(&rb, &user, value!{ "id": "1" }).await.unwrap();
+    println!("update_by_map = {}", json!(data));
     
-    // 删除数据
-    User::delete_by_map(&rb, value!{"id":"1"}).await.unwrap();
+    // 通过map条件查询
+    let data = User::select_by_map(&rb, value!{"id":"2","username":"user2"}).await.unwrap();
+    println!("select_by_map = {}", json!(data));
+    
+    // LIKE查询
+    let data = User::select_by_map(&rb, value!{"username like ":"%user%"}).await.unwrap();
+    println!("select_by_map like {}", json!(data));
+    
+    // 大于条件查询
+    let data = User::select_by_map(&rb, value!{"id > ":"2"}).await.unwrap();
+    println!("select_by_map > {}", json!(data));
+    
+    // IN查询
+    let data = User::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await.unwrap();
+    println!("select_by_map in {}", json!(data));
+    
+    // 通过map条件删除
+    let data = User::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await.unwrap();
+    println!("delete_by_map = {}", json!(data));
 }
 ```
 
