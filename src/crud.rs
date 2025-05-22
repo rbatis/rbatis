@@ -260,7 +260,7 @@ macro_rules! impl_update {
                 table: &$table,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
+                use rbatis::crud_traits::ValueOperatorSql;g
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
