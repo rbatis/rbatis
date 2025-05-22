@@ -17,7 +17,10 @@ fn main() {
       if r.is_err(){
          return;
       }
-
+      let conn = rb.acquire().await;
+      if conn.is_err(){
+         return;
+      }
       #[derive(serde::Serialize, serde::Deserialize, Clone)]
       pub struct Activity {
          pub id: Option<String>,
@@ -35,7 +38,7 @@ fn main() {
       }
       
       _ = RBatis::sync(
-         &rb.acquire().await.unwrap(),
+         &conn.unwrap(),
          &SqliteTableMapper {},
          &Activity {
             id: Some(String::new()),
