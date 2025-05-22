@@ -4,7 +4,7 @@ use rbatis::rbdc::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 
 
-/// this just only to show example, you don't need this code
+/// this just only to create database table show example, you don't need this code
 fn main() {
    tokio::runtime::Builder::new_multi_thread().enable_all().build().unwrap().block_on(async {
       _ = fast_log::init(fast_log::Config::new().console().level(LevelFilter::Debug));
