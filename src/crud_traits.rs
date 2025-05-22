@@ -36,31 +36,21 @@ impl ColumnSet for Value {
 
 /// create sql opt from rbs::Value
 pub trait ValueOperatorSql {
-    fn operator_sql(&self) -> &str;
+    fn operator_sql(&self) -> String;
 }
 
 impl ValueOperatorSql for Value {
-    fn operator_sql(&self) -> &str {
+    fn operator_sql(&self) -> String {
         match self {
-            Value::Null => {"="}
-            Value::Bool(_) => {"="}
-            Value::I32(_) => {"="}
-            Value::I64(_) => {"="}
-            Value::U32(_) => {"="}
-            Value::U64(_) => {"="}
-            Value::F32(_) => {"="}
-            Value::F64(_) => {"="}
             Value::String(v) => {
-                if v.starts_with("%") || v.ends_with("%") {
-                    "like"
+                if v.contains(" ") {
+                    v.to_string()
                 }else{
-                    "="
+                    format!("{}{}",v," = ")
                 }
             }
-            Value::Binary(_) => {"="}
-            Value::Array(_) => {"="}
-            Value::Map(_) => {"="}
             Value::Ext(_, v) => {v.operator_sql()}
+            _=>{"".to_string()}
         }
     }
 }

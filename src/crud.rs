@@ -180,7 +180,7 @@ macro_rules! impl_select {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} ${item.operator_sql()} #{item}`
+                            ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
@@ -244,7 +244,7 @@ macro_rules! impl_update {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} ${item.operator_sql()} #{item}`
+                            ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
@@ -324,7 +324,7 @@ macro_rules! impl_delete {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} ${item.operator_sql()} #{item}`
+                            ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
