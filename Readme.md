@@ -166,10 +166,6 @@ pub struct BizActivity {
 // Automatically generate CRUD methods
 crud!(BizActivity{});
 
-// Custom SQL methods
-impl_select!(BizActivity{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
-impl_select_page!(BizActivity{select_page(name:&str) => "`where name != #{name}`"});
-
 #[tokio::main]
 async fn main() {
     // Configure logging
