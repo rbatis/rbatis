@@ -1,6 +1,5 @@
 use rbatis_codegen::error::Error;
 use std::error::Error as StdError;
-use std::fmt::Display;
 use std::io::{self, ErrorKind};
 use syn;
 use proc_macro2;
