@@ -125,6 +125,7 @@ rbdc-mysql = { version = "4.6" }
 rbdc-pg = { version = "4.6"}
 rbdc-mssql = { version = "4.6" }
 
+# you don't need this
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
 rbs = { version = "4.6" }
