@@ -36,7 +36,6 @@ impl_select_page!(Activity{select_page_by_name(name:&str) =>"
 impl_select_page!(Activity{select_page_by_limit(name:&str) => "`where name != #{name} limit 0,10 `"});
 
 use rbatis::rbatis_codegen::IntoSql;
-use rbatis::table_sync::SqliteTableMapper;
 
 pysql_select_page!(select_page_data(name: &str) -> Activity =>
 r#"`select * from activity where delete_flag = 0`
