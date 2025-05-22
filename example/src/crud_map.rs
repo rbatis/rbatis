@@ -1,7 +1,5 @@
-use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{crud, RBatis};
 use rbs::{value};
 use serde_json::json;

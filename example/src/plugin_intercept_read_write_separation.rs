@@ -7,7 +7,6 @@ use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::DateTime;
 use rbatis::rbdc::db::ExecResult;
-use rbatis::table_sync::SqliteTableMapper;
 use rbs::{value, Value};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]

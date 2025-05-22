@@ -1,8 +1,6 @@
-use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
 use serde_json::json;
 use rbatis::impl_select;
