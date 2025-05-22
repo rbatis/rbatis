@@ -20,7 +20,7 @@ mod test {
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
-    use rbs::{from_value, to_value, Value};
+    use rbs::{from_value, value, Value};
     use std::any::Any;
     use std::collections::HashMap;
     use std::fmt::{Debug, Formatter};
@@ -558,7 +558,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            let v = to_value! {
+            let v = value! {
                 "a":"a",
                 "b":"b"
             };

@@ -3,7 +3,7 @@ use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
 use rbatis::{async_trait, crud, Error, RBatis};
-use rbs::Value;
+use rbs::{value, Value};
 use std::sync::Arc;
 use tokio::task_local;
 
@@ -36,7 +36,7 @@ pub async fn main() {
 
     IS_SCHEDULE.scope(1, async move {
         //this scope will not show log
-        let _r = Activity::delete_by_column(&rb, "id", "1").await;
+        let _r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
     }).await;
 
     log::logger().flush();

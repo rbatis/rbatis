@@ -358,12 +358,12 @@ eq_diff!(eq_f64[(f64,f32),]);
 #[cfg(test)]
 mod test {
     use crate::ops::{Add};
-    use rbs::{to_value, Value};
+    use rbs::{value, Value};
 
     #[test]
     fn test_eq() {
         let i: i64 = 1;
-        let v = to_value!(1);
+        let v = value!(1);
         let r = Value::from(v.op_add(&i));
         if r == Value::from(2) {
             assert!(true);

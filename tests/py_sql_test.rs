@@ -20,7 +20,7 @@ mod test {
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
-    use rbs::{from_value, to_value, Value};
+    use rbs::{from_value, Value};
     use std::any::Any;
     use std::collections::HashMap;
     use std::fmt::{Debug, Formatter};

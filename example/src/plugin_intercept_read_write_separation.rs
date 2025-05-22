@@ -8,7 +8,7 @@ use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::DateTime;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
-use rbs::Value;
+use rbs::{value, Value};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Activity {
@@ -57,7 +57,7 @@ pub async fn main() {
     let data = Activity::insert(&rb, &table).await;
     println!("insert = {}", json!(data));
 
-    let data = Activity::select_by_column(&rb, "id", "2").await;
+    let data = Activity::select_by_map(&rb,  value!{"id":"2"}).await;
     println!("select_in_column = {}", json!(data));
 }
 

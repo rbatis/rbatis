@@ -35,14 +35,14 @@ mod test {
     #[test]
     fn test_ser_bytes() {
         let bytes = rbdc::Bytes::from(vec![0u8]);
-        let v = rbs::to_value!(bytes);
+        let v = rbs::value!(bytes);
         assert_eq!(v, Value::Binary(vec![0u8]));
     }
 
     #[test]
     fn test_de_bytes() {
         let bytes = rbdc::Bytes::from(vec![0u8]);
-        let v = rbs::to_value!(&bytes);
+        let v = rbs::value!(&bytes);
         let r: rbdc::Bytes = rbs::from_value(v).unwrap();
         assert_eq!(r, bytes);
     }

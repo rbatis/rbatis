@@ -245,7 +245,7 @@ fn parse(
                         string_data = string_data.replacen(&v, &"?", 1);
                         body = quote! {
                             #body
-                            args.push(rbs::to_value(#method_impl).unwrap_or_default());
+                            args.push(rbs::value(#method_impl).unwrap_or_default());
                         };
                     } else {
                         string_data = string_data.replacen(&v, &"{}", 1);
@@ -343,7 +343,7 @@ fn parse(
                     if arg[#lit_str] == rbs::Value::Null{
                         arg.insert(rbs::Value::String(#lit_str.to_string()), rbs::Value::Null);
                     }
-                    arg[#lit_str] = rbs::to_value(#method_impl).unwrap_or_default();
+                    arg[#lit_str] = rbs::value(#method_impl).unwrap_or_default();
                 };
             }
 

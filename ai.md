@@ -2644,7 +2644,7 @@ let mut updates = HashMap::new();
 updates.insert("name".to_string(), "John Doe".to_string());
 updates.insert("age".to_string(), 30);
 // Only fields present in the map will be updated
-rb.exec("updateDynamic", rbs::to_value!({"updates": updates, "id": 1})).await?;
+rb.exec("updateDynamic", rbs::value!({"updates": updates, "id": 1})).await?;
 ```
 
 #### The `<trim>` Element in Detail
@@ -2765,7 +2765,7 @@ async fn crud_examples(rb: &RBatis) -> Result<(), rbatis::Error> {
     let update_skip_result = Activity::update_by_column_skip(rb, &table, "id", false).await?;
     
     // Select by map (multiple conditions)
-    let select_result: Vec<Activity> = Activity::select_by_map(rb, rbs::to_value!{
+    let select_result: Vec<Activity> = Activity::select_by_map(rb, rbs::value!{
         "id": "1",
         "status": 1,
     }).await?;
@@ -2799,7 +2799,7 @@ impl CRUDTable for Activity {
 
 // ❌ AVOID: Raw SQL for simple operations that crud! can handle
 let result = rb.exec("INSERT INTO activity (id, name) VALUES (?, ?)", 
-                    vec![to_value!("1"), to_value!("name")]).await?;
+                    vec![value!("1"), value!("name")]).await?;
 ```
 
 #### 12.6.2 Table Utility Macros
@@ -2950,7 +2950,7 @@ async fn use_xml_mapper(rb: &RBatis) -> Result<(), rbatis::Error> {
     rb.load_html("example/example.html").await?;
     
     // Then use the XML mapper methods
-    let params = rbs::to_value!({
+    let params = rbs::value!({
         "name": "test%",
         "dt": "2023-01-01 00:00:00"
     });
@@ -2958,7 +2958,7 @@ async fn use_xml_mapper(rb: &RBatis) -> Result<(), rbatis::Error> {
     let results: Vec<Activity> = rb.fetch("select_by_condition", &params).await?;
     
     // For the dynamic update
-    let update_params = rbs::to_value!({
+    let update_params = rbs::value!({
         "id": 1,
         "name": "Updated Name",
         "status": 2
@@ -2999,37 +2999,37 @@ When the CRUD macros and HTML mappers aren't sufficient, you can use raw SQL as 
 
 ```rust
 use rbatis::RBatis;
-use rbs::to_value;
+use rbs::value;
 
 async fn raw_sql_examples(rb: &RBatis) -> Result<(), rbatis::Error> {
     // Query with parameters and decode to struct
     let activity: Option<Activity> = rb
         .query_decode("select * from activity where id = ? limit 1", 
-                     vec![to_value!("1")])
+                     vec![value!("1")])
         .await?;
     
     // Query multiple rows
     let activities: Vec<Activity> = rb
         .query_decode("select * from activity where status = ?", 
-                     vec![to_value!(1)])
+                     vec![value!(1)])
         .await?;
     
     // Execute statement without returning results
     let affected_rows = rb
         .exec("update activity set status = ? where id = ?", 
-             vec![to_value!(0), to_value!("1")])
+             vec![value!(0), value!("1")])
         .await?;
     
     // Execute insert
     let insert_result = rb
         .exec("insert into activity (id, name, status) values (?, ?, ?)", 
-             vec![to_value!("3"), to_value!("New Activity"), to_value!(1)])
+             vec![value!("3"), value!("New Activity"), value!(1)])
         .await?;
     
     // Execute delete
     let delete_result = rb
         .exec("delete from activity where id = ?", 
-             vec![to_value!("3")])
+             vec![value!("3")])
         .await?;
     
     Ok(())
@@ -3052,7 +3052,7 @@ let result = rb.query_decode(unsafe_sql, vec![]).await?;
 // ❌ AVOID: Raw SQL for standard CRUD operations
 // Use Activity::insert(rb, &activity) instead of:
 rb.exec("insert into activity (id, name) values (?, ?)", 
-       vec![to_value!(activity.id), to_value!(activity.name)]).await?;
+       vec![value!(activity.id), value!(activity.name)]).await?;
 ```
 
 #### 12.6.5 Common Mistakes and Best Practices

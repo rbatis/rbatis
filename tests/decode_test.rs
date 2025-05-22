@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod test {
     use rbs::value::map::ValueMap;
-    use rbs::{to_value, Value};
+    use rbs::{value, Value};
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
     use std::collections::HashMap;
 
     #[test]
     fn test_decode_value() {
-        let m = Value::Array(vec![to_value! {
+        let m = Value::Array(vec![value! {
             "1": 1
         }]);
         let v: i64 = rbatis::decode(m).unwrap();
@@ -21,7 +21,7 @@ mod test {
         pub struct A {
             pub aa: i32,
         }
-        let m = Value::Array(vec![to_value! {
+        let m = Value::Array(vec![value! {
             "aa": ""
         }]);
         let v = rbatis::decode::<A>(m).err().unwrap();
@@ -34,7 +34,7 @@ mod test {
     //https://github.com/rbatis/rbatis/issues/498
     #[test]
     fn test_decode_type_fail_498() {
-        let m = Value::Array(vec![to_value! {
+        let m = Value::Array(vec![value! {
             "aa": 0.0
         }]);
         let v = rbatis::decode::<i64>(m).err().unwrap();
@@ -47,7 +47,7 @@ mod test {
     #[test]
     fn test_decode_one() {
         let date = rbdc::types::datetime::DateTime::now();
-        let m = to_value! {
+        let m = value! {
             "1" : date.clone(),
         };
         let v: rbdc::types::datetime::DateTime = rbatis::decode(Value::Array(vec![m])).unwrap();
@@ -79,7 +79,7 @@ mod test {
 
     #[test]
     fn test_decode_string() {
-        let v: String = rbatis::decode(Value::Array(vec![to_value! {
+        let v: String = rbatis::decode(Value::Array(vec![value! {
             "a":"a",
         }]))
         .unwrap();
@@ -88,7 +88,7 @@ mod test {
 
     #[test]
     fn test_decode_json_array() {
-        let m = to_value! {
+        let m = value! {
             "1" : 1,
             "2" : 2,
         };
@@ -104,12 +104,12 @@ mod test {
     fn test_decode_rbdc_types() {
         use rbdc::types::*;
         let date = date::Date::from_str("2023-12-12").unwrap();
-        let date_new: date::Date = rbs::from_value(rbs::to_value!(date.clone())).unwrap();
+        let date_new: date::Date = rbs::from_value(rbs::value!(date.clone())).unwrap();
         assert_eq!(date, date_new);
 
         let datetime = datetime::DateTime::from_str("2023-12-12 12:12:12").unwrap();
         let datetime_new: datetime::DateTime =
-            rbs::from_value(rbs::to_value!(datetime.clone())).unwrap();
+            rbs::from_value(rbs::value!(datetime.clone())).unwrap();
         assert_eq!(datetime, datetime_new);
     }
     
@@ -133,8 +133,8 @@ mod test {
     fn test_decode_multiple_rows_to_single_type() {
         // 测试解码多行数据到单一类型的情况（应当返回错误）
         let data = Value::Array(vec![
-            to_value!{ "a": 1 },
-            to_value!{ "b": 2 }
+            value!{ "a": 1 },
+            value!{ "b": 2 }
         ]);
         
         let result = rbatis::decode::<i32>(data);
