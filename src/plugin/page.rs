@@ -198,6 +198,31 @@ impl<T: Send + Sync> Page<T> {
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
         Self::new(page_no, page_size, total, Vec::with_capacity(page_size as usize))
     }
+    
+    pub fn set_total(mut self, total: u64) -> Self {
+        self.total = total;
+        self
+    }
+
+    pub fn set_page_size(mut self, arg: u64) -> Self {
+        self.page_size = arg;
+        self
+    }
+
+    pub fn set_page_no(mut self, arg: u64) -> Self {
+        self.page_no = arg;
+        self
+    }
+    /// Control whether to execute count statements to count the total number
+    pub fn set_do_count(mut self, arg: bool) -> Self {
+        self.do_count = arg;
+        self
+    }
+
+    pub fn set_records(mut self, arg: Vec<T>) -> Self {
+        self.records = arg;
+        self
+    }
 
     /// create Vec<Page> from data
     pub fn make_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
@@ -223,31 +248,6 @@ impl<T: Send + Sync> Page<T> {
             result.push((current_page.offset(), current_page.offset_limit()));
         }
         result
-    }
-
-    pub fn set_total(mut self, total: u64) -> Self {
-        self.total = total;
-        self
-    }
-
-    pub fn set_page_size(mut self, arg: u64) -> Self {
-        self.page_size = arg;
-        self
-    }
-
-    pub fn set_page_no(mut self, arg: u64) -> Self {
-        self.page_no = arg;
-        self
-    }
-    /// Control whether to execute count statements to count the total number
-    pub fn set_do_count(mut self, arg: bool) -> Self {
-        self.do_count = arg;
-        self
-    }
-
-    pub fn set_records(mut self, arg: Vec<T>) -> Self {
-        self.records = arg;
-        self
     }
 }
 
