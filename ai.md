@@ -1,10 +1,10 @@
 # Rbatis Framework User Guide
 
-> This documentation is based on Rbatis 4.5+ and provides detailed instructions for using the Rbatis ORM framework. Rbatis is a high-performance Rust asynchronous ORM framework that supports multiple databases and provides compile-time dynamic SQL capabilities similar to MyBatis.
+> This documentation is based on Rbatis 4.6+ and provides detailed instructions for using the Rbatis ORM framework. Rbatis is a high-performance Rust asynchronous ORM framework that supports multiple databases and provides compile-time dynamic SQL capabilities similar to MyBatis.
 
 ## Important Version Notes and Best Practices
 
-Rbatis 4.5+ has significant improvements over previous versions. Here are the key changes and recommended best practices:
+Rbatis 4.6+ has significant improvements over previous versions. Here are the key changes and recommended best practices:
 
 1. **✅ Use macros instead of traits (v4.0+)**: 
    ```rust
@@ -120,13 +120,13 @@ Add the following dependencies in Cargo.toml:
 
 ```toml
 [dependencies]
-rbatis = "4.5"
-rbs = "4.5"
+rbatis = "4.6"
+rbs = "4.6"
 # Choose a database driver
-rbdc-sqlite = "4.5" # SQLite driver
-# rbdc-mysql = "4.5" # MySQL driver
-# rbdc-pg = "4.5" # PostgreSQL driver
-# rbdc-mssql = "4.5" # MS SQL Server driver
+rbdc-sqlite = "4.6" # SQLite driver
+# rbdc-mysql = "4.6" # MySQL driver
+# rbdc-pg = "4.6" # PostgreSQL driver
+# rbdc-mssql = "4.6" # MS SQL Server driver
 
 # Asynchronous runtime
 tokio = { version = "1", features = ["full"] }
@@ -141,12 +141,12 @@ Rbatis is an asynchronous framework that needs to be used with tokio and other a
 If TLS support is needed, you can use the following configuration:
 
 ```toml
-rbs = { version = "4.5" }
-rbdc-sqlite = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
-# rbdc-mysql = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
-# rbdc-pg = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
-# rbdc-mssql = { version = "4.5", default-features = false, features = ["tls-native-tls"] }
-rbatis = { version = "4.5" }
+rbs = { version = "4.6" }
+rbdc-sqlite = { version = "4.6", default-features = false, features = ["tls-native-tls"] }
+# rbdc-mysql = { version = "4.6", default-features = false, features = ["tls-native-tls"] }
+# rbdc-pg = { version = "4.6", default-features = false, features = ["tls-native-tls"] }
+# rbdc-mssql = { version = "4.6", default-features = false, features = ["tls-native-tls"] }
+rbatis = { version = "4.6" }
 ```
 
 ## 4. Basic Usage Flow
@@ -200,7 +200,7 @@ pub struct User {
     pub status: Option<i32>,
 }
 
-// Note: In Rbatis 4.5+, using the crud! macro is the standard approach
+// Note: In Rbatis 4.6+, using the crud! macro is the standard approach
 // The CRUDTable trait no longer exists in current versions.
 // Use the following macros to generate CRUD methods:
 
