@@ -118,9 +118,9 @@ log = "0.4"
 fast_log = "1.7"
 #async runtime lib
 tokio = { version = "1", features = ["full"] }
-rbs = { version = "4.5" }
-rbatis = { version = "4.5", features = ["debug_mode"], path = "../" }
-rbdc-sqlite = { version = "4.5" }
-rbdc-mysql = { version = "4.5" }
-rbdc-pg = { version = "4.5"}
-rbdc-mssql = { version = "4.5" }
+rbs = { version = "4.6" }
+rbatis = { version = "4.6", features = ["debug_mode"], path = "../" }
+rbdc-sqlite = { version = "4.6" }
+rbdc-mysql = { version = "4.6" }
+rbdc-pg = { version = "4.6"}
+rbdc-mssql = { version = "4.6" }

@@ -30,8 +30,8 @@ upper_case_sql_keyword = []
 rbatis-codegen = { version = "4.6", path = "rbatis-codegen" }
 rbatis-macro-driver = { version = "4.6", path = "rbatis-macro-driver", default-features = false, optional = true }
 rbs = { version = "4.6"}
-rbdc = { version = "4.5", default-features = false }
-rbdc-pool-fast = { version = "4.5" }
+rbdc = { version = "4.6", default-features = false }
+rbdc-pool-fast = { version = "4.6" }
 
 dark-std = "0.2"
 async-trait = "0.1.68"
@@ -47,10 +47,10 @@ parking_lot = "0.12.3"
 sql-parser = "0.1.0"
 
 [dev-dependencies]
-rbatis = { version = "4.5", path = ".", features = ["debug_mode"] }
+rbatis = { version = "4.6", path = ".", features = ["debug_mode"] }
 serde_json = "1"
 tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util", "macros"] }
-rbdc-sqlite = { version = "4.5" }
+rbdc-sqlite = { version = "4.6" }
 log = "0.4.20"
 [profile.release]
 lto = true

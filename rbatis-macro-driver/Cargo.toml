@@ -25,6 +25,6 @@ proc-macro = true
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
-rbatis-codegen = { version = "4.5", path = "../rbatis-codegen", optional = true }
+rbatis-codegen = { version = "4.6", path = "../rbatis-codegen", optional = true }
 rust-format = { version = "0.3.4", optional = true }
 dark-std = "0.2"
