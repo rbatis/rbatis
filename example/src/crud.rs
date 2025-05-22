@@ -69,10 +69,13 @@ pub async fn main() {
     println!("update_by_map = {}", json!(data));
     
     let data = Activity::select_by_map(&rb, value!{"id":"2","name":"2"}).await;
-    println!("select_by_map1 = {}", json!(data));
+    println!("select_by_map = {}", json!(data));
+
+    let data = Activity::select_by_map(&rb, value!{"id":"2","name":"%2"}).await;
+    println!("select_by_map like {}", json!(data));
 
     let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
-    println!("select_in_column = {}", json!(data));
+    println!("select_by_map in {}", json!(data));
 
     let data = Activity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
     println!("delete_by_map = {}", json!(data));
