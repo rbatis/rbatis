@@ -148,10 +148,11 @@ fast_log = "1.6"
 
 ```rust
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::crud::{CRUD, CRUDTable};
-use rbatis::rbatis::RBatis;
+use rbs::value;
+use rbatis::RBatis;
 use rbdc_sqlite::driver::SqliteDriver;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
@@ -193,17 +194,51 @@ async fn main() {
     };
 
     // Insert data
-    let result = BizActivity::insert(&rb, &activity).await;
-    println!("Insert result: {:?}", result);
+    let data = BizActivity::insert(&rb, &activity).await;
 
-    // Query data
-    let data = BizActivity::select_by_id(&rb, "1".to_string()).await;
-    println!("Query result: {:?}", data);
+    // Batch insert
+    let activities = vec![
+        BizActivity {
+            id: Some("2".into()),
+            name: Some("Activity 2".into()),
+            status: Some(1),
+            create_time: Some(DateTime::now()),
+            additional_field: Some("Info 2".into()),
+        },
+        BizActivity {
+            id: Some("3".into()),
+            name: Some("Activity 3".into()),
+            status: Some(1),
+            create_time: Some(DateTime::now()),
+            additional_field: Some("Info 3".into()),
+        },
+    ];
+    let data = BizActivity::insert_batch(&rb, &activities, 10).await;
+
+    // Update by map condition
+    let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
+
+    // Query by map condition
+    let data = BizActivity::select_by_map(&rb, value!{"id":"2","name":"Activity 2"}).await;
+
+    // LIKE query
+    let data = BizActivity::select_by_map(&rb, value!{"name like ":"%Activity%"}).await;
+
+    // Greater than query
+    let data = BizActivity::select_by_map(&rb, value!{"id > ":"2"}).await;
+
+    // IN query
+    let data = BizActivity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+
+    // Delete by map condition
+    let data = BizActivity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    
+    // Use custom method
+    let by_id = BizActivity::select_by_id(&rb, "1".to_string()).await;
     
     // Pagination query
     use rbatis::plugin::page::PageRequest;
     let page_data = BizActivity::select_page(&rb, &PageRequest::new(1, 10), "").await;
-    println!("Page result: {:?}", page_data);
 }
 ```
 
