@@ -244,7 +244,7 @@ macro_rules! impl_update {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} = #{item}`
+                            ` and ${key} ${item.operator_sql()} #{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
@@ -260,6 +260,7 @@ macro_rules! impl_update {
                 table: &$table,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                use rbatis::crud_traits::ValueOperatorSql;
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
@@ -323,7 +324,7 @@ macro_rules! impl_delete {
         "` where `
          trim ' and ': for key,item in condition:
                           if !item.is_array():
-                            ` and ${key} = #{item}`
+                            ` and ${key} ${item.operator_sql()} #{item}`
                           if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
@@ -338,6 +339,7 @@ macro_rules! impl_delete {
                 executor: &dyn $crate::executor::Executor,
                 $($param_key:$param_type,)*
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                use rbatis::crud_traits::ValueOperatorSql;
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
