@@ -197,23 +197,20 @@ async fn main() {
     let data = BizActivity::insert(&rb, &activity).await;
 
     // Batch insert
-    let activities = vec![
-        BizActivity {
+    let data = BizActivity::insert_batch(&rb, &vec![BizActivity {
             id: Some("2".into()),
             name: Some("Activity 2".into()),
             status: Some(1),
             create_time: Some(DateTime::now()),
             additional_field: Some("Info 2".into()),
-        },
-        BizActivity {
+        }, BizActivity {
             id: Some("3".into()),
             name: Some("Activity 3".into()),
             status: Some(1),
             create_time: Some(DateTime::now()),
             additional_field: Some("Info 3".into()),
         },
-    ];
-    let data = BizActivity::insert_batch(&rb, &activities, 10).await;
+    ], 10).await;
 
     // Update by map condition
     let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
@@ -232,13 +229,6 @@ async fn main() {
 
     // Delete by map condition
     let data = BizActivity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
-    
-    // Use custom method
-    let by_id = BizActivity::select_by_id(&rb, "1".to_string()).await;
-    
-    // Pagination query
-    use rbatis::plugin::page::PageRequest;
-    let page_data = BizActivity::select_page(&rb, &PageRequest::new(1, 10), "").await;
 }
 ```
 
