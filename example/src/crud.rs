@@ -74,6 +74,9 @@ pub async fn main() {
     let data = Activity::select_by_map(&rb, value!{"id":"2","name like ":"%2"}).await;
     println!("select_by_map like {}", json!(data));
 
+    let data = Activity::select_by_map(&rb, value!{"id > ":"2"}).await;
+    println!("select_by_map > {}", json!(data));
+
     let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
     println!("select_by_map in {}", json!(data));
 
