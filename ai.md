@@ -240,131 +240,146 @@ Rbatis provides multiple ways to execute CRUD (Create, Read, Update, Delete) ope
 
 ### 5.1 Using CRUD Macro
 
-The simplest way is to use `crud!` macro:
+Rbatis v4.6+ 大幅简化了CRUD宏的API。现在只需一行代码即可生成所有常用CRUD方法：
 
 ```rust
 use rbatis::crud;
 
-// Automatically generate CRUD methods for User structure
-// If a table name is specified, it uses the specified table name; otherwise, it uses the snake case naming method of the structure name as the table name
-crud!(User {}); // Table name user
-// Or
-crud!(User {}, "users"); // Table name users
+// 为User结构体自动生成所有CRUD方法
+crud!(User {}); // 表名为user，自动生成 insert + update_by_column + delete_by_column + select_by_column 方法
+
+// 或者指定自定义表名
+crud!(User {}, "users"); // 表名为users
 ```
 
-This will generate the following methods for the User structure:
-- `User::insert`: Insert single record
-- `User::insert_batch`: Batch insert records
-- `User::update_by_column`: Update record based on specified column
-- `User::update_by_column_batch`: Batch update records
-- `User::delete_by_column`: Delete record based on specified column
-- `User::delete_in_column`: Delete record where column value is in specified collection
-- `User::select_by_column`: Query records based on specified column
-- `User::select_in_column`: Query records where column value is in specified collection
-- `User::select_all`: Query all records
-- `User::select_by_map`: Query records based on mapping conditions
+通过`crud!`宏生成的方法已被简化，主要包括：
+- 插入: `insert`, `insert_batch`
+- 更新: `update_by_map` 
+- 查询: `select_by_map`
+- 删除: `delete_by_map`
+
+示例用法：
+
+```rust
+// 插入单条记录
+let result = User::insert(&rb, &user).await?;
+
+// 批量插入
+let result = User::insert_batch(&rb, &users, 10).await?;
+
+// 通过map条件更新
+let result = User::update_by_map(&rb, &user, value!{ "id": "1" }).await?;
+
+// 通过map条件查询
+let users = User::select_by_map(&rb, value!{"id":"2","name":"test"}).await?;
+
+// IN查询（查询id在列表中的记录）
+let users = User::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await?;
+
+// 通过map条件删除
+let result = User::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await?;
+```
 
 ### 5.1.1 Detailed CRUD Macro Reference
 
-The `crud!` macro automatically generates a complete set of CRUD (Create, Read, Update, Delete) operations for your data model. Under the hood, it expands to call these four implementation macros:
+v4.6版本简化了CRUD API，将原来的多个方法整合为几个更灵活、更直观的方法。如果只需要特定类型的操作，可以使用单独的宏：
 
 ```rust
-// Equivalent to 
+// 只生成插入相关方法
 impl_insert!(User {});
+
+// 只生成查询相关方法
 impl_select!(User {});
+
+// 只生成更新相关方法
 impl_update!(User {});
+
+// 只生成删除相关方法
 impl_delete!(User {});
 ```
 
-#### Generated Methods
+### 5.2 自定义CRUD方法
 
-When you use `crud!(User {})`, the following methods are generated:
+Rbatis v4.6+ 支持简洁的自定义方法定义：
 
-##### Insert Methods
-- **`async fn insert(executor: &dyn Executor, table: &User) -> Result<ExecResult, Error>`**  
-  Inserts a single record.
-  
-- **`async fn insert_batch(executor: &dyn Executor, tables: &[User], batch_size: u64) -> Result<ExecResult, Error>`**  
-  Inserts multiple records with batch processing. The `batch_size` parameter controls how many records are inserted in each batch operation.
+```rust
+// 自定义查询方法
+impl_select!(User{select_by_name(name:&str) => "`where name = #{name}`"});
 
-##### Select Methods
-- **`async fn select_all(executor: &dyn Executor) -> Result<Vec<User>, Error>`**  
-  Retrieves all records from the table.
-  
-- **`async fn select_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<Vec<User>, Error>`**  
-  Retrieves records where the specified column equals the given value.
-  
-- **`async fn select_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<Vec<User>, Error>`**  
-  Retrieves records matching a map of column-value conditions (AND logic).
-  
-- **`async fn select_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<Vec<User>, Error>`**  
-  Retrieves records where the specified column's value is in the given list of values (IN operator).
+// 自定义更新方法
+impl_update!(User{update_by_name(name:&str) => "`where name = #{name}`"});
 
-##### Update Methods
-- **`async fn update_by_column(executor: &dyn Executor, table: &User, column: &str) -> Result<ExecResult, Error>`**  
-  Updates a record based on the specified column (used as a WHERE condition). Null values are skipped.
-  
-- **`async fn update_by_column_batch(executor: &dyn Executor, tables: &[User], column: &str, batch_size: u64) -> Result<ExecResult, Error>`**  
-  Updates multiple records in batches, using the specified column as the condition.
-  
-- **`async fn update_by_column_skip(executor: &dyn Executor, table: &User, column: &str, skip_null: bool) -> Result<ExecResult, Error>`**  
-  Updates a record with control over whether null values should be skipped.
-  
-- **`async fn update_by_map(executor: &dyn Executor, table: &User, condition: rbs::Value, skip_null: bool) -> Result<ExecResult, Error>`**  
-  Updates records matching a map of column-value conditions.
+// 自定义删除方法
+impl_delete!(User{delete_by_name(name:&str) => "`where name = #{name}`"});
+```
 
-##### Delete Methods
-- **`async fn delete_by_column<V: Serialize>(executor: &dyn Executor, column: &str, column_value: V) -> Result<ExecResult, Error>`**  
-  Deletes records where the specified column equals the given value.
-  
-- **`async fn delete_by_map(executor: &dyn Executor, condition: rbs::Value) -> Result<ExecResult, Error>`**  
-  Deletes records matching a map of column-value conditions.
-  
-- **`async fn delete_in_column<V: Serialize>(executor: &dyn Executor, column: &str, column_values: &[V]) -> Result<ExecResult, Error>`**  
-  Deletes records where the specified column's value is in the given list (IN operator).
-  
-- **`async fn delete_by_column_batch<V: Serialize>(executor: &dyn Executor, column: &str, values: &[V], batch_size: u64) -> Result<ExecResult, Error>`**  
-  Deletes multiple records in batches, based on specified column values.
+调用自定义方法：
 
-#### Example Usage
+```rust
+// 调用自定义查询方法
+let users = User::select_by_name(&rb, "张三").await?;
+
+// 调用自定义更新方法
+let result = User::update_by_name(&rb, &user, "张三").await?;
+
+// 调用自定义删除方法
+let result = User::delete_by_name(&rb, "张三").await?;
+```
+
+### 5.3 使用map进行动态条件查询
+
+Rbatis v4.6+ 提供了简洁的map条件查询支持，使用`value!`宏可以快速构建查询条件：
+
+```rust
+use rbs::value;
+
+// 等值查询
+let users = User::select_by_map(&rb, value!{"id":"1","name":"张三"}).await?;
+
+// IN查询
+let users = User::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await?;
+
+// 复杂条件组合
+let users = User::select_by_map(&rb, value!{
+    "id": &["1", "2", "3"],
+    "age": 18,
+    "status": 1
+}).await?;
+```
+
+### 5.4 CRUD Operation Example
 
 ```rust
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize RBatis
+async fn main() {
+    // 初始化RBatis和数据库连接
     let rb = RBatis::new();
-    rb.link(SqliteDriver {}, "sqlite://test.db").await?;
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://test.db").unwrap();
     
-    // Insert a single record
+    // 创建用户实例
     let user = User {
         id: Some("1".to_string()),
-        username: Some("john_doe".to_string()),
-        // other fields...
+        username: Some("test_user".to_string()),
+        password: Some("password".to_string()),
+        create_time: Some(DateTime::now()),
+        status: Some(1),
     };
-    User::insert(&rb, &user).await?;
     
-    // Batch insert multiple records
-    let users = vec![user1, user2, user3];
-    User::insert_batch(&rb, &users, 100).await?;
+    // 插入数据
+    let result = User::insert(&rb, &user).await.unwrap();
+    println!("插入记录数: {}", result.rows_affected);
     
-    // Select by column
-    let active_users: Vec<User> = User::select_by_column(&rb, "status", 1).await?;
+    // 查询数据 - 使用新的map API
+    let users: Vec<User> = User::select_by_map(&rb, value!{"id":"1"}).await.unwrap();
+    println!("查询用户: {:?}", users);
     
-    // Select with IN clause
-    let specific_users = User::select_in_column(&rb, "id", &["1", "2", "3"]).await?;
+    // 更新数据
+    let mut user_to_update = users[0].clone();
+    user_to_update.username = Some("updated_user".to_string());
+    User::update_by_map(&rb, &user_to_update, value!{"id":"1"}).await.unwrap();
     
-    // Update a record
-    let mut user_to_update = active_users[0].clone();
-    user_to_update.status = Some(2);
-    User::update_by_column(&rb, &user_to_update, "id").await?;
-    
-    // Delete a record
-    User::delete_by_column(&rb, "id", "1").await?;
-    
-    // Delete multiple records with IN clause
-    User::delete_in_column(&rb, "status", &[0, -1]).await?;
-    
-    Ok(())
+    // 删除数据
+    User::delete_by_map(&rb, value!{"id":"1"}).await.unwrap();
 }
 ```
 

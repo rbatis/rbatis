@@ -132,10 +132,10 @@ QPS: 288531 QPS/s
 rbs = { version = "4.6"}
 rbatis = { version = "4.6"}
 #drivers
-rbdc-sqlite = { version = "4.5" }
-# rbdc-mysql = { version = "4.5" }
-# rbdc-pg = { version = "4.5" }
-# rbdc-mssql = { version = "4.5" }
+rbdc-sqlite = { version = "4.6" }
+# rbdc-mysql = { version = "4.6" }
+# rbdc-pg = { version = "4.6" }
+# rbdc-mssql = { version = "4.6" }
 
 # Other dependencies
 serde = { version = "1", features = ["derive"] }
@@ -219,7 +219,7 @@ tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 [dependencies]
 rbs = { version = "4.6"}
-rbdc = { version = "4.5", default-features = false, optional = true }
+rbdc = { version = "4.6", default-features = false, optional = true }
 fastdate = { version = "0.3" }
 tokio = { version = "1", features = ["full"] }
 ```
