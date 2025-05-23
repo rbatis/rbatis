@@ -103,7 +103,7 @@ impl NodeType {
                 if parts.len() > 1 {
                     for index in (0..parts.len()).rev() {
                         let item = parts[index];
-                        childs = vec![Self::parse_trim_node(item, line, childs)?];
+                        childs = vec![Self::parse_node(item, line, childs)?];
 
                         if index == 0 {
                             main_node.extend(childs);
@@ -113,7 +113,7 @@ impl NodeType {
                 }
             }
 
-            let node = Self::parse_trim_node(trim_line, line, childs)?;
+            let node = Self::parse_node(trim_line, line, childs)?;
             main_node.push(node);
         } else {
             let data = if space <= 1 {
@@ -173,7 +173,7 @@ impl NodeType {
             .collect()
     }
 
-    fn parse_trim_node(
+    fn parse_node(
         trim_express: &str,
         source_str: &str,
         childs: Vec<NodeType>,
