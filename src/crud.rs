@@ -177,16 +177,19 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
         $crate::impl_select!($table{select_by_map(condition: rbs::Value) -> Vec =>
-        "` where `
-         trim ' and ': for key,item in condition:
+        "
+        trim ' where ':
+           ` where `
+           trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array():
+                          if item.is_array() && !item.is_empty():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        "},$table_name);
+        "
+        },$table_name);
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
@@ -241,11 +244,13 @@ macro_rules! impl_update {
     };
     ($table:ty{},$table_name:expr) => {
          $crate::impl_update!($table{update_by_map(condition:rbs::Value) =>
-        "` where `
-         trim ' and ': for key,item in condition:
+        "
+        trim ' where ':
+           ` where `
+           trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array():
+                          if item.is_array() && !item.is_empty():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},
@@ -321,11 +326,13 @@ macro_rules! impl_delete {
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
-        "` where `
-         trim ' and ': for key,item in condition:
+        "
+        trim ' where ':
+           ` where `
+           trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array():
+                          if item.is_array() && !item.is_empty():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},
