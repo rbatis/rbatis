@@ -11,6 +11,7 @@ use quote::ToTokens;
 use std::collections::HashMap;
 use syn::ItemFn;
 
+///A handwritten recursive descent algorithm for parsing PySQL
 pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error>;
 }
