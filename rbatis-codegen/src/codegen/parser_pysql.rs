@@ -9,6 +9,7 @@ use crate::codegen::syntax_tree_pysql::foreach_node::ForEachNode;
 use crate::codegen::syntax_tree_pysql::if_node::IfNode;
 use crate::codegen::syntax_tree_pysql::otherwise_node::OtherwiseNode;
 use crate::codegen::syntax_tree_pysql::set_node::SetNode;
+use crate::codegen::syntax_tree_pysql::sql_node::SqlNode;
 use crate::codegen::syntax_tree_pysql::string_node::StringNode;
 use crate::codegen::syntax_tree_pysql::trim_node::TrimNode;
 use crate::codegen::syntax_tree_pysql::when_node::WhenNode;
@@ -179,7 +180,7 @@ impl NodeType {
                 }
             }
         }
-        return (result, skip_line);
+        (result, skip_line)
     }
 
     ///Map<line,space>
@@ -349,6 +350,31 @@ impl NodeType {
             return Ok(NodeType::NContinue(ContinueNode {}));
         } else if trim_express.starts_with(BreakNode::name()) {
             return Ok(NodeType::NBreak(BreakNode {}));
+        } else if trim_express.starts_with(SqlNode::name()) {
+            // 解析 sql id='xxx' 格式
+            let express = trim_express[SqlNode::name().len()..].trim();
+            
+            // 从 id='xxx' 中提取 id
+            if !express.starts_with("id=") {
+                return Err(Error::from(
+                    "[rbatis-codegen] parser sql express fail, need id param:".to_string() + trim_express,
+                ));
+            }
+            
+            let id_value = express.trim_start_matches("id=").trim();
+            
+            // 检查引号
+            let id;
+            if (id_value.starts_with("'") && id_value.ends_with("'")) || 
+               (id_value.starts_with("\"") && id_value.ends_with("\"")) {
+                id = id_value[1..id_value.len()-1].to_string();
+            } else {
+                return Err(Error::from(
+                    "[rbatis-codegen] parser sql id value need quotes:".to_string() + trim_express,
+                ));
+            }
+            
+            return Ok(NodeType::NSql(SqlNode { childs, id }));
         } else {
             // unkonw tag
             return Err(Error::from(

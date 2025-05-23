@@ -163,9 +163,10 @@ fn test_sql_node_as_html() {
         childs: vec![NodeType::NString(StringNode {
             value: "select * from user".to_string(),
         })],
+        id: "a".to_string(),
     };
     let html = node.as_html();
-    assert_eq!(html, "<sql>`select * from user`</sql>");
+    assert_eq!(html, "<sql id=\"a\">`select * from user`</sql>");
 }
 
 #[test]
@@ -371,8 +372,9 @@ fn test_all_node_types_as_html() {
     
     let sql_node = NodeType::NSql(SqlNode {
         childs: vec![string_node],
+        id: "a".to_string(),
     });
-    assert_eq!(sql_node.as_html(), "<sql>`test`</sql>");
+    assert_eq!(sql_node.as_html(), "<sql id=\"a\">`test`</sql>");
 }
 
 #[test]
@@ -416,8 +418,9 @@ fn test_empty_nodes() {
     
     let empty_sql = SqlNode {
         childs: vec![],
+        id: "a".to_string(),
     };
-    assert_eq!(empty_sql.as_html(), "<sql></sql>");
+    assert_eq!(empty_sql.as_html(), "<sql id=\"a\"></sql>");
 }
 
 #[test]
