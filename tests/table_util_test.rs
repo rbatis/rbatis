@@ -65,7 +65,7 @@ fn test_table_field_vec() {
     ];
     
     // 测试从引用中获取字段集合
-    let ids_ref: Vec<&String> = rbatis::table_field_vec!(&tables, id);
+    let ids_ref: Vec<String> = rbatis::table_field_vec!(&tables, id);
     assert_eq!(ids_ref.len(), 2);
     assert_eq!(*ids_ref[0], "1".to_string());
     assert_eq!(*ids_ref[1], "2".to_string());
@@ -77,7 +77,7 @@ fn test_table_field_vec() {
     assert_eq!(ids[1], "2".to_string());
     
     // 测试从引用中获取另一个字段
-    let names_ref: Vec<&String> = rbatis::table_field_vec!(&tables, name);
+    let names_ref: Vec<String> = rbatis::table_field_vec!(&tables, name);
     assert_eq!(names_ref.len(), 3);
     assert_eq!(*names_ref[0], "name1".to_string());
     assert_eq!(*names_ref[1], "name2".to_string());
@@ -106,7 +106,7 @@ fn test_table_field_set() {
     ];
     
     // 测试从引用中获取字段Set
-    let ids_ref: HashSet<&String> = rbatis::table_field_set!(&tables, id);
+    let ids_ref: HashSet<String> = rbatis::table_field_set!(&tables, id);
     assert_eq!(ids_ref.len(), 2); // 因为有重复，所以只有2个元素
     assert!(ids_ref.contains(&"1".to_string()));
     assert!(ids_ref.contains(&"2".to_string()));
@@ -118,7 +118,7 @@ fn test_table_field_set() {
     assert!(ids.contains("2"));
     
     // 测试从引用中获取另一个字段
-    let names_ref: HashSet<&String> = rbatis::table_field_set!(&tables, name);
+    let names_ref: HashSet<String> = rbatis::table_field_set!(&tables, name);
     assert_eq!(names_ref.len(), 3); // name都不同，所以有3个元素
     assert!(names_ref.contains(&"name1".to_string()));
     assert!(names_ref.contains(&"name2".to_string()));
