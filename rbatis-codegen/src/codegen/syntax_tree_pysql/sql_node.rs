@@ -1,9 +1,20 @@
 use crate::codegen::syntax_tree_pysql::{AsHtml, Name, NodeType};
 
-/// the SqlNode
+/// Represents a reusable SQL fragment node in py_sql, defined by a `<sql>` tag in XML or an equivalent in py_sql.
+/// It allows defining a piece of SQL that can be included elsewhere.
+///
+/// # Example
+///
+/// PySQL syntax (conceptual, as direct py_sql for `<sql>` might be less common than XML):
+/// ```py
+/// # define a reusable sql fragment
+/// sql id='columns':
+///   column1, column2
+/// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SqlNode {
     pub childs: Vec<NodeType>,
+    pub id: String,
 }
 
 impl Name for SqlNode {
@@ -18,6 +29,6 @@ impl AsHtml for SqlNode {
         for x in &self.childs {
             childs.push_str(&x.as_html());
         }
-        format!("<sql>{}</sql>", childs)
+        format!("<sql id=\"{}\">{}</sql>", self.id, childs)
     }
 }
