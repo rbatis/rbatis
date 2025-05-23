@@ -29,7 +29,7 @@ macro_rules! table {
 ///  pub role_id: Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
-///let role_ids_ref: Vec<&String> = table_field_vec!(&user_roles,role_id);
+///let role_ids_ref: Vec<String> = table_field_vec!(&user_roles,role_id);
 ///let role_ids: Vec<String> = table_field_vec!(user_roles,role_id);
 /// ```
 #[allow(unused_macros)]
@@ -41,7 +41,7 @@ macro_rules! table_field_vec {
         for item in vec {
             match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
-                    ids.push(v);
+                    ids.push(v.to_owned());
                 }
                 _ => {}
             }
@@ -54,7 +54,7 @@ macro_rules! table_field_vec {
         for item in vec {
             match item $(.$field_name)+.to_owned() {
                 std::option::Option::Some(v) => {
-                    ids.push(v);
+                    ids.push(v.to_owned());
                 }
                 _ => {}
             }
@@ -73,7 +73,7 @@ macro_rules! table_field_vec {
 ///  pub role_id:Option<String>
 ///}
 ///let user_roles: Vec<SysUserRole> = vec![];
-///let role_ids_ref: HashSet<&String> = table_field_set!(&user_roles,role_id);
+///let role_ids_ref: HashSet<String> = table_field_set!(&user_roles,role_id);
 ///let role_ids: HashSet<String> = table_field_set!(user_roles,role_id);
 ///```
 #[allow(unused_macros)]
@@ -85,7 +85,7 @@ macro_rules! table_field_set {
         for item in vec {
              match &item $(.$field_name)+ {
                 std::option::Option::Some(v) => {
-                    ids.insert(v);
+                    ids.insert(v.to_owned());
                 }
                 _ => {}
             }
@@ -98,7 +98,7 @@ macro_rules! table_field_set {
         for item in vec {
              match item $(.$field_name)+.to_owned() {
                 std::option::Option::Some(v) => {
-                    ids.insert(v);
+                    ids.insert(v.to_owned());
                 }
                 _ => {}
             }
