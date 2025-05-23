@@ -25,6 +25,8 @@ default = ["rbatis-macro-driver/default"]
 debug_mode = ["rbatis-macro-driver/debug_mode", "rbs/debug_mode"]
 #support upper case sql keyword
 upper_case_sql_keyword = []
+#is show gen code
+println_gen = ["rbatis-macro-driver/println_gen"]
 
 [dependencies]
 rbatis-codegen = { version = "4.6", path = "rbatis-codegen" }
