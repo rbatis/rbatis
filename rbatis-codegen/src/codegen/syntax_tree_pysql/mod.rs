@@ -38,80 +38,80 @@ use crate::codegen::syntax_tree_pysql::where_node::WhereNode;
 /// 1. Nodes that define a block end with a colon ':' and their children are indented.
 /// 
 /// 2. `NString` - Plain text or SQL fragments. Can preserve whitespace with backticks:
-///    ```
-///    SELECT * FROM users
-///    `  SELECT   column1,    column2   FROM table  `
-///    ```
+/// ```sql
+/// SELECT * FROM users
+/// `  SELECT   column1,    column2   FROM table  `
+/// ```
 /// 
 /// 3. `NIf` - Conditional execution, similar to Python's if statement:
-///    ```
-///    if condition:
-///      SQL fragment
-///    ```
+/// ```pysql
+/// if condition:
+///   SQL fragment
+/// ```
 /// 
 /// 4. `NTrim` - Removes specified characters from start/end of the content:
-///    ```
-///    trim ',':                   # Removes ',' from both start and end
-///    trim start=',',end=')':     # Removes ',' from start and ')' from end
-///    ```
+/// ```pysql
+/// trim ',':                   # Removes ',' from both start and end
+/// trim start=',',end=')':     # Removes ',' from start and ')' from end
+/// ```
 /// 
 /// 5. `NForEach` - Iterates over collections:
-///    ```
-///    for item in items:          # Simple iteration
-///      #{item}
-///    for key,item in items:      # With key/index
-///      #{key}: #{item}
-///    ```
+/// ```pysql
+/// for item in items:          # Simple iteration
+///   #{item}
+/// for key,item in items:      # With key/index
+///   #{key}: #{item}
+/// ```
 /// 
 /// 6. `NChoose`/`NWhen`/`NOtherwise` - Switch-like structure:
-///    ```
-///    choose:
-///      when condition1:
-///        SQL fragment 1
-///      when condition2:
-///        SQL fragment 2
-///      otherwise:                # Or use '_:'
-///        Default SQL fragment
-///    ```
+/// ```pysql
+/// choose:
+///   when condition1:
+///     SQL fragment 1
+///   when condition2:
+///     SQL fragment 2
+///   otherwise:                # Or use '_:'
+///     Default SQL fragment
+/// ```
 /// 
 /// 7. `NBind` - Variable binding:
-///    ```
-///    bind name = 'value':        # Or use 'let name = value:'
-///      SQL using #{name}
-///    ```
+/// ```pysql
+/// bind name = 'value':        # Or use 'let name = value:'
+///   SQL using #{name}
+/// ```
 /// 
 /// 8. `NSet` - For UPDATE statements, handles comma separation:
-///    ```
-///    set:
-///      if name != null:
-///        name = #{name},
-///      if age != null:
-///        age = #{age}
-///    ```
+/// ```pysql
+/// set:
+///   if name != null:
+///     name = #{name},
+///   if age != null:
+///     age = #{age}
+/// ```
 /// 
 /// 9. `NWhere` - For WHERE clauses, handles AND/OR prefixes:
-///    ```
-///    where:
-///      if id != null:
-///        AND id = #{id}
-///      if name != null:
-///        AND name = #{name}
-///    ```
+/// ```pysql
+/// where:
+///   if id != null:
+///     AND id = #{id}
+///   if name != null:
+///     AND name = #{name}
+/// ```
 /// 
 /// 10. `NContinue`/`NBreak` - Loop control, must be inside a for loop:
-///     ```
-///     for item in items:
-///       if item == null:
-///         break:
-///       if item == 0:
-///         continue:
-///     ```
+/// ```pysql
+/// for item in items:
+///   if item == null:
+///     break:
+///   if item == 0:
+///     continue:
+/// ```
 /// 
 /// 11. `NSql` - Reusable SQL fragments with an ID:
-///     ```
-///     sql id='userColumns':
-///       id, name, age
-///     ```
+/// ```pysql
+/// sql id='userColumns':
+///   id, name, age
+/// ```
 ///     
 /// Note: All control nodes require a colon at the end, and their child content
 /// must be indented with more spaces than the parent node.

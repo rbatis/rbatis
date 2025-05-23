@@ -16,10 +16,12 @@ homepage = "https://rbatis.github.io/rbatis.io"
 
 
 [features]
-default = []
+default = ["use_pest"]
+use_pest = ["pest", "pest_derive"]
 [dependencies]
 #serde
 serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", optional = true }
 rbs = { version = "4.6"}
 #macro
 proc-macro2 = "1.0"
@@ -27,3 +29,6 @@ quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
 url = "2.2.2"
 html_parser = "0.6.3"
+regex = "1"
+pest = { version = "2.8.0", optional = true }
+pest_derive = { version = "2.8.0", optional = true }
