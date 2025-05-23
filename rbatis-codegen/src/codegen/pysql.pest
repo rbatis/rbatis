@@ -1,0 +1,206 @@
+// rbatis-codegen py_sql语法定义
+// 基本规则是Python风格的缩进式语法，语句以冒号结束，子节点应当缩进
+
+// 顶层文件包含多个语句或SQL文本
+file = { SOI ~ (line ~ NEWLINE*)* ~ EOI }
+
+// 基本语句类型
+statement = _{ 
+    if_stmt |
+    foreach_stmt |
+    choose_stmt |
+    trim_stmt |
+    bind_stmt |
+    set_stmt |
+    where_stmt |
+    sql_stmt |
+    continue_stmt |
+    break_stmt |
+    string_stmt 
+}
+
+// 空白和注释处理，保留原始空白和缩进
+WHITESPACE = _{ " " | "\t" }
+COMMENT = _{ "//" ~ (!NEWLINE ~ ANY)* }
+comment = { "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+
+// 行终止符
+NEWLINE = _{ "\n" | "\r\n" }
+
+// 单行解析
+line = { indent? ~ (node_definition | sql_text) }
+
+// 缩进处理
+indent = { " "* }
+
+// 节点定义 (以冒号结尾)
+node_definition = { node_expr ~ ":" }
+
+// SQL文本 (不以冒号结尾的行)
+sql_text = { (!(":" ~ (NEWLINE | EOI)) ~ ANY)+ }
+
+// 节点表达式
+node_expr = { if_expr | for_expr | choose_expr | when_expr | otherwise_expr | 
+              trim_expr | bind_expr | set_expr | where_expr | sql_expr | 
+              continue_expr | break_expr }
+
+// 节点具体表达式
+if_expr = { "if" ~ expr }
+for_expr = { "for" ~ for_item ~ "in" ~ expr }
+choose_expr = { "choose" }
+when_expr = { "when" ~ expr }
+otherwise_expr = { "otherwise" | "_" }
+trim_expr = { "trim" ~ (string_literal | trim_attr) }
+bind_expr = { ("bind" | "let") ~ variable_name ~ "=" ~ expr }
+set_expr = { "set" }
+where_expr = { "where" }
+continue_expr = { "continue" }
+break_expr = { "break" }
+sql_expr = { "sql" ~ "id=" ~ string_literal }
+
+// for循环项
+for_item = { (variable_name ~ "," ~ variable_name) | variable_name }
+
+// 修剪属性
+trim_attr = { (trim_start ~ "," ~ trim_end) | trim_start | trim_end }
+trim_start = { "start" ~ "=" ~ string_literal }
+trim_end = { "end" ~ "=" ~ string_literal }
+
+// 字符串字面量
+string_literal = { "'" ~ (!"'" ~ ANY)* ~ "'" | "`" ~ (!"`" ~ ANY)* ~ "`" }
+
+// 变量名
+variable_name = { (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+// 表达式
+expr = { (!(NEWLINE | ":") ~ ANY)+ }
+
+// if语句
+if_stmt = { 
+    if_header ~ NEWLINE ~ block 
+}
+if_header = { "if" ~ expression ~ ":" }
+
+// foreach语句
+foreach_stmt = { 
+    foreach_header ~ NEWLINE ~ block
+}
+foreach_header = { 
+    "for" ~ (
+        identifier ~ "," ~ identifier ~ "in" ~ expression |  // for index,item in collection
+        identifier ~ "in" ~ expression                        // for item in collection
+    ) ~ ":"
+}
+
+// choose语句（类似switch）
+choose_stmt = { 
+    choose_header ~ NEWLINE ~ choose_block 
+}
+choose_header = { "choose" ~ ":" }
+choose_block = { 
+    when_block+ ~ 
+    otherwise_block? 
+}
+
+// when语句块
+when_block = { 
+    indented_line ~ when_header ~ NEWLINE ~ block 
+}
+when_header = { "when" ~ expression ~ ":" }
+
+// otherwise语句块
+otherwise_block = { 
+    indented_line ~ otherwise_header ~ NEWLINE ~ block 
+}
+otherwise_header = { (("otherwise" | "_") ~ ":") }
+
+// trim语句
+trim_stmt = { 
+    trim_header ~ NEWLINE ~ block 
+}
+trim_header = { 
+    "trim" ~ (
+        string_literal |                              // trim 'chars'
+        "start" ~ "=" ~ string_literal ~ ("," ~ "end" ~ "=" ~ string_literal)? |  // trim start='chars', end='chars'
+        "end" ~ "=" ~ string_literal                  // trim end='chars'
+    ) ~ ":"
+}
+
+// bind语句
+bind_stmt = { 
+    bind_header ~ NEWLINE ~ block? 
+}
+bind_header = { 
+    (("bind" | "let") ~ identifier ~ "=" ~ expression ~ ":") 
+}
+
+// set语句（用于UPDATE语句）
+set_stmt = { 
+    set_header ~ NEWLINE ~ block 
+}
+set_header = { "set" ~ ":" }
+
+// where语句
+where_stmt = { 
+    where_header ~ NEWLINE ~ block 
+}
+where_header = { "where" ~ ":" }
+
+// sql定义语句
+sql_stmt = { 
+    sql_header ~ NEWLINE ~ block 
+}
+sql_header = { "sql" ~ "id" ~ "=" ~ string_literal ~ ":" }
+
+// 循环控制语句
+continue_stmt = { "continue" ~ ":" ~ NEWLINE? }
+break_stmt = { "break" ~ ":" ~ NEWLINE? }
+
+// 普通字符串语句（SQL片段）
+string_stmt = { 
+    (raw_string | normal_string) ~ comment?
+}
+raw_string = ${ "`" ~ inner_raw_string ~ "`" }
+inner_raw_string = @{ (!("`" | "/*") ~ ANY)* }
+normal_string = @{ (!(":" | NEWLINE | "/*") ~ ANY)+ }
+
+// 缩进块实现（基于行缩进）
+block = { indented_statement* }
+indented_statement = { indented_line ~ (statement | sql_text) }
+indented_line = @{ (PEEK_ALL ~ " "+) }
+
+// 表达式处理
+expression = { 
+    term ~ (operator ~ term)* 
+}
+
+term = { 
+    identifier |
+    value |
+    "(" ~ expression ~ ")" |
+    unary_op ~ term 
+}
+
+value = {
+    string_literal |
+    number |
+    "true" | "false" | "null" 
+}
+
+// 各种操作符
+operator = { 
+    "==" | "!=" | ">=" | "<=" | ">" | "<" | "+" | "-" | "*" | "/" | "%" | "&&" | "||" | 
+    "and" | "or" | "in" | "is" | "not" | "."
+}
+
+unary_op = { 
+    "!" | "not" | "-" 
+}
+
+// 标识符（变量名）
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_" | ".")* }
+
+// 数字字面量
+number = @{ 
+    "-"? ~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*) ~ ("." ~ ASCII_DIGIT+)? ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
+} 
