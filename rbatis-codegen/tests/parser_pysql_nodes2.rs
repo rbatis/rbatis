@@ -270,21 +270,21 @@ fn test_parse_sql_node_errors() {
 // 测试复杂嵌套结构，包含多种节点类型
 #[test]
 fn test_parse_complex_structure() {
-    let sql = "select\n\
-              sql id='columns':\n\
-                id, name, age\n\
-              from user\n\
-              where:\n\
-                if id != null:\n\
-                  and id = #{id}\n\
-                if name != null:\n\
-                  and name like #{name}\n\
-              for item in items:\n\
+    let sql = 
+"select
+              sql id='columns':
+                id, name, age
+              from user
+              where:
+                if id != null:
+                  and id = #{id}
+                if name != null:
+                  and name like #{name}
+              for item in items:
                 #{item}";
-    
     let nodes = NodeType::parse_pysql(sql).unwrap();
     assert!(nodes.len() > 2);
-    
+    println!("{:#?}",nodes);
     // 验证第一个是 StringNode
     match &nodes[0] {
         NodeType::NString(_) => {}

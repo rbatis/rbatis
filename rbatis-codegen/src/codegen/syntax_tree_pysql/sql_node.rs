@@ -13,8 +13,8 @@ use crate::codegen::syntax_tree_pysql::{AsHtml, Name, NodeType};
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SqlNode {
-    pub childs: Vec<NodeType>,
     pub id: String,
+    pub childs: Vec<NodeType>,
 }
 
 impl Name for SqlNode {
