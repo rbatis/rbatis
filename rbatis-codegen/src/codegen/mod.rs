@@ -12,7 +12,6 @@ pub mod func;
 pub mod loader_html;
 pub mod parser_html;
 pub mod parser_pysql;
-pub mod parser_pysql_pest;
 pub mod string_util;
 pub mod syntax_tree_pysql;
 
@@ -67,18 +66,6 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn = syn::parse(func).unwrap();
-    
-    // 使用Pest解析器
-    #[cfg(feature = "use_pest")]
-    {
-        let stream = parser_pysql_pest::impl_fn_py(&target_fn, &args);
-        return stream;
-    }
-    
-    // 默认使用原始解析器
-    #[cfg(not(feature = "use_pest"))]
-    {
-        let stream = parser_pysql::impl_fn_py(&target_fn, &args);
-        return stream;
-    }
+    let stream = parser_pysql::impl_fn_py(&target_fn, &args);
+    return stream;
 }
