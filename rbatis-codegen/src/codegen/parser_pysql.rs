@@ -75,7 +75,7 @@ impl ParsePySql for NodeType {
                 .get(&line)
                 .ok_or_else(|| Error::from(format!("line:{} not exist!", line)))?;
 
-            Self::parse_pysql_node(&mut main_node, x, current_space as usize, parsed)?;
+            Self::parse(&mut main_node, x, current_space as usize, parsed)?;
         }
 
         Ok(main_node)
@@ -83,7 +83,7 @@ impl ParsePySql for NodeType {
 }
 
 impl NodeType {
-    fn parse_pysql_node(
+    fn parse(
         main_node: &mut Vec<NodeType>,
         line: &str,
         space: usize,
