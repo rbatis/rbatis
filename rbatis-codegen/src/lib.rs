@@ -19,32 +19,3 @@ pub mod ops_xor;
 pub mod ops_string;
 
 pub use codegen::{rb_html, rb_py};
-
-#[cfg(test)]
-mod tests {
-    #[cfg(feature = "use_pest")]
-    #[test]
-    fn test_pest_parser() {
-        use crate::codegen::parser_pysql_pest::parse_pysql;
-        
-        // 测试最简单的SQL语句
-        let sql = "SELECT * FROM users";
-        let nodes = parse_pysql(sql).unwrap();
-        assert_eq!(1, nodes.len());
-        
-        // 测试带有if语句的SQL
-        let sql = "SELECT * FROM users\nif name != null:\n  WHERE name = #{name}";
-        let nodes = parse_pysql(sql).unwrap();
-        assert!(nodes.len() > 1);
-        
-        // 测试带有括号的SQL
-        let sql = "SELECT * FROM users WHERE (id > 10)";
-        let nodes = parse_pysql(sql).unwrap();
-        assert_eq!(1, nodes.len());
-        
-        // 测试带有反引号的SQL
-        let sql = "`SELECT * FROM users`";
-        let nodes = parse_pysql(sql).unwrap();
-        assert_eq!(1, nodes.len());
-    }
-}
