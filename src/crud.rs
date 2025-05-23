@@ -178,7 +178,7 @@ macro_rules! impl_select {
         $crate::impl_select!($table{select_all() => ""},$table_name);
         $crate::impl_select!($table{select_by_map(condition: rbs::Value) -> Vec =>
         "
-        trim ' where ':
+        trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -245,7 +245,7 @@ macro_rules! impl_update {
     ($table:ty{},$table_name:expr) => {
          $crate::impl_update!($table{update_by_map(condition:rbs::Value) =>
         "
-        trim ' where ':
+        trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -327,7 +327,7 @@ macro_rules! impl_delete {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
         "
-        trim ' where ':
+        trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
