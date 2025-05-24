@@ -1,5 +1,5 @@
 use rbatis_codegen::codegen::syntax_tree_pysql::{
-    ToHtml, NodeType, to_html, DefaultName, Name,
+    ToHtml, NodeType, DefaultName, Name,
 };
 use rbatis_codegen::codegen::syntax_tree_pysql::bind_node::BindNode;
 use rbatis_codegen::codegen::syntax_tree_pysql::break_node::BreakNode;
