@@ -1,6 +1,7 @@
 use html_parser::{Dom, Node, Result};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
+use crate::error::Error;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Element {
@@ -119,4 +120,20 @@ impl Element {
         }
         u
     }
+}
+
+/// Loads HTML content into a vector of elements
+pub fn load_mapper_vec(html: &str) -> std::result::Result<Vec<Element>, Error> {
+    let elements = load_html(html).map_err(|e| Error::from(e.to_string()))?;
+
+    let mut mappers = Vec::new();
+    for element in elements {
+        if element.tag == "mapper" {
+            mappers.extend(element.childs);
+        } else {
+            mappers.push(element);
+        }
+    }
+
+    Ok(mappers)
 }
