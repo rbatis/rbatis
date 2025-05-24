@@ -204,7 +204,7 @@ impl NodeType {
                 Self::parse_bind_node(s)
             }
 
-            s if s.starts_with(SetNode::name()) => Ok(NodeType::NSet(SetNode { childs })),
+            s if s.starts_with(SetNode::name()) => Self::parse_set_node(s,source_str,childs),
 
             s if s.starts_with(WhereNode::name()) => Ok(NodeType::NWhere(WhereNode { childs })),
 
@@ -373,5 +373,75 @@ impl NodeType {
         };
 
         Ok(NodeType::NSql(SqlNode { childs, id }))
+    }
+
+    fn strip_quotes_for_attr(s: &str) -> String {
+        let val = s.trim(); // Trim whitespace around the value first
+        if val.starts_with('\'') && val.ends_with('\'') ||
+           (val.starts_with('"') && val.ends_with('"')) {
+            if val.len() >= 2 {
+                return val[1..val.len()-1].to_string();
+            }
+        }
+        val.to_string() // Return the trimmed string if no quotes or malformed quotes
+    }
+    
+    fn parse_set_node(express: &str, source_str: &str,  childs: Vec<NodeType>) -> Result<NodeType, Error>  {
+        let actual_attrs_str = if express.starts_with(SetNode::name()) {
+            express[SetNode::name().len()..].trim()
+        } else {
+            // This case should ideally not happen if called correctly from the match arm
+            return Err(Error::from(format!("[rbatis-codegen] SetNode expression '{}' does not start with '{}'", express, SetNode::name())));
+        };
+        if actual_attrs_str.is_empty() {
+            return Err(Error::from(format!("[rbatis-codegen] SetNode attributes are empty in '{}'. 'collection' attribute is mandatory.", source_str)));
+        }
+        let mut collection_opt: Option<String> = None;
+        let mut skip_null_val = false; // Default
+        let mut skips_val: String = String::new(); // Default is now an empty String
+        for part_str in actual_attrs_str.split(',') {
+            let clean_part = part_str.trim();
+            if clean_part.is_empty() {
+                continue;
+            }
+
+            let kv: Vec<&str> = clean_part.splitn(2, '=').collect();
+            if kv.len() != 2 {
+                return Err(Error::from(format!("[rbatis-codegen] Malformed attribute in set node near '{}' in '{}'", clean_part, source_str)));
+            }
+
+            let key = kv[0].trim();
+            let value_str_raw = kv[1].trim();
+
+            match key {
+                "collection" => {
+                    collection_opt = Some(Self::strip_quotes_for_attr(value_str_raw));
+                }
+                "skip_null" => {
+                    let val_bool_str = Self::strip_quotes_for_attr(value_str_raw);
+                    if val_bool_str.eq_ignore_ascii_case("true") {
+                        skip_null_val = true;
+                    } else if val_bool_str.eq_ignore_ascii_case("false") {
+                        skip_null_val = false;
+                    } else {
+                        return Err(Error::from(format!("[rbatis-codegen] Invalid boolean value for skip_null: '{}' in '{}'", value_str_raw, source_str)));
+                    }
+                }
+                "skips" => {
+                    let inner_skips_str = Self::strip_quotes_for_attr(value_str_raw);
+                    skips_val = inner_skips_str;
+                }
+                _ => {
+                    return Err(Error::from(format!("[rbatis-codegen] Unknown attribute '{}' for set node in '{}'", key, source_str)));
+                }
+            }
+        }
+        let collection_val = collection_opt.ok_or_else(|| Error::from(format!("[rbatis-codegen] Mandatory attribute 'collection' missing for set node in '{}'", source_str)))?;
+        Ok(NodeType::NSet(SetNode {
+            childs,
+            collection: collection_val,
+            skip_null: skip_null_val,
+            skips: skips_val,
+        }))
     }
 }
