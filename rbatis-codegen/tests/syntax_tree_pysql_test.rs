@@ -128,7 +128,7 @@ fn test_set_node_as_html() {
         childs: vec![NodeType::NString(StringNode {
             value: "name = #{name}".to_string(),
         })],
-        collection: "default_collection".to_string(),
+        collection: "".to_string(),
         skip_null: false,
         skips: "".to_string(),
     };
@@ -362,7 +362,7 @@ fn test_all_node_types_as_html() {
     
     let set_node = NodeType::NSet(SetNode {
         childs: vec![string_node.clone()],
-        collection: "default_collection".to_string(),
+        collection: "".to_string(),
         skip_null: false,
         skips: "".to_string(),
     });
@@ -417,7 +417,7 @@ fn test_empty_nodes() {
     
     let empty_set = SetNode {
         childs: vec![],
-        collection: "default_collection".to_string(),
+        collection: "".to_string(),
         skip_null: false,
         skips: "".to_string(),
     };
