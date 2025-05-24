@@ -269,15 +269,9 @@ macro_rules! impl_update {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`update ${table_name} set `
-                                 trim ',':
-                                   for k,v in table:
-                                     if k == column:
-                                        continue:
-                                     if v == null || k == 'id':
-                                        continue:
-                                     `${k}=#{v},`
-                                 ` `",$sql_where)]
+                #[$crate::py_sql("`update ${table_name} `
+                                  set collection='table',skips='id':
+                                  ",$sql_where)]
                   async fn $fn_name(
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
