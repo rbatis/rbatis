@@ -66,9 +66,7 @@ where
 /// Defines how a node is created from an `Element` and how it generates Rust TokenStream.
 pub trait HtmlAstNode {
     /// Returns the XML tag name for this node type (e.g., "if", "select").
-    fn node_tag_name() -> &'static str
-    where
-        Self: Sized;
+    fn node_tag_name() -> &'static str;
 
     /// Creates an instance of the node from a generic `Element`.
     /// This method will extract necessary attributes and validate them.
