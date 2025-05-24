@@ -80,13 +80,22 @@ use crate::codegen::syntax_tree_pysql::where_node::WhereNode;
 ///   SQL using #{name}
 /// ```
 /// 
-/// 8. `NSet` - For UPDATE statements, handles comma separation:
+/// 8. `NSet` - For UPDATE statements, handles comma separation.
+///    It can also define a collection to iterate over for generating SET clauses.
 /// ```pysql
+/// // Simple set for direct updates
 /// set:
 ///   if name != null:
 ///     name = #{name},
 ///   if age != null:
 ///     age = #{age}
+///
+/// // Set with collection to iterate (e.g., from a map or struct)
+/// // Assuming 'user_updates' is a map like {'name': 'new_name', 'status': 'active'}
+/// set collection="user_updates" skips="id,created_at" skip_null="true":
+///   // This will generate: name = #{user_updates.name}, status = #{user_updates.status}
+///   // 'id' and 'created_at' fields from 'user_updates' will be skipped.
+///   // If a value in 'user_updates' is null and skip_null is true, it will be skipped.
 /// ```
 /// 
 /// 9. `NWhere` - For WHERE clauses, handles AND/OR prefixes:
@@ -241,11 +250,23 @@ impl AsHtml for BindNode {
 
 impl AsHtml for SetNode {
     fn as_html(&self) -> String {
-        let mut childs = String::new();
+        let mut childs_html = String::new();
         for x in &self.childs {
-            childs.push_str(&x.as_html());
+            childs_html.push_str(&x.as_html());
         }
-        format!("<set>{}</set>", childs)
+
+        let mut attrs_string = String::new();
+        if !self.collection.is_empty() {
+            attrs_string.push_str(&format!(" collection=\"{}\"", self.collection));
+        }
+        if !self.skips.is_empty() {
+            attrs_string.push_str(&format!(" skips=\"{}\"", self.skips));
+        }
+        if self.skip_null {
+            attrs_string.push_str(" skip_null=\"true\"");
+        }
+
+        format!("<set{}>{}</set>", attrs_string, childs_html)
     }
 }
 
