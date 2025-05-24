@@ -19,6 +19,9 @@ use crate::codegen::syntax_tree_pysql::{Name, NodeType};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SetNode {
     pub childs: Vec<NodeType>,
+    pub collection: String,
+    pub skips: String,
+    pub skip_null: bool,
 }
 
 impl Name for SetNode {

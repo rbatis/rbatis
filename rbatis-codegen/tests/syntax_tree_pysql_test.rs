@@ -128,6 +128,9 @@ fn test_set_node_as_html() {
         childs: vec![NodeType::NString(StringNode {
             value: "name = #{name}".to_string(),
         })],
+        collection: "default_collection".to_string(),
+        skip_null: false,
+        skips: "".to_string(),
     };
     let html = node.as_html();
     assert_eq!(html, "<set>`name = #{name}`</set>");
@@ -199,6 +202,9 @@ fn test_to_html_update() {
             childs: vec![NodeType::NString(StringNode {
                 value: "name = #{name}".to_string(),
             })],
+            collection: "default_collection".to_string(),
+            skip_null: false,
+            skips: "".to_string(),
         }),
     ];
     let html = to_html(&nodes, false, "updateUser");
@@ -356,6 +362,9 @@ fn test_all_node_types_as_html() {
     
     let set_node = NodeType::NSet(SetNode {
         childs: vec![string_node.clone()],
+        collection: "default_collection".to_string(),
+        skip_null: false,
+        skips: "".to_string(),
     });
     assert_eq!(set_node.as_html(), "<set>`test`</set>");
     
@@ -408,6 +417,9 @@ fn test_empty_nodes() {
     
     let empty_set = SetNode {
         childs: vec![],
+        collection: "default_collection".to_string(),
+        skip_null: false,
+        skips: "".to_string(),
     };
     assert_eq!(empty_set.as_html(), "<set></set>");
     
