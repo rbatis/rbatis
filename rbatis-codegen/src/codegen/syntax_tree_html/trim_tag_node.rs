@@ -16,7 +16,7 @@ pub struct TrimTagNode {
 }
 
 impl HtmlAstNode for TrimTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "trim" }
+    fn node_tag_name() -> &'static str { "trim" }
 
     fn from_element(element: &Element) -> Self {
         let empty = String::new();

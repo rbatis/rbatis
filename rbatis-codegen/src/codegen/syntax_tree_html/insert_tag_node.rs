@@ -12,7 +12,7 @@ pub struct InsertTagNode {
 }
 
 impl HtmlAstNode for InsertTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "insert" }
+    fn node_tag_name() -> &'static str { "insert" }
 
     fn from_element(element: &Element) -> Self {
         Self {

@@ -14,7 +14,7 @@ pub struct IfTagNode {
 }
 
 impl HtmlAstNode for IfTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "if" }
+    fn node_tag_name() -> &'static str { "if" }
 
     fn from_element(element: &Element) -> Self {
         let test = element.attrs.get("test")

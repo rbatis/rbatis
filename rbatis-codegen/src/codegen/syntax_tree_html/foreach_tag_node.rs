@@ -18,7 +18,7 @@ pub struct ForeachTagNode {
 }
 
 impl HtmlAstNode for ForeachTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "foreach" }
+    fn node_tag_name() -> &'static str { "foreach" }
 
     fn from_element(element: &Element) -> Self {
         let empty = String::new();
@@ -103,7 +103,7 @@ impl HtmlAstNode for ForeachTagNode {
         } else {
             (quote! {}, quote! {})
         };
-        
+
         let loop_tokens = if !self.separator.is_empty() {
             quote! {
                 for (ref #index_ident, #item_ident) in #collection_method_impl {

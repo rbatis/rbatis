@@ -12,7 +12,7 @@ pub struct UpdateTagNode {
 }
 
 impl HtmlAstNode for UpdateTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "update" }
+    fn node_tag_name() -> &'static str { "update" }
 
     fn from_element(element: &Element) -> Self {
         Self {

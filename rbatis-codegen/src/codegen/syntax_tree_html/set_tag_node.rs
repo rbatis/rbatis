@@ -14,7 +14,7 @@ pub struct SetTagNode {
 }
 
 impl HtmlAstNode for SetTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "set" }
+    fn node_tag_name() -> &'static str { "set" }
 
     fn from_element(element: &Element) -> Self {
         let collection = element.attrs.get("collection").cloned();

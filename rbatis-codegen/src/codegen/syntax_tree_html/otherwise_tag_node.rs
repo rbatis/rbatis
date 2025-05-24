@@ -12,7 +12,7 @@ pub struct OtherwiseTagNode {
 }
 
 impl HtmlAstNode for OtherwiseTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "otherwise" }
+    fn node_tag_name() -> &'static str { "otherwise" }
 
     fn from_element(element: &Element) -> Self {
         // No specific attributes to extract for <otherwise> itself beyond common ones.

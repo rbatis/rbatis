@@ -12,7 +12,7 @@ pub struct MapperTagNode {
 }
 
 impl HtmlAstNode for MapperTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "mapper" }
+    fn node_tag_name() -> &'static str { "mapper" }
 
     fn from_element(element: &Element) -> Self {
         Self {

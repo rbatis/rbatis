@@ -14,7 +14,7 @@ pub struct SqlTagNode {
 }
 
 impl HtmlAstNode for SqlTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "sql" }
+    fn node_tag_name() -> &'static str { "sql" }
 
     fn from_element(element: &Element) -> Self {
         let id = element.attrs.get("id")

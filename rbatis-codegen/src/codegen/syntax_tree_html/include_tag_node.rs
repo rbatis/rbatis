@@ -122,7 +122,7 @@ impl IncludeTagNode {
 }
 
 impl HtmlAstNode for IncludeTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "include" }
+    fn node_tag_name() -> &'static str { "include" }
 
     fn from_element(element: &Element) -> Self {
         let refid = element.attrs.get("refid")
