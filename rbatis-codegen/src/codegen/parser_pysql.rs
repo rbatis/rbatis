@@ -33,7 +33,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
         .expect("[rbatis-codegen] parse py_sql fail!");
 
     let is_select = data.starts_with("select") || data.starts_with(" select");
-    let htmls = crate::codegen::syntax_tree_pysql::to_html(&nodes, is_select, &fn_name);
+    let htmls = crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
 
     parse_html(&htmls, &fn_name, &mut vec![]).into()
 }

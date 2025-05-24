@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `where` node in py_sql.
 /// It's used to dynamically build the `WHERE` clause of a SQL query.
@@ -27,5 +27,16 @@ pub struct WhereNode {
 impl Name for WhereNode {
     fn name() -> &'static str {
         "where"
+    }
+}
+
+
+impl ToHtml for WhereNode {
+    fn as_html(&self) -> String {
+        let mut childs = String::new();
+        for x in &self.childs {
+            childs.push_str(&x.as_html());
+        }
+        format!("<where>{}</where>", childs)
     }
 }

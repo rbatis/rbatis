@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{AsHtml, Name};
+use crate::codegen::syntax_tree_pysql::{ToHtml, Name};
 
 /// Represents a `continue` node in py_sql.
 /// It's used to skip the current iteration of a loop and proceed to the next one, typically within a `foreach` block.
@@ -15,7 +15,7 @@ use crate::codegen::syntax_tree_pysql::{AsHtml, Name};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ContinueNode {}
 
-impl AsHtml for ContinueNode {
+impl ToHtml for ContinueNode {
     fn as_html(&self) -> String {
         format!("<continue />")
     }

@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::Name;
+use crate::codegen::syntax_tree_pysql::{Name, ToHtml};
 
 /// Represents a plain string, a SQL text segment, or a string with preserved whitespace in py_sql.
 /// This node holds parts of the SQL query that are not dynamic tags or raw text.
@@ -31,5 +31,19 @@ pub struct StringNode {
 impl Name for String {
     fn name() -> &'static str {
         "string"
+    }
+}
+
+
+impl ToHtml for StringNode {
+    fn as_html(&self) -> String {
+        if self.value.starts_with("`") && self.value.ends_with("`") {
+            self.value.to_string()
+        } else {
+            let mut v = self.value.clone();
+            v.insert(0, '`');
+            v.push('`');
+            v
+        }
     }
 }

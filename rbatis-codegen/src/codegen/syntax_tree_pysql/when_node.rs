@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `when` node in py_sql.
 /// It's used as a child of a `choose` node to define a conditional block of SQL.
@@ -27,5 +27,15 @@ pub struct WhenNode {
 impl Name for WhenNode {
     fn name() -> &'static str {
         "when"
+    }
+}
+
+impl ToHtml for WhenNode {
+    fn as_html(&self) -> String {
+        let mut childs = String::new();
+        for x in &self.childs {
+            childs.push_str(&x.as_html());
+        }
+        format!("<when test=\"{}\">{}</when>", self.test, childs)
     }
 }

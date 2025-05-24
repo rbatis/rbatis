@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{AsHtml, Name};
+use crate::codegen::syntax_tree_pysql::{ToHtml, Name};
 
 /// Represents a `break` node in py_sql.
 /// It's used to exit a loop, typically within a `foreach` block.
@@ -14,7 +14,7 @@ use crate::codegen::syntax_tree_pysql::{AsHtml, Name};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BreakNode {}
 
-impl AsHtml for BreakNode {
+impl ToHtml for BreakNode {
     fn as_html(&self) -> String {
         format!("<break/>")
     }

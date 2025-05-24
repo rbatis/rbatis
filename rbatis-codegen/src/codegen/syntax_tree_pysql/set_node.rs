@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `set` node in py_sql.
 /// It's typically used in `UPDATE` statements to dynamically include `SET` clauses.
@@ -27,5 +27,28 @@ pub struct SetNode {
 impl Name for SetNode {
     fn name() -> &'static str {
         "set"
+    }
+}
+
+
+impl ToHtml for SetNode {
+    fn as_html(&self) -> String {
+        let mut childs_html = String::new();
+        for x in &self.childs {
+            childs_html.push_str(&x.as_html());
+        }
+
+        let mut attrs_string = String::new();
+        if !self.collection.is_empty() {
+            attrs_string.push_str(&format!(" collection=\"{}\"", self.collection));
+        }
+        if !self.skips.is_empty() {
+            attrs_string.push_str(&format!(" skips=\"{}\"", self.skips));
+        }
+        if self.skip_null {
+            attrs_string.push_str(" skip_null=\"true\"");
+        }
+
+        format!("<set{}>{}</set>", attrs_string, childs_html)
     }
 }
