@@ -183,7 +183,7 @@ fn test_break_node_as_html() {
 fn test_continue_node_as_html() {
     let node = ContinueNode {};
     let html = node.as_html();
-    assert_eq!(html, "<continue />");
+    assert_eq!(html, "<continue/>");
 }
 
 #[test]
@@ -400,7 +400,7 @@ fn test_all_node_types_as_html() {
     assert_eq!(where_node.as_html(), "<where>`test`</where>");
     
     let continue_node = NodeType::NContinue(ContinueNode {});
-    assert_eq!(continue_node.as_html(), "<continue />");
+    assert_eq!(continue_node.as_html(), "<continue/>");
     
     let break_node = NodeType::NBreak(BreakNode {});
     assert_eq!(break_node.as_html(), "<break/>");
