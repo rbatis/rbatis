@@ -198,10 +198,8 @@ macro_rules! impl_select {
             pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
                      use rbatis::crud_traits::ValueOperatorSql;
-                     #[$crate::py_sql(
-        "`select ${table_column} from ${table_name} `
-        ",$sql)]
-        async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     #[$crate::py_sql("`select ${table_column} from ${table_name} `\n",$sql)]
+                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
 
                      $($cond)?
 
@@ -269,9 +267,7 @@ macro_rules! impl_update {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`update ${table_name}`
-                                  set collection='table',skips='id':
-                                  ",$sql_where)]
+                #[$crate::py_sql("`update ${table_name}`\n set collection='table',skips='id':\n",$sql_where)]
                   async fn $fn_name(
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
@@ -343,8 +339,7 @@ macro_rules! impl_delete {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`delete from ${table_name} `
-                                 ",$sql_where)]
+                #[$crate::py_sql("`delete from ${table_name} `\n",$sql_where)]
                 async fn $fn_name$(<$($gkey: $gtype,)*>)?(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
