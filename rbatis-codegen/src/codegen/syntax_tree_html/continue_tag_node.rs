@@ -13,7 +13,7 @@ pub struct ContinueTagNode {
 }
 
 impl HtmlAstNode for ContinueTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "continue" }
+    fn node_tag_name() -> &'static str { "continue" }
 
     fn from_element(element: &Element) -> Self {
         Self {

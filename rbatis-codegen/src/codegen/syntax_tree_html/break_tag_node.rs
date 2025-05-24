@@ -13,7 +13,7 @@ pub struct BreakTagNode {
 }
 
 impl HtmlAstNode for BreakTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "break" }
+    fn node_tag_name() -> &'static str { "break" }
 
     fn from_element(element: &Element) -> Self {
         Self {

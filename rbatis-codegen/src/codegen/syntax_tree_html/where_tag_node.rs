@@ -16,7 +16,7 @@ pub struct WhereTagNode {
 }
 
 impl HtmlAstNode for WhereTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "where" }
+    fn node_tag_name() -> &'static str { "where" }
 
     fn from_element(element: &Element) -> Self {
         // No specific attributes to extract for <where> itself beyond common ones.

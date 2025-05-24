@@ -12,7 +12,7 @@ pub struct SelectTagNode {
 }
 
 impl HtmlAstNode for SelectTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "select" }
+    fn node_tag_name() -> &'static str { "select" }
 
     fn from_element(element: &Element) -> Self {
         Self {

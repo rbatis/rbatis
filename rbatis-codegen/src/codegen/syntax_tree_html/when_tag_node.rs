@@ -14,7 +14,7 @@ pub struct WhenTagNode {
 }
 
 impl HtmlAstNode for WhenTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "when" }
+    fn node_tag_name() -> &'static str { "when" }
 
     fn from_element(element: &Element) -> Self {
         let test = element.attrs.get("test")

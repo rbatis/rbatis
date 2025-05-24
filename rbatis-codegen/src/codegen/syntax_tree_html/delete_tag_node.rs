@@ -12,7 +12,7 @@ pub struct DeleteTagNode {
 }
 
 impl HtmlAstNode for DeleteTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "delete" }
+    fn node_tag_name() -> &'static str { "delete" }
 
     fn from_element(element: &Element) -> Self {
         Self {

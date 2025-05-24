@@ -18,7 +18,7 @@ pub struct BindTagNode {
 }
 
 impl HtmlAstNode for BindTagNode {
-    fn node_tag_name() -> &'static str where Self: Sized { "bind" }
+    fn node_tag_name() -> &'static str { "bind" }
 
     fn from_element(element: &Element) -> Self {
         let name = element.attrs.get("name")
