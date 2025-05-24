@@ -137,6 +137,31 @@ fn test_set_node_as_html() {
 }
 
 #[test]
+fn test_set_node_as_html_with_collection_and_skips() {
+    let node = SetNode {
+        childs: vec![NodeType::NString(StringNode {
+            value: "field = #{field_value}".to_string(),
+        })],
+        collection: "table".to_string(),
+        skips: "id".to_string(),
+        skip_null: false, // Test with skip_null as false
+    };
+    let html = node.as_html();
+    assert_eq!(html, "<set collection=\"table\" skips=\"id\">`field = #{field_value}`</set>");
+
+    let node_skip_null_true = SetNode {
+        childs: vec![NodeType::NString(StringNode {
+            value: "field2 = #{field_value2}".to_string(),
+        })],
+        collection: "another_table".to_string(),
+        skips: "uid,timestamp".to_string(),
+        skip_null: true, // Test with skip_null as true
+    };
+    let html_skip_null_true = node_skip_null_true.as_html();
+    assert_eq!(html_skip_null_true, "<set collection=\"another_table\" skips=\"uid,timestamp\" skip_null=\"true\">`field2 = #{field_value2}`</set>");
+}
+
+#[test]
 fn test_bind_node_as_html() {
     let node = BindNode {
         name: "pattern".to_string(),
