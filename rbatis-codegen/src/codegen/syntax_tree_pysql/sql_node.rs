@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{AsHtml, Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{ToHtml, Name, NodeType};
 
 /// Represents a reusable SQL fragment node in py_sql, defined by a `<sql>` tag in XML or an equivalent in py_sql.
 /// It allows defining a piece of SQL that can be included elsewhere.
@@ -23,7 +23,7 @@ impl Name for SqlNode {
     }
 }
 
-impl AsHtml for SqlNode {
+impl ToHtml for SqlNode {
     fn as_html(&self) -> String {
         let mut childs = String::new();
         for x in &self.childs {

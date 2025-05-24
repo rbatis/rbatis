@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `for` loop node in py_sql.
 /// It iterates over a collection and executes the nested SQL block for each item.
@@ -30,5 +30,19 @@ pub struct ForEachNode {
 impl Name for ForEachNode {
     fn name() -> &'static str {
         "for"
+    }
+}
+
+
+impl ToHtml for ForEachNode {
+    fn as_html(&self) -> String {
+        let mut childs = String::new();
+        for x in &self.childs {
+            childs.push_str(&x.as_html());
+        }
+        format!(
+            "<foreach collection=\"{}\" index=\"{}\" item=\"{}\" >{}</foreach>",
+            self.collection, self.index, self.item, childs
+        )
     }
 }

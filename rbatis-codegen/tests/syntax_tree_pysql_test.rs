@@ -1,5 +1,5 @@
 use rbatis_codegen::codegen::syntax_tree_pysql::{
-    AsHtml, NodeType, to_html, DefaultName, Name,
+    ToHtml, NodeType, to_html, DefaultName, Name,
 };
 use rbatis_codegen::codegen::syntax_tree_pysql::bind_node::BindNode;
 use rbatis_codegen::codegen::syntax_tree_pysql::break_node::BreakNode;
@@ -16,6 +16,7 @@ use rbatis_codegen::codegen::syntax_tree_pysql::trim_node::TrimNode;
 use rbatis_codegen::codegen::syntax_tree_pysql::when_node::WhenNode;
 use rbatis_codegen::codegen::syntax_tree_pysql::where_node::WhereNode;
 use std::error::Error as StdError;
+use rbatis_codegen::codegen::syntax_tree_pysql::to_html::to_html_mapper;
 
 #[test]
 fn test_string_node_as_html() {
@@ -210,7 +211,7 @@ fn test_to_html_select() {
             test: "id != null".to_string(),
         }),
     ];
-    let html = to_html(&nodes, true, "findUser");
+    let html = to_html_mapper(&nodes, true, "findUser");
     assert!(html.contains("<mapper>"));
     assert!(html.contains("<select id=\"findUser\">"));
     assert!(html.contains("</select>"));
@@ -232,7 +233,7 @@ fn test_to_html_update() {
             skips: "".to_string(),
         }),
     ];
-    let html = to_html(&nodes, false, "updateUser");
+    let html = to_html_mapper(&nodes, false, "updateUser");
     assert!(html.contains("<mapper>"));
     assert!(html.contains("<update id=\"updateUser\">"));
     assert!(html.contains("</update>"));
@@ -509,10 +510,10 @@ fn test_vec_node_type_as_html() {
 #[test]
 fn test_to_html_with_empty_nodes() {
     let nodes: Vec<NodeType> = vec![];
-    let html = to_html(&nodes, true, "emptySelect");
+    let html = to_html_mapper(&nodes, true, "emptySelect");
     assert_eq!(html, "<mapper><select id=\"emptySelect\"></select></mapper>");
     
-    let html = to_html(&nodes, false, "emptyUpdate");
+    let html = to_html_mapper(&nodes, false, "emptyUpdate");
     assert_eq!(html, "<mapper><update id=\"emptyUpdate\"></update></mapper>");
 }
 
