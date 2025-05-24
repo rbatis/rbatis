@@ -216,6 +216,30 @@ fn test_set_node() {
     }
 }
 
+#[test]
+fn test_set_node_collection() {
+    let sql =
+"set collection = 'collection', skips= 'id':
+  if name != null:
+     name = #{name},
+  if age != null:
+     age = #{age}";
+    let nodes = NodeType::parse_pysql(sql).unwrap();
+    match &nodes[0] {
+        NodeType::NSet(node) => {
+            assert_eq!(node.collection, "collection");
+            assert_eq!(node.skips, "id");
+            assert_eq!(node.childs.len(), 2);
+            // 检查子节点是否为 IfNode
+            match &node.childs[0] {
+                NodeType::NIf(_) => {}
+                _ => panic!("Expected IfNode in SetNode.childs"),
+            }
+        }
+        _ => panic!("Expected SetNode, got {:?}", nodes[0]),
+    }
+}
+
 // WhereNode 测试
 #[test]
 fn test_where_node() {
