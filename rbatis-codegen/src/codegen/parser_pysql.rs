@@ -393,9 +393,6 @@ impl NodeType {
             // This case should ideally not happen if called correctly from the match arm
             return Err(Error::from(format!("[rbatis-codegen] SetNode expression '{}' does not start with '{}'", express, SetNode::name())));
         };
-        if actual_attrs_str.is_empty() {
-            return Err(Error::from(format!("[rbatis-codegen] SetNode attributes are empty in '{}'. 'collection' attribute is mandatory.", source_str)));
-        }
         let mut collection_opt: Option<String> = None;
         let mut skip_null_val = false; // Default
         let mut skips_val: String = String::new(); // Default is now an empty String
@@ -436,7 +433,7 @@ impl NodeType {
                 }
             }
         }
-        let collection_val = collection_opt.ok_or_else(|| Error::from(format!("[rbatis-codegen] Mandatory attribute 'collection' missing for set node in '{}'", source_str)))?;
+        let collection_val = collection_opt.unwrap_or_default();
         Ok(NodeType::NSet(SetNode {
             childs,
             collection: collection_val,

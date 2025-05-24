@@ -195,9 +195,13 @@ fn test_bind_node() {
 // SetNode 测试
 #[test]
 fn test_set_node() {
-    let sql = "set:\n  if name != null:\n    name = #{name},\n  if age != null:\n    age = #{age}";
+    let sql = 
+"set:
+  if name != null:
+     name = #{name},
+  if age != null:
+     age = #{age}";
     let nodes = NodeType::parse_pysql(sql).unwrap();
-    
     match &nodes[0] {
         NodeType::NSet(node) => {
             assert_eq!(node.childs.len(), 2);
