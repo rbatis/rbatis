@@ -177,8 +177,7 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
         $crate::impl_select!($table{select_by_map(condition: rbs::Value) -> Vec =>
-        "
-        trim end=' where ':
+        "trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -199,8 +198,10 @@ macro_rules! impl_select {
             pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
             {
                      use rbatis::crud_traits::ValueOperatorSql;
-                     #[$crate::py_sql("`select ${table_column} from ${table_name} `",$sql)]
-                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
+                     #[$crate::py_sql(
+        "`select ${table_column} from ${table_name} `
+        ",$sql)]
+        async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
 
                      $($cond)?
 
@@ -244,8 +245,7 @@ macro_rules! impl_update {
     };
     ($table:ty{},$table_name:expr) => {
          $crate::impl_update!($table{update_by_map(condition:rbs::Value) =>
-        "
-        trim end=' where ':
+        "trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -320,8 +320,7 @@ macro_rules! impl_delete {
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
-        "
-        trim end=' where ':
+        "trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -344,7 +343,8 @@ macro_rules! impl_delete {
                 if $sql_where.is_empty(){
                     return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
                 }
-                #[$crate::py_sql("`delete from ${table_name} `",$sql_where)]
+                #[$crate::py_sql("`delete from ${table_name} `
+                                 ",$sql_where)]
                 async fn $fn_name$(<$($gkey: $gtype,)*>)?(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
