@@ -579,6 +579,7 @@ pub trait Neg {
 
 /// string contains method
 pub trait StrMethods {
+    fn contains_str(self, s: &str) -> bool;
     fn starts_with(self, other: &str) -> bool;
     fn ends_with(self, other: &str) -> bool;
 }
