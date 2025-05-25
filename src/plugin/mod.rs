@@ -1,6 +1,7 @@
 pub mod intercept;
 pub mod intercept_log;
 pub mod intercept_page;
+pub mod intercept_check;
 pub mod object_id;
 pub mod page;
 pub mod snowflake;

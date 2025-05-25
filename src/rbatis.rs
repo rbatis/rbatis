@@ -16,6 +16,7 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
+use crate::intercept_check::CheckIntercept;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -45,8 +46,8 @@ impl RBatis {
         let rb = RBatis::default();
         //default use LogInterceptor
         rb.intercepts.push(Arc::new(PageIntercept::new()));
-        rb.intercepts
-            .push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
+        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
+        rb.intercepts.push(Arc::new(CheckIntercept::new()));
         rb
     }
 
