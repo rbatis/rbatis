@@ -27,7 +27,7 @@ impl Intercept for CheckIntercept {
         _args: &mut Vec<Value>,
         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
-        //check in empty array
+        //check `select table where xxx in ()` to return empty vec.
         if sql.contains(" in ()"){
             match result {
                 ResultType::Exec(exec) => {
