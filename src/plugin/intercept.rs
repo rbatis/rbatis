@@ -59,9 +59,9 @@ pub trait Intercept: Any + Send + Sync + Debug {
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
     ///
-    /// if return None will be return result
-    /// if return Some(true) will be run next intercept
-    /// if return Some(false) will be break
+    /// if return Ok(None) will be return result
+    /// if return Ok(Some(true)) will be run next intercept
+    /// if return Ok(Some(false)) will be break
     async fn before(
         &self,
         _task_id: i64,

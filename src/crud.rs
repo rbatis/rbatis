@@ -182,7 +182,7 @@ macro_rules! impl_select {
            trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array() && !item.is_empty():
+                          if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},
@@ -248,7 +248,7 @@ macro_rules! impl_update {
            trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array() && !item.is_empty():
+                          if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},
@@ -321,7 +321,7 @@ macro_rules! impl_delete {
            trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
-                          if item.is_array() && !item.is_empty():
+                          if item.is_array():
                             ` and ${key} in (`
                                trim ',': for _,item_array in item:
                                     #{item_array},

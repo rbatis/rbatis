@@ -814,7 +814,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql.trim(),
-                "select * from mock_table"
+                "select * from mock_table  where ids in ()"
             );
             assert_eq!(args, vec![]);
         };
