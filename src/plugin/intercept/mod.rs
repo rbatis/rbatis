@@ -1,3 +1,7 @@
+pub mod intercept_check;
+pub mod intercept_log;
+pub mod intercept_page;
+
 use std::any::Any;
 use crate::executor::Executor;
 use crate::Error;
@@ -61,7 +65,9 @@ pub trait Intercept: Any + Send + Sync + Debug {
     ///
     /// if return Ok(None) will be return result
     /// if return Ok(Some(true)) will be run next intercept
-    /// if return Ok(Some(false)) will be break
+    /// if return Ok(Some(false))
+    ///
+    /// will be break
     async fn before(
         &self,
         _task_id: i64,

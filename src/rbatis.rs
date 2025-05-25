@@ -1,8 +1,5 @@
 use std::any::Any;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
-use crate::intercept_log::LogInterceptor;
-use crate::plugin::intercept::Intercept;
-use crate::plugin::intercept_page::PageIntercept;
 use crate::snowflake::Snowflake;
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
@@ -16,7 +13,10 @@ use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::intercept_check::CheckIntercept;
+use crate::intercept::Intercept;
+use crate::intercept::intercept_check::CheckIntercept;
+use crate::intercept::intercept_log::LogInterceptor;
+use crate::intercept::intercept_page::PageIntercept;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
