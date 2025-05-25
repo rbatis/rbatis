@@ -343,14 +343,70 @@ macro_rules! cmp_diff {
     };
 }
 
-cmp_diff!(cmp_i64[(i64,i8),(i64,i16),(i64,i32),]);
-cmp_diff!(cmp_i64[(i64,u8),(i64,u16),(i64,u32),(i64,u64),(i64,usize),]);
-cmp_diff!(cmp_f64[(i64,f32),(i64,f64),]);
+cmp_diff!(cmp_i64[
+    (i64,i8),
+    (i64,i16),
+    (i64,i32),
+    (i64,isize),
+    (i64,usize),
+]);
+cmp_diff!(cmp_i64[
+    (i64,u8),
+    (i64,u16),
+    (i64,u32),
+    (i64,u64),
+]);
+cmp_diff!(cmp_f64[
+    (i64,f32),
+    (i64,f64),
+]);
 
-cmp_diff!(cmp_i64[(u64,i8),(u64,i16),(u64,i32),(u64,i64),]);
-cmp_diff!(cmp_u64[(u64,u8),(u64,u16),(u64,u32),(u64,usize),]);
-cmp_diff!(cmp_f64[(u64,f32),(u64,f64),]);
+cmp_diff!(cmp_i64[
+    (u64,i8),
+    (u64,i16),
+    (u64,i32),
+    (u64,i64),
+    (u64,isize),
+]);
+cmp_diff!(cmp_u64[
+    (u64,u8),
+    (u64,u16),
+    (u64,u32),
+    (u64,usize),
+]);
+cmp_diff!(cmp_f64[
+    (u64,f32),
+    (u64,f64),
+]);
 
-cmp_diff!(cmp_f64[(f64,u8),(f64,u16),(f64,u32),(f64,u64),(f64,usize),]);
-cmp_diff!(cmp_f64[(f64,i8),(f64,i16),(f64,i32),(f64,i64),]);
-cmp_diff!(cmp_f64[(f64,f32),]);
+cmp_diff!(cmp_f64[
+    (f64,u8),
+    (f64,u16),
+    (f64,u32),
+    (f64,u64),
+    (f64,usize),
+    (f64,i8),
+    (f64,i16),
+    (f64,i32),
+    (f64,i64),
+    (f64,isize),
+    (f64,f32),
+]);
+
+// Additional usize comparisons
+cmp_diff!(cmp_i64[
+    (usize,i8),
+    (usize,i16),
+    (usize,i32),
+    (usize,i64),
+]);
+cmp_diff!(cmp_u64[
+    (usize,u8),
+    (usize,u16),
+    (usize,u32),
+    (usize,u64),
+]);
+cmp_diff!(cmp_f64[
+    (usize,f32),
+    (usize,f64),
+]);
