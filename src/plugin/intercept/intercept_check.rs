@@ -8,7 +8,7 @@ use crate::intercept::{Intercept, ResultType};
 /// check sql error
 #[derive(Debug)]
 pub struct CheckIntercept {
-    
+
 }
 
 impl CheckIntercept {

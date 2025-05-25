@@ -1,5 +1,4 @@
 use crate::decode::decode;
-use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::Error;
 use dark_std::sync::SyncVec;
@@ -13,6 +12,7 @@ use std::any::Any;
 use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use crate::intercept::ResultType;
 
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
