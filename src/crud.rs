@@ -108,11 +108,11 @@ macro_rules! impl_insert {
                         "insert can not insert empty array tables!",
                     ));
                 }
-                #[$crate::snake_name($table)]
-                fn snake_name() {}
                 let mut table_name = $table_name.to_string();
-                if table_name.is_empty() {
-                    table_name = snake_name();
+                if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
+                         table_name = snake_name();
                 }
                 let mut result = $crate::rbdc::db::ExecResult {
                     rows_affected: 0,
@@ -176,8 +176,12 @@ macro_rules! impl_select {
     };
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
-        $crate::impl_select!($table{select_by_map(condition: rbs::Value) -> Vec =>
-        "trim end=' where ':
+          impl $table {
+         pub async fn select_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
+                use rbatis::crud_traits::ValueOperatorSql;
+                #[$crate::py_sql(
+           "`select * from ${table_name} `
+           trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -187,8 +191,28 @@ macro_rules! impl_select {
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        "
-        },$table_name);
+        ")]
+                async fn select_by_map(
+                    executor: &dyn $crate::executor::Executor,
+                    table_name: String,
+                    condition: &rbs::Value
+                ) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
+                    for (_,v) in condition {
+                        if v.is_array() && v.is_empty(){
+                           return Ok(vec![]);
+                        }
+                    }
+                    impled!()
+                }
+                let mut table_name = $table_name.to_string();
+                if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
+                         table_name = snake_name();
+                }
+                select_by_map(executor, table_name, &condition).await
+       }
+    }
     };
     ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
         $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
@@ -204,9 +228,9 @@ macro_rules! impl_select {
                      let mut table_column = "*".to_string();
                      let mut table_name = String::new();
                      $(table_name = $table_name.to_string();)?
-                     #[$crate::snake_name($table)]
-                     fn snake_name(){}
                      if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
                          table_name = snake_name();
                      }
                      $fn_name(executor,&table_column,&table_name,$($param_key ,)*).await
@@ -240,10 +264,19 @@ macro_rules! impl_update {
         );
     };
     ($table:ty{},$table_name:expr) => {
-         $crate::impl_update!($table{update_by_map(condition:rbs::Value) =>
-        "trim end=' where ':
-           ` where `
-           trim ' and ': for key,item in condition:
+       impl $table {
+            pub async fn update_by_map(
+                executor: &dyn $crate::executor::Executor,
+                table: &$table,
+                condition: rbs::Value
+            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                use rbatis::crud_traits::ValueOperatorSql;
+                #[$crate::py_sql(
+                    "`update ${table_name}`
+                      set collection='table',skips='id':
+                      trim end=' where ':
+                       ` where `
+                       trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
@@ -251,8 +284,32 @@ macro_rules! impl_update {
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        "
-        },$table_name);
+                    "
+                )]
+                  async fn update_by_map(
+                      executor: &dyn $crate::executor::Executor,
+                      table_name: String,
+                      table: &rbs::Value,
+                      condition: &rbs::Value
+                  ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                      for (_,v) in condition {
+                        if v.is_array() && v.is_empty(){
+                           return Ok($crate::rbdc::db::ExecResult::default());
+                        }
+                      }
+                      impled!()
+                  }
+                  let mut table_name = $table_name.to_string();
+                  if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
+                         table_name = snake_name();
+                  }
+                  let table = rbs::value!(table);
+                  update_by_map(executor, table_name, &table, &condition).await
+            }
+        }
+
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
@@ -276,9 +333,9 @@ macro_rules! impl_update {
                   }
                   let mut table_name = String::new();
                   $(table_name = $table_name.to_string();)?
-                  #[$crate::snake_name($table)]
-                  fn snake_name(){}
                   if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
                          table_name = snake_name();
                   }
                   let table = rbs::value!(table);
@@ -313,19 +370,6 @@ macro_rules! impl_delete {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        // $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
-        // "trim end=' where ':
-        //    ` where `
-        //    trim ' and ': for key,item in condition:
-        //                   if !item.is_array():
-        //                     ` and ${key.operator_sql()}#{item}`
-        //                   if item.is_array():
-        //                     ` and ${key} in (`
-        //                        trim ',': for _,item_array in item:
-        //                             #{item_array},
-        //                     `)`
-        // "
-        // },$table_name);
         impl $table {
          pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
@@ -341,21 +385,25 @@ macro_rules! impl_delete {
                                     #{item_array},
                             `)`
         ")]
-                async fn delete_by_map_inner(
+                async fn delete_by_map(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
-                    condition: rbs::Value
+                    condition: &rbs::Value
                 ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                    for (_,v) in condition {
+                        if v.is_array() && v.is_empty(){
+                           return Ok($crate::rbdc::db::ExecResult::default());
+                        }
+                    }
                     impled!()
                 }
-
                 let mut table_name = $table_name.to_string();
-                #[$crate::snake_name($table)]
-                fn snake_name() {}
-                if table_name.is_empty() {
-                    table_name = snake_name();
+                if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
+                         table_name = snake_name();
                 }
-                delete_by_map_inner(executor, table_name, condition).await
+                delete_by_map(executor, table_name, &condition).await
        }
     }
 };
@@ -379,9 +427,9 @@ macro_rules! impl_delete {
                 }
                 let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
-                #[$crate::snake_name($table)]
-                fn snake_name(){}
                 if table_name.is_empty(){
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
                          table_name = snake_name();
                 }
                 $fn_name(executor, table_name, $($param_key,)*).await
@@ -421,11 +469,12 @@ macro_rules! impl_select_page {
             ) -> std::result::Result<$crate::plugin::Page::<$table>, $crate::rbdc::Error> {
                 let mut table_column = "*".to_string();
                 let mut table_name = String::new();
+                let mut table_name = String::new();
                 $(table_name = $table_name.to_string();)?
-                #[$crate::snake_name($table)]
-                fn snake_name(){}
                 if table_name.is_empty(){
-                    table_name = snake_name();
+                         #[$crate::snake_name($table)]
+                         fn snake_name(){}
+                         table_name = snake_name();
                 }
                 $crate::pysql_select_page!($fn_name(
                                      table_column:&str,

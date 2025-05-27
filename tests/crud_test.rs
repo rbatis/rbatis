@@ -810,13 +810,7 @@ mod test {
             )
                 .await
                 .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(
-                sql.trim(),
-                "select * from mock_table  where ids in ()"
-            );
-            assert_eq!(args, vec![]);
+            assert_eq!(r, vec![]);
         };
         block_on(f);
     }
