@@ -313,8 +313,24 @@ macro_rules! impl_delete {
         );
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
-        "trim end=' where ':
+        // $crate::impl_delete!($table{ delete_by_map(condition:rbs::Value) =>
+        // "trim end=' where ':
+        //    ` where `
+        //    trim ' and ': for key,item in condition:
+        //                   if !item.is_array():
+        //                     ` and ${key.operator_sql()}#{item}`
+        //                   if item.is_array():
+        //                     ` and ${key} in (`
+        //                        trim ',': for _,item_array in item:
+        //                             #{item_array},
+        //                     `)`
+        // "
+        // },$table_name);
+        impl $table {
+         pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                use rbatis::crud_traits::ValueOperatorSql;
+                #[$crate::py_sql("`delete from ${table_name} `
+           trim end=' where ':
            ` where `
            trim ' and ': for key,item in condition:
                           if !item.is_array():
@@ -324,10 +340,26 @@ macro_rules! impl_delete {
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        "
-        },$table_name);
-    };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
+        ")]
+                async fn delete_by_map_inner(
+                    executor: &dyn $crate::executor::Executor,
+                    table_name: String,
+                    condition: rbs::Value
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                    impled!()
+                }
+
+                let mut table_name = $table_name.to_string();
+                #[$crate::snake_name($table)]
+                fn snake_name() {}
+                if table_name.is_empty() {
+                    table_name = snake_name();
+                }
+                delete_by_map_inner(executor, table_name, condition).await
+       }
+    }
+};
+( $ table:ty{$ fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {
             pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
                 executor: &dyn $crate::executor::Executor,
