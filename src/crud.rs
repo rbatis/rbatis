@@ -180,10 +180,10 @@ macro_rules! impl_select {
          pub async fn select_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 #[$crate::py_sql(
-           "`select * from ${table_name} `
+          "`select * from ${table_name} `
            trim end=' where ':
-           ` where `
-           trim ' and ': for key,item in condition:
+             ` where `
+             trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
@@ -373,10 +373,11 @@ macro_rules! impl_delete {
         impl $table {
          pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
-                #[$crate::py_sql("`delete from ${table_name} `
+                #[$crate::py_sql(
+         "`delete from ${table_name} `
            trim end=' where ':
-           ` where `
-           trim ' and ': for key,item in condition:
+             ` where `
+             trim ' and ': for key,item in condition:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
