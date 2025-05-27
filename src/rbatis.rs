@@ -14,7 +14,6 @@ use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 use crate::intercept::Intercept;
-use crate::intercept::intercept_check::CheckIntercept;
 use crate::intercept::intercept_log::LogInterceptor;
 use crate::intercept::intercept_page::PageIntercept;
 
@@ -47,7 +46,6 @@ impl RBatis {
         //default use LogInterceptor
         rb.intercepts.push(Arc::new(PageIntercept::new()));
         rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
-        rb.intercepts.push(Arc::new(CheckIntercept::new()));
         rb
     }
 

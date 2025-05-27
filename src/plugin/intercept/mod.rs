@@ -1,4 +1,3 @@
-pub mod intercept_check;
 pub mod intercept_log;
 pub mod intercept_page;
 
