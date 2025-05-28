@@ -5,7 +5,7 @@ use quote::ToTokens;
 use syn::{BinOp, Expr, Lit, Member};
 
 ///translate like `#{a + b}` Expr to rust code Expr
-fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error> {
+pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error> {
     match arg {
         Expr::Path(b) => {
             let token = b.to_token_stream().to_string();
