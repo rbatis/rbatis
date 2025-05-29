@@ -72,6 +72,9 @@ impl Intercept for PageIntercept {
                 if let Some(idx) = sql.rfind(" limit ") {
                     *sql = (&sql[..idx]).to_string();
                 }
+                if let Some(idx) = sql.rfind(" order by ") {
+                    *sql = (&sql[..idx]).to_string();
+                }
             }
         }
         if self.select_ids.contains_key(&executor.id()) {
