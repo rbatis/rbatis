@@ -947,7 +947,7 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
-                "select count(1) as count from mock_table order by create_time desc"
+                "select count(1) as count from mock_table"
             );
         };
         block_on(f);
