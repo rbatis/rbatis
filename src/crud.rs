@@ -185,7 +185,7 @@ macro_rules! impl_select {
              ` where `
              trim ' and ': for key,item in condition:
                           if item == null:
-                             continue;
+                             continue:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
@@ -280,7 +280,7 @@ macro_rules! impl_update {
                        ` where `
                        trim ' and ': for key,item in condition:
                           if item == null:
-                             continue;
+                             continue:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
@@ -383,7 +383,7 @@ macro_rules! impl_delete {
              ` where `
              trim ' and ': for key,item in condition:
                           if item == null:
-                             continue;
+                             continue:
                           if !item.is_array():
                             ` and ${key.operator_sql()}#{item}`
                           if item.is_array():
