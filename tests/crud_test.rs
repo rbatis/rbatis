@@ -1032,6 +1032,31 @@ mod test {
         block_on(f);
     }
 
+    #[test]
+    fn test_select_by_map_null_value() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+
+            let ids:Vec<String> = vec![];
+            let r = MockTable::select_by_map(
+                &mut rb,
+                value!{
+                    "id": "1",
+                    "name": Option::<String>::None,
+                },
+            )
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(sql, "select * from mock_table  where id = ?");
+            assert_eq!(args, vec![value!("1")]);
+        };
+        block_on(f);
+    }
+
     impl_select!(MockTable{select_from_table_name_by_id(id:&str,table_name:&str) => "`where id = #{id}`"});
 
     #[test]
