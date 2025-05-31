@@ -670,7 +670,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "delete from mock_table  where id = ? and name = ?"
+                "delete from mock_table where id = ? and name = ?"
             );
             assert_eq!(args, vec![value!("1"), value!("1")]);
         };
@@ -694,7 +694,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "delete from mock_table "
+                "delete from mock_table"
             );
             assert_eq!(args, vec![]);
         };
@@ -720,7 +720,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "delete from mock_table  where id in (?)"
+                "delete from mock_table where id in (?)"
             );
             assert_eq!(args, vec![value!("1")]);
         };
@@ -1003,7 +1003,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql.trim(),
-                "select * from mock_table  where id = ? and name = ?"
+                "select * from mock_table where id = ? and name = ?"
             );
             assert_eq!(args, vec![value!("1"), value!("1")]);
         };
@@ -1051,7 +1051,7 @@ mod test {
                 .await
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql, "select * from mock_table  where id = ?");
+            assert_eq!(sql, "select * from mock_table where id = ?");
             assert_eq!(args, vec![value!("1")]);
         };
         block_on(f);
@@ -1109,7 +1109,7 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table  where 1 in (?,?)");
+            assert_eq!(sql, "select * from mock_table where 1 in (?,?)");
             assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
@@ -1127,7 +1127,7 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table  where 1 in (?,?)");
+            assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
             assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
