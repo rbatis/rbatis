@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 /// make count sql remove `limit`
 /// make select sql append limit ${page_no},${page_size}
-/// notice: 
+/// notice:
 /// ```log
 /// sql must be starts with 'select ' and ' from '
 /// this PageIntercept only support sqlite,mysql,mssql,postgres...
@@ -48,6 +48,14 @@ impl PageIntercept {
             count_ids: Arc::new(SyncHashMap::new()),
         }
     }
+
+    //driver_type=['postgres','pg','mssql','mysql','sqlite'...],but sql default is use '?'
+    pub fn count_param_count(&self, _driver_type: &str, sql: &str) -> usize {
+        sql.replace("$", "?")
+            .replace("@p", "?")
+            .matches('?')
+            .count()
+    }
 }
 #[async_trait]
 impl Intercept for PageIntercept {
@@ -56,7 +64,7 @@ impl Intercept for PageIntercept {
         _task_id: i64,
         executor: &dyn Executor,
         sql: &mut String,
-        _args: &mut Vec<Value>,
+        args: &mut Vec<Value>,
         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
     ) -> Result<Option<bool>, Error> {
         if let ResultType::Exec(_) = result {
@@ -73,6 +81,14 @@ impl Intercept for PageIntercept {
                     *sql = (&sql[..idx]).to_string();
                 }
                 if let Some(idx) = sql.rfind(" order by ") {
+                    //remove args(args.pop())
+                    let order_by_clause = &sql[idx..];
+                    let driver_type = executor.driver_type().unwrap_or_default();
+                    let param_count = self.count_param_count(driver_type, &order_by_clause);
+                    // 移除对应的参数
+                    for _ in 0..param_count {
+                        args.pop();
+                    }
                     *sql = (&sql[..idx]).to_string();
                 }
             }
