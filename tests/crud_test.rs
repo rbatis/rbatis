@@ -944,6 +944,7 @@ mod test {
                 sql,
                 "select * from mock_table order by create_time desc limit 0,10 "
             );
+            assert_eq!(args, vec![]);
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(
                 sql,
