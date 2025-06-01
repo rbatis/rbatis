@@ -949,9 +949,41 @@ mod test {
                 sql,
                 "select count(1) as count from mock_table"
             );
+            assert_eq!(args, vec![value!(1)]);
         };
         block_on(f);
     }
+
+    impl_select_page!(MockTable{select_page_no_order(name:&str,create_time:&str) => "`order by #{create_time} desc`"});
+    #[test]
+    fn test_select_page_no_order() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = MockTable::select_page_no_order(&mut rb, &PageRequest::new(1, 10), "1","2025-01-01 00:00:00")
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(
+                sql,
+                "select * from mock_table order by ? desc limit 0,10 "
+            );
+            assert_eq!(args, vec![value!("2025-01-01 00:00:00")]);
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(
+                sql,
+                "select count(1) as count from mock_table"
+            );
+            assert_eq!(args, vec![]);
+        };
+        block_on(f);
+    }
+
     impl_select_page!(MockTable{select_page_by_name(name:&str,account:&str) =>"
      if name != null && name != '':
        `where name != #{name}`
