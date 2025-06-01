@@ -949,7 +949,7 @@ mod test {
                 sql,
                 "select count(1) as count from mock_table"
             );
-            assert_eq!(args, vec![value!(1)]);
+            assert_eq!(args, vec![]);
         };
         block_on(f);
     }
