@@ -51,10 +51,7 @@ impl PageIntercept {
 
     //driver_type=['postgres','pg','mssql','mysql','sqlite'...],but sql default is use '?'
     pub fn count_param_count(&self, _driver_type: &str, sql: &str) -> usize {
-        sql.replace("$", "?")
-            .replace("@p", "?")
-            .matches('?')
-            .count()
+        sql.matches('?').count()
     }
 }
 #[async_trait]
