@@ -5,7 +5,7 @@ use rbs::Value;
 
 pub async fn gen_insert_batch(table_name: &str, mut tables: Value) -> Result<(String, Vec<Value>), Error> {
     let mut sql = format!("insert into {table_name}");
-    if tables.is_map(){
+    if tables.is_map() {
         tables = Value::Array(vec![tables]);
     }
     let mut args = {
