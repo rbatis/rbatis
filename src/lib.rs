@@ -19,6 +19,7 @@ pub mod crud;
 pub mod error;
 pub mod decode;
 pub mod crud_traits;
+pub mod crud_gen;
 
 pub use async_trait::async_trait;
 pub use decode::*;
