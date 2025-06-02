@@ -3,8 +3,11 @@ use crate::Error;
 use rbatis_codegen::ops::AsProxy;
 use rbs::Value;
 
-pub async fn gen_insert_batch(table_name: &str, tables: Value) -> Result<(String, Vec<Value>), Error> {
+pub async fn gen_insert_batch(table_name: &str, mut tables: Value) -> Result<(String, Vec<Value>), Error> {
     let mut sql = format!("insert into {table_name}");
+    if tables.is_map(){
+        tables = Value::Array(vec![tables]);
+    }
     let mut args = {
         if tables.is_empty() {
             vec![]
