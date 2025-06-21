@@ -16,6 +16,9 @@
 
 Rbatis is a high-performance ORM framework for Rust based on compile-time code generation. It perfectly balances development efficiency, performance, and stability, functioning as both an ORM and a dynamic SQL compiler.
 
+## AI-support
+* - [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
+
 ## Core Advantages
 
 ### 1. High Performance
@@ -279,7 +282,6 @@ async fn main() {
 
 - [Full Documentation](https://rbatis.github.io/rbatis.io)
 - [Changelog](https://github.com/rbatis/rbatis/releases/)
-- [AI Assistance](https://raw.githubusercontent.com/rbatis/rbatis/master/ai.md)
 - [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
 
 ## Contact Us
