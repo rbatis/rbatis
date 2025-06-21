@@ -280,6 +280,7 @@ async fn main() {
 - [Full Documentation](https://rbatis.github.io/rbatis.io)
 - [Changelog](https://github.com/rbatis/rbatis/releases/)
 - [AI Assistance](https://raw.githubusercontent.com/rbatis/rbatis/master/ai.md)
+- [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
 
 ## Contact Us
 
