@@ -224,7 +224,7 @@ impl<T: Send + Sync> Page<T> {
         self
     }
 
-    /// create Vec<Page> from data
+    /// create Vec<Page> from (data: Vec<T>, page_size: u64)
     pub fn make_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
         let total = data.len() as u64;
         let mut result = vec![];
@@ -239,13 +239,24 @@ impl<T: Send + Sync> Page<T> {
         result
     }
 
-    /// create (Vec<offset,limit>) from total,page_size
+    /// create Vec<offset,limit> from (total: u64, page_size: u64)
     pub fn make_ranges(total: u64, page_size: u64) -> Vec<(u64, u64)> {
         let mut result = vec![];
         let pages = PageRequest::new(1, page_size).set_total(total).pages();
         for idx in 0..pages {
             let current_page = PageRequest::new(idx + 1, page_size).set_total(total);
             result.push((current_page.offset(), current_page.offset_limit()));
+        }
+        result
+    }
+
+    /// create Vec<PageRequest> from (total: u64, page_size: u64)
+    pub fn make_page_requests(total: u64, page_size: u64) -> Vec<PageRequest> {
+        let mut result = vec![];
+        let pages = PageRequest::new(1, page_size).set_total(total).pages();
+        for idx in 0..pages {
+            let current_page = PageRequest::new(idx + 1, page_size).set_total(total);
+            result.push(current_page);
         }
         result
     }
