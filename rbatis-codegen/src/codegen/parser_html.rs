@@ -294,7 +294,7 @@ fn remove_extra(text: &str) -> String {
         }
     }
 
-    data.trim_matches('`').replace("``", "")
+    data.trim_matches('`').replace("``", " ")
 }
 
 /// Implements HTML SQL function
