@@ -303,7 +303,7 @@ fn remove_extra(text: &str) -> String {
         }
     }
 
-    data.to_owned()
+    data
 }
 
 /// Implements HTML SQL function
