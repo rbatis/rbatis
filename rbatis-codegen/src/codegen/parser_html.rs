@@ -303,7 +303,7 @@ fn remove_extra(text: &str) -> String {
         }
     }
 
-    data.trim_matches('`').to_owned()
+    data.to_owned()
 }
 
 /// Implements HTML SQL function
