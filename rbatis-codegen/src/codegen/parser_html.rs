@@ -288,13 +288,22 @@ fn remove_extra(text: &str) -> String {
     for (i, line) in lines.iter().enumerate() {
         let mut line = line.trim();
         line = line.trim_start_matches('`').trim_end_matches('`');
-        data.push_str(line);
+
+        let list: Vec<&str> = line.split("``").collect();
+        let mut text = String::with_capacity(line.len());
+        for s in list {
+            if !text.is_empty() && !text.ends_with(' ') && !s.starts_with(' ') {
+                text.push(' ');
+            }
+            text.push_str(s);
+        }
+        data.push_str(&text);
         if i + 1 < lines.len() {
             data.push('\n');
         }
     }
 
-    data.trim_matches('`').replace("``", " ")
+    data.trim_matches('`').to_owned()
 }
 
 /// Implements HTML SQL function
