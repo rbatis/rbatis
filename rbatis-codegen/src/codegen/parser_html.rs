@@ -6,7 +6,7 @@ use syn::{ItemFn};
 
 use crate::codegen::loader_html::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream as MacroTokenStream;
-use crate::codegen::string_util::find_convert_string;
+use crate::codegen::string_util::{concat_str, find_convert_string};
 use crate::codegen::syntax_tree_html::*;
 use crate::codegen::ParseArgs;
 use crate::error::Error;
@@ -272,9 +272,9 @@ fn handle_text_element(
 
     if !string_data.is_empty() {
         *body = if replace_num == 0 {
-            quote! { #body sql.push_str(#string_data); }
+            quote! { #body sql = rbatis_codegen::codegen::string_util::concat_str(sql, #string_data); }
         } else {
-            quote! { #body sql.push_str(&format!(#string_data #formats_value)); }
+            quote! { #body sql = rbatis_codegen::codegen::string_util::concat_str(sql, &format!(#string_data #formats_value)); }
         };
     }
 }
@@ -292,10 +292,7 @@ fn remove_extra(text: &str) -> String {
         let list: Vec<&str> = line.split("``").collect();
         let mut text = String::with_capacity(line.len());
         for s in list {
-            if !text.is_empty() && !text.ends_with(' ') && !s.starts_with(' ') {
-                text.push(' ');
-            }
-            text.push_str(s);
+            text = concat_str(text, s);
         }
         data.push_str(&text);
         if i + 1 < lines.len() {

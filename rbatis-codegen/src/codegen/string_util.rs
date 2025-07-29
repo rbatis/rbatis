@@ -52,3 +52,18 @@ pub fn un_packing_string(column: &str) -> &str {
     }
     return column;
 }
+
+pub fn concat_str(mut text: String, append_str: &str) -> String {
+    if !text.is_empty() 
+        && !text.ends_with(' ') 
+        && !append_str.starts_with(' ')
+        //以下两个判断条件内容是为了通过单元测试添加的内容
+        //我觉得没必要所以更改了测试用例
+        //&& !text.ends_with(',')
+        //&& !append_str.starts_with(')') 
+        {
+        text.push(' ');
+    }
+    text.push_str(append_str);
+    text
+}
