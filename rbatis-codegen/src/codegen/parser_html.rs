@@ -272,9 +272,9 @@ fn handle_text_element(
 
     if !string_data.is_empty() {
         *body = if replace_num == 0 {
-            quote! { #body sql = rbatis_codegen::codegen::string_util::concat_str(sql, #string_data); }
+            quote! { #body rbatis_codegen::codegen::string_util::concat_str(&mut sql, #string_data); }
         } else {
-            quote! { #body sql = rbatis_codegen::codegen::string_util::concat_str(sql, &format!(#string_data #formats_value)); }
+            quote! { #body rbatis_codegen::codegen::string_util::concat_str(&mut sql, &format!(#string_data #formats_value)); }
         };
     }
 }
@@ -292,7 +292,7 @@ fn remove_extra(text: &str) -> String {
         let list: Vec<&str> = line.split("``").collect();
         let mut text = String::with_capacity(line.len());
         for s in list {
-            text = concat_str(text, s);
+            concat_str(&mut text, s);
         }
         data.push_str(&text);
         if i + 1 < lines.len() {
