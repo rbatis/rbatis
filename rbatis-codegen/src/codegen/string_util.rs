@@ -53,7 +53,7 @@ pub fn un_packing_string(column: &str) -> &str {
     return column;
 }
 
-pub fn concat_str(mut text: String, append_str: &str) -> String {
+pub fn concat_str(text: &mut String, append_str: &str) {
     if !text.is_empty() 
         && !text.ends_with(' ') 
         && !append_str.starts_with(' ')
@@ -65,5 +65,4 @@ pub fn concat_str(mut text: String, append_str: &str) -> String {
         text.push(' ');
     }
     text.push_str(append_str);
-    text
 }
