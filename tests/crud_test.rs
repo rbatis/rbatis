@@ -361,7 +361,7 @@ mod test {
             let r = MockTable::insert(&mut rb, &t).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{} [{}]", sql, Value::from(args.clone()));
-            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(sql, "insert into mock_table (id, name, pc_link, h5_link, status, remark, create_time, version, delete_flag, count ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
             assert_eq!(
                 args,
                 vec![
@@ -410,7 +410,7 @@ mod test {
             let r = MockTable::insert_batch(&mut rb, &ts, 10).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{} [{}]", sql, Value::from(args.clone()));
-            assert_eq!(sql, "insert into mock_table (id,name,pc_link,h5_link,status,remark,create_time,version,delete_flag,count) VALUES (?,?,?,?,?,?,?,?,?,?),(?,?,?,?,?,?,?,?,?,?)");
+            assert_eq!(sql, "insert into mock_table (id, name, pc_link, h5_link, status, remark, create_time, version, delete_flag, count ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ), (?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
             assert_eq!(
                 args,
                 vec![
@@ -468,7 +468,7 @@ mod test {
 
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=?  where id = ?");
+            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=?  where id = ?");
             assert_eq!(args.len(), 10);
             assert_eq!(
                 args,
@@ -517,7 +517,7 @@ mod test {
 
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? ");
+            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=? ");
             assert_eq!(args.len(), 9);
             assert_eq!(
                 args,
@@ -565,7 +565,7 @@ mod test {
 
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=?  where ids in (?,?)");
+            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=?  where ids in (?, ? )");
             assert_eq!(args.len(), 11);
             assert_eq!(
                 args,
@@ -720,7 +720,7 @@ mod test {
             println!("{}", sql);
             assert_eq!(
                 sql,
-                "delete from mock_table where id in (?)"
+                "delete from mock_table where id in (? )"
             );
             assert_eq!(args, vec![value!("1")]);
         };
@@ -838,7 +838,7 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
+            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=? where id = '2'");
             assert_eq!(
                 args,
                 vec![
@@ -891,7 +891,7 @@ mod test {
             .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?,pc_link=?,h5_link=?,status=?,remark=?,create_time=?,version=?,delete_flag=?,count=? where id = '2'");
+            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=? where id = '2'");
             assert_eq!(
                 args,
                 vec![
@@ -1142,7 +1142,7 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where 1 in (?,?)");
+            assert_eq!(sql, "select * from mock_table where 1 in (?, ? )");
             assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
@@ -1160,7 +1160,7 @@ mod test {
                 .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table where 1 in (?,?)");
+            assert_eq!(sql, "delete from mock_table where 1 in (?, ? )");
             assert_eq!(args, vec![value!("1"), value!("2")]);
         };
         block_on(f);
@@ -1295,6 +1295,85 @@ mod test {
             assert_eq!(
                 sql,
                 "select  * from activity where delete_flag = 0 and var1 = ? and name=? limit 0,10 "
+            );
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql,
+                "select count(1) as count from activity where delete_flag = 0 and var1 = ? and name=?"
+            );
+        };
+        block_on(f);
+    }
+
+    rbatis::htmlsql_select_page!(htmlsql_select_page_by_name1(name: &str) -> MockTable => 
+    r#"<select id="select_page_data">
+        select 
+        <if test="do_count == true">
+          count(1) from table 
+        </if>
+        <if test="do_count == false">
+          * from table limit ${page_no},${page_size}
+        </if>
+       </select>"#);
+    #[test]
+    fn test_htmlsql_select_page_by_name1() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = htmlsql_select_page_by_name1(&mut rb, &PageRequest::new(1, 10), "")
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "select * from table limit 0,10");
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql, "select count(1) as count from table");
+        };
+        block_on(f);
+    }
+
+    rbatis::pysql_select_page!(pysql_select_page1(item: PySqlSelectPageArg,var1:&str) -> MockTable =>
+    r#"select 
+      if do_count == true:
+        count(1) as count 
+      if do_count == false:
+         * 
+      from activity where delete_flag = 0 and var1 = #{var1}
+        if item.name != '':
+           and name=#{item.name}"#);
+
+    #[test]
+    fn test_pysql_select_page1() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let r = pysql_select_page1(
+                &mut rb,
+                &PageRequest::new(1, 10),
+                PySqlSelectPageArg {
+                    name: "aaa".to_string(),
+                },
+                "test",
+            )
+            .await
+            .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(
+                sql,
+                "select * from activity where delete_flag = 0 and var1 = ? and name=? limit 0,10 "
             );
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
