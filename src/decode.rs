@@ -24,6 +24,7 @@ where
             || type_name == std::any::type_name::<Vec<u32>>()
             || type_name == std::any::type_name::<Vec<u64>>()
             || type_name == std::any::type_name::<Vec<String>>()
+            || type_name == std::any::type_name::<Vec<bool>>()
             || type_name == std::any::type_name::<Vec<Option<i32>>>()
             || type_name == std::any::type_name::<Vec<Option<i64>>>()
             || type_name == std::any::type_name::<Vec<Option<f32>>>()
