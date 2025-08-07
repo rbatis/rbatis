@@ -16,6 +16,48 @@ where
     let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
     if is_array {
         //decode array
+        let type_name = std::any::type_name::<T>();
+        if type_name == std::any::type_name::<Vec<i32>>()
+            || type_name == std::any::type_name::<Vec<i64>>()
+            || type_name == std::any::type_name::<Vec<f32>>()
+            || type_name == std::any::type_name::<Vec<f64>>()
+            || type_name == std::any::type_name::<Vec<u32>>()
+            || type_name == std::any::type_name::<Vec<u64>>()
+            || type_name == std::any::type_name::<Vec<String>>()
+            || type_name == std::any::type_name::<Vec<Option<i32>>>()
+            || type_name == std::any::type_name::<Vec<Option<i64>>>()
+            || type_name == std::any::type_name::<Vec<Option<f32>>>()
+            || type_name == std::any::type_name::<Vec<Option<f64>>>()
+            || type_name == std::any::type_name::<Vec<Option<u32>>>()
+            || type_name == std::any::type_name::<Vec<Option<u64>>>()
+            || type_name == std::any::type_name::<Vec<Option<String>>>()
+            || type_name == std::any::type_name::<Vec<Option<bool>>>()
+        {
+            let mut vec_values: Vec<Value> = vec![];
+            match values {
+                Value::Array(datas) => {
+                    for m in datas {
+                        match m {
+                            Value::Map(map) => {
+                                if map.len() != 1 {
+                                    return Err(Error::from(format!(
+                                        "decode 1 field but receive {}",
+                                        map.len()
+                                    )));
+                                }
+                                if let Some((_, v)) = map.into_iter().next() {
+                                    vec_values.push(v.to_owned());
+                                }
+                            }
+                            _ => return Err(Error::from("decode a not map value")),
+                        }
+                    }
+                    return Ok(rbs::from_value_ref(&Value::Array(vec_values))?);
+                }
+                _ => return Err(Error::from("decode an not array value")),
+            }
+        }
+
         Ok(rbs::from_value_ref(values)?)
     } else {
         match values {
