@@ -99,7 +99,7 @@ impl HtmlAstNode for TrimTagNode {
                 {
                     let mut inner_sql = String::with_capacity(#capacity);
                     #trim_body
-                    sql.push_str(&inner_sql);
+                    rbatis_codegen::codegen::string_util::concat_str(&mut sql, &inner_sql);
                 }
             });
         }
