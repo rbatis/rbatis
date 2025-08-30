@@ -54,8 +54,11 @@ pub fn un_packing_string(column: &str) -> &str {
 }
 
 pub fn concat_str(text: &mut String, append_str: &str) {
+    if append_str.is_empty() {
+        return;
+    }
     if !text.is_empty() 
-        && !text.ends_with(' ') 
+        && !text.ends_with(' ')
         && !append_str.starts_with(' ')
         //以下两个判断条件内容是为了通过单元测试添加的内容
         //我觉得没必要所以更改了测试用例
