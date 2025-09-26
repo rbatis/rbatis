@@ -92,14 +92,14 @@ impl HtmlAstNode for TrimTagNode {
         // 添加内容（无论是否需要去除前后缀）
         if has_trim {
             final_tokens.extend(quote! {
-                sql.push_str(&{#trims.to_string(); sql});
+                rbatis_codegen::codegen::string_util::concat_str(&mut sql, &{#trims.to_string(); sql});
             });
         } else {
             final_tokens.extend(quote! {
                 {
                     let mut inner_sql = String::with_capacity(#capacity);
                     #trim_body
-                    sql.push_str(&inner_sql);
+                    rbatis_codegen::codegen::string_util::concat_str(&mut sql, &inner_sql);
                 }
             });
         }
