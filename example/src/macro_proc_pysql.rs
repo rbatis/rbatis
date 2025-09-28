@@ -51,12 +51,43 @@ async fn py_exec(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResul
 }
 
 pysql!(py_exec2(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult, Error> =>
-    "`delete from activity where delete_flag = 0`
+    "delete from activity where delete_flag = 0
                    if name != '':
-                     ` and name=#{name}`
+                      and name=#{name}
                    if !ids.is_empty():
-                     ` and id in `
+                      and id in 
                      ${ids.sql()}" );
+
+pysql!(py_exec3(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult, Error> =>
+    "select * from activity where delete_flag = 0
+                  if name != '':
+                    and name=#{name}
+                  if !ids.is_empty():
+                    and id in 
+                    ${ids.sql()}" );
+
+pysql!(py_exec4(rb: &dyn Executor, name: &str, remark: &str, ids: &[i32]) -> Result<ExecResult, Error> =>
+    "update activity set
+        trim ',' :
+            if name != '':
+              name=#{name},
+            if remark != '':
+              remark=#{remark},
+        where id in (
+        trim ',': for item in ids: 
+            #{item},
+        )
+    ");
+
+
+pysql!(py_exec5(rb: &dyn Executor, id: &str, name: &str, remark: &str) -> Result<ExecResult, Error> =>
+    "insert into activity (id, name, remark) values (#{id}, #{name}, #{remark})");
+
+pysql!(py_exec6(rb: &dyn Executor) -> Result<Vec<String>, Error> =>
+    "select id from activity");
+
+pysql!(py_exec7(rb: &dyn Executor) -> Result<Vec<String>, Error> =>
+    "delete from activity");
 
 #[tokio::main]
 pub async fn main() {
@@ -102,5 +133,26 @@ pub async fn main() {
     println!(">>>>>>>>>>>> {}", json!(a));
 
     let a = py_exec2(&rb, "", &[1, 2, 3]).await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec3(&rb, "", &[1, 2, 3]).await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec4(&rb, "test4", "test4", &[1, 2, 3]).await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec5(&rb, "1", "test", "test").await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec5(&rb, "2", "test", "test").await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec5(&rb, "3", "test", "test").await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec6(&rb).await.unwrap();
+    println!(">>>>>>>>>>>> {}", json!(a));
+
+    let a = py_exec7(&rb).await.unwrap();
     println!(">>>>>>>>>>>> {}", json!(a));
 }
