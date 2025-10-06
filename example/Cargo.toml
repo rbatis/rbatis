@@ -19,10 +19,6 @@ name = "macro_proc_pysql"
 path = "src/macro_proc_pysql.rs"
 
 [[bin]]
-name = "macro_proc_pysql_file"
-path = "src/macro_proc_pysql_file.rs"
-
-[[bin]]
 name = "macro_proc_rawsql"
 path = "src/macro_proc_rawsql.rs"
 
