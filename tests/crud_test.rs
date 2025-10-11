@@ -1131,7 +1131,7 @@ mod test {
     }
 
     #[test]
-    fn test_select_in_column() {
+    fn test_select_in_map() {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
@@ -1149,7 +1149,7 @@ mod test {
     }
 
     #[test]
-    fn test_delete_in_column() {
+    fn test_delete_in_map() {
         let f = async move {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());

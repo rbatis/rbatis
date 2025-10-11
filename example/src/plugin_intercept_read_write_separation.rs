@@ -57,7 +57,7 @@ pub async fn main() {
     println!("insert = {}", json!(data));
 
     let data = Activity::select_by_map(&rb,  value!{"id":"2"}).await;
-    println!("select_in_column = {}", json!(data));
+    println!("select_by_map = {}", json!(data));
 }
 
 async fn read_rb() -> RBatis {

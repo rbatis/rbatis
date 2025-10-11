@@ -42,5 +42,5 @@ pub async fn main() {
     rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
 
     let data = Activity::delete_by_name(&rb, "2").await;
-    println!("delete_by_column = {}", json!(data));
+    println!("delete_by_name = {}", json!(data));
 }
