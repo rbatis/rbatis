@@ -1490,7 +1490,7 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_map(&mut rb, &t, value!{"set": ["name", "status"]})
+            let r = MockTable::update_by_map(&mut rb, &t, value!{"column": ["name", "status"]})
                 .await
                 .unwrap();
 
@@ -1530,15 +1530,12 @@ mod test {
                 count: 0,
             };
             let ids: Vec<String> = vec![];
-            let result = MockTable::update_by_map(&mut rb, &t, value!{"id":"2", "set": ids}).await;
+            let result = MockTable::update_by_map(&mut rb, &t, value!{"id":"2", "column": ids}).await;
 
-            assert!(result.is_err());
-            match result.err().unwrap() {
-                Error::E(msg) => {
-                    assert!(msg.contains("No valid columns to update"));
-                }
-                _ => panic!("Expected error about no valid columns"),
-            }
+            // Empty column list should return 0 rows affected without error
+            assert!(result.is_ok());
+            let result = result.unwrap();
+            assert_eq!(result.rows_affected, 0);
         };
         block_on(f);
     }
@@ -1565,7 +1562,7 @@ mod test {
                 delete_flag: Some(1),
                 count: 0,
             };
-            let r = MockTable::update_by_map(&mut rb, &t, value!{"id": ["1", "2", "3"], "set": ["name"]})
+            let r = MockTable::update_by_map(&mut rb, &t, value!{"id": ["1", "2", "3"], "column": ["name"]})
                 .await
                 .unwrap();
 

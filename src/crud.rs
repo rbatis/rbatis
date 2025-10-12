@@ -312,8 +312,8 @@ macro_rules! impl_update {
                     "`update ${table_name}
                       set collection='table',skips='id':
                       trim end=' where ':
-                      ` where `
-                      trim ' and ': for key,item in condition:
+                       ` where `
+                       trim ' and ': for key,item in condition:
                             if item == null:
                                continue:
                             if !item.is_array():
