@@ -24,7 +24,8 @@ Rbatis is a high-performance ORM framework for Rust based on compile-time code g
 ## Core Advantages
 
 ### 1. High Performance
-- **Compile-time Dynamic SQL Generation**: Converts SQL statements to Rust code during compilation, avoiding runtime overhead
+- **🚀 Dynamic SQL to Native Rust Translation**: The key advantage - compiles dynamic SQL directly to native Rust code, achieving performance equivalent to hand-written SQL
+- **Zero Runtime Overhead**: All SQL parsing and optimization happens at compile-time, eliminating runtime interpretation costs
 - **Based on Tokio Async Model**: Fully utilizes Rust's async features to enhance concurrency performance
 - **Efficient Connection Pools**: Built-in multiple connection pool implementations, optimizing database connection management
 
@@ -99,7 +100,7 @@ Rbatis is a high-performance ORM framework for Rust based on compile-time code g
 
 Rbatis uses compile-time code generation through the `rbatis-codegen` crate, which means:
 
-1. **Zero Runtime Overhead**: Dynamic SQL is converted to Rust code during compilation, not at runtime. This provides performance similar to handwritten code.
+1. **🎯 Direct Translation to Native Rust**: Dynamic SQL is converted to optimized Rust code during compilation, achieving performance identical to hand-written SQL without any runtime interpretation overhead.
 
 2. **Compilation Process**:
    - **Lexical Analysis**: Handled by `func.rs` in `rbatis-codegen` using Rust's `syn` and `quote` crates
@@ -109,7 +110,7 @@ Rbatis uses compile-time code generation through the `rbatis-codegen` crate, whi
 
 3. **Build Process Integration**: The entire process runs during the `cargo build` phase as part of Rust's procedural macro compilation. The generated code is returned to the Rust compiler for LLVM compilation to produce machine code.
 
-4. **Dynamic SQL Without Runtime Cost**: Unlike most ORMs that interpret dynamic SQL at runtime, Rbatis performs all this work at compile-time, resulting in efficient and type-safe code.
+4. **Compile-Time SQL Optimization**: Unlike traditional ORMs that interpret dynamic SQL at runtime (causing performance penalties), Rbatis translates SQL to native Rust code at compile-time, delivering hand-written SQL performance while maintaining ORM convenience.
 
 ## Performance Benchmarks
 
