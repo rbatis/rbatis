@@ -325,25 +325,41 @@ macro_rules! impl_update {
                 // Extract column list for selective updates - implements GitHub issue #591
                 // This allows updating only specific columns by specifying them in the condition
                 // Example: update_by_map(&rb, &activity, value!{"id": "123", "column": ["name", "status"]})
-                let mut set_columns = rbs::Value::Null;
-                let mut condition_without_set = rbs::value::map::ValueMap::new();
+                let set_columns = {
+                    let mut columns = rbs::Value::Null;
+                    let mut clean_map = rbs::value::map::ValueMap::new();
 
-                if let Some(condition_map) = condition.as_map() {
-                    for (key, value) in condition_map {
-                        // Extract "column" key if present for selective column updates
-                        // All other keys are treated as WHERE conditions
-                        match key.as_str() {
-                            Some("column") => {
-                                set_columns = value.clone();
-                            }
-                            _ => {
-                                condition_without_set.insert(key.clone(), value.clone());
+                    if let Some(map) = condition.as_map() {
+                        for (k, v) in map {
+                            match k.as_str() {
+                                Some("column") => {
+                                    // Normalize column specification to Array format for filter_by_columns
+                                    columns = match v {
+                                        rbs::Value::String(s) => {
+                                            rbs::Value::Array(vec![rbs::Value::String(s.clone())])
+                                        }
+                                        rbs::Value::Array(arr) => {
+                                            let filtered_array: Vec<rbs::Value> = arr.iter()
+                                                .filter(|v| v.as_str().is_some())
+                                                .cloned()
+                                                .collect();
+                                            if filtered_array.is_empty() {
+                                                rbs::Value::Null
+                                            } else {
+                                                rbs::Value::Array(filtered_array)
+                                            }
+                                        }
+                                        _ => rbs::Value::Null,
+                                    };
+                                }
+                                _ => { clean_map.insert(k.clone(), v.clone()); }
                             }
                         }
                     }
-                }
-                // Use condition_without_set for WHERE clause, separating column specification from conditions
 
+                    condition = rbs::Value::Map(clean_map);
+                    columns
+                };
                 #[$crate::py_sql(
                     "`update ${table_name}
                       set collection='table',skips='id':
@@ -388,9 +404,8 @@ macro_rules! impl_update {
                  } else {
                      table_value
                  };
-                  let where_condition = rbs::Value::Map(condition_without_set);
 
-                  update_by_map_internal(executor, table_name, &table, &where_condition).await
+                  update_by_map_internal(executor, table_name, &table, &condition).await
             }
         }
 
