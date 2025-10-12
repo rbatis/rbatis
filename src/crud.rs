@@ -327,10 +327,8 @@ macro_rules! impl_update {
                 // Example: update_by_map(&rb, &activity, value!{"id": "123", "column": ["name", "status"]})
                 let set_columns = {
                     let mut columns = rbs::Value::Null;
-                    let mut clean_map = rbs::value::map::ValueMap::new();
-
-                    if let Some(map) = condition.as_map() {
-                        for (k, v) in map {
+                    let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
+                    for (k, v) in condition.as_map().unwrap_or_default() {
                             match k.as_str() {
                                 Some("column") => {
                                     // Normalize column specification to Array format for filter_by_columns
@@ -354,9 +352,7 @@ macro_rules! impl_update {
                                 }
                                 _ => { clean_map.insert(k.clone(), v.clone()); }
                             }
-                        }
                     }
-
                     condition = rbs::Value::Map(clean_map);
                     columns
                 };
