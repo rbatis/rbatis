@@ -394,7 +394,7 @@ impl NodeType {
             return Err(Error::from(format!("[rbatis-codegen] SetNode expression '{}' does not start with '{}'", express, SetNode::name())));
         };
         let mut collection_opt: Option<String> = None;
-        let mut skip_null_val = false; // Default
+        let mut skip_null_val = true; // Default
         let mut skips_val: String = String::new(); // Default is now an empty String
         for part_str in actual_attrs_str.split(',') {
             let clean_part = part_str.trim();
