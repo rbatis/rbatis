@@ -71,7 +71,7 @@ pub async fn main() {
     fast_log::logger().set_level(LevelFilter::Debug);
 
     // Create a sample activity record
-    let mut activity = Activity {
+    let activity = Activity {
         id: Some("123".into()),
         name: Some("Original Activity".into()),
         pc_link: Some("https://example.com/pc".into()),
