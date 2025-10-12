@@ -328,7 +328,7 @@ macro_rules! impl_update {
                 let set_columns = {
                     let mut columns = rbs::Value::Null;
                     let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
-                    for (k, v) in condition.as_map().unwrap_or_default() {
+                    for (k, v) in condition {
                             match k.as_str() {
                                 Some("column") => {
                                     // Normalize column specification to Array format for filter_by_columns
