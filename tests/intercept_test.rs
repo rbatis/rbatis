@@ -3,7 +3,6 @@
 mod test {
     use async_trait::async_trait;
     use futures_core::future::BoxFuture;
-    use log::{Log, Metadata, Record};
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::{Error, RBatis};
@@ -12,24 +11,6 @@ mod test {
     use rbs::Value;
     use std::sync::atomic::{AtomicI64, Ordering};
     use std::sync::Arc;
-
-    pub struct Logger {}
-
-    impl Log for Logger {
-        fn enabled(&self, _metadata: &Metadata) -> bool {
-            return true;
-        }
-
-        fn log(&self, record: &Record) {
-            println!(
-                "[{}]{}",
-                record.module_path_static().unwrap(),
-                record.args()
-            )
-        }
-
-        fn flush(&self) {}
-    }
 
     #[derive(Debug, Clone)]
     struct MockDriver {}
