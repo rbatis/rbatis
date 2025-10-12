@@ -184,29 +184,34 @@ macro_rules! impl_select {
     ($table:ty{},$table_name:expr) => {
         $crate::impl_select!($table{select_all() => ""},$table_name);
           impl $table {
-         pub async fn select_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
+         pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
 
-                // Extract column list for selective queries - similar to update_by_map functionality
-                // This allows selecting only specific columns by specifying them in the condition
-                // Example: select_by_map(&rb, value!{"id": "123", "column": ["name", "status"]})
-                let mut select_columns = rbs::Value::Null;
-                let mut condition_without_column = rbs::value::map::ValueMap::new();
-
-                if let Some(condition_map) = condition.as_map() {
-                    for (key, value) in condition_map {
-                        // Extract "column" key if present for selective column queries
-                        // All other keys are treated as WHERE conditions
-                        match key.as_str() {
-                            Some("column") => {
-                                select_columns = value.clone();
+                // Extract column specification and remove it from condition
+                let table_column = {
+                    let mut columns = String::new();
+                    let mut clean_map = rbs::value::map::ValueMap::with_capacity(collection.len());
+                    for (k, v) in condition {
+                            match k.as_str() {
+                                Some("column") => {
+                                    columns = match v {
+                                        rbs::Value::String(s) => s.clone(),
+                                        rbs::Value::Array(arr) => {
+                                            let cols: Vec<&str> = arr.iter()
+                                                .filter_map(|v| v.as_str())
+                                                .collect();
+                                            if cols.is_empty() { "*".to_string() } else { cols.join(", ") }
+                                        }
+                                        _ => "*".to_string(),
+                                    };
+                                }
+                                _ => { clean_map.insert(k.clone(), v.clone()); }
                             }
-                            _ => {
-                                condition_without_column.insert(key.clone(), value.clone());
-                            }
-                        }
                     }
-                }
+                    if columns.is_empty() { columns = "*".to_string(); }
+                    condition = rbs::Value::Map(clean_map);
+                    columns
+                };
 
                 #[$crate::py_sql(
           "`select ${table_column} from ${table_name}`
@@ -242,26 +247,7 @@ macro_rules! impl_select {
                          fn snake_name(){}
                          table_name = snake_name();
                 }
-                // Determine table column string
-                let table_column = if select_columns != rbs::Value::Null {
-                    // Convert column array to comma-separated string
-                    if let Some(columns) = select_columns.as_array() {
-                        let filtered_columns: Vec<&str> = columns.iter()
-                            .filter_map(|v| v.as_str())
-                            .collect();
-                        if filtered_columns.is_empty() {
-                            // Empty column list should fall back to "*"
-                            "*".to_string()
-                        } else {
-                            filtered_columns.join(", ")
-                        }
-                    } else {
-                        "*".to_string()
-                    }
-                } else {
-                    "*".to_string()
-                };
-                select_by_map(executor, table_name, &table_column, &rbs::Value::Map(condition_without_column)).await
+                select_by_map(executor, table_name, &table_column, &condition).await
        }
     }
     };
