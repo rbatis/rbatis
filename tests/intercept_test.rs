@@ -200,7 +200,6 @@ mod test {
         }));
         let m = rb.get_intercept::<MockIntercept>();
         assert_eq!(m.is_some(), true);
-        println!("{}", m.unwrap().name());
         let m = m.unwrap();
         m.inner.store(1, Ordering::SeqCst);
         assert_eq!(m.inner.load(Ordering::Relaxed), 1);
