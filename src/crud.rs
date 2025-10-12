@@ -358,7 +358,10 @@ macro_rules! impl_update {
                 };
                 #[$crate::py_sql(
                     "`update ${table_name}
-                      set collection='table',skips='id':
+                      if skip_null == false:
+                        set collection='table',skips='id',skip_null=false:
+                      if skip_null == true:
+                        set collection='table',skips='id':
                       trim end=' where ':
                        ` where `
                        trim ' and ': for key,item in condition:
@@ -377,7 +380,8 @@ macro_rules! impl_update {
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
                       table: &rbs::Value,
-                      condition: &rbs::Value
+                      condition: &rbs::Value,
+                      skip_null: bool,
                   ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                       for (_,v) in condition {
                         if v.is_array() && v.is_empty(){
@@ -393,18 +397,16 @@ macro_rules! impl_update {
                          table_name = snake_name();
                   }
                   let table_value = rbs::value!(table);
-                // Apply column filtering if specific columns are specified
-                // This enables selective column updates as requested in GitHub issue #591
-                let table = if set_columns != rbs::Value::Null {
-                     table_value.filter_by_columns(&set_columns)
-                 } else {
-                     table_value
-                 };
-
-                  update_by_map_internal(executor, table_name, &table, &condition).await
+                  let mut skip_null = true;
+                  let table = if set_columns != rbs::Value::Null {
+                    skip_null = false;
+                    table_value.filter_by_columns(&set_columns)
+                  } else {
+                    table_value
+                  };
+                  update_by_map_internal(executor, table_name, &table, &condition, skip_null).await
             }
         }
-
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
         impl $table {

@@ -47,8 +47,9 @@ impl ToHtml for SetNode {
         }
         if self.skip_null {
             attrs_string.push_str(" skip_null=\"true\"");
+        }else{
+            attrs_string.push_str(" skip_null=\"false\"");
         }
-
         format!("<set{}>{}</set>", attrs_string, childs_html)
     }
 }

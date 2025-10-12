@@ -416,7 +416,9 @@ impl NodeType {
                 }
                 "skip_null" => {
                     let val_bool_str = Self::strip_quotes_for_attr(value_str_raw);
-                    if val_bool_str.eq_ignore_ascii_case("true") {
+                    if val_bool_str.is_empty(){
+                        skip_null_val = true;
+                    }else if val_bool_str.eq_ignore_ascii_case("true") {
                         skip_null_val = true;
                     } else if val_bool_str.eq_ignore_ascii_case("false") {
                         skip_null_val = false;
