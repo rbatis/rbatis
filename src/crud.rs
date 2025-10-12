@@ -190,7 +190,7 @@ macro_rules! impl_select {
                 // Extract column specification and remove it from condition
                 let table_column = {
                     let mut columns = String::new();
-                    let mut clean_map = rbs::value::map::ValueMap::with_capacity(collection.len());
+                    let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
                     for (k, v) in condition {
                             match k.as_str() {
                                 Some("column") => {

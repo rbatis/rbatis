@@ -1,3 +1,4 @@
+#![allow(mismatched_lifetime_syntaxes)]
 #[cfg(test)]
 mod test {
     use async_trait::async_trait;
