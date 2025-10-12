@@ -18,6 +18,7 @@
 ///  let tables = MockTable::select_by_map(rb,value!{"id":"1"}).await;
 ///  let tables = MockTable::select_all(rb).await;
 ///  let tables = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await;
+///  let tables = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?; 
 ///
 ///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
 ///
