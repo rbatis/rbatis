@@ -214,8 +214,12 @@ async fn main() {
         },
     ], 10).await;
 
-    // Update by map condition
+    // Update by map condition (updates all fields)
     let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
+
+    // Update only specific columns
+    let columns = value!["name", "status"];
+    let data = BizActivity::update_by_columns(&rb, &activity, &columns, value!{ "id": "1" }).await;
 
     // Query by map condition
     let data = BizActivity::select_by_map(&rb, value!{"id":"2","name":"Activity 2"}).await;

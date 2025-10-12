@@ -41,6 +41,9 @@ path = "src/crud_select_page.rs"
 name = "crud_update"
 path = "src/crud_update.rs"
 [[bin]]
+name = "crud_update_skip"
+path = "src/crud_update_skip.rs"
+[[bin]]
 name = "crud_map"
 path = "src/crud_map.rs"
 [[bin]]

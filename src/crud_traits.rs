@@ -54,3 +54,50 @@ impl ValueOperatorSql for Value {
         }
     }
 }
+
+/// Filter value by specified columns
+pub trait FilterByColumns {
+    fn filter_by_columns(&self, columns: &Value) -> Value;
+}
+
+impl FilterByColumns for Value {
+    fn filter_by_columns(&self, columns: &Value) -> Value {
+        match self {
+            Value::Map(map) => {
+                // Extract column names from the columns Value
+                let column_names = match columns {
+                    Value::Array(arr) => {
+                        if arr.is_empty() {
+                            // Empty array means no columns to filter, return empty map
+                            return Value::Map(rbs::value::map::ValueMap::new());
+                        }
+                        arr.iter()
+                            .filter_map(|v| v.as_str())
+                            .collect::<std::collections::HashSet<&str>>()
+                    }
+                    _ => {
+                        // If columns is not an array, return original value
+                        return self.clone();
+                    }
+                };
+
+                if column_names.is_empty() {
+                    // No valid column names, return empty map
+                    return Value::Map(rbs::value::map::ValueMap::new());
+                }
+
+                let mut filtered_map = rbs::value::map::ValueMap::new();
+                for (key, value) in map {
+                    if let Some(key_str) = key.as_str() {
+                        if column_names.contains(key_str) {
+                            filtered_map.insert(key.clone(), value.clone());
+                        }
+                    }
+                }
+
+                Value::Map(filtered_map)
+            }
+            _ => self.clone()
+        }
+    }
+}

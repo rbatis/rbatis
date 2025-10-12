@@ -215,8 +215,12 @@ async fn main() {
         },
     ], 10).await;
 
-    // 根据 map 条件更新
+    // 根据 map 条件更新（更新所有字段）
     let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
+
+    // 根据指定字段更新（只更新特定字段）
+    let columns = value!["name", "status"];
+    let data = BizActivity::update_by_columns(&rb, &activity, &columns, value!{ "id": "1" }).await;
 
     // 根据 map 条件查询
     let data = BizActivity::select_by_map(&rb, value!{"id":"2","name":"活动 2"}).await;

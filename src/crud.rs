@@ -270,27 +270,47 @@ macro_rules! impl_update {
             pub async fn update_by_map(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
-                condition: rbs::Value
+                mut condition: rbs::Value
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
+                use rbatis::crud_traits::{ValueOperatorSql, FilterByColumns};
+
+                // Extract column columns if present
+                let mut set_columns = rbs::Value::Null;
+                let mut condition_without_set = rbs::value::map::ValueMap::new();
+
+                if let Some(condition_map) = condition.as_map() {
+                    for (key, value) in condition_map {
+                        // Extract  column if present, otherwise add to WHERE conditions
+                        match key.as_str() {
+                            Some("column") => {
+                                set_columns = value.clone();
+                            }
+                            _ => {
+                                condition_without_set.insert(key.clone(), value.clone());
+                            }
+                        }
+                    }
+                }
+                // Use condition_without_set for WHERE clause, not the original condition
+
                 #[$crate::py_sql(
-                    "`update ${table_name}`
+                    "`update ${table_name}
                       set collection='table',skips='id':
                       trim end=' where ':
-                       ` where `
-                       trim ' and ': for key,item in condition:
-                          if item == null:
-                             continue:
-                          if !item.is_array():
-                            ` and ${key.operator_sql()}#{item}`
-                          if item.is_array():
-                            ` and ${key} in (`
-                               trim ',': for _,item_array in item:
-                                    #{item_array},
-                            `)`
+                      ` where `
+                      trim ' and ': for key,item in condition:
+                            if item == null:
+                               continue:
+                            if !item.is_array():
+                              ` and ${key.operator_sql()}#{item}`
+                            if item.is_array():
+                              ` and ${key} in (`
+                                 trim ',': for _,item_array in item:
+                                      #{item_array},
+                              `)`
                     "
                 )]
-                  async fn update_by_map(
+                  async fn update_by_map_internal(
                       executor: &dyn $crate::executor::Executor,
                       table_name: String,
                       table: &rbs::Value,
@@ -309,8 +329,15 @@ macro_rules! impl_update {
                          fn snake_name(){}
                          table_name = snake_name();
                   }
-                  let table = rbs::value!(table);
-                  update_by_map(executor, table_name, &table, &condition).await
+                  let table_value = rbs::value!(table);
+                let table = if set_columns != rbs::Value::Null {
+                     table_value.filter_by_columns(&set_columns)
+                 } else {
+                     table_value
+                 };
+                  let where_condition = rbs::Value::Map(condition_without_set);
+
+                  update_by_map_internal(executor, table_name, &table, &where_condition).await
             }
         }
 
@@ -444,6 +471,7 @@ macro_rules! impl_delete {
         }
     };
 }
+
 
 /// pysql impl_select_page
 ///
