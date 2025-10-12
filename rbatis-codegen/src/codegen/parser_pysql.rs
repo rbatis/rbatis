@@ -394,7 +394,7 @@ impl NodeType {
             return Err(Error::from(format!("[rbatis-codegen] SetNode expression '{}' does not start with '{}'", express, SetNode::name())));
         };
         let mut collection_opt: Option<String> = None;
-        let mut skip_null_val = true; // Default
+        let mut skip_null_val = None; // Default
         let mut skips_val: String = String::new(); // Default is now an empty String
         for part_str in actual_attrs_str.split(',') {
             let clean_part = part_str.trim();
@@ -417,11 +417,11 @@ impl NodeType {
                 "skip_null" => {
                     let val_bool_str = Self::strip_quotes_for_attr(value_str_raw);
                     if val_bool_str.is_empty(){
-                        skip_null_val = true;
+                        skip_null_val = None;
                     }else if val_bool_str.eq_ignore_ascii_case("true") {
-                        skip_null_val = true;
+                        skip_null_val = Some(true);
                     } else if val_bool_str.eq_ignore_ascii_case("false") {
-                        skip_null_val = false;
+                        skip_null_val = Some(false);
                     } else {
                         return Err(Error::from(format!("[rbatis-codegen] Invalid boolean value for skip_null: '{}' in '{}'", value_str_raw, source_str)));
                     }

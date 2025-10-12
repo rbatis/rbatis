@@ -21,7 +21,8 @@ pub struct SetNode {
     pub childs: Vec<NodeType>,
     pub collection: String,
     pub skips: String,
-    pub skip_null: bool,
+    //if skip_null= None will be Some(True)
+    pub skip_null: Option<bool>,
 }
 
 impl Name for SetNode {
@@ -29,7 +30,6 @@ impl Name for SetNode {
         "set"
     }
 }
-
 
 impl ToHtml for SetNode {
     fn as_html(&self) -> String {
@@ -45,10 +45,12 @@ impl ToHtml for SetNode {
         if !self.skips.is_empty() {
             attrs_string.push_str(&format!(" skips=\"{}\"", self.skips));
         }
-        if self.skip_null {
-            attrs_string.push_str(" skip_null=\"true\"");
-        }else{
-            attrs_string.push_str(" skip_null=\"false\"");
+        if let Some(skip_null) = self.skip_null {
+            if skip_null {
+                attrs_string.push_str(" skip_null=\"true\"");
+            } else {
+                attrs_string.push_str(" skip_null=\"false\"");
+            }
         }
         format!("<set{}>{}</set>", attrs_string, childs_html)
     }

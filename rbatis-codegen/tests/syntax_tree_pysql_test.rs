@@ -130,7 +130,7 @@ fn test_set_node_as_html() {
             value: "name = #{name}".to_string(),
         })],
         collection: "".to_string(),
-        skip_null: false,
+        skip_null: None,
         skips: "".to_string(),
     };
     let html = node.as_html();
@@ -145,7 +145,7 @@ fn test_set_node_as_html_with_collection_and_skips() {
         })],
         collection: "table".to_string(),
         skips: "id".to_string(),
-        skip_null: false, // Test with skip_null as false
+        skip_null: None, // Test with skip_null as false
     };
     let html = node.as_html();
     assert_eq!(html, "<set collection=\"table\" skips=\"id\">`field = #{field_value}`</set>");
@@ -156,7 +156,7 @@ fn test_set_node_as_html_with_collection_and_skips() {
         })],
         collection: "another_table".to_string(),
         skips: "uid,timestamp".to_string(),
-        skip_null: true, // Test with skip_null as true
+        skip_null: Some(true), // Test with skip_null as true
     };
     let html_skip_null_true = node_skip_null_true.as_html();
     assert_eq!(html_skip_null_true, "<set collection=\"another_table\" skips=\"uid,timestamp\" skip_null=\"true\">`field2 = #{field_value2}`</set>");
@@ -229,7 +229,7 @@ fn test_to_html_update() {
                 value: "name = #{name}".to_string(),
             })],
             collection: "default_collection".to_string(),
-            skip_null: false,
+            skip_null: None,
             skips: "".to_string(),
         }),
     ];
@@ -389,7 +389,7 @@ fn test_all_node_types_as_html() {
     let set_node = NodeType::NSet(SetNode {
         childs: vec![string_node.clone()],
         collection: "".to_string(),
-        skip_null: false,
+        skip_null: None,
         skips: "".to_string(),
     });
     assert_eq!(set_node.as_html(), "<set>`test`</set>");
@@ -444,7 +444,7 @@ fn test_empty_nodes() {
     let empty_set = SetNode {
         childs: vec![],
         collection: "".to_string(),
-        skip_null: false,
+        skip_null: None,
         skips: "".to_string(),
     };
     assert_eq!(empty_set.as_html(), "<set></set>");
