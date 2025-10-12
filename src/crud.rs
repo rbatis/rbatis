@@ -242,18 +242,30 @@ macro_rules! impl_select {
 }
 
 /// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
+///
+/// Supports selective column updates by specifying "column" key in condition (GitHub issue #591):
 /// ```rust
 /// use rbs::value;
 /// use rbatis::{Error, RBatis};
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
-///   pub id: Option<String>
+///   pub id: Option<String>,
+///   pub name: Option<String>,
+///   pub status: Option<String>
 /// }
 /// rbatis::impl_update!(MockTable{});
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let table = MockTable{id: Some("1".to_string())};
+///  let table = MockTable{
+///     id: Some("1".to_string()),
+///     name: Some("test".to_string()),
+///     status: Some("active".to_string())
+///  };
+///  // Update all columns
 ///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
+///
+///  // Update only specific columns (name and status)
+///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1", "column": ["name", "status"]}).await;
 ///  Ok(())
 /// }
 /// ```
@@ -274,13 +286,16 @@ macro_rules! impl_update {
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::{ValueOperatorSql, FilterByColumns};
 
-                // Extract column columns if present
+                // Extract column list for selective updates - implements GitHub issue #591
+                // This allows updating only specific columns by specifying them in the condition
+                // Example: update_by_map(&rb, &activity, value!{"id": "123", "column": ["name", "status"]})
                 let mut set_columns = rbs::Value::Null;
                 let mut condition_without_set = rbs::value::map::ValueMap::new();
 
                 if let Some(condition_map) = condition.as_map() {
                     for (key, value) in condition_map {
-                        // Extract  column if present, otherwise add to WHERE conditions
+                        // Extract "column" key if present for selective column updates
+                        // All other keys are treated as WHERE conditions
                         match key.as_str() {
                             Some("column") => {
                                 set_columns = value.clone();
@@ -291,7 +306,7 @@ macro_rules! impl_update {
                         }
                     }
                 }
-                // Use condition_without_set for WHERE clause, not the original condition
+                // Use condition_without_set for WHERE clause, separating column specification from conditions
 
                 #[$crate::py_sql(
                     "`update ${table_name}
@@ -330,6 +345,8 @@ macro_rules! impl_update {
                          table_name = snake_name();
                   }
                   let table_value = rbs::value!(table);
+                // Apply column filtering if specific columns are specified
+                // This enables selective column updates as requested in GitHub issue #591
                 let table = if set_columns != rbs::Value::Null {
                      table_value.filter_by_columns(&set_columns)
                  } else {
