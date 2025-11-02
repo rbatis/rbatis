@@ -174,28 +174,28 @@ mod my_pool {
             &mut self,
             sql: &str,
             params: Vec<Value>,
-        ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<'_,Result<Vec<Box<dyn Row>>, Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             self.conn.as_mut().unwrap().get_rows(sql, params)
         }
 
-        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<'_,Result<ExecResult, Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             self.conn.as_mut().unwrap().exec(sql, params)
         }
 
-        fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
+        fn ping(&mut self) -> BoxFuture<'_,Result<(), Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             Box::pin(async { self.conn.as_mut().unwrap().ping().await })
         }
 
-        fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+        fn close(&mut self) -> BoxFuture<'_,Result<(), Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }

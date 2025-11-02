@@ -136,7 +136,7 @@ impl Driver for MockDriver {
         "test"
     }
 
-    fn connect(&self, url: &str) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect(&self, url: &str) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
         Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
     }
 
@@ -160,11 +160,11 @@ impl Connection for MockConnection {
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> {
+    ) -> BoxFuture<'_,Result<Vec<Box<dyn Row>>, Error>> {
         Box::pin(async { Ok(vec![]) })
     }
 
-    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> {
+    fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<'_,Result<ExecResult, Error>> {
         Box::pin(async {
             Ok(ExecResult {
                 rows_affected: 0,
@@ -173,11 +173,11 @@ impl Connection for MockConnection {
         })
     }
 
-    fn close(&mut self) -> BoxFuture<Result<(), Error>> {
+    fn close(&mut self) -> BoxFuture<'_,Result<(), Error>> {
         Box::pin(async { Ok(()) })
     }
 
-    fn ping(&mut self) -> BoxFuture<Result<(), Error>> {
+    fn ping(&mut self) -> BoxFuture<'_,Result<(), Error>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -186,7 +186,7 @@ impl Connection for MockConnection {
 struct MockConnectOptions {}
 
 impl ConnectOptions for MockConnectOptions {
-    fn connect(&self) -> BoxFuture<Result<Box<dyn Connection>, Error>> {
+    fn connect(&self) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
         Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
     }
 
