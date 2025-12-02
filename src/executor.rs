@@ -66,10 +66,6 @@ impl RBatisConnExecutor {
             Option::None => None,   
         }
     }
-
-    pub fn intercepts(&self)->&SyncVec<Arc<dyn Intercept>>{
-        return &self.intercepts;
-    }
 }
 
 impl Debug for RBatisConnExecutor {
@@ -553,10 +549,6 @@ impl RBatisRef for RBatisTxExecutor {
 impl RBatisTxExecutor {
     pub fn take_connection(self) -> Option<Box<dyn Connection>> {
         self.conn_executor.take_connection()
-    }
-
-    pub fn intercepts(&self)->&SyncVec<Arc<dyn Intercept>>{
-        return &self.conn_executor.intercepts();
     }
 }
 
