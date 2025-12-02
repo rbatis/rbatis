@@ -23,6 +23,7 @@ impl Intercept for MockIntercept {
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, rbatis::Error>, &mut Result<Vec<Value>, rbatis::Error>>,
     ) -> Result<Option<bool>, rbatis::Error> {
+        *sql = sql.replace("<my_table_name>", "activity");
         println!("MockIntercept: SQL = {}", sql);
         Ok(Some(true))
     }
@@ -46,7 +47,7 @@ pub struct Activity {
 }
 
 //crud!(Activity {},"activity");
-crud!(Activity {});
+crud!(Activity {},"<my_table_name>");
 
 #[tokio::main]
 pub async fn main() {
@@ -68,7 +69,7 @@ pub async fn main() {
     println!("conn.intercepts.len={}", conn.intercepts.len());
     
     // Execute query to see the mock intercept in action
-    let _ = conn.query("SELECT 1", vec![]).await;
+    let _ = conn.query("SELECT <my_table_name>", vec![]).await;
     let data = Activity::select_all(&conn).await.unwrap();
     println!("data={:?}", json!(data));
 }
