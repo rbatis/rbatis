@@ -66,15 +66,10 @@ pub struct RBatisConnExecutor {
 
 impl RBatisConnExecutor {
     pub fn new(id: i64, conn: Box<dyn Connection>, rb: RBatis) -> Self {
-        // clone intercepts use deep clone
-        let intercepts = Arc::new(SyncVec::with_capacity(rb.intercepts.len()));
-        for item in rb.intercepts.iter() {
-            intercepts.push(item.clone());
-        }
         Self {
             id: id,
             conn: Arc::new(Mutex::new(conn)),
-            intercepts: intercepts,
+            intercepts: rb.intercepts.clone(),
             rb: rb,
         }
     }
