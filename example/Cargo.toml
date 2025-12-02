@@ -104,9 +104,6 @@ path = "src/plugin_intercept_read_write_separation.rs"
 name = "macro_proc_htmlsql_file_update"
 path = "src/macro_proc_htmlsql_file_update.rs"
 [[bin]]
-name = "dynamic_table_name"
-path = "src/dynamic_table_name.rs"
-[[bin]]
 name = "plugin_intercept_dynamic_table_name"
 path = "src/plugin_intercept_dynamic_table_name.rs"
 
