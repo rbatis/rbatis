@@ -3,8 +3,11 @@ use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
 use rbatis::{async_trait, RBatis};
 use rbs::Value;
+use serde_json::json;
 use std::sync::Arc;
 use rbatis::dark_std::sync::SyncVec;
+use rbatis::rbdc::datetime::DateTime;
+use rbatis::crud;
 
 /// Mock intercept that just prints SQL
 #[derive(Debug)]
@@ -24,6 +27,26 @@ impl Intercept for MockIntercept {
         Ok(Some(true))
     }
 }
+
+/// table
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct Activity {
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub pc_link: Option<String>,
+    pub h5_link: Option<String>,
+    pub pc_banner_img: Option<String>,
+    pub h5_banner_img: Option<String>,
+    pub sort: Option<String>,
+    pub status: Option<i32>,
+    pub remark: Option<String>,
+    pub create_time: Option<DateTime>,
+    pub version: Option<i64>,
+    pub delete_flag: Option<i32>,
+}
+
+//crud!(Activity {},"activity");
+crud!(Activity {});
 
 #[tokio::main]
 pub async fn main() {
@@ -46,9 +69,6 @@ pub async fn main() {
     
     // Execute query to see the mock intercept in action
     let _ = conn.query("SELECT 1", vec![]).await;
-    
-    // Check original rb.intercepts is unchanged
-    let new_len = rb.intercepts.len();
-    println!("len={}", len);
-    assert_eq!(new_len, len);
+    let data = Activity::select_all(&conn).await.unwrap();
+    println!("data={:?}", json!(data));
 }
