@@ -27,9 +27,6 @@ pub trait InterceptManager {
 
     /// Get all interceptors
     fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>>;
-
-    /// Replace all interceptors
-    fn set_intercepts(&self, intercepts: Arc<SyncVec<Arc<dyn Intercept>>>);
 }
 
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
@@ -244,12 +241,6 @@ impl InterceptManager for RBatisConnExecutor {
         &self.intercepts
     }
 
-    fn set_intercepts(&self, intercepts: Arc<SyncVec<Arc<dyn Intercept>>>) {
-        self.intercepts.clear();
-        for item in intercepts.iter() {
-            self.intercepts.push(item.clone());
-        }
-    }
 }
 
 impl RBatisConnExecutor {
@@ -292,7 +283,6 @@ impl RBatisConnExecutor {
     /// }
     ///  //use get_intercept_type
     ///  let mut rb = RBatis::new();
-    ///  rb.set_intercepts(vec![Arc::new(MockIntercept{})]);
     ///  let name = std::any::type_name::<MockIntercept>();
     ///  let intercept = rb.get_intercept_dyn(name);
     /// ```
@@ -320,7 +310,6 @@ impl RBatisConnExecutor {
     /// }
     ///  //use get_intercept_type
     ///  let mut rb = RBatis::new();
-    ///  rb.set_intercepts(vec![Arc::new(MockIntercept{})]);
     ///  let intercept = rb.get_intercept::<MockIntercept>();
     /// ```
     pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
@@ -601,10 +590,6 @@ impl InterceptManager for RBatisTxExecutor {
     fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
         self.conn_executor.get_intercepts()
     }
-
-    fn set_intercepts(&self, intercepts: Arc<SyncVec<Arc<dyn Intercept>>>) {
-        self.conn_executor.set_intercepts(intercepts)
-    }
 }
 
 impl RBatisTxExecutor {
@@ -706,10 +691,6 @@ impl InterceptManager for RBatisTxExecutorGuard {
     fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
         self.tx.get_intercepts()
     }
-
-    fn set_intercepts(&self, intercepts: Arc<SyncVec<Arc<dyn Intercept>>>) {
-        self.tx.set_intercepts(intercepts);
-    }
 }
 
 impl Executor for RBatisTxExecutorGuard {
@@ -790,12 +771,5 @@ impl InterceptManager for RBatis {
 
     fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
         &self.intercepts
-    }
-
-    fn set_intercepts(&self, intercepts: Arc<SyncVec<Arc<dyn Intercept>>>) {
-        self.intercepts.clear();
-        for item in intercepts.iter() {
-            self.intercepts.push(item.clone());
-        }
     }
 }
