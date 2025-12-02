@@ -9,6 +9,34 @@ use rbatis::dark_std::sync::SyncVec;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::crud;
 
+#[tokio::main]
+pub async fn main() {
+    _ = fast_log::init(fast_log::Config::new().console());
+    let rb = RBatis::new();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    // create table
+    _=rb.exec("CREATE TABLE activity_0 ( id INTEGER PRIMARY KEY);", vec![]).await;
+    _=rb.exec("CREATE TABLE activity_1 ( id INTEGER PRIMARY KEY);", vec![]).await;
+    
+    let len = rb.intercepts.len();
+    println!("len={}", len);
+    
+    // Create new intercept list and add our mock intercept
+    let new_intercept = SyncVec::new();
+    let intercept: Arc<dyn Intercept> = Arc::new(MockIntercept {});
+    new_intercept.push(intercept);
+    
+    // Create connection and replace its intercepts
+    let mut conn = rb.acquire().await.unwrap();
+    conn.intercepts = Arc::new(new_intercept);
+    println!("conn.intercepts.len={}", conn.intercepts.len());
+    
+    // Execute query to see the mock intercept in action
+    let _ = conn.query("SELECT <my_table_name>", vec![]).await;
+    let data = Activity::select_all(&conn).await.unwrap();
+    println!("data={:?}", json!(data));
+}
+
 /// Mock intercept that just prints SQL
 #[derive(Debug)]
 pub struct MockIntercept;
@@ -17,13 +45,13 @@ pub struct MockIntercept;
 impl Intercept for MockIntercept {
     async fn before(
         &self,
-        _task_id: i64,
+        task_id: i64,
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, rbatis::Error>, &mut Result<Vec<Value>, rbatis::Error>>,
     ) -> Result<Option<bool>, rbatis::Error> {
-        *sql = sql.replace("<my_table_name>", "activity");
+        *sql = sql.replace("<my_table_name>", &format!("activity_{}",task_id % 2));
         println!("MockIntercept: SQL = {}", sql);
         Ok(Some(true))
     }
@@ -48,28 +76,3 @@ pub struct Activity {
 
 //crud!(Activity {},"activity");
 crud!(Activity {},"<my_table_name>");
-
-#[tokio::main]
-pub async fn main() {
-    _ = fast_log::init(fast_log::Config::new().console());
-    let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
-    
-    let len = rb.intercepts.len();
-    println!("len={}", len);
-    
-    // Create new intercept list and add our mock intercept
-    let new_intercept = SyncVec::new();
-    let intercept: Arc<dyn Intercept> = Arc::new(MockIntercept {});
-    new_intercept.push(intercept);
-    
-    // Create connection and replace its intercepts
-    let mut conn = rb.acquire().await.unwrap();
-    conn.intercepts = Arc::new(new_intercept);
-    println!("conn.intercepts.len={}", conn.intercepts.len());
-    
-    // Execute query to see the mock intercept in action
-    let _ = conn.query("SELECT <my_table_name>", vec![]).await;
-    let data = Activity::select_all(&conn).await.unwrap();
-    println!("data={:?}", json!(data));
-}
