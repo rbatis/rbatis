@@ -12,7 +12,7 @@ use std::any::Any;
 use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use crate::intercept::ResultType;
+use crate::intercept::{Intercept, ResultType};
 
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
@@ -44,19 +44,37 @@ impl RBatisRef for RBatis {
     }
 }
 
+#[derive(Clone)]
 pub struct RBatisConnExecutor {
     pub id: i64,
     pub rb: RBatis,
-    pub conn: Mutex<Box<dyn Connection>>,
+    pub conn: Arc<Mutex<Box<dyn Connection>>>,
+    pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
 
 impl RBatisConnExecutor {
     pub fn new(id: i64, conn: Box<dyn Connection>, rb: RBatis) -> Self {
         Self {
             id: id,
-            conn: Mutex::new(conn),
+            conn: Arc::new(Mutex::new(conn)),
+            intercepts: rb.intercepts.clone(),
             rb: rb,
         }
+    }
+
+    pub fn take_connection(self) -> Option<Box<dyn Connection>> {
+        let conn = Arc::into_inner(self.conn);
+        match conn {
+            Option::Some(conn) => {
+                let v= Mutex::into_inner(conn);
+                Some(v)
+            },
+            Option::None => None,   
+        }
+    }
+
+    pub fn intercepts(&self)->&SyncVec<Arc<dyn Intercept>>{
+        return &self.intercepts;
     }
 }
 
@@ -99,7 +117,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -119,7 +137,7 @@ impl Executor for RBatisConnExecutor {
             }
             let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -146,7 +164,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -167,7 +185,7 @@ impl Executor for RBatisConnExecutor {
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
             let mut result = conn.get_values(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -199,12 +217,22 @@ impl RBatisRef for RBatisConnExecutor {
 impl RBatisConnExecutor {
     pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
         Box::pin(async move {
-            let mut conn = self.conn.into_inner();
+            let task_id = self.rb.task_id_generator.generate();
+            let id = self.id;
+            let rb = self.rb.clone();
+            let intercepts = self.intercepts.clone();
+            let conn = self.take_connection();
+            let mut conn = conn.ok_or_else(|| Error::from("Failed to unwrap Arc"))?;
             conn.begin().await?;
-            Ok(RBatisTxExecutor::new(
-                self.rb.task_id_generator.generate(),
-                self.rb,
+            let mut conn_executor = RBatisConnExecutor::new(
+                id,
                 conn,
+                rb,
+            );
+            conn_executor.intercepts = intercepts;
+            Ok(RBatisTxExecutor::new(
+                task_id,
+                conn_executor,
             ))
         })
     }
@@ -228,8 +256,7 @@ impl RBatisConnExecutor {
 #[derive(Clone)]
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
-    pub conn: Arc<Mutex<Box<dyn Connection>>>,
-    pub rb: RBatis,
+    pub conn_executor: RBatisConnExecutor,
     /// please use tx.done()
     /// if tx call .commit() or .rollback() done = true.
     /// if tx not call .commit() or .rollback() done = false
@@ -240,18 +267,17 @@ impl Debug for RBatisTxExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatisTxExecutor")
             .field("tx_id", &self.tx_id)
-            .field("rb", &self.rb)
+            .field("conn_executor", &self.conn_executor)
             .field("done", &self.done)
             .finish()
     }
 }
 
 impl<'a> RBatisTxExecutor {
-    pub fn new(tx_id: i64, rb: RBatis, conn: Box<dyn Connection>) -> Self {
+    pub fn new(tx_id: i64, conn_executor: RBatisConnExecutor) -> Self {
         RBatisTxExecutor {
             tx_id: tx_id,
-            conn: Arc::new(Mutex::new(conn)),
-            rb: rb,
+            conn_executor: conn_executor,
             done: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -277,14 +303,14 @@ impl<'a> RBatisTxExecutor {
 
     pub fn begin(self) -> BoxFuture<'static, Result<Self, Error>> {
         Box::pin(async move {
-            self.conn.lock().await.begin().await?;
+            self.conn_executor.conn.lock().await.begin().await?;
             Ok(self)
         })
     }
 
     pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn.lock().await.rollback().await?;
+            let r = self.conn_executor.conn.lock().await.rollback().await?;
             self.done.store(true, Ordering::Relaxed);
             Ok(r)
         })
@@ -292,7 +318,7 @@ impl<'a> RBatisTxExecutor {
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn.lock().await.commit().await?;
+            let r = self.conn_executor.conn.lock().await.commit().await?;
             self.done.store(true, Ordering::Relaxed);
             Ok(r)
         })
@@ -318,7 +344,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -337,8 +363,8 @@ impl Executor for RBatisTxExecutor {
                 }
             }
             let mut args_after = args.clone();
-            let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            let mut result = self.conn_executor.conn.lock().await.exec(&sql, args).await;
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -364,7 +390,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -382,11 +408,11 @@ impl Executor for RBatisTxExecutor {
                     return before_result.map(|v| Value::from(v));
                 }
             }
-            let mut conn = self.conn.lock().await;
+            let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
             let conn = conn.get_values(&sql, args);
             let mut result = conn.await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -411,19 +437,17 @@ impl Executor for RBatisTxExecutor {
 
 impl RBatisRef for RBatisTxExecutor {
     fn rb_ref(&self) -> &RBatis {
-        &self.rb
+        &self.conn_executor.rb
     }
 }
 
 impl RBatisTxExecutor {
     pub fn take_connection(self) -> Option<Box<dyn Connection>> {
-        match Arc::into_inner(self.conn) {
-            None => None,
-            Some(v) => {
-                let inner = v.into_inner();
-                Some(inner)
-            }
-        }
+        self.conn_executor.take_connection()
+    }
+
+    pub fn intercepts(&self)->&SyncVec<Arc<dyn Intercept>>{
+        return &self.conn_executor.intercepts();
     }
 }
 
@@ -472,6 +496,10 @@ impl RBatisTxExecutorGuard {
         T: DeserializeOwned,
     {
         self.tx.query_decode(sql, args).await
+    }
+
+     pub fn intercepts(&self)->&SyncVec<Arc<dyn Intercept>>{
+        return &self.tx.intercepts();
     }
 }
 
