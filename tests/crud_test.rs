@@ -933,7 +933,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -963,7 +962,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -997,7 +995,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -1239,7 +1236,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -1277,7 +1273,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -1323,7 +1318,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();
@@ -1356,7 +1350,6 @@ mod test {
             let mut rb = RBatis::new();
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![
-                Arc::new(PageIntercept::new()),
                 Arc::new(MockIntercept::new(queue.clone())),
             ]);
             rb.init(MockDriver {}, "test").unwrap();

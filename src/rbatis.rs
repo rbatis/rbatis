@@ -1,5 +1,6 @@
-use std::any::Any;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
+use crate::intercept::intercept_log::LogInterceptor;
+use crate::intercept::Intercept;
 use crate::snowflake::Snowflake;
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
@@ -9,13 +10,11 @@ use rbdc::pool::ConnectionManager;
 use rbdc::pool::Pool;
 use rbs::value;
 use serde::Serialize;
+use std::any::Any;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::intercept::Intercept;
-use crate::intercept::intercept_log::LogInterceptor;
-use crate::intercept::intercept_page::PageIntercept;
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -44,8 +43,8 @@ impl RBatis {
     pub fn new() -> Self {
         let rb = RBatis::default();
         //default use LogInterceptor
-        rb.intercepts.push(Arc::new(PageIntercept::new()));
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
+        rb.intercepts
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
         rb
     }
 
@@ -262,7 +261,7 @@ impl RBatis {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
-                let v:Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
+                let v: Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
                 return v;
             }
         }
@@ -274,7 +273,7 @@ impl RBatis {
     /// pub struct Intercept{}
     /// let name = std::any::type_name::<Intercept>();
     /// ```
-    pub fn remove_intercept_dyn<T: Intercept>(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
         let mut index = 0;
         for item in self.intercepts.iter() {
             if item.name() == name {
