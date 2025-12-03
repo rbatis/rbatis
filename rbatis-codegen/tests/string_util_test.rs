@@ -1,73 +1,99 @@
-use rbatis_codegen::codegen::string_util::{find_convert_string, count_string_num, un_packing_string};
+use rbatis_codegen::codegen::string_util::{find_convert_string, count_string_num, un_packing_string, concat_str};
 
 #[test]
 fn test_find_convert_string() {
-    let sql = "select * from user where id = #{id} and name = ${name}";
-    let list = find_convert_string(sql);
+    // Test with #{param}
+    let result = find_convert_string("SELECT * FROM users WHERE id = #{id}");
+    assert_eq!(result.len(), 1);
+    let (key, value) = result.front().unwrap();
+    assert_eq!(key, "id");
+    assert_eq!(value, "#{id}");
+
+    // Test with ${param}
+    let result = find_convert_string("SELECT * FROM ${table} WHERE id = ${id}");
+    assert_eq!(result.len(), 2);
     
-    assert_eq!(list.len(), 2);
+    // Test with mixed #{} and ${}
+    let result = find_convert_string("SELECT * FROM ${table} WHERE name = #{name} AND id = #{id}");
+    assert_eq!(result.len(), 3);
+
+    // Test with no convert strings
+    let result = find_convert_string("SELECT * FROM users");
+    assert_eq!(result.len(), 0);
     
-    let items: Vec<(String, String)> = list.into_iter().collect();
-    assert_eq!(items[0].0, "id");
-    assert_eq!(items[0].1, "#{id}");
-    assert_eq!(items[1].0, "name");
-    assert_eq!(items[1].1, "${name}");
-    
-    // 测试嵌套表达式
-    let sql = "select * from user where id = #{id} and name like #{prefix}%";
-    let list = find_convert_string(sql);
-    
-    assert_eq!(list.len(), 2);
-    
-    let items: Vec<(String, String)> = list.into_iter().collect();
-    assert_eq!(items[0].0, "id");
-    assert_eq!(items[0].1, "#{id}");
-    assert_eq!(items[1].0, "prefix");
-    assert_eq!(items[1].1, "#{prefix}");
-    
-    // 测试空字符串
-    let sql = "";
-    let list = find_convert_string(sql);
-    assert_eq!(list.len(), 0);
+    // Test with incomplete convert strings
+    let result = find_convert_string("SELECT * FROM #{users WHERE id = #{id}");
+    assert_eq!(result.len(), 1);
 }
 
 #[test]
 fn test_count_string_num() {
-    let s = "hello".to_string();
-    assert_eq!(count_string_num(&s, 'l'), 2);
+    let s = "hello, world, hello";
+    assert_eq!(count_string_num(&s.to_string(), 'h'), 2);
+    assert_eq!(count_string_num(&s.to_string(), 'l'), 5);
+    assert_eq!(count_string_num(&s.to_string(), 'o'), 3);
+    assert_eq!(count_string_num(&s.to_string(), ','), 2);
+    assert_eq!(count_string_num(&s.to_string(), 'x'), 0);
     
-    let s = "".to_string();
-    assert_eq!(count_string_num(&s, 'a'), 0);
-    
-    let s = "aaa".to_string();
-    assert_eq!(count_string_num(&s, 'a'), 3);
-    
-    let s = "abcabc".to_string();
-    assert_eq!(count_string_num(&s, 'a'), 2);
-    assert_eq!(count_string_num(&s, 'b'), 2);
-    assert_eq!(count_string_num(&s, 'c'), 2);
-    assert_eq!(count_string_num(&s, 'd'), 0);
+    // Test with empty string
+    let s = "";
+    assert_eq!(count_string_num(&s.to_string(), 'a'), 0);
 }
 
 #[test]
 fn test_un_packing_string() {
-    assert_eq!(un_packing_string("'test'"), "test");
-    assert_eq!(un_packing_string("`test`"), "test");
-    assert_eq!(un_packing_string("\"test\""), "test");
+    // Test with single quotes
+    assert_eq!(un_packing_string("'hello'"), "hello");
     
-    // 测试不完整的引号不会被去除
-    assert_eq!(un_packing_string("'test"), "'test");
-    assert_eq!(un_packing_string("test'"), "test'");
+    // Test with double quotes
+    assert_eq!(un_packing_string("\"world\""), "world");
     
-    // 测试没有引号的字符串
-    assert_eq!(un_packing_string("test"), "test");
+    // Test with backticks
+    assert_eq!(un_packing_string("`table_name`"), "table_name");
     
-    // 测试空字符串
+    // Test with no quotes
+    assert_eq!(un_packing_string("column"), "column");
+    
+    // Test with partially quoted strings
+    assert_eq!(un_packing_string("'hello"), "'hello");
+    assert_eq!(un_packing_string("world\""), "world\"");
+    
+    // Test with empty string
     assert_eq!(un_packing_string(""), "");
     
-    // 测试只有一个字符的字符串
+    // Test with single character
     assert_eq!(un_packing_string("a"), "a");
+}
+
+#[test]
+fn test_concat_str() {
+    // Test with empty base string
+    let mut text = String::new();
+    concat_str(&mut text, "hello");
+    assert_eq!(text, "hello");
     
-    // 测试有引号但长度小于2的字符串
-    assert_eq!(un_packing_string("'"), "'");
-} 
+    // Test with non-empty string
+    let mut text = "SELECT".to_string();
+    concat_str(&mut text, "*");
+    assert_eq!(text, "SELECT *");
+    
+    // Test with existing space
+    let mut text = "SELECT ".to_string();
+    concat_str(&mut text, "*");
+    assert_eq!(text, "SELECT *");
+    
+    // Test with append starting with space
+    let mut text = "SELECT".to_string();
+    concat_str(&mut text, " *");
+    assert_eq!(text, "SELECT *");
+    
+    // Test with comma
+    let mut text = "id,".to_string();
+    concat_str(&mut text, "name");
+    assert_eq!(text, "id, name");
+    
+    // Test with parentheses
+    let mut text = "WHERE (".to_string();
+    concat_str(&mut text, "1=1");
+    assert_eq!(text, "WHERE ( 1=1");
+}
