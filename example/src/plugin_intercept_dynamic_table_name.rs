@@ -22,13 +22,13 @@ pub async fn main() {
     println!("len={}", len);
     
     // Create new intercept list and add our mock intercept
-    let new_intercept = SyncVec::new();
+    let new_intercept = Arc::new(SyncVec::new());
     let intercept: Arc<dyn Intercept> = Arc::new(MockIntercept {});
     new_intercept.push(intercept);
     
     // Create connection and replace its intercepts
     let mut conn = rb.acquire().await.unwrap();
-    conn.intercepts = Arc::new(new_intercept);
+    conn.intercepts = new_intercept;
     println!("conn.intercepts.len={}", conn.intercepts.len());
     
     // Execute query to see the mock intercept in action
