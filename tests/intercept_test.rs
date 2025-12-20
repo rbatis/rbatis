@@ -2,6 +2,7 @@
 #[cfg(test)]
 mod test {
     use async_trait::async_trait;
+    use dark_std::sync::SyncVec;
     use futures_core::future::BoxFuture;
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
@@ -203,5 +204,30 @@ mod test {
         let m = m.unwrap();
         m.inner.store(1, Ordering::SeqCst);
         assert_eq!(m.inner.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn test_add_new_intercept() {
+        #[derive(Debug)]
+        pub struct MockIntercept {
+        }
+
+        #[async_trait]
+        impl Intercept for MockIntercept {}
+        let rb = RBatis::new();
+        rb.init(MockDriver {}, "test").unwrap();
+        let f = async move {
+            let len = rb.intercepts.len();
+            println!("len={}", len);
+            let new_intercept = Arc::new(SyncVec::new());
+            let mut conn = rb.acquire().await.unwrap();
+            conn.intercepts = new_intercept;
+            conn.intercepts.push(Arc::new(MockIntercept {}));
+            println!("len={}", conn.intercepts.len());   
+            let new_len = rb.intercepts.len();
+            println!("len={}", len);
+            assert_eq!(new_len, len);
+        };
+        block_on(f);
     }
 }

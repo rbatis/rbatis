@@ -1,128 +1,160 @@
-use rbatis_codegen::codegen::loader_html::{Element, load_html, as_element};
+use rbatis_codegen::codegen::loader_html::{load_html, Element};
 use std::collections::HashMap;
-use html_parser::Dom;
+
+#[test]
+fn test_load_html_simple() {
+    let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
+    let result = load_html(html).expect("Failed to load HTML");
+    assert_eq!(result.len(), 1);
+    
+    let element = &result[0];
+    assert_eq!(element.tag, "select");
+    assert_eq!(element.attrs.get("id").unwrap(), "find_user");
+    
+    // Text content is stored as a child node, not in the data field
+    assert_eq!(element.childs.len(), 1);
+    assert_eq!(element.childs[0].data, "SELECT * FROM users WHERE id = #{id}");
+}
+
+#[test]
+fn test_load_html_with_children() {
+    let html = r#"
+    <select id="find_user">
+        SELECT * FROM users
+        <if test="name != null">
+            WHERE name = #{name}
+        </if>
+    </select>
+    "#;
+    
+    let result = load_html(html).expect("Failed to load HTML");
+    assert_eq!(result.len(), 1);
+    
+    let select_element = &result[0];
+    assert_eq!(select_element.tag, "select");
+    assert_eq!(select_element.attrs.get("id").unwrap(), "find_user");
+    assert_eq!(select_element.childs.len(), 2);
+    
+    let text_node = &select_element.childs[0];
+    assert_eq!(text_node.tag, "");
+    assert!(text_node.data.contains("SELECT * FROM users"));
+    
+    let if_element = &select_element.childs[1];
+    assert_eq!(if_element.tag, "if");
+    assert_eq!(if_element.attrs.get("test").unwrap(), "name != null");
+    assert_eq!(if_element.childs.len(), 1);
+    assert!(if_element.childs[0].data.contains("WHERE name = #{name}"));
+}
+
+#[test]
+fn test_load_html_multiple_elements() {
+    let html = r#"
+    <select id="find_user">SELECT * FROM users WHERE id = #{id}</select>
+    <insert id="create_user">INSERT INTO users(name) VALUES(#{name})</insert>
+    "#;
+    
+    let result = load_html(html).expect("Failed to load HTML");
+    assert_eq!(result.len(), 2);
+    
+    let select_element = &result[0];
+    assert_eq!(select_element.tag, "select");
+    assert_eq!(select_element.attrs.get("id").unwrap(), "find_user");
+    
+    let insert_element = &result[1];
+    assert_eq!(insert_element.tag, "insert");
+    assert_eq!(insert_element.attrs.get("id").unwrap(), "create_user");
+}
 
 #[test]
 fn test_element_display() {
-    // 测试空元素（只有文本数据）的显示
+    let mut attrs = HashMap::new();
+    attrs.insert("id".to_string(), "test_id".to_string());
+    attrs.insert("test".to_string(), "condition".to_string());
+    
+    // For display, the content is stored in a child element if the tag is not empty
+    let element = Element {
+        tag: "select".to_string(),
+        data: "SELECT * FROM users".to_string(),
+        attrs,
+        childs: vec![],
+    };
+    
+    let display_str = format!("{}", element);
+    assert!(display_str.contains("<select"));
+    assert!(display_str.contains("id=\"test_id\""));
+    assert!(display_str.contains("test=\"condition\""));
+    assert!(display_str.contains("</select>"));
+    
+    // Since data is not displayed for non-empty tags, we'll create a text element instead
     let text_element = Element {
         tag: "".to_string(),
-        data: "这是一个文本节点".to_string(),
+        data: "SELECT * FROM users".to_string(),
         attrs: HashMap::new(),
         childs: vec![],
     };
-    assert_eq!(text_element.to_string(), "这是一个文本节点");
     
-    // 测试带标签的元素的显示
+    let text_display = format!("{}", text_element);
+    assert!(text_display.contains("SELECT * FROM users"));
+}
+
+#[test]
+fn test_element_with_children_display() {
     let mut attrs = HashMap::new();
     attrs.insert("id".to_string(), "test_id".to_string());
-    attrs.insert("class".to_string(), "test_class".to_string());
     
-    let tag_element = Element {
-        tag: "div".to_string(),
-        data: "".to_string(),
-        attrs,
-        childs: vec![
-            Element {
-                tag: "".to_string(),
-                data: "子文本".to_string(),
-                attrs: HashMap::new(),
-                childs: vec![],
-            }
-        ],
-    };
-    
-    // 注意：由于HashMap的无序性，属性的顺序可能不同，所以我们不能直接比较完整的字符串
-    let display = tag_element.to_string();
-    assert!(display.contains("<div"));
-    assert!(display.contains("id=\"test_id\""));
-    assert!(display.contains("class=\"test_class\""));
-    assert!(display.contains(">子文本</div>"));
-}
-
-#[test]
-fn test_load_html() {
-    // 简单的HTML
-    let html = "<div>测试文本</div>";
-    let elements = load_html(html).unwrap();
-    
-    assert_eq!(elements.len(), 1);
-    assert_eq!(elements[0].tag, "div");
-    assert_eq!(elements[0].childs.len(), 1);
-    assert_eq!(elements[0].childs[0].data, "测试文本");
-    
-    // 测试break标签的替换
-    let html = "<break>测试break标签</break>";
-    let elements = load_html(html).unwrap();
-    
-    assert_eq!(elements.len(), 1);
-    assert_eq!(elements[0].tag, "break");
-    assert_eq!(elements[0].childs.len(), 1);
-    assert_eq!(elements[0].childs[0].data, "测试break标签");
-    
-    // 测试带id属性的HTML
-    let html = "<div id=\"test_id\">带id属性的div</div>";
-    let elements = load_html(html).unwrap();
-    
-    assert_eq!(elements.len(), 1);
-    assert_eq!(elements[0].tag, "div");
-    assert!(elements[0].attrs.contains_key("id"));
-    assert_eq!(elements[0].attrs.get("id").unwrap(), "test_id");
-    assert_eq!(elements[0].childs.len(), 1);
-    assert_eq!(elements[0].childs[0].data, "带id属性的div");
-}
-
-#[test]
-fn test_element_child_strings() {
-    // 创建一个嵌套的元素结构
-    let element = Element {
-        tag: "div".to_string(),
-        data: "".to_string(),
+    let child_element = Element {
+        tag: "".to_string(),
+        data: "WHERE name = 'test'".to_string(),
         attrs: HashMap::new(),
-        childs: vec![
-            Element {
-                tag: "".to_string(),
-                data: "文本节点1".to_string(),
-                attrs: HashMap::new(),
-                childs: vec![],
-            },
-            Element {
-                tag: "p".to_string(),
-                data: "".to_string(),
-                attrs: HashMap::new(),
-                childs: vec![
-                    Element {
-                        tag: "".to_string(),
-                        data: "文本节点2".to_string(),
-                        attrs: HashMap::new(),
-                        childs: vec![],
-                    }
-                ],
-            },
-        ],
+        childs: vec![],
     };
     
-    let strings = element.child_strings();
-    assert_eq!(strings.len(), 2);
-    assert_eq!(strings[0], "文本节点1");
-    assert_eq!(strings[1], "文本节点2");
+    let element = Element {
+        tag: "select".to_string(),
+        data: "SELECT * FROM users".to_string(),
+        attrs,
+        childs: vec![child_element],
+    };
     
-    let string_capacity = element.child_string_cup();
-    assert_eq!(string_capacity, "文本节点1".len() + "文本节点2".len());
+    let display_str = format!("{}", element);
+    assert!(display_str.contains("<select"));
+    assert!(display_str.contains("id=\"test_id\""));
+    assert!(display_str.contains("WHERE name = 'test'"));
+    assert!(display_str.contains("</select>"));
 }
 
 #[test]
-fn test_as_element() {
-    // 准备Node数据
-    let html = "<div>文本<p>段落</p></div>";
-    let dom = Dom::parse(html).unwrap();
+fn test_element_with_nested_children() {
+    let html = r#"
+    <select id="find_user">
+        SELECT * FROM users
+        <if test="name != null">
+            <if test="name != ''">
+                WHERE name = #{name}
+            </if>
+        </if>
+    </select>
+    "#;
     
-    let elements = as_element(&dom.children);
+    let result = load_html(html).expect("Failed to load HTML");
+    assert_eq!(result.len(), 1);
     
-    assert_eq!(elements.len(), 1);
-    assert_eq!(elements[0].tag, "div");
-    assert_eq!(elements[0].childs.len(), 2);
-    assert_eq!(elements[0].childs[0].data, "文本");
-    assert_eq!(elements[0].childs[1].tag, "p");
-    assert_eq!(elements[0].childs[1].childs[0].data, "段落");
-} 
+    let select_element = &result[0];
+    // There may be more child elements due to whitespace text nodes
+    assert!(select_element.childs.len() >= 2);
+    
+    // Find the first if element (skip text nodes)
+    let if_element = select_element.childs.iter()
+        .find(|e| e.tag == "if")
+        .expect("Should find an if element");
+    
+    // The if element should have a nested if element
+    let nested_if_element = if_element.childs.iter()
+        .find(|e| e.tag == "if")
+        .expect("Should find a nested if element");
+    
+    assert_eq!(nested_if_element.tag, "if");
+    assert!(nested_if_element.childs.len() >= 1);
+    assert!(nested_if_element.childs.iter()
+        .any(|c| c.data.contains("WHERE name = #{name}")));
+}

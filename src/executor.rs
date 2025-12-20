@@ -1,4 +1,5 @@
 use crate::decode::decode;
+use crate::intercept::{Intercept, ResultType};
 use crate::rbatis::RBatis;
 use crate::Error;
 use dark_std::sync::SyncVec;
@@ -12,22 +13,30 @@ use std::any::Any;
 use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use crate::intercept::ResultType;
+
+/// Trait for managing interceptors in an executor
+pub trait InterceptManager {
+    /// Add an interceptor to the list
+    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>);
+
+    /// Remove an interceptor by name
+    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>>;
+
+    /// Get an interceptor by name
+    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept>;
+
+    /// Get all interceptors
+    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>>;
+}
 
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
-pub trait Executor: RBatisRef + Send + Sync {
+pub trait Executor: RBatisRef + InterceptManager + Send + Sync {
     fn id(&self) -> i64;
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
-    fn as_any(&self) -> &dyn Any
-    where
-        Self: Sized,
-    {
-        self
-    }
 }
 
 pub trait RBatisRef: Any + Send + Sync {
@@ -44,18 +53,32 @@ impl RBatisRef for RBatis {
     }
 }
 
+#[derive(Clone)]
 pub struct RBatisConnExecutor {
     pub id: i64,
     pub rb: RBatis,
-    pub conn: Mutex<Box<dyn Connection>>,
+    pub conn: Arc<Mutex<Box<dyn Connection>>>,
+    pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
 }
 
 impl RBatisConnExecutor {
     pub fn new(id: i64, conn: Box<dyn Connection>, rb: RBatis) -> Self {
         Self {
             id: id,
-            conn: Mutex::new(conn),
+            conn: Arc::new(Mutex::new(conn)),
+            intercepts: rb.intercepts.clone(),
             rb: rb,
+        }
+    }
+
+    pub fn take_connection(self) -> Option<Box<dyn Connection>> {
+        let conn = Arc::into_inner(self.conn);
+        match conn {
+            Option::Some(conn) => {
+                let v = Mutex::into_inner(conn);
+                Some(v)
+            }
+            Option::None => None,
         }
     }
 }
@@ -99,7 +122,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -119,7 +142,7 @@ impl Executor for RBatisConnExecutor {
             }
             let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -146,7 +169,7 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .before(
                         rb_task_id,
@@ -167,7 +190,7 @@ impl Executor for RBatisConnExecutor {
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
             let mut result = conn.get_values(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
@@ -196,16 +219,43 @@ impl RBatisRef for RBatisConnExecutor {
     }
 }
 
+impl InterceptManager for RBatisConnExecutor {
+    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
+        self.intercepts.push(intercept);
+    }
+
+    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        RBatisConnExecutor::remove_intercept_dyn(self, name)
+    }
+
+    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        for item in self.intercepts.iter() {
+            if item.name() == name {
+                return Some(item.as_ref());
+            }
+        }
+        None
+    }
+
+    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
+        &self.intercepts
+    }
+
+}
+
 impl RBatisConnExecutor {
     pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
         Box::pin(async move {
-            let mut conn = self.conn.into_inner();
+            let task_id = self.rb.task_id_generator.generate();
+            let id = self.id;
+            let rb = self.rb.clone();
+            let intercepts = self.intercepts.clone();
+            let conn = self.take_connection();
+            let mut conn = conn.ok_or_else(|| Error::from("Failed to unwrap Arc"))?;
             conn.begin().await?;
-            Ok(RBatisTxExecutor::new(
-                self.rb.task_id_generator.generate(),
-                self.rb,
-                conn,
-            ))
+            let mut conn_executor = RBatisConnExecutor::new(id, conn, rb);
+            conn_executor.intercepts = intercepts;
+            Ok(RBatisTxExecutor::new(task_id, conn_executor))
         })
     }
 
@@ -215,6 +265,79 @@ impl RBatisConnExecutor {
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async { Ok(self.conn.lock().await.commit().await?) })
+    }
+
+    /// get intercept from name
+    /// the default name just like `let name = std::any::type_name::<LogInterceptor>()`
+    ///  ```rust
+    /// use std::sync::Arc;
+    /// use async_trait::async_trait;
+    /// use rbatis::RBatis;
+    /// use rbatis::intercept::{Intercept};
+    ///
+    /// #[derive(Debug)]
+    /// pub struct MockIntercept {
+    /// }
+    /// #[async_trait]
+    /// impl Intercept for MockIntercept {
+    /// }
+    ///  //use get_intercept_type
+    ///  let mut rb = RBatis::new();
+    ///  let name = std::any::type_name::<MockIntercept>();
+    ///  let intercept = rb.get_intercept_dyn(name);
+    /// ```
+    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        for x in self.intercepts.iter() {
+            if name == x.name() {
+                return Some(x.as_ref());
+            }
+        }
+        None
+    }
+
+    /// get intercept from name
+    ///  ```rust
+    /// use std::sync::Arc;
+    /// use async_trait::async_trait;
+    /// use rbatis::RBatis;
+    /// use rbatis::intercept::{Intercept};
+    ///
+    /// #[derive(Debug)]
+    /// pub struct MockIntercept {
+    /// }
+    /// #[async_trait]
+    /// impl Intercept for MockIntercept {
+    /// }
+    ///  //use get_intercept_type
+    ///  let mut rb = RBatis::new();
+    ///  let intercept = rb.get_intercept::<MockIntercept>();
+    /// ```
+    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
+        let name = std::any::type_name::<T>();
+        for item in self.intercepts.iter() {
+            if name == item.name() {
+                let v: Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
+                return v;
+            }
+        }
+        None
+    }
+
+    /// how to ge name
+    /// ```rust
+    /// pub struct Intercept{}
+    /// let name = std::any::type_name::<Intercept>();
+    /// ```
+    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        let mut index = 0;
+        for item in self.intercepts.iter() {
+            if item.name() == name {
+                //this is safe
+                return self.intercepts.remove(index);
+            }
+            index += 1;
+        }
+        None
     }
 }
 
@@ -228,8 +351,7 @@ impl RBatisConnExecutor {
 #[derive(Clone)]
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
-    pub conn: Arc<Mutex<Box<dyn Connection>>>,
-    pub rb: RBatis,
+    pub conn_executor: RBatisConnExecutor,
     /// please use tx.done()
     /// if tx call .commit() or .rollback() done = true.
     /// if tx not call .commit() or .rollback() done = false
@@ -240,18 +362,17 @@ impl Debug for RBatisTxExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatisTxExecutor")
             .field("tx_id", &self.tx_id)
-            .field("rb", &self.rb)
+            .field("conn_executor", &self.conn_executor)
             .field("done", &self.done)
             .finish()
     }
 }
 
 impl<'a> RBatisTxExecutor {
-    pub fn new(tx_id: i64, rb: RBatis, conn: Box<dyn Connection>) -> Self {
+    pub fn new(tx_id: i64, conn_executor: RBatisConnExecutor) -> Self {
         RBatisTxExecutor {
             tx_id: tx_id,
-            conn: Arc::new(Mutex::new(conn)),
-            rb: rb,
+            conn_executor: conn_executor,
             done: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -277,14 +398,14 @@ impl<'a> RBatisTxExecutor {
 
     pub fn begin(self) -> BoxFuture<'static, Result<Self, Error>> {
         Box::pin(async move {
-            self.conn.lock().await.begin().await?;
+            self.conn_executor.conn.lock().await.begin().await?;
             Ok(self)
         })
     }
 
     pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn.lock().await.rollback().await?;
+            let r = self.conn_executor.conn.lock().await.rollback().await?;
             self.done.store(true, Ordering::Relaxed);
             Ok(r)
         })
@@ -292,7 +413,7 @@ impl<'a> RBatisTxExecutor {
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn.lock().await.commit().await?;
+            let r = self.conn_executor.conn.lock().await.commit().await?;
             self.done.store(true, Ordering::Relaxed);
             Ok(r)
         })
@@ -307,6 +428,44 @@ impl<'a> RBatisTxExecutor {
     pub fn set_done(&self, done: bool) {
         self.done.store(done, Ordering::Relaxed)
     }
+
+    /// defer and use future method
+    /// for example:
+    /// ```rust
+    ///  use rbatis::executor::RBatisTxExecutor;
+    ///  use rbatis::{Error, RBatis};
+    ///
+    ///  async fn test_tx(tx:RBatisTxExecutor) -> Result<(),Error>{
+    ///         tx.defer_async(|tx| async move {
+    ///              if !tx.done(){ let _ = tx.rollback().await; }
+    ///         });
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn defer_async<F>(&self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
+    where
+        F: Future<Output = ()> + Send + 'static,
+    {
+        RBatisTxExecutorGuard {
+            tx: self.clone(),
+            callback: Arc::new(move |arg| {
+                let future = callback(arg);
+                rbdc::rt::spawn(future);
+            }),
+        }
+    }
+
+    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        self.conn_executor.get_intercept_dyn(name)
+    }
+
+    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
+        self.conn_executor.get_intercept::<T>()
+    }
+
+    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        self.conn_executor.remove_intercept_dyn(name)
+    }
 }
 
 impl Executor for RBatisTxExecutor {
@@ -318,7 +477,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -337,8 +496,8 @@ impl Executor for RBatisTxExecutor {
                 }
             }
             let mut args_after = args.clone();
-            let mut result = self.conn.lock().await.exec(&sql, args).await;
-            for item in self.rb_ref().intercepts.iter() {
+            let mut result = self.conn_executor.conn.lock().await.exec(&sql, args).await;
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -364,7 +523,7 @@ impl Executor for RBatisTxExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let mut before_result = Err(Error::from(""));
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .before(
                         self.tx_id,
@@ -382,11 +541,11 @@ impl Executor for RBatisTxExecutor {
                     return before_result.map(|v| Value::from(v));
                 }
             }
-            let mut conn = self.conn.lock().await;
+            let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
             let conn = conn.get_values(&sql, args);
             let mut result = conn.await;
-            for item in self.rb_ref().intercepts.iter() {
+            for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
                         self.tx_id,
@@ -411,19 +570,31 @@ impl Executor for RBatisTxExecutor {
 
 impl RBatisRef for RBatisTxExecutor {
     fn rb_ref(&self) -> &RBatis {
-        &self.rb
+        &self.conn_executor.rb
+    }
+}
+
+impl InterceptManager for RBatisTxExecutor {
+    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
+        self.conn_executor.add_intercept_dyn(intercept);
+    }
+
+    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        self.conn_executor.remove_intercept_dyn(name)
+    }
+
+    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        self.conn_executor.get_intercept_dyn(name)
+    }
+
+    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
+        self.conn_executor.get_intercepts()
     }
 }
 
 impl RBatisTxExecutor {
     pub fn take_connection(self) -> Option<Box<dyn Connection>> {
-        match Arc::into_inner(self.conn) {
-            None => None,
-            Some(v) => {
-                let inner = v.into_inner();
-                Some(inner)
-            }
-        }
+        self.conn_executor.take_connection()
     }
 }
 
@@ -473,33 +644,17 @@ impl RBatisTxExecutorGuard {
     {
         self.tx.query_decode(sql, args).await
     }
-}
 
-impl RBatisTxExecutor {
-    /// defer and use future method
-    /// for example:
-    /// ```rust
-    ///  use rbatis::executor::RBatisTxExecutor;
-    ///  use rbatis::{Error, RBatis};
-    ///
-    ///  async fn test_tx(tx:RBatisTxExecutor) -> Result<(),Error>{
-    ///         tx.defer_async(|tx| async move {
-    ///              if !tx.done(){ let _ = tx.rollback().await; }
-    ///         });
-    ///     Ok(())
-    /// }
-    /// ```
-    pub fn defer_async<F>(&self, callback: fn(s: RBatisTxExecutor) -> F) -> RBatisTxExecutorGuard
-    where
-        F: Future<Output = ()> + Send + 'static,
-    {
-        RBatisTxExecutorGuard {
-            tx: self.clone(),
-            callback: Arc::new(move |arg| {
-                let future = callback(arg);
-                rbdc::rt::spawn(future);
-            }),
-        }
+    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        self.tx.get_intercept_dyn(name)
+    }
+
+    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
+        self.tx.get_intercept::<T>()
+    }
+
+    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        self.tx.remove_intercept_dyn(name)
     }
 }
 
@@ -517,6 +672,24 @@ impl Drop for RBatisTxExecutorGuard {
 impl RBatisRef for RBatisTxExecutorGuard {
     fn rb_ref(&self) -> &RBatis {
         self.tx.rb_ref()
+    }
+}
+
+impl InterceptManager for RBatisTxExecutorGuard {
+    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
+        self.tx.add_intercept_dyn(intercept);
+    }
+
+    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        self.tx.remove_intercept_dyn(name)
+    }
+
+    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        self.tx.get_intercept_dyn(name)
+    }
+
+    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
+        self.tx.get_intercepts()
     }
 }
 
@@ -583,67 +756,20 @@ impl Executor for RBatis {
     }
 }
 
-#[derive(Debug)]
-pub struct TempExecutor<'a> {
-    pub rb: &'a RBatis,
-    pub sql: SyncVec<String>,
-    pub args: SyncVec<Vec<Value>>,
-}
-
-impl<'a> TempExecutor<'a> {
-    pub fn new(rb: &'a RBatis) -> Self {
-        Self {
-            rb: rb,
-            sql: SyncVec::new(),
-            args: SyncVec::new(),
-        }
+impl InterceptManager for RBatis {
+    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
+        self.intercepts.push(intercept);
     }
 
-    pub fn clear_sql(&self) -> Vec<String> {
-        let mut arr = vec![];
-        loop {
-            if let Some(v) = self.sql.remove(0) {
-                arr.push(v);
-            } else {
-                break;
-            }
-        }
-        arr
+    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+        self.remove_intercept_dyn(name)
     }
 
-    pub fn clear_args(&self) -> Vec<Vec<Value>> {
-        let mut arr = vec![];
-        loop {
-            if let Some(v) = self.args.remove(0) {
-                arr.push(v);
-            } else {
-                break;
-            }
-        }
-        arr
-    }
-}
-
-impl RBatisRef for TempExecutor<'static> {
-    fn rb_ref(&self) -> &RBatis {
-        self.rb
-    }
-}
-
-impl Executor for TempExecutor<'static> {
-    fn id(&self) -> i64 {
-        0
+    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
+        self.get_intercept_dyn(name)
     }
 
-    fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-        self.sql.push(sql.to_string());
-        self.args.push(args);
-        Box::pin(async { Ok(ExecResult::default()) })
-    }
-
-    fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
-        self.sql.push(sql.to_string());
-        self.args.push(args);
-        Box::pin(async { Ok(Value::default()) })
+    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
+        &self.intercepts
     }
 }

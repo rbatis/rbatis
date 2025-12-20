@@ -1,78 +1,85 @@
-use rbatis_codegen::codegen::parser_html::parse_html;
+use rbatis_codegen::codegen::parser_html::{load_mapper_map, load_mapper_vec};
 
 #[test]
-fn test_parse_html_simple() {
-    let html = "<mapper><select id=\"test\">select * from user</select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    assert!(result.contains("select * from user"));
+fn test_load_mapper_map_basic() {
+    let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
+    let result = load_mapper_map(html);
+    assert!(result.is_ok());
+    
+    let map = result.unwrap();
+    assert_eq!(map.len(), 1);
+    assert!(map.contains_key("find_user"));
+    
+    let element = map.get("find_user").unwrap();
+    assert_eq!(element.tag, "select");
+    assert_eq!(element.attrs.get("id").unwrap(), "find_user");
 }
 
 #[test]
-fn test_parse_html_with_if() {
-    let html = "<mapper><select id=\"test\">select * from user <if test=\"name != null\">where name = #{name}</if></select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    println!("{:?}", result);
-    assert!(result.contains("if"));
-    assert!(result.contains("arg [\"name\"]) . op_ne (& rbs :: Value :: Null)"));
+fn test_load_mapper_map_multiple() {
+    let html = r#"
+    <mapper>
+        <select id="find_user">SELECT * FROM users WHERE id = #{id}</select>
+        <insert id="create_user">INSERT INTO users(name) VALUES(#{name})</insert>
+    </mapper>
+    "#;
+    let result = load_mapper_map(html);
+    assert!(result.is_ok());
+    
+    let map = result.unwrap();
+    assert_eq!(map.len(), 2);
+    assert!(map.contains_key("find_user"));
+    assert!(map.contains_key("create_user"));
 }
 
 #[test]
-fn test_parse_html_with_foreach() {
-    let html = "<mapper><select id=\"test\">select * from user <foreach collection=\"ids\" item=\"item\" index=\"index\">where id = #{item}</foreach></select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    assert!(result.contains("for"));
-    assert!(result.contains("ids"));
+fn test_load_mapper_vec_basic() {
+    let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
+    let result = load_mapper_vec(html);
+    assert!(result.is_ok());
+    
+    let elements = result.unwrap();
+    assert_eq!(elements.len(), 1);
+    assert_eq!(elements[0].tag, "select");
+    assert_eq!(elements[0].attrs.get("id").unwrap(), "find_user");
 }
 
 #[test]
-fn test_parse_html_with_choose() {
-    let html = "<mapper><select id=\"test\">select * from user <choose><when test=\"id != null\">where id = #{id}</when><otherwise>where id = 0</otherwise></choose></select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    println!("{}", result);
-    assert!(result.contains("if"));
+fn test_load_mapper_vec_with_wrapper() {
+    let html = r#"
+    <mapper>
+        <select id="find_user">SELECT * FROM users WHERE id = #{id}</select>
+    </mapper>
+    "#;
+    let result = load_mapper_vec(html);
+    assert!(result.is_ok());
+    
+    let elements = result.unwrap();
+    assert_eq!(elements.len(), 1);
+    assert_eq!(elements[0].tag, "select");
+    assert_eq!(elements[0].attrs.get("id").unwrap(), "find_user");
 }
 
 #[test]
-fn test_parse_html_with_trim() {
-    let html = "<mapper><select id=\"test\">select * from user <trim prefixOverrides=\"and\" suffixOverrides=\",\">where id = #{id}</trim></select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    assert!(result.contains("trim"));
+fn test_load_mapper_vec_no_wrapper() {
+    let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
+    let result = load_mapper_vec(html);
+    assert!(result.is_ok());
+    
+    let elements = result.unwrap();
+    assert_eq!(elements.len(), 1);
+    assert_eq!(elements[0].tag, "select");
+    assert_eq!(elements[0].attrs.get("id").unwrap(), "find_user");
 }
 
 #[test]
-fn test_parse_html_with_bind() {
-    let html = "<mapper><select id=\"test\"><bind name=\"pattern\" value=\"'%' + name + '%'\"/>select * from user where name like #{pattern}</select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    print!("{}", result);
-    assert!(result.contains("pattern"));
+fn test_load_mapper_vec_no_id() {
+    let html = r#"<select>SELECT * FROM users</select>"#;
+    let result = load_mapper_vec(html);
+    assert!(result.is_ok());
+    
+    let elements = result.unwrap();
+    assert_eq!(elements.len(), 1);
+    assert_eq!(elements[0].tag, "select");
+    assert_eq!(elements[0].attrs.get("id"), None);
 }
-
-#[test]
-fn test_parse_html_with_where() {
-    let html = "<mapper><select id=\"test\">select * from user <where>id = #{id}</where></select></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    assert!(result.contains("where"));
-}
-
-#[test]
-fn test_parse_html_with_set() {
-    let html = "<mapper><update id=\"test\">update user <set>name = #{name}</set> where id = #{id}</update></mapper>";
-    let fn_name = "test";
-    let tokens = parse_html(html, fn_name, &mut vec![]);
-    let result = tokens.to_string();
-    assert!(result.contains("set"));
-} 

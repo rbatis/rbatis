@@ -262,7 +262,7 @@ impl RBatis {
         let name = std::any::type_name::<T>();
         for item in self.intercepts.iter() {
             if name == item.name() {
-                let v:Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
+                let v: Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
                 return v;
             }
         }
@@ -274,7 +274,7 @@ impl RBatis {
     /// pub struct Intercept{}
     /// let name = std::any::type_name::<Intercept>();
     /// ```
-    pub fn remove_intercept_dyn<T: Intercept>(&self, name: &str) -> Option<Arc<dyn Intercept>> {
+    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
         let mut index = 0;
         for item in self.intercepts.iter() {
             if item.name() == name {

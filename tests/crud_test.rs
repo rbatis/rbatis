@@ -1051,7 +1051,7 @@ mod test {
             let queue = Arc::new(SyncVec::new());
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             rb.init(MockDriver {}, "test").unwrap();
-            
+
             let ids:Vec<String> = vec![];
             let r = MockTable::select_by_map(
                 &mut rb,
@@ -1289,8 +1289,8 @@ mod test {
                 },
                 "test",
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(
@@ -1307,11 +1307,11 @@ mod test {
         block_on(f);
     }
 
-    rbatis::htmlsql_select_page!(htmlsql_select_page_by_name1(name: &str) -> MockTable => 
+    rbatis::htmlsql_select_page!(htmlsql_select_page_by_name1(name: &str) -> MockTable =>
     r#"<select id="select_page_data">
-        select 
+        select
         <if test="do_count == true">
-          count(1) from table 
+          count(1) from table
         </if>
         <if test="do_count == false">
           * from table limit ${page_no},${page_size}
@@ -1341,11 +1341,11 @@ mod test {
     }
 
     rbatis::pysql_select_page!(pysql_select_page1(item: PySqlSelectPageArg,var1:&str) -> MockTable =>
-    r#"select 
+    r#"select
       if do_count == true:
-        count(1) as count 
+        count(1) as count
       if do_count == false:
-         * 
+         *
       from activity where delete_flag = 0 and var1 = #{var1}
         if item.name != '':
            and name=#{item.name}"#);
