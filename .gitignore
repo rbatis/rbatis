@@ -15,6 +15,8 @@ example/target/
 '.vscode'
 /coverage/
 *.profraw
+.claude/
+
 
 
 # Remove Cargo.lock from gitignore if creating an executable, leave it for libraries
