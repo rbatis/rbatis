@@ -53,8 +53,7 @@ macro_rules! rbench {
 
 //cargo test --release --package rbatis --bench raw_performance bench_raw  --no-fail-fast -- --exact -Z unstable-options --show-output
 // ---- bench_raw stdout ----(windows)
-//Time: 52.4187ms ,each:524 ns/op
-//QPS: 1906435 QPS/s
+//time: 85.1544ms ,each:851 ns/op ,qps: 1174337 QPS/s
 //---- bench_raw stdout ----(Apple M1 macos)
 //Time: 66.82575ms ,each:668 ns/op
 //QPS: 1496162 QPS/s
