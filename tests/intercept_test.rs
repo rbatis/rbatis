@@ -223,7 +223,7 @@ mod test {
             let mut conn = rb.acquire().await.unwrap();
             conn.intercepts = new_intercept;
             conn.intercepts.push(Arc::new(MockIntercept {}));
-            println!("len={}", conn.intercepts.len());   
+            println!("len={}", conn.intercepts.len());
             let new_len = rb.intercepts.len();
             println!("len={}", len);
             assert_eq!(new_len, len);

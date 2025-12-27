@@ -1,8 +1,7 @@
 use crate::decode::decode;
-use crate::intercept::{Intercept, ResultType};
+use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
 use crate::Error;
-use dark_std::sync::SyncVec;
 use futures::Future;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
@@ -14,23 +13,8 @@ use std::fmt::{Debug, Formatter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-/// Trait for managing interceptors in an executor
-pub trait InterceptManager {
-    /// Add an interceptor to the list
-    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>);
-
-    /// Remove an interceptor by name
-    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>>;
-
-    /// Get an interceptor by name
-    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept>;
-
-    /// Get all interceptors
-    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>>;
-}
-
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
-pub trait Executor: RBatisRef + InterceptManager + Send + Sync {
+pub trait Executor: RBatisRef + Send + Sync {
     fn id(&self) -> i64;
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
@@ -58,7 +42,7 @@ pub struct RBatisConnExecutor {
     pub id: i64,
     pub rb: RBatis,
     pub conn: Arc<Mutex<Box<dyn Connection>>>,
-    pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
+    pub intercepts: Arc<dark_std::sync::SyncVec<Arc<dyn crate::intercept::Intercept>>>,
 }
 
 impl RBatisConnExecutor {
@@ -66,8 +50,8 @@ impl RBatisConnExecutor {
         Self {
             id: id,
             conn: Arc::new(Mutex::new(conn)),
+            rb: rb.clone(),
             intercepts: rb.intercepts.clone(),
-            rb: rb,
         }
     }
 
@@ -219,42 +203,16 @@ impl RBatisRef for RBatisConnExecutor {
     }
 }
 
-impl InterceptManager for RBatisConnExecutor {
-    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
-        self.intercepts.push(intercept);
-    }
-
-    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        RBatisConnExecutor::remove_intercept_dyn(self, name)
-    }
-
-    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        for item in self.intercepts.iter() {
-            if item.name() == name {
-                return Some(item.as_ref());
-            }
-        }
-        None
-    }
-
-    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
-        &self.intercepts
-    }
-
-}
-
 impl RBatisConnExecutor {
     pub fn begin(self) -> BoxFuture<'static, Result<RBatisTxExecutor, Error>> {
         Box::pin(async move {
             let task_id = self.rb.task_id_generator.generate();
             let id = self.id;
             let rb = self.rb.clone();
-            let intercepts = self.intercepts.clone();
             let conn = self.take_connection();
             let mut conn = conn.ok_or_else(|| Error::from("Failed to unwrap Arc"))?;
             conn.begin().await?;
-            let mut conn_executor = RBatisConnExecutor::new(id, conn, rb);
-            conn_executor.intercepts = intercepts;
+            let conn_executor = RBatisConnExecutor::new(id, conn, rb);
             Ok(RBatisTxExecutor::new(task_id, conn_executor))
         })
     }
@@ -265,79 +223,6 @@ impl RBatisConnExecutor {
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async { Ok(self.conn.lock().await.commit().await?) })
-    }
-
-    /// get intercept from name
-    /// the default name just like `let name = std::any::type_name::<LogInterceptor>()`
-    ///  ```rust
-    /// use std::sync::Arc;
-    /// use async_trait::async_trait;
-    /// use rbatis::RBatis;
-    /// use rbatis::intercept::{Intercept};
-    ///
-    /// #[derive(Debug)]
-    /// pub struct MockIntercept {
-    /// }
-    /// #[async_trait]
-    /// impl Intercept for MockIntercept {
-    /// }
-    ///  //use get_intercept_type
-    ///  let mut rb = RBatis::new();
-    ///  let name = std::any::type_name::<MockIntercept>();
-    ///  let intercept = rb.get_intercept_dyn(name);
-    /// ```
-    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        for x in self.intercepts.iter() {
-            if name == x.name() {
-                return Some(x.as_ref());
-            }
-        }
-        None
-    }
-
-    /// get intercept from name
-    ///  ```rust
-    /// use std::sync::Arc;
-    /// use async_trait::async_trait;
-    /// use rbatis::RBatis;
-    /// use rbatis::intercept::{Intercept};
-    ///
-    /// #[derive(Debug)]
-    /// pub struct MockIntercept {
-    /// }
-    /// #[async_trait]
-    /// impl Intercept for MockIntercept {
-    /// }
-    ///  //use get_intercept_type
-    ///  let mut rb = RBatis::new();
-    ///  let intercept = rb.get_intercept::<MockIntercept>();
-    /// ```
-    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
-        let name = std::any::type_name::<T>();
-        for item in self.intercepts.iter() {
-            if name == item.name() {
-                let v: Option<&T> = <dyn Any>::downcast_ref::<T>(item.as_ref());
-                return v;
-            }
-        }
-        None
-    }
-
-    /// how to ge name
-    /// ```rust
-    /// pub struct Intercept{}
-    /// let name = std::any::type_name::<Intercept>();
-    /// ```
-    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        let mut index = 0;
-        for item in self.intercepts.iter() {
-            if item.name() == name {
-                //this is safe
-                return self.intercepts.remove(index);
-            }
-            index += 1;
-        }
-        None
     }
 }
 
@@ -454,18 +339,6 @@ impl<'a> RBatisTxExecutor {
             }),
         }
     }
-
-    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        self.conn_executor.get_intercept_dyn(name)
-    }
-
-    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
-        self.conn_executor.get_intercept::<T>()
-    }
-
-    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        self.conn_executor.remove_intercept_dyn(name)
-    }
 }
 
 impl Executor for RBatisTxExecutor {
@@ -574,24 +447,6 @@ impl RBatisRef for RBatisTxExecutor {
     }
 }
 
-impl InterceptManager for RBatisTxExecutor {
-    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
-        self.conn_executor.add_intercept_dyn(intercept);
-    }
-
-    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        self.conn_executor.remove_intercept_dyn(name)
-    }
-
-    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        self.conn_executor.get_intercept_dyn(name)
-    }
-
-    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
-        self.conn_executor.get_intercepts()
-    }
-}
-
 impl RBatisTxExecutor {
     pub fn take_connection(self) -> Option<Box<dyn Connection>> {
         self.conn_executor.take_connection()
@@ -644,18 +499,6 @@ impl RBatisTxExecutorGuard {
     {
         self.tx.query_decode(sql, args).await
     }
-
-    pub fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        self.tx.get_intercept_dyn(name)
-    }
-
-    pub fn get_intercept<T: Intercept>(&self) -> Option<&T> {
-        self.tx.get_intercept::<T>()
-    }
-
-    pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        self.tx.remove_intercept_dyn(name)
-    }
 }
 
 impl Drop for RBatisTxExecutorGuard {
@@ -672,24 +515,6 @@ impl Drop for RBatisTxExecutorGuard {
 impl RBatisRef for RBatisTxExecutorGuard {
     fn rb_ref(&self) -> &RBatis {
         self.tx.rb_ref()
-    }
-}
-
-impl InterceptManager for RBatisTxExecutorGuard {
-    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
-        self.tx.add_intercept_dyn(intercept);
-    }
-
-    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        self.tx.remove_intercept_dyn(name)
-    }
-
-    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        self.tx.get_intercept_dyn(name)
-    }
-
-    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
-        self.tx.get_intercepts()
     }
 }
 
@@ -756,20 +581,3 @@ impl Executor for RBatis {
     }
 }
 
-impl InterceptManager for RBatis {
-    fn add_intercept_dyn(&self, intercept: Arc<dyn Intercept>) {
-        self.intercepts.push(intercept);
-    }
-
-    fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        self.remove_intercept_dyn(name)
-    }
-
-    fn get_intercept_dyn(&self, name: &str) -> Option<&dyn Intercept> {
-        self.get_intercept_dyn(name)
-    }
-
-    fn get_intercepts(&self) -> &Arc<SyncVec<Arc<dyn Intercept>>> {
-        &self.intercepts
-    }
-}
