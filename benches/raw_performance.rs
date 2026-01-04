@@ -55,7 +55,7 @@ macro_rules! rbench {
 // ---- bench_raw stdout ----(windows)
 //time: 85.1544ms ,each:851 ns/op ,qps: 1174337 QPS/s
 //---- bench_raw stdout ----(Apple M1 macos)
-//Time: 66.82575ms ,each:668 ns/op
+//time: 78.242875ms ,each:782 ns/op ,qps: 1278071 QPS/s
 //QPS: 1496162 QPS/s
 #[test]
 fn bench_raw() {
