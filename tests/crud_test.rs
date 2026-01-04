@@ -316,11 +316,12 @@ mod test {
             let mut rb = RBatis::new();
             let mut opts = MockConnectOptions {};
             opts.set_uri("test");
-            let pool = DefaultPool::new(ConnectionManager::new_opt_box(
-                Box::new(MockDriver {}),
-                Box::new(opts),
-            ))
-            .unwrap();
+            // Directly construct ConnectionManager since new_opt_box has been removed
+            let manager = ConnectionManager {
+                driver: std::sync::Arc::new(Box::new(MockDriver {})),
+                option: std::sync::Arc::new(Box::new(opts)),
+            };
+            let pool = DefaultPool::new(manager).unwrap();
             rb.init_pool(pool).unwrap();
             rb.acquire().await.unwrap();
         };

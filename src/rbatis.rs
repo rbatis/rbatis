@@ -74,10 +74,12 @@ impl RBatis {
         }
         let mut option = driver.default_option();
         option.set_uri(url)?;
-        let pool = DefaultPool::new(ConnectionManager::new_arc(
-            Arc::new(Box::new(driver)),
-            Arc::new(option),
-        ))?;
+        // Directly construct ConnectionManager since new_options requires specific ConnectOptions type
+        let manager = ConnectionManager {
+            driver: std::sync::Arc::new(Box::new(driver)),
+            option: std::sync::Arc::new(option),
+        };
+        let pool = DefaultPool::new(manager)?;
         self.pool
             .set(Box::new(pool))
             .map_err(|_e| Error::from("pool set fail!"))?;
@@ -104,10 +106,7 @@ impl RBatis {
         driver: Driver,
         option: ConnectOptions,
     ) -> Result<(), Error> {
-        let pool = Pool::new(ConnectionManager::new_arc(
-            Arc::new(Box::new(driver)),
-            Arc::new(Box::new(option)),
-        ))?;
+        let pool = Pool::new(ConnectionManager::new_options(driver, option))?;
         self.pool
             .set(Box::new(pool))
             .map_err(|_e| Error::from("pool set fail!"))?;

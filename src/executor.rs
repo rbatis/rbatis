@@ -173,7 +173,12 @@ impl Executor for RBatisConnExecutor {
             }
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
-            let mut result = conn.get_values(&sql, args).await;
+            let raw_result = conn.get_values(&sql, args).await;
+            // Convert Result<Value, Error> to Result<Vec<Value>, Error> for interceptors
+            let mut result = raw_result.and_then(|v| {
+                v.into_array()
+                    .ok_or_else(|| Error::from("Expected Value::Array, but got different type"))
+            });
             for item in self.intercepts.iter() {
                 let next = item
                     .after(
@@ -189,7 +194,7 @@ impl Executor for RBatisConnExecutor {
                         break;
                     }
                 } else {
-                    return result.map(|v| Value::from(v));
+                    return result.map(|v| Value::Array(v));
                 }
             }
             Ok(Value::Array(result?))
@@ -416,8 +421,12 @@ impl Executor for RBatisTxExecutor {
             }
             let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
-            let conn = conn.get_values(&sql, args);
-            let mut result = conn.await;
+            let raw_result = conn.get_values(&sql, args).await;
+            // Convert Result<Value, Error> to Result<Vec<Value>, Error> for interceptors
+            let mut result = raw_result.and_then(|v| {
+                v.into_array()
+                    .ok_or_else(|| Error::from("Expected Value::Array, but got different type"))
+            });
             for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
@@ -433,7 +442,7 @@ impl Executor for RBatisTxExecutor {
                         break;
                     }
                 } else {
-                    return result.map(|v| Value::from(v));
+                    return result.map(|v| Value::Array(v));
                 }
             }
             Ok(Value::Array(result?))
