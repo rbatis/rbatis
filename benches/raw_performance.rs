@@ -72,8 +72,7 @@ fn bench_raw() {
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-// Time: 346.576666ms ,each:3465 ns/op
-// QPS: 288531 QPS/s
+//time: 906.302292ms ,each:9063 ns/op ,qps: 110338 QPS/s
 #[test]
 fn bench_insert() {
     let f = async {
