@@ -7,7 +7,7 @@ members = [
 
 [package]
 name = "rbatis"
-version = "4.6.15"
+version = "4.7.0"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
 readme = "Readme.md"
 authors = ["ce <zhuxiujia@qq.com>"]
@@ -29,11 +29,11 @@ upper_case_sql_keyword = []
 println_gen = ["rbatis-macro-driver/println_gen"]
 
 [dependencies]
-rbatis-codegen = { version = "4.6", path = "rbatis-codegen" }
-rbatis-macro-driver = { version = "4.6", path = "rbatis-macro-driver", default-features = false, optional = true }
-rbs = { version = "4.6"}
-rbdc = { version = "4.6", default-features = false }
-rbdc-pool-fast = { version = "4.6" }
+rbatis-codegen = { version = "4.7", path = "rbatis-codegen" }
+rbatis-macro-driver = { version = "4.7", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbs = { version = "4"}
+rbdc = { version = "4.7", default-features = false }
+rbdc-pool-fast = { version = "4.7" }
 
 dark-std = "0.2"
 async-trait = "0.1.68"
@@ -50,7 +50,7 @@ parking_lot = "0.12.3"
 [dev-dependencies]
 serde_json = "1"
 tokio = { version = "1", features = ["sync", "fs", "net", "rt", "rt-multi-thread", "time", "io-util", "macros"] }
-rbdc-sqlite = { version = "4.6" }
+rbdc-sqlite = { version = "4.7" }
 log = "0.4.20"
 [profile.release]
 lto = true
