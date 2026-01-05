@@ -17,7 +17,7 @@ mod test {
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::plugin::PageRequest;
-    use rbatis::{Error, RBatis};
+    use rbatis::{Action, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
@@ -46,10 +46,10 @@ mod test {
             rb: &dyn Executor,
             sql: &mut String,
             args: &mut Vec<Value>,
-            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<Option<bool>, Error> {
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
-            Ok(Some(true))
+            Ok(Action::Next)
         }
     }
 

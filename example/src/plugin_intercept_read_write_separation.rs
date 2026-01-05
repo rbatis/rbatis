@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use log::LevelFilter;
 use serde_json::json;
-use rbatis::{async_trait, crud, Error, RBatis};
+use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
@@ -91,7 +91,7 @@ pub struct ReadWriteIntercept {
 
 #[async_trait]
 impl Intercept for ReadWriteIntercept {
-    async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
+    async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
         if sql.trim().starts_with("select") {
             println!("-------------------------------------------------------run on read database------------------------------------------------------------");
             let conn = self.read.acquire().await?;
@@ -120,14 +120,14 @@ impl Intercept for ReadWriteIntercept {
                     }
                 }
             }
-            Ok(None)
+            Ok(Action::Return)
         } else {
             println!("-------------------------------------------------------run on write database------------------------------------------------------------");
-            Ok(Some(true))
+            Ok(Action::Next)
         }
     }
 
-    async fn after(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
+    async fn after(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
         if sql.trim().starts_with("select") {
             let conn = self.read.acquire().await?;
             let r = conn.query(&sql.clone(), args.clone()).await;
@@ -155,9 +155,9 @@ impl Intercept for ReadWriteIntercept {
                     }
                 }
             }
-            Ok(None)
+            Ok(Action::Return)
         } else {
-            Ok(Some(true))
+            Ok(Action::Next)
         }
     }
 }

@@ -3,7 +3,7 @@ use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{async_trait, crud, Error, RBatis};
+use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbs::{value, Value};
 use std::sync::Arc;
 
@@ -57,15 +57,15 @@ impl Intercept for DisableLogIntercept {
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         for x in &self.skip_sql {
             if sql.contains(x) {
-                //return Ok(false) will be skip next Intercept!
-                return Ok(Some(false));
+                //return  will be skip next Intercept!
+                return Ok(Action::Return);
             }
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 
     async fn after(
@@ -74,14 +74,14 @@ impl Intercept for DisableLogIntercept {
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         for x in &self.skip_sql {
             if sql.contains(x) {
                 //return Ok(false) will be skip next Intercept!
-                return Ok(Some(false));
+                return Ok(Action::Return);
             }
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }

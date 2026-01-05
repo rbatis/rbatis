@@ -18,7 +18,7 @@ mod test {
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::intercept_page::PageIntercept;
     use rbatis::plugin::PageRequest;
-    use rbatis::{impl_delete, impl_select, impl_select_page, impl_update};
+    use rbatis::{Action, impl_delete, impl_select, impl_select_page, impl_update};
     use rbatis::{DefaultPool, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
@@ -53,10 +53,10 @@ mod test {
             rb: &dyn Executor,
             sql: &mut String,
             args: &mut Vec<Value>,
-            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<Option<bool>, Error> {
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
             self.sql_args.push((sql.to_string(), args.clone()));
-            Ok(Some(true))
+            Ok(Action::Next)
         }
     }
 

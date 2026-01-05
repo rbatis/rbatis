@@ -1,7 +1,7 @@
 use crate::decode::decode;
 use crate::intercept::ResultType;
 use crate::rbatis::RBatis;
-use crate::Error;
+use crate::{Action, Error};
 use futures::Future;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
@@ -116,12 +116,13 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return before_result;
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             let mut args_after = args.clone();
@@ -136,12 +137,13 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return result;
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             result
@@ -163,22 +165,18 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return before_result.map(|v| Value::from(v));
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
-            let raw_result = conn.get_values(&sql, args).await;
-            // Convert Result<Value, Error> to Result<Vec<Value>, Error> for interceptors
-            let mut result = raw_result.and_then(|v| {
-                v.into_array()
-                    .ok_or_else(|| Error::from("Expected Value::Array, but got different type"))
-            });
+            let mut result = conn.get_values(&sql, args).await;
             for item in self.intercepts.iter() {
                 let next = item
                     .after(
@@ -189,15 +187,16 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return result.map(|v| Value::Array(v));
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
-            Ok(Value::Array(result?))
+            result
         })
     }
 }
@@ -365,12 +364,13 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return before_result;
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             let mut args_after = args.clone();
@@ -385,12 +385,13 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return result;
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             result
@@ -411,22 +412,18 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return before_result.map(|v| Value::from(v));
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
             let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
-            let raw_result = conn.get_values(&sql, args).await;
-            // Convert Result<Value, Error> to Result<Vec<Value>, Error> for interceptors
-            let mut result = raw_result.and_then(|v| {
-                v.into_array()
-                    .ok_or_else(|| Error::from("Expected Value::Array, but got different type"))
-            });
+            let mut result = conn.get_values(&sql, args).await;
             for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
@@ -437,15 +434,16 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                if let Some(next) = next {
-                    if !next {
-                        break;
+                match next{
+                    Action::Next=>{
+                        //run next intercept
                     }
-                } else {
-                    return result.map(|v| Value::Array(v));
+                    Action::Return=>{
+                        return before_result;
+                    }
                 }
             }
-            Ok(Value::Array(result?))
+            Ok(result?)
         })
     }
 }

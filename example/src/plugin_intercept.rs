@@ -5,7 +5,7 @@ use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{async_trait, crud, Error, RBatis};
+use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbs::{value, Value};
 use serde_json::json;
 use std::sync::Arc;
@@ -26,16 +26,16 @@ impl Intercept for CountTimeIntercept {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         self.map.insert(_task_id, Instant::now());
-        Ok(Some(true))
+        Ok(Action::Next)
     }
-    async fn after(&self, task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>) -> Result<Option<bool>, Error> {
+    async fn after(&self, task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
         if let Some(v) = self.map.remove(&task_id) {
             println!("[{}] use time={:?}", task_id, v.elapsed());
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }
 

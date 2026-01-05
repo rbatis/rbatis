@@ -1,7 +1,7 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
-use crate::Error;
+use crate::{Action, Error};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
 use rbdc::db::ExecResult;
@@ -107,10 +107,10 @@ impl Intercept for LogInterceptor {
         _rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return Ok(Some(true));
+            return Ok(Action::Next);
         }
         let level = self.to_level().unwrap_or(Level::Debug);
         //send sql/args
@@ -121,7 +121,7 @@ impl Intercept for LogInterceptor {
             &sql,
             RbsValueDisplay::new(args)
         );
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 
     async fn after(
@@ -130,10 +130,10 @@ impl Intercept for LogInterceptor {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if self.get_level_filter() == LevelFilter::Off {
-            return Ok(Some(true));
+            return Ok(Action::Next);
         }
         let level = self.to_level().unwrap_or_else(||Level::Debug);
         //ResultType
@@ -154,7 +154,7 @@ impl Intercept for LogInterceptor {
                             "[rb] [{}] <= len={},rows={}",
                             task_id,
                             result.len(),
-                            RbsValueDisplay { inner: result }
+                            result
                         );
                     } else {
                         log!(level, "[rb] [{}] <= len={}", task_id, result.len());
@@ -165,6 +165,6 @@ impl Intercept for LogInterceptor {
                 }
             },
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }

@@ -6,7 +6,7 @@ mod test {
     use futures_core::future::BoxFuture;
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
-    use rbatis::{Error, RBatis};
+    use rbatis::{Action, Error, RBatis};
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
@@ -156,17 +156,17 @@ mod test {
             _rb: &dyn Executor,
             _sql: &mut String,
             _args: &mut Vec<Value>,
-            result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-        ) -> Result<Option<bool>, Error> {
+            result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
             match result {
                 ResultType::Exec(v) => {
                     *v = Ok(ExecResult {
                         rows_affected: 1,
                         last_insert_id: Value::U64(1),
                     });
-                    Ok(None)
+                    Ok(Action::Return)
                 }
-                ResultType::Query(_) => Ok(Some(true)),
+                ResultType::Query(_) => Ok(Action::Next),
             }
         }
     }

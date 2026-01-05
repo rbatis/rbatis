@@ -3,7 +3,7 @@ use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{async_trait, crud, Error, RBatis};
+use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
@@ -20,8 +20,8 @@ impl Intercept for ReturningIdPlugin {
         rb: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if sql.contains("insert into") {
             let new_sql = format!("{} {}", sql, "returning id");
             let new_args = args.clone();
@@ -32,12 +32,12 @@ impl Intercept for ReturningIdPlugin {
                     let mut exec = ExecResult::default();
                     exec.last_insert_id = id.into();
                     *exec_r = Ok(exec);
-                    Ok(None)
+                    Ok(Action::Return)
                 }
-                ResultType::Query(_) => Ok(Some(true)),
+                ResultType::Query(_) => Ok(Action::Next),
             }
         } else {
-            Ok(Some(true))
+            Ok(Action::Next)
         }
     }
 }

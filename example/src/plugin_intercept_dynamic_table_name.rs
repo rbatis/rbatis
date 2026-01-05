@@ -1,7 +1,7 @@
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{async_trait, RBatis};
+use rbatis::{Action, RBatis, async_trait};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
@@ -50,11 +50,11 @@ impl Intercept for MockIntercept {
         _rb: &dyn Executor,
         sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, rbatis::Error>, &mut Result<Vec<Value>, rbatis::Error>>,
-    ) -> Result<Option<bool>, rbatis::Error> {
+        _result: ResultType<&mut Result<ExecResult, rbatis::Error>, &mut Result<Value, rbatis::Error>>,
+    ) -> Result<Action, rbatis::Error> {
         *sql = sql.replace("<my_table_name>", &format!("activity_{}",task_id % 2));
         println!("MockIntercept: SQL = {}", sql);
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }
 

@@ -26,6 +26,15 @@ impl<A, B> ResultType<A, B> {
     }
 }
 
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Action {
+    /// run next
+    Next,
+    /// return result
+    Return
+}
+
 /// sql intercept
 /// example:
 ///
@@ -35,6 +44,7 @@ impl<A, B> ResultType<A, B> {
 /// use rbatis::intercept::{Intercept, ResultType};
 /// use rbdc::db::ExecResult;
 /// use rbs::Value;
+/// use rbatis::Action;
 ///
 /// #[derive(Debug)]
 /// pub struct ReturningIdPlugin{}
@@ -47,9 +57,9 @@ impl<A, B> ResultType<A, B> {
 ///         rb: &dyn Executor,
 ///         sql: &mut String,
 ///         args: &mut Vec<Value>,
-///         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-///     ) -> Result<Option<bool>, Error> {
-///         Ok(Some(true))
+///         result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+///     ) -> Result<Action, Error> {
+///         Ok(Action::Next)
 ///     }
 /// }
 /// ```
@@ -61,21 +71,15 @@ pub trait Intercept: Any + Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
-    ///
-    /// if return Ok(None) will be return result
-    /// if return Ok(Some(true)) will be run next intercept
-    /// if return Ok(Some(false))
-    ///
-    /// will be break
     async fn before(
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
-        Ok(Some(true))
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
+        Ok(Action::Next)
     }
 
     /// task_id maybe is conn_id or tx_id,
@@ -87,8 +91,8 @@ pub trait Intercept: Any + Send + Sync + Debug {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
-        Ok(Some(true))
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
+        Ok(Action::Next)
     }
 }

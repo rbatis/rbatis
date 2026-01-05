@@ -2,7 +2,7 @@ use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{async_trait, crud, Error, RBatis};
+use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbs::{value, Value};
 use std::sync::Arc;
 use tokio::task_local;
@@ -57,14 +57,14 @@ impl Intercept for DisableLogIntercept {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         let is_schedule = IS_SCHEDULE.try_with(|v| { *v }).unwrap_or_default();
         if is_schedule == 1 {
             //return Ok(false) will be skip next Intercept!
-            return Ok(Some(false));
+            return Ok(Action::Return);
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 
     async fn after(
@@ -73,13 +73,13 @@ impl Intercept for DisableLogIntercept {
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         let is_schedule = IS_SCHEDULE.try_with(|v| { *v }).unwrap_or_default();
         if is_schedule == 1 {
             //return Ok(false) will be skip next Intercept!
-            return Ok(Some(false));
+            return Ok(Action::Return);
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }

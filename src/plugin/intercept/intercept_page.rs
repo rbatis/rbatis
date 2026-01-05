@@ -1,6 +1,6 @@
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
-use crate::{Error, IPageRequest, PageRequest};
+use crate::{Action, Error, IPageRequest, PageRequest};
 use async_trait::async_trait;
 use dark_std::sync::SyncHashMap;
 use rbdc::db::ExecResult;
@@ -62,10 +62,10 @@ impl Intercept for PageIntercept {
         executor: &dyn Executor,
         sql: &mut String,
         args: &mut Vec<Value>,
-        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if let ResultType::Exec(_) = result {
-            return Ok(Some(true));
+            return Ok(Action::Next);
         }
         if self.count_ids.contains_key(&executor.id()) {
             self.count_ids.remove(&executor.id());
@@ -115,6 +115,6 @@ impl Intercept for PageIntercept {
                 }
             }
         }
-        Ok(Some(true))
+        Ok(Action::Next)
     }
 }
