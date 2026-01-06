@@ -120,18 +120,6 @@ impl RBatis {
         Ok(())
     }
 
-    #[deprecated(note = "please use init_option()")]
-    pub fn init_opt<
-        Driver: rbdc::db::Driver + 'static,
-        ConnectOptions: rbdc::db::ConnectOptions,
-    >(
-        &self,
-        driver: Driver,
-        options: ConnectOptions,
-    ) -> Result<(), Error> {
-        self.init_option::<Driver, ConnectOptions, DefaultPool>(driver, options)
-    }
-
     /// set_intercepts for many.
     /// notice:
     /// do not forget add PageIntercept!
