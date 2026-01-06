@@ -36,7 +36,7 @@ rbdc = { version = "4.7", default-features = false }
 rbdc-pool-fast = { version = "4.7" }
 
 dark-std = "0.2"
-async-trait = "0.1.68"
+async-trait = "0.1"
 serde = "1"
 #log
 log = "0.4"
