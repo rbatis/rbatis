@@ -8,6 +8,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::SystemTime,
 };
+use super::IdGenerator;
 
 const TIMESTAMP_SIZE: usize = 4;
 const PROCESS_ID_SIZE: usize = 5;
@@ -213,5 +214,38 @@ impl fmt::Display for ObjectId {
 impl fmt::Debug for ObjectId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(&format!("ObjectId({})", self.to_hex()))
+    }
+}
+
+/// ObjectId ID generator wrapper
+#[derive(Debug, Clone)]
+pub struct ObjectIdGenerator;
+
+impl Default for ObjectIdGenerator {
+    fn default() -> Self {
+        Self
+    }
+}
+
+impl ObjectIdGenerator {
+    pub fn new() -> Self {
+        Self
+    }
+
+    /// Generate a new ObjectId and convert it to i64
+    pub fn generate_id(&self) -> i64 {
+        ObjectId::new().u128() as i64
+    }
+}
+
+impl IdGenerator for ObjectId {
+    fn generate(&self) -> i64 {
+        self.u128() as i64
+    }
+}
+
+impl IdGenerator for ObjectIdGenerator {
+    fn generate(&self) -> i64 {
+        self.generate_id()
     }
 }

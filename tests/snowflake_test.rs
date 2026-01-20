@@ -16,26 +16,26 @@ mod test {
     #[test]
     fn test_snowflake_generation() {
         let sf = Snowflake::default();
-        let id = sf.generate();
+        let id = sf.generate_id();
         assert_ne!(id, 0);
     }
     
     #[test]
     fn test_gen() {
         let id = Snowflake::new(1, 1, 0);
-        println!("{}", id.generate());
+        println!("{}", id.generate_id());
         sleep(Duration::from_secs(1));
-        println!("{}", id.generate());
+        println!("{}", id.generate_id());
     }
 
     #[test]
     fn test_gen1() {
         let id = Snowflake::new(1, 1, 1);
-        println!("{}", id.generate());
-        println!("{}", id.generate());
+        println!("{}", id.generate_id());
+        println!("{}", id.generate_id());
         sleep(Duration::from_secs(1));
-        println!("{}", id.generate());
-        println!("{}", id.generate());
+        println!("{}", id.generate_id());
+        println!("{}", id.generate_id());
     }
 
     #[test]
@@ -51,28 +51,28 @@ mod test {
             s.spawn(|| {
                 let wg1 = wg.clone();
                 for _ in 0..size {
-                    v1.push(id_generator_generator.generate());
+                    v1.push(id_generator_generator.generate_id());
                 }
                 drop(wg1);
             });
             s.spawn(|| {
                 let wg1 = wg.clone();
                 for _ in 0..size {
-                    v2.push(id_generator_generator.generate());
+                    v2.push(id_generator_generator.generate_id());
                 }
                 drop(wg1);
             });
             s.spawn(|| {
                 let wg1 = wg.clone();
                 for _ in 0..size {
-                    v3.push(id_generator_generator.generate());
+                    v3.push(id_generator_generator.generate_id());
                 }
                 drop(wg1);
             });
             s.spawn(|| {
                 let wg1 = wg.clone();
                 for _ in 0..size {
-                    v4.push(id_generator_generator.generate());
+                    v4.push(id_generator_generator.generate_id());
                 }
                 drop(wg1);
             });
@@ -108,18 +108,18 @@ mod test {
     #[test]
     fn test_generate_no_clock_back() {
         let snowflake = Snowflake::default();
-        let id1 = snowflake.generate();
-        let id2 = snowflake.generate();
+        let id1 = snowflake.generate_id();
+        let id2 = snowflake.generate_id();
         assert_ne!(id1, id2);
     }
 
     #[test]
     fn test_generate_clock_rollback() {
         let id_generator_generator = Snowflake::new(1, 1, 0);
-        let initial_id = id_generator_generator.generate();
+        let initial_id = id_generator_generator.generate_id();
         println!("initial_id={}", initial_id);
 
-        let new_id = id_generator_generator.generate();
+        let new_id = id_generator_generator.generate_id();
         println!("new_id____={}", new_id);
         assert!(new_id > initial_id);
     }

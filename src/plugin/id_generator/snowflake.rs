@@ -4,6 +4,12 @@ use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 use parking_lot::ReentrantMutex;
 
+/// ID generator trait for generating unique task IDs
+pub trait IdGenerator: Send + Sync + std::fmt::Debug {
+    /// Generate a unique ID (i64)
+    fn generate(&self) -> i64;
+}
+
 ///Snowflakes algorithm
 #[derive(Debug)]
 pub struct Snowflake {
@@ -39,7 +45,7 @@ impl Snowflake {
     ///
     /// ```rust
     /// use std::time::UNIX_EPOCH;
-    /// use rbatis::snowflake::Snowflake;
+    /// use rbatis::id_generator::Snowflake;
     /// let snowflake = Snowflake::with_epoch(1,1,0,UNIX_EPOCH);
     /// ```
     pub fn with_epoch(machine_id: i32, node_id: i32, mode: i32, epoch: SystemTime) -> Snowflake {
@@ -59,7 +65,7 @@ impl Snowflake {
     ///
     /// ```rust
     /// use std::time::UNIX_EPOCH;
-    /// use rbatis::snowflake::Snowflake;
+    /// use rbatis::id_generator::Snowflake;
     /// let snowflake = Snowflake::with_last_timestamp(1,1,0, 1726417159);
     /// ```
     pub fn with_last_timestamp(machine_id: i32, node_id: i32, mode: i32, last_timestamp: i64) -> Snowflake {
@@ -79,7 +85,7 @@ impl Snowflake {
     }
 
     #[inline]
-    pub fn generate(&self) -> i64 {
+    pub fn generate_id(&self) -> i64 {
         let g = self.lock.lock();
         let idx = self.idx.fetch_add(1, Ordering::SeqCst) % 4096;
         if idx == 0 {
@@ -133,6 +139,11 @@ pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {
-    SNOWFLAKE.generate() as i64
+    SNOWFLAKE.generate_id()
 }
 
+impl IdGenerator for Snowflake {
+    fn generate(&self) -> i64 {
+        self.generate_id()
+    }
+}

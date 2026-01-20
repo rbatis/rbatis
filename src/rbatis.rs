@@ -1,6 +1,5 @@
 use std::any::Any;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
-use crate::snowflake::Snowflake;
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
@@ -16,6 +15,7 @@ use std::time::Duration;
 use crate::intercept::Intercept;
 use crate::intercept::intercept_log::LogInterceptor;
 use crate::intercept::intercept_page::PageIntercept;
+use crate::plugin::{IdGenerator, Snowflake};
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -25,7 +25,7 @@ pub struct RBatis {
     // intercept vec(default the intercepts[0] is a log interceptor)
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
     //rb task id gen
-    pub task_id_generator: Arc<Snowflake>,
+    pub task_id_generator: Arc<dyn IdGenerator>,
 }
 
 impl Default for RBatis {
