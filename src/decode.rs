@@ -12,7 +12,7 @@ pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    // Fast path: check if value is Array first to avoid unnecessary type check
+    // Check if value is Array first (required by API contract)
     match values {
         Value::Array(datas) => {
             // First try to decode as array, if that fails try as single object
@@ -24,8 +24,8 @@ where
             try_decode_map(datas)
         }
         _ => {
-            // For non-array values, directly deserialize
-            rbs::from_value_ref(values).map_err(Error::from)
+            // Non-array values are not supported (maintain API contract)
+            Err(Error::from("decode an not array value"))
         }
     }
 }
