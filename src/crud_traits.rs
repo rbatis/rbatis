@@ -4,31 +4,50 @@ use rbs::Value;
 pub trait ColumnSet {
     fn column_sets(&self) -> Value;
 }
+
 impl ColumnSet for Value {
     fn column_sets(&self) -> Value {
-        let len = self.len();
-        let mut column_set = std::collections::HashSet::with_capacity(len);
-        if let Some(array) = self.as_array(){
-            for item in array {
-                for (k,v) in &item {
-                    if (*v) != rbs::Value::Null{
-                        column_set.insert(k);
+        // Fast path: empty array
+        let array = match self.as_array() {
+            Some(arr) if !arr.is_empty() => arr,
+            _ => return rbs::Value::Array(vec![]),
+        };
+
+        // Fast path: single element - directly extract non-null columns
+        // This avoids HashSet allocation for the common case (single row insert)
+        if array.len() == 1 {
+            if let Some(table) = array.first() {
+                let mut column_datas = Vec::with_capacity(table.len());
+                for (column, value) in table {
+                    if *value != rbs::Value::Null {
+                        column_datas.push(column.clone());
                     }
+                }
+                return rbs::Value::from(column_datas);
+            }
+        }
+
+        // Slow path: multiple elements - collect non-null columns across all rows
+        let mut column_set = std::collections::HashSet::with_capacity(array.len() * 8);
+        for item in array {
+            for (k, v) in item {
+                if *v != rbs::Value::Null {
+                    column_set.insert(k.clone());
                 }
             }
         }
-        let mut columns = rbs::Value::Array(vec![]);
-        if len > 0 {
-            let table = &self[0];
+
+        if let Some(table) = array.first() {
             let mut column_datas = Vec::with_capacity(table.len());
             for (column, _) in table {
                 if column_set.contains(&column) {
-                    column_datas.push(column);
+                    column_datas.push(column.clone());
                 }
             }
-            columns = rbs::Value::from(column_datas);
+            rbs::Value::from(column_datas)
+        } else {
+            rbs::Value::Array(vec![])
         }
-        columns
     }
 }
 

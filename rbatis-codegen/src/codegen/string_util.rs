@@ -53,16 +53,26 @@ pub fn un_packing_string(column: &str) -> &str {
     return column;
 }
 
+/// Efficiently concatenates SQL fragments with automatic space insertion.
+/// Optimized for hot path in SQL code generation.
+#[inline(always)]
 pub fn concat_str(text: &mut String, append_str: &str) {
-    if !text.is_empty() 
-        && !text.ends_with(' ') 
-        && !append_str.starts_with(' ')
-        //以下两个判断条件内容是为了通过单元测试添加的内容
-        //我觉得没必要所以更改了测试用例
-        //&& !text.ends_with(',')
-        //&& !append_str.starts_with(')') 
-        {
-        text.push(' ');
+    // Fast path: empty text - just push (no space needed)
+    if text.is_empty() {
+        text.push_str(append_str);
+        return;
     }
-    text.push_str(append_str);
+
+    // Check if we need to add a space between fragments
+    // Space is added when: text doesn't end with space AND append_str doesn't start with space
+    let need_space = !text.ends_with(' ') && !append_str.starts_with(' ');
+
+    // Reserve capacity to reduce reallocations
+    if need_space {
+        text.reserve(1 + append_str.len());
+        text.push(' ');
+        text.push_str(append_str);
+    } else {
+        text.push_str(append_str);
+    }
 }

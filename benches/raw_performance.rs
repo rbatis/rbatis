@@ -84,6 +84,51 @@ fn bench_raw_no_intercepts() {
     block_on(f);
 }
 
+// Test serialization overhead
+#[test]
+fn bench_serialize_mock_table() {
+    let t = MockTable {
+        id: Some("2".into()),
+        name: Some("2".into()),
+        pc_link: Some("2".into()),
+        h5_link: Some("2".into()),
+        pc_banner_img: None,
+        h5_banner_img: None,
+        sort: None,
+        status: Some(2),
+        remark: Some("2".into()),
+        create_time: Some(rbdc::datetime::DateTime::now()),
+        version: Some(1),
+        delete_flag: Some(1),
+    };
+    rbench!(100000, {
+        let _ = rbs::value!(&t);
+    });
+}
+
+// Test serialization + column_sets
+#[test]
+fn bench_serialize_and_column_sets() {
+    let t = MockTable {
+        id: Some("2".into()),
+        name: Some("2".into()),
+        pc_link: Some("2".into()),
+        h5_link: Some("2".into()),
+        pc_banner_img: None,
+        h5_banner_img: None,
+        sort: None,
+        status: Some(2),
+        remark: Some("2".into()),
+        create_time: Some(rbdc::datetime::DateTime::now()),
+        version: Some(1),
+        delete_flag: Some(1),
+    };
+    rbench!(100000, {
+        let v = rbs::value!(&t);
+        let _ = rbatis::crud_traits::ColumnSet::column_sets(&v);
+    });
+}
+
 // Test bare minimum overhead - just the connection and decode
 #[test]
 fn bench_raw_bare_min() {
