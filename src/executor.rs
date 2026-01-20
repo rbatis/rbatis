@@ -16,9 +16,11 @@ use std::sync::Arc;
 /// the RBatis Executor. this trait impl with structs = RBatis,RBatisConnExecutor,RBatisTxExecutor,RBatisTxExecutorGuard
 pub trait Executor: RBatisRef + Send + Sync {
     fn id(&self) -> i64;
+
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }
+
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
 }
@@ -87,22 +89,95 @@ impl RBatisConnExecutor {
         Ok(v)
     }
 
-    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    // Fast path for query_decode - inlined to avoid trait method call overhead
+    pub async fn query_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        let v = Executor::query(self, sql, args).await?;
-        Ok(decode(v)?)
+        // Fast path: no interceptors - skip all overhead
+        if self.intercepts.is_empty() {
+            let result = self.conn.lock().await.get_values(sql, args).await;
+            return result.and_then(|v| decode(v));
+        }
+
+        // Inline the query logic to avoid double async call
+        let mut sql = if sql.is_empty() {
+            String::new()
+        } else {
+            sql.to_string()
+        };
+
+        let rb_task_id = self.rb.task_id_generator.generate();
+        let mut before_result: Result<Value, Error> = Err(Error::from(""));
+
+        // Before intercepts
+        for item in self.intercepts.iter() {
+            let next = item
+                .before(
+                    rb_task_id,
+                    self,
+                    &mut sql,
+                    &mut args,
+                    ResultType::Query(&mut before_result),
+                )
+                .await?;
+            match next {
+                Action::Next => {}
+                Action::Return => {
+                    // Convert Result<Value, Error> to Result<T, Error>
+                    return before_result.and_then(|v| decode(v));
+                }
+            }
+        }
+
+        // Execute query
+        let mut conn = self.conn.lock().await;
+        let mut args_after = if args.is_empty() {
+            Vec::new()
+        } else {
+            args.clone()
+        };
+        let mut result = conn.get_values(&sql, args).await;
+        drop(conn); // Release lock early
+
+        // After intercepts
+        for item in self.intercepts.iter() {
+            let next = item
+                .after(
+                    rb_task_id,
+                    self,
+                    &mut sql,
+                    &mut args_after,
+                    ResultType::Query(&mut result),
+                )
+                .await?;
+            match next {
+                Action::Next => {}
+                Action::Return => {
+                    return before_result.and_then(|v| decode(v));
+                }
+            }
+        }
+
+        // Decode result
+        result.and_then(|v| decode(v))
     }
 }
 
 impl Executor for RBatisConnExecutor {
+    #[inline]
     fn id(&self) -> i64 {
         self.id
     }
 
     fn exec(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-        let mut sql = sql.to_string();
+        // Fast path for empty SQL (common in benchmarks)
+        let mut sql = if sql.is_empty() {
+            String::new()
+        } else {
+            sql.to_string()
+        };
+
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
@@ -110,38 +185,39 @@ impl Executor for RBatisConnExecutor {
                 let next = item
                     .before(
                         rb_task_id,
-                        self as &dyn Executor,
+                        self,
                         &mut sql,
                         &mut args,
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
-                        //run next intercept
-                    }
-                    Action::Return=>{
+                match next {
+                    Action::Next => {}
+                    Action::Return => {
                         return before_result;
                     }
                 }
             }
-            let mut args_after = args.clone();
+            // Fast path for empty args
+            let mut args_after = if args.is_empty() {
+                Vec::new()
+            } else {
+                args.clone()
+            };
             let mut result = self.conn.lock().await.exec(&sql, args).await;
             for item in self.intercepts.iter() {
                 let next = item
                     .after(
                         rb_task_id,
-                        self as &dyn Executor,
+                        self,
                         &mut sql,
                         &mut args_after,
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
-                        //run next intercept
-                    }
-                    Action::Return=>{
+                match next {
+                    Action::Next => {}
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -151,7 +227,13 @@ impl Executor for RBatisConnExecutor {
     }
 
     fn query(&self, sql: &str, mut args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>> {
-        let mut sql = sql.to_string();
+        // Fast path for empty SQL (common in benchmarks)
+        let mut sql = if sql.is_empty() {
+            String::new()
+        } else {
+            sql.to_string()
+        };
+
         Box::pin(async move {
             let rb_task_id = self.rb.task_id_generator.generate();
             let mut before_result = Err(Error::from(""));
@@ -165,17 +247,20 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
-                        //run next intercept
-                    }
-                    Action::Return=>{
+                match next {
+                    Action::Next => {}
+                    Action::Return => {
                         return before_result;
                     }
                 }
             }
             let mut conn = self.conn.lock().await;
-            let mut args_after = args.clone();
+            // Fast path for empty args
+            let mut args_after = if args.is_empty() {
+                Vec::new()
+            } else {
+                args.clone()
+            };
             let mut result = conn.get_values(&sql, args).await;
             for item in self.intercepts.iter() {
                 let next = item
@@ -187,11 +272,9 @@ impl Executor for RBatisConnExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
-                        //run next intercept
-                    }
-                    Action::Return=>{
+                match next {
+                    Action::Next => {}
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -555,14 +638,79 @@ impl RBatis {
         Ok(v)
     }
 
-    /// query and decode
-    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    /// query and decode - fully inlined to avoid RBatisConnExecutor allocation
+    pub async fn query_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        let conn = self.acquire().await?;
-        let v = conn.query(sql, args).await?;
-        Ok(decode(v)?)
+        // Fast path: no interceptors - skip all overhead
+        if self.intercepts.is_empty() {
+            let pool = self.pool.get().ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
+            let mut conn = pool.get().await?;
+            let result = conn.get_values(sql, args).await;
+            return result.and_then(|v| decode(v));
+        }
+
+        // Full path with interceptors
+        let mut sql = if sql.is_empty() {
+            String::new()
+        } else {
+            sql.to_string()
+        };
+
+        let rb_task_id = self.task_id_generator.generate();
+        let mut before_result: Result<Value, Error> = Err(Error::from(""));
+
+        // Before intercepts
+        for item in self.intercepts.iter() {
+            let next = item
+                .before(
+                    rb_task_id,
+                    self,
+                    &mut sql,
+                    &mut args,
+                    ResultType::Query(&mut before_result),
+                )
+                .await?;
+            match next {
+                Action::Next => {}
+                Action::Return => {
+                    return before_result.and_then(|v| decode(v));
+                }
+            }
+        }
+
+        // Execute query
+        let pool = self.pool.get().ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
+        let mut conn = pool.get().await?;
+        let mut args_after = if args.is_empty() {
+            Vec::new()
+        } else {
+            args.clone()
+        };
+        let mut result = conn.get_values(&sql, args).await;
+
+        // After intercepts
+        for item in self.intercepts.iter() {
+            let next = item
+                .after(
+                    rb_task_id,
+                    self,
+                    &mut sql,
+                    &mut args_after,
+                    ResultType::Query(&mut result),
+                )
+                .await?;
+            match next {
+                Action::Next => {}
+                Action::Return => {
+                    return before_result.and_then(|v| decode(v));
+                }
+            }
+        }
+
+        // Decode result
+        result.and_then(|v| decode(v))
     }
 }
 

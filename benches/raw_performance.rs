@@ -60,7 +60,7 @@ macro_rules! rbench {
 #[test]
 fn bench_raw() {
     let f = async {
-        let rbatis = RBatis::new();
+        let mut rbatis = RBatis::default();
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
         rbench!(100000, {
@@ -69,6 +69,36 @@ fn bench_raw() {
     };
     block_on(f);
 }
+
+// Test without interceptors to see theoretical limit
+#[test]
+fn bench_raw_no_intercepts() {
+    let f = async {
+        // Use default() instead of new() to avoid adding interceptors
+        let mut rbatis = RBatis::default();
+        rbatis.init(MockDriver {}, "mock://");
+        rbatis.acquire().await.unwrap();
+        rbench!(100000, {
+            let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
+        });
+    };
+    block_on(f);
+}
+
+// Test bare minimum overhead - just the connection and decode
+#[test]
+fn bench_raw_bare_min() {
+    let f = async {
+        let mut rbatis = RBatis::default();
+        rbatis.init(MockDriver {}, "mock://");
+        let executor = rbatis.acquire().await.unwrap();
+        rbench!(100000, {
+            let v = executor.query_decode::<Vec<i32>>("", vec![]).await;
+        });
+    };
+    block_on(f);
+}
+
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)

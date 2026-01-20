@@ -12,15 +12,20 @@ pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
-    // try to identify type
-    let is_array = rbs::from_value::<T>(Value::Array(vec![])).is_ok();
-    if is_array {
-        //decode array
-        Ok(rbs::from_value_ref(values)?)
-    } else {
-        match values {
-            Value::Array(datas) => Ok(try_decode_map(datas)?),
-            _ => Err(Error::from("decode an not array value")),
+    // Fast path: check if value is Array first to avoid unnecessary type check
+    match values {
+        Value::Array(datas) => {
+            // First try to decode as array, if that fails try as single object
+            let array_result = rbs::from_value_ref::<T>(values);
+            if array_result.is_ok() {
+                return array_result;
+            }
+            // If array decode failed, try decoding as single object
+            try_decode_map(datas)
+        }
+        _ => {
+            // For non-array values, directly deserialize
+            rbs::from_value_ref(values).map_err(Error::from)
         }
     }
 }
