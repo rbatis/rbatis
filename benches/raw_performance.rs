@@ -55,8 +55,7 @@ macro_rules! rbench {
 // ---- bench_raw stdout ----(windows)
 //time: 85.1544ms ,each:851 ns/op ,qps: 1174337 QPS/s
 //---- bench_raw stdout ----(Apple M1 macos)
-//time: 78.242875ms ,each:782 ns/op ,qps: 1278071 QPS/s
-//QPS: 1496162 QPS/s
+//time: 35.406375ms ,each:354 ns/op ,qps: 2824350 QPS/s
 #[test]
 fn bench_raw() {
     let f = async {
@@ -102,7 +101,7 @@ fn bench_raw_bare_min() {
 
 //cargo test --release --package rbatis --bench raw_performance bench_insert  --no-fail-fast -- --exact -Z unstable-options --show-output
 //---- bench_insert stdout ----(macos,cpu-M1Max)
-//time: 906.302292ms ,each:9063 ns/op ,qps: 110338 QPS/s
+//time: 881.112916ms ,each:8811 ns/op ,qps: 113492 QPS/s
 #[test]
 fn bench_insert() {
     let f = async {
