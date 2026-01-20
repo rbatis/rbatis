@@ -36,7 +36,7 @@ mod test {
         `true`;
     "
     )]
-    pub fn py_select_by_condition(arg: &mut rbs::Value, _tag: char) {}
+    pub fn py_select_by_condition(arg: &rbs::Value, _tag: char) {}
 
     #[test]
     fn test_rbatis_codegen() {
@@ -69,7 +69,7 @@ mod test {
                  #{v1},
              )"
     )]
-    pub fn save(arg: &mut rbs::Value, _tag: char) {}
+    pub fn save(arg: &rbs::Value, _tag: char) {}
 
     #[test]
     fn test_save() {
@@ -88,7 +88,7 @@ mod test {
     #[test]
     fn test_two_eq() {
         #[rb_py("select * from test where  coalesce(user_id,#{data.user_id})=#{data.user_id}")]
-        pub fn test_py_sql(arg: &mut rbs::Value, _tag: char) {}
+        pub fn test_py_sql(arg: &rbs::Value, _tag: char) {}
         let mut data = ValueMap::new();
         data.insert(
             "data".into(),

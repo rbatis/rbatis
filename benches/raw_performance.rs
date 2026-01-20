@@ -168,7 +168,7 @@ fn bench_insert() {
             delete_flag: Some(1),
         };
         rbench!(100000, {
-            MockTable::insert(&mut rbatis.clone(), &t).await.unwrap();
+            MockTable::insert(&rbatis, &t).await.unwrap();
         });
     };
     block_on(f);
@@ -185,7 +185,7 @@ fn bench_select() {
         rbatis.init(MockDriver {}, "mock://").unwrap();
         rbatis.acquire().await.unwrap();
         rbench!(100000, {
-            MockTable::select_all(&mut rbatis.clone()).await.unwrap();
+            MockTable::select_all(&rbatis).await.unwrap();
         });
     };
     block_on(f);

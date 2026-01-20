@@ -216,7 +216,7 @@ mod test {
             pub async fn test_same_id(rb: &RBatis, id: &u64) -> Result<Value, Error> {
                 impled!()
             }
-            let r = test_same_id(&mut rb, &1).await.unwrap();
+            let r = test_same_id(&rb, &1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "select 1,1,?,?");
             assert_eq!(args, vec![Value::U64(1), Value::U64(1)]);
@@ -238,7 +238,7 @@ mod test {
             </select>
             </mapper>"#);
 
-            let r = test_same_id(&mut rb, &1).await.unwrap();
+            let r = test_same_id(&rb, &1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "select 1,1,?,?");
             assert_eq!(args, vec![Value::U64(1), Value::U64(1)]);
@@ -256,7 +256,7 @@ mod test {
 
             htmlsql!(test_if(rb: &RBatis, id: &u64)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_if(&mut rb, &1).await.unwrap();
+            let r = test_if(&rb, &1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "select * from table where id = 1");
             assert_eq!(args, vec![]);
@@ -274,7 +274,7 @@ mod test {
 
             htmlsql!(test_null(rb: &RBatis, id: Option<i32>)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_null(&mut rb, None).await.unwrap();
+            let r = test_null(&rb, None).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "select * from table where id = 1");
             assert_eq!(args, vec![]);
@@ -300,7 +300,7 @@ mod test {
             }
             htmlsql!(test_method_call(rb: &RBatis, id: Option<i32>)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_method_call(&mut rb, None).await.unwrap();
+            let r = test_method_call(&rb, None).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "select * from table where id = 1");
             assert_eq!(args, vec![]);
@@ -317,7 +317,7 @@ mod test {
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             htmlsql!(test_binary(rb: &RBatis, id: i32, b:bool)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_binary(&mut rb, 1, true).await.unwrap();
+            let r = test_binary(&rb, 1, true).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql.replace("\r\n","").replace("\n",""), "2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true,2,0,1,1,0,false,false,true,false,true,false,true,false,0,true,true,2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true,2,0,1,1,0,1,1,true,false,true,false,true,false,0,true,true");
             assert_eq!(args, vec![]);
@@ -334,7 +334,7 @@ mod test {
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             htmlsql!(test_unary(rb: &RBatis, id: i32)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_unary(&mut rb, 1).await.unwrap();
+            let r = test_unary(&rb, 1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "-1");
             assert_eq!(args, vec![]);
@@ -351,7 +351,7 @@ mod test {
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
             htmlsql!(test_paren(rb: &RBatis, id: i32)  -> Result<Value, Error> => "tests/test.html");
 
-            let r = test_paren(&mut rb, 1).await.unwrap();
+            let r = test_paren(&rb, 1).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
             assert_eq!(sql, "-1");
             assert_eq!(args, vec![]);
@@ -370,7 +370,7 @@ mod test {
             htmlsql!(test_field(rb: &RBatis, t: MockTable)  -> Result<Value, Error> => "tests/test.html");
 
             let r = test_field(
-                &mut rb,
+                &rb,
                 MockTable {
                     id: None,
                     name: Some("aaa".to_string()),
@@ -406,7 +406,7 @@ mod test {
             htmlsql!(test_reference(rb: &RBatis, t: MockTable)  -> Result<Value, Error> => "tests/test.html");
 
             let r = test_reference(
-                &mut rb,
+                &rb,
                 MockTable {
                     id: None,
                     name: Some("aaa".to_string()),
