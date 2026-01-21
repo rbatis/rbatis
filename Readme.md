@@ -175,13 +175,13 @@ crud!(BizActivity{});
 #[tokio::main]
 async fn main() {
     // Configure logging
-    fast_log::init(fast_log::Config::new().console()).expect("pool init fail");
+    fast_log::init(fast_log::Config::new().console()).expect("log init fail");
     
     // Initialize rbatis
     let rb = RBatis::new();
     
     // Connect to database
-    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").expect("pool init fail");
+    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").expect("rb init fail");
     // /// other databases
     // rb.init(PgDriver{}, "postgres://postgres:123456@localhost:5432/postgres").expect("pool init fail");
     // rb.init(MysqlDriver{}, "mysql://root:123456@localhost:3306/test").expect("pool init fail");
