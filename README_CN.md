@@ -1,7 +1,7 @@
 # Rbatis
 
 ##### 📖 [英文文档](Readme.md) | 📖 中文文档
-（机翻中文，如有差异，已英文原版为主）
+（机翻中文，如有差异，以英文原版为主）
 
 [Website](https://rbatis.github.io/rbatis.io) | [Showcase](https://github.com/rbatis/rbatis/network/dependents) | [Examples](https://github.com/rbatis/rbatis/tree/master/example)
 
@@ -131,6 +131,10 @@ QPS: 288531 QPS/s
 
 ## 快速开始
 
+### 视频教程
+1. [基于ai的使用教程（来自作者）](https://www.bilibili.com/video/BV1YwUQBXEKf/)  
+2. [简单的入门教程](https://www.bilibili.com/video/BV1HzSFB8E8n)
+
 ### 依赖
 
 ```toml
@@ -182,10 +186,10 @@ async fn main() {
     let rb = RBatis::new();
     
     // 连接数据库
-    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").expect("rb init fail");
     // 或其他数据库
-    // rb.init(MysqlDriver{}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(PgDriver{}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
+    // rb.init(MysqlDriver{}, "mysql://root:123456@localhost:3306/test").expect("pool init fail");
+    // rb.init(PgDriver{}, "postgres://postgres:123456@localhost:5432/postgres").expect("pool init fail");
     
     // 创建数据
     let activity = BizActivity {
@@ -279,9 +283,9 @@ impl Placeholder for YourPlaceholder{}
 
 // 然后使用你的驱动：
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), rbatis::Error> {
   let rb = rbatis::RBatis::new();
-  rb.init(YourDatabaseDriver {}, "database://username:password@host:port/dbname").unwrap();
+  rb.init(YourDatabaseDriver {}, "database://username:password@host:port/dbname")?;
 }
 ```
 
