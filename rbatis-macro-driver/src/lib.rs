@@ -177,12 +177,12 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 pub fn html_sql(args: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     
-    // 尝试解析为模块
+    // Try to parse as module
     if let Ok(module) = syn::parse::<syn::ItemMod>(item.clone()) {
         return crate::macros::html_sql_impl::impl_macro_html_sql_module(&module, &args);
     }
     
-    // 解析为函数（原有逻辑）
+    // Parse as function
     let target_fn: ItemFn = syn::parse(item).unwrap();
     let stream = impl_macro_html_sql(&target_fn, &args);
     #[cfg(feature = "println_gen")]
