@@ -9,7 +9,7 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-use syn::{FnArg, ItemFn};
+use syn::{FnArg, Item, ItemFn, ItemMod};
 
 pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
     let return_ty = find_return_type(target_fn);
@@ -163,6 +163,41 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          let (mut sql,rb_args) = impl_html_sql(rbs::Value::Map(rb_arg_map),'?');
          #call_method
        }
+    }
+    .into();
+}
+
+pub(crate) fn impl_macro_html_sql_module(module: &ItemMod, args: &ParseArgs) -> TokenStream {
+    // Check if module has content
+    let content = match &module.content {
+        Some((_, items)) => items,
+        None => {
+            panic!("#[html_sql] applied to module requires inline content");
+        }
+    };
+    
+    // Generate code for each item in the module
+    let mut processed_items = Vec::new();
+    
+    for item in content {
+        if let Item::Fn(func) = item {
+            // Generate html sql implementation for each function
+            let func_stream = impl_macro_html_sql(func, args);
+            processed_items.push(func_stream.into());
+        } else {
+            // Preserve other types of items
+            processed_items.push(item.to_token_stream());
+        }
+    }
+    
+    // Reconstruct module content
+    let module_ident = &module.ident;
+    let module_vis = &module.vis;
+    
+    return quote! {
+        #module_vis mod #module_ident {
+            #(#processed_items)*
+        }
     }
     .into();
 }
