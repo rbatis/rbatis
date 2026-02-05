@@ -161,11 +161,35 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// #[html_sql("xxxx.html")]
 /// pub async fn select_by_name(rbatis: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
+/// or module level
+/// ```log
+/// #[html_sql("xxxx.html")]
+/// mod user {
+///     async fn select_1(rb: &impl Executor) -> rbatis::Result<Vec<User>> {
+///         impled!()
+///     }
+///     async fn select_2(rb: &impl Executor) -> rbatis::Result<Vec<User>> {
+///         impled!()
+///     }
+/// }
+/// ```
 #[proc_macro_attribute]
-pub fn html_sql(args: TokenStream, func: TokenStream) -> TokenStream {
+pub fn html_sql(args: TokenStream, item: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
-    let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = impl_macro_html_sql(&target_fn, &args);
+
+    // Try to parse as module
+    if let Ok(module) = syn::parse::<syn::ItemMod>(item.clone()) {
+        return crate::macros::html_sql_impl::impl_macro_html_sql_module(&module, &args);
+    }
+
+    // Parse as impl
+    if let Ok(impl_block) = syn::parse::<syn::ItemImpl>(item.clone()) {
+        return crate::macros::html_sql_impl::impl_macro_html_sql_impl(&impl_block, &args);
+    }
+
+    // Parse as function
+    let target_fn: ItemFn = syn::parse(item).unwrap();
+    let stream = impl_macro_html_sql(&target_fn, &args, false);
     #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;

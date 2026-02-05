@@ -9,9 +9,9 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-use syn::{FnArg, ItemFn};
+use syn::{FnArg, Item, ItemFn, ItemImpl, ItemMod};
 
-pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
+pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs, is_trait_impl: bool) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
 
@@ -150,8 +150,9 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
         .matches("rb_arg_map.insert")
         .count();
 
+    let visibility = if is_trait_impl { quote!() } else { target_fn.vis.to_token_stream() };
     return quote! {
-       pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
+       #visibility async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          #include_data
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
@@ -163,6 +164,118 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs) -> Token
          let (mut sql,rb_args) = impl_html_sql(rbs::Value::Map(rb_arg_map),'?');
          #call_method
        }
+    }
+    .into();
+}
+
+pub(crate) fn impl_macro_html_sql_module(module: &ItemMod, args: &ParseArgs) -> TokenStream {
+    // Check if module has content
+    let content = match &module.content {
+        Some((_, items)) => items,
+        None => {
+            panic!("#[html_sql] applied to module requires inline content");
+        }
+    };
+    
+    // Generate code for each item in the module
+    let mut processed_items = Vec::new();
+    let mut has_function = false;
+    
+    for item in content {
+        if let Item::Fn(func) = item {
+            // Mark that a function was found
+            has_function = true;
+            
+            // Generate html sql implementation for each function
+            let func_stream = impl_macro_html_sql(func, args, false);
+            processed_items.push(func_stream.into());
+        } else {
+            // Preserve other types of items
+            processed_items.push(item.to_token_stream());
+        }
+    }
+    
+    // Check if module contains at least one function
+    if !has_function {
+        panic!("#[html_sql] applied to module requires at least one function");
+    }
+    
+    // Reconstruct module content
+    let module_ident = &module.ident;
+    let module_vis = &module.vis;
+    
+    return quote! {
+        #module_vis mod #module_ident {
+            #(#processed_items)*
+        }
+    }
+    .into();
+}
+
+pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) -> TokenStream {
+    // Get all items in the impl block
+    let items = &impl_block.items;
+    
+    // Check if impl block is empty
+    if items.is_empty() {
+        panic!("#[html_sql] applied to impl block requires at least one item");
+    }
+    
+    // Generate code for each item
+    let mut processed_items = Vec::new();
+    let mut has_function = false;
+    
+    for item in items {
+        if let syn::ImplItem::Fn(func) = item {
+            // Mark that a function was found
+            has_function = true;
+            
+            // Convert ImplItemFn to ItemFn for processing
+            let item_fn = ItemFn {
+                attrs: func.attrs.clone(),
+                vis: func.vis.clone(),
+                sig: func.sig.clone(),
+                block: Box::new(func.block.clone()),
+            };
+            
+            // Generate html sql implementation for each function
+            let is_trait_impl = impl_block.trait_.is_some();
+            let func_stream = impl_macro_html_sql(&item_fn, args, is_trait_impl);
+            processed_items.push(func_stream.into());
+        } else {
+            // Preserve other types of items
+            processed_items.push(item.to_token_stream());
+        }
+    }
+    
+    // Check if impl block contains at least one function
+    if !has_function {
+        panic!("#[html_sql] applied to impl block requires at least one function");
+    }
+    
+    // Reconstruct impl block
+    let attrs = &impl_block.attrs;
+    let defaultness = &impl_block.defaultness;
+    let unsafety = &impl_block.unsafety;
+    let impl_token = &impl_block.impl_token;
+    let generics = &impl_block.generics;
+    let trait_ = &impl_block.trait_;
+    let self_ty = &impl_block.self_ty;
+    
+    // Manually handle trait_ field because its type is complex
+    let trait_tokens = match trait_ {
+        Some((not, path, for_token)) => {
+            quote! { #not #path #for_token }
+        }
+        None => quote! {}
+    };
+    
+    // Generate final TokenStream
+    return quote! {
+        #(#attrs)*
+        #defaultness #unsafety #impl_token #generics #trait_tokens #self_ty {
+            #(#processed_items)*
+        }
     }
     .into();
 }

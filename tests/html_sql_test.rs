@@ -668,4 +668,164 @@ mod test {
         };
         block_on(f);
     }
+
+    #[test]
+    fn test_module_level() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[html_sql("tests/test.html")]
+            mod test_module {
+                use super::*;
+                use rbatis::executor::Executor;
+
+                pub async fn test_if(rb: &impl Executor, id: &u64) -> Result<Value, Error> {
+                    impled!()
+                }
+
+                pub async fn test_lit(rb: &impl Executor) -> Result<Value, Error> {
+                    impled!()
+                }
+            }
+
+            let r1 = test_module::test_if(&rb, &1).await.unwrap();
+            let (sql1, args1) = queue.pop().unwrap();
+            assert_eq!(sql1, "select * from table where id = 1");
+            assert_eq!(args1, vec![]);
+
+            let r2 = test_module::test_lit(&rb).await.unwrap();
+            let (sql2, args2) = queue.pop().unwrap();
+            assert_eq!(sql2, "aaaa");
+            assert_eq!(args2, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_impl_level() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub struct UserMapper;
+
+            use super::*;
+            use rbatis::executor::Executor;
+
+            #[html_sql("tests/test.html")]
+            impl UserMapper {
+                pub async fn test_if(rb: &impl Executor, id: &u64) -> Result<Value, Error> {
+                    impled!()
+                }
+
+                pub async fn test_lit(rb: &impl Executor) -> Result<Value, Error> {
+                    impled!()
+                }
+            }
+
+            let r1 = UserMapper::test_if(&rb, &1).await.unwrap();
+            let (sql1, args1) = queue.pop().unwrap();
+            assert_eq!(sql1, "select * from table where id = 1");
+            assert_eq!(args1, vec![]);
+
+            let r2 = UserMapper::test_lit(&rb).await.unwrap();
+            let (sql2, args2) = queue.pop().unwrap();
+            assert_eq!(sql2, "aaaa");
+            assert_eq!(args2, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_impl_generic() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub struct GenericMapper<T> {
+                _phantom: std::marker::PhantomData<T>,
+            }
+
+            impl<T> GenericMapper<T> {
+                pub fn new() -> Self {
+                    Self { _phantom: std::marker::PhantomData }
+                }
+            }
+
+            use super::*;
+            use rbatis::executor::Executor;
+
+            #[html_sql("tests/test.html")]
+            impl<T: Send + Sync> GenericMapper<T> {
+                pub async fn test_if(rb: &impl Executor, id: &u64) -> Result<Value, Error> {
+                    impled!()
+                }
+
+                pub async fn test_lit(rb: &impl Executor) -> Result<Value, Error> {
+                    impled!()
+                }
+            }
+
+            let mapper = GenericMapper::<String>::new();
+            let r1 = GenericMapper::<String>::test_if(&rb, &1).await.unwrap();
+            let (sql1, args1) = queue.pop().unwrap();
+            assert_eq!(sql1, "select * from table where id = 1");
+            assert_eq!(args1, vec![]);
+
+            let r2 = GenericMapper::<String>::test_lit(&rb).await.unwrap();
+            let (sql2, args2) = queue.pop().unwrap();
+            assert_eq!(sql2, "aaaa");
+            assert_eq!(args2, vec![]);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_impl_trait() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            pub trait Mapper {
+                async fn test_if(rb: &impl Executor, id: &u64) -> Result<Value, Error>;
+                async fn test_lit(rb: &impl Executor) -> Result<Value, Error>;
+            }
+
+            pub struct TraitMapper;
+
+            use super::*;
+            use rbatis::executor::Executor;
+
+            #[html_sql("tests/test.html")]
+            impl Mapper for TraitMapper {
+                async fn test_if(rb: &impl Executor, id: &u64) -> Result<Value, Error> {
+                    impled!()
+                }
+
+                async fn test_lit(rb: &impl Executor) -> Result<Value, Error> {
+                    impled!()
+                }
+            }
+
+            let r1 = TraitMapper::test_if(&rb, &1).await.unwrap();
+            let (sql1, args1) = queue.pop().unwrap();
+            assert_eq!(sql1, "select * from table where id = 1");
+            assert_eq!(args1, vec![]);
+
+            let r2 = TraitMapper::test_lit(&rb).await.unwrap();
+            let (sql2, args2) = queue.pop().unwrap();
+            assert_eq!(sql2, "aaaa");
+            assert_eq!(args2, vec![]);
+        };
+        block_on(f);
+    }
 }
