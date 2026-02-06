@@ -21,11 +21,10 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-pub struct ActivityMapper;
 
 /// All methods read SQL from example/example.html
 #[rbatis::html_sql("example/example.html")]
-impl ActivityMapper {
+impl Activity {
     /// Maps to <select id="select_by_condition"> in HTML
     pub async fn select_by_condition(
         rb: &dyn Executor,
@@ -72,12 +71,12 @@ pub async fn main() {
     .unwrap();
 
     // Use impl block Mapper
-    let results = ActivityMapper::select_by_condition(&rb, "Test", &DateTime::now())
+    let results: Vec<Activity> = Activity::select_by_condition(&rb, "Test", &DateTime::now())
         .await
         .unwrap();
     println!("Query by condition: {:?}", results);
 
-    let _ = ActivityMapper::update_by_id(
+    let _ = Activity::update_by_id(
         &rb,
         &Activity {
             id: Some("1".to_string()),
