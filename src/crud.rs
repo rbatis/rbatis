@@ -406,6 +406,49 @@ macro_rules! impl_update {
                   };
                   update_by_map_internal(executor, table_name, &table, &condition, skip_null).await
             }
+
+            pub async fn update_batch_by_key(
+                executor: &dyn $crate::executor::Executor,
+                tables: &[$table],
+                key_column: &str,
+            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+                #[rbatis::py_sql(
+                    "update ${table_name} as t set
+                    trim ',': for k,_ in rows[0]:
+                        if k != id_key:
+                            ` ${k} = v.${k},`
+
+                    from (values
+                    trim ',': for _,row in rows:
+                        ` (`
+                        trim ',': for _,val in row:
+                            #{val},
+                        `),`
+                    )
+                    as v(
+                    trim ',': for k,_ in rows[0]:
+                        ${k},
+                    )
+                    where t.${id_key} = v.${id_key}
+                "
+                )]
+                async fn update_batch_by_key_internal(
+                    executor: &dyn $crate::executor::Executor,
+                    table_name: String,
+                    rows: &[rbs::Value],
+                    id_key: &str,
+                ) -> rbatis::Result<rbatis::rbdc::db::ExecResult> {
+                    impled!()
+                }
+                let mut table_name = $table_name.to_string();
+                if table_name.is_empty(){
+                    #[$crate::snake_name($table)]
+                    fn snake_name(){}
+                    table_name = snake_name();
+                }
+                let table_value = tables.iter().map(|v| rbs::value!(v)).collect::<Vec<_>>();
+                update_batch_by_key_internal(executor, table_name, &table_value, key_column).await
+            }
         }
     };
     ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
