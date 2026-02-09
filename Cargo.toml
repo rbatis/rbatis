@@ -44,7 +44,7 @@ futures-core = { version = "0.3" }
 futures = { version = "0.3" }
 #object_id
 hex = "0.4"
-rand = "0.9"
+rand = "0.10"
 parking_lot = "0.12.3"
 
 [dev-dependencies]
