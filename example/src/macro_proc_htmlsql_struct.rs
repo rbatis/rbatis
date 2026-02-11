@@ -57,7 +57,7 @@ impl Activity {
     /// The macro automatically generates pagination logic using PageIntercept
     pub async fn select_by_page(
         rb: &dyn Executor,
-        page_req: &dyn PageRequest,
+        page_req: &rbatis::PageRequest,
         name: &str,
         dt: Option<DateTime>,
     ) -> rbatis::Result<rbatis::Page<Activity>> {
