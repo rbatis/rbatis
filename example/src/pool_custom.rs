@@ -3,7 +3,12 @@ use rbatis::RBatis;
 use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
 use std::str::FromStr;
 
-/// define a custom pool(my_pool::DeadPool) use `rb.init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(SqliteDriver {}, opts)`
+/// Example: Custom connection pool using deadpool
+///
+/// This example demonstrates how to implement a custom connection pool using the third-party `deadpool` library.
+/// For most use cases, the default connection pool is sufficient. See pool_config.rs for default pool configuration.
+///
+/// Usage: `rb.init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(SqliteDriver {}, opts)`
 #[tokio::main]
 pub async fn main() {
     _ = fast_log::init(
@@ -17,8 +22,11 @@ pub async fn main() {
 
     let rb = RBatis::new();
     let opts = SqliteConnectOptions::from_str("sqlite://target/sqlite.db").unwrap();
-    //default_is//let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, rbatis::DefaultPool>(SqliteDriver{},opts);
-    // set custom impl pool
+
+    // Uncomment to use default pool instead:
+    // let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, rbatis::DefaultPool>(SqliteDriver {}, opts);
+
+    // Set custom pool implementation (using deadpool)
     let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, my_pool::DeadPool>(
         SqliteDriver {},
         opts,

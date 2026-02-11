@@ -64,8 +64,11 @@ path = "src/table_extend.rs"
 name = "plugin_intercept"
 path = "src/plugin_intercept.rs"
 [[bin]]
-name = "init_pool"
-path = "src/custom_pool.rs"
+name = "pool_config"
+path = "src/pool_config.rs"
+[[bin]]
+name = "pool_custom"
+path = "src/pool_custom.rs"
 [[bin]]
 name = "plugin_intercept_log"
 path = "src/plugin_intercept_log.rs"
