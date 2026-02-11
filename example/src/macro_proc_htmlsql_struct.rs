@@ -60,7 +60,7 @@ impl Activity {
         page_req: &dyn PageRequest,
         name: &str,
         dt: Option<DateTime>,
-    ) -> rbatis::Result<rbatis::plugin::Page<Activity>> {
+    ) -> rbatis::Result<rbatis::Page<Activity>> {
         impled!()
     }
 }
