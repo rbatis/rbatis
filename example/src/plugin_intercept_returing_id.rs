@@ -3,7 +3,7 @@ use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{Action, Error, RBatis, async_trait, crud};
+use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
@@ -71,7 +71,11 @@ pub async fn main() {
     );
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
-    rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
+    rb.init(
+        rbdc_pg::driver::PgDriver {},
+        "postgres://postgres:123456@localhost:5432/postgres",
+    )
+    .unwrap();
     //insert to log intercept before
     rb.intercepts.insert(0, Arc::new(ReturningIdPlugin {}));
     let table = Activity {

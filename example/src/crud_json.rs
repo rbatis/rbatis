@@ -1,9 +1,9 @@
 use log::LevelFilter;
+use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{table_sync, RBatis};
-use rbs::{value};
-use rbatis::crud;
+use rbs::value;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Account {
@@ -38,7 +38,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     create_table(&rb).await;
     let user = User {
         id: Some(1),
@@ -55,7 +59,7 @@ pub async fn main() {
     let v = User::insert(&rb.clone(), &user).await;
     println!("insert:{:?}", v);
 
-    let users = User::select_by_map(&rb.clone(), value!{"id":1}).await;
+    let users = User::select_by_map(&rb.clone(), value! {"id":1}).await;
     println!("select:{}", value!(users));
 }
 

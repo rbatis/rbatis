@@ -1,16 +1,16 @@
 use log::LevelFilter;
 use rbatis::dark_std::defer;
+use rbatis::dark_std::sync::SyncHashMap;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::db::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{Action, Error, RBatis, async_trait, crud};
+use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Instant;
-use rbatis::dark_std::sync::SyncHashMap;
 
 /// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
 #[derive(Debug)]
@@ -31,7 +31,14 @@ impl Intercept for CountTimeIntercept {
         self.map.insert(_task_id, Instant::now());
         Ok(Action::Next)
     }
-    async fn after(&self, task_id: i64, _rb: &dyn Executor, _sql: &mut String, _args: &mut Vec<Value>, _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
+    async fn after(
+        &self,
+        task_id: i64,
+        _rb: &dyn Executor,
+        _sql: &mut String,
+        _args: &mut Vec<Value>,
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if let Some(v) = self.map.remove(&task_id) {
             println!("[{}] use time={:?}", task_id, v.elapsed());
         }
@@ -73,7 +80,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
     // table sync done
     fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
@@ -95,17 +106,19 @@ pub async fn main() {
         },
         "activity",
     )
-        .await;
+    .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
-    rb.intercepts.push(Arc::new(CountTimeIntercept { map: Default::default() }));
+    rb.intercepts.push(Arc::new(CountTimeIntercept {
+        map: Default::default(),
+    }));
 
     //get intercept
     let intercept = rb.get_intercept::<CountTimeIntercept>().unwrap();
     println!("intercept name = {}", intercept.name());
     //query
-    let r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
+    let r = Activity::delete_by_map(&rb, value! {"id":"1"}).await;
     println!("{}", json!(r));
-    let record = Activity::select_by_map(&rb, value!{"id":"1"}).await;
+    let record = Activity::select_by_map(&rb, value! {"id":"1"}).await;
     println!("{}", json!(record));
 }

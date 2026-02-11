@@ -1,8 +1,8 @@
 use rbatis::dark_std::defer;
+use rbatis::impl_insert;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
-use rbatis::impl_insert;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
@@ -39,7 +39,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     let table = Activity {
         id: Some("1".into()),

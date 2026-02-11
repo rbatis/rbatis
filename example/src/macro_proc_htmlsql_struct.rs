@@ -22,7 +22,6 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-
 /// All methods read SQL from example/example.html
 #[rbatis::html_sql("example/example.html")]
 impl Activity {
@@ -66,7 +65,7 @@ impl Activity {
 }
 
 #[tokio::main]
-pub async fn main() -> Result<(), Error>{
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -84,27 +83,7 @@ pub async fn main() -> Result<(), Error>{
     .unwrap();
 
     // Use impl block Mapper
-    let results = Activity::select_by_page(&rb, &PageRequest::new(1, 10), "", None)
-        .await?;
+    let results = Activity::select_by_page(&rb, &PageRequest::new(1, 10), "", None).await?;
     println!("Query by condition: {:?}", results);
-
-    let _ = Activity::update_by_id(
-        &rb,
-        &Activity {
-            id: Some("1".to_string()),
-            name: Some("Updated".to_string()),
-            pc_link: None,
-            h5_link: None,
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: None,
-            status: Some(1),
-            remark: None,
-            create_time: None,
-            version: None,
-            delete_flag: None,
-        },
-    )
-    .await?;
     Ok(())
 }

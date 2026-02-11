@@ -30,23 +30,24 @@ fn main() {
         table!(Activity {
             id: Some(1),
             name: Some("1".to_string()),
-        })];
+        }),
+    ];
     //map ref
-    let hash = table_field_map!(&tables,id);
+    let hash = table_field_map!(&tables, id);
     println!("---hash={}", rbs::value!(hash));
     //map owned
-    let hash_owned = table_field_map!(tables.clone(),id);
+    let hash_owned = table_field_map!(tables.clone(), id);
     println!("---hash={}", rbs::value!(hash_owned));
     //btree ref
-    let btree = table_field_btree!(&tables,id);
+    let btree = table_field_btree!(&tables, id);
     println!("---btree={}", rbs::value!(btree));
     //btree owned
-    let btree_owned = table_field_btree!(tables.clone(),id);
+    let btree_owned = table_field_btree!(tables.clone(), id);
     println!("---btree_owned={}", rbs::value!(btree_owned));
     //vec<ref>
-    let ids = table_field_vec!(&tables,id);
+    let ids = table_field_vec!(&tables, id);
     println!("---ids={}", rbs::value!(ids));
     //vec<owned>
-    let ids = table_field_vec!(tables,id);
+    let ids = table_field_vec!(tables, id);
     println!("---ids owned={:?}", ids);
 }

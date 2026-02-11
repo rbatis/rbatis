@@ -3,7 +3,7 @@ use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{Action, Error, RBatis, async_trait, crud};
+use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
 use std::sync::Arc;
 
@@ -28,7 +28,11 @@ pub async fn main() {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
     rb.intercepts
@@ -38,7 +42,7 @@ pub async fn main() {
     intercept.skip_sql.push("delete from".to_string());
 
     //will not show log
-    let _r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
+    let _r = Activity::delete_by_map(&rb, value! {"id":"1"}).await;
 
     log::logger().flush();
     println!("this is no log print by 'DisableLogIntercept'");

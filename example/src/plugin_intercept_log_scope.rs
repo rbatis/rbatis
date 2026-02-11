@@ -2,7 +2,7 @@ use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::db::ExecResult;
-use rbatis::{Action, Error, RBatis, async_trait, crud};
+use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
 use std::sync::Arc;
 use tokio::task_local;
@@ -28,21 +28,26 @@ pub async fn main() {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     //insert to 0, will be [DisableLogIntercept{},LogInterceptor{}]
-    rb.intercepts.insert(0, Arc::new(DisableLogIntercept::default()));
+    rb.intercepts
+        .insert(0, Arc::new(DisableLogIntercept::default()));
 
-
-    IS_SCHEDULE.scope(1, async move {
-        //this scope will not show log
-        let _r = Activity::delete_by_map(&rb, value!{"id":"1"}).await;
-    }).await;
+    IS_SCHEDULE
+        .scope(1, async move {
+            //this scope will not show log
+            let _r = Activity::delete_by_map(&rb, value! {"id":"1"}).await;
+        })
+        .await;
 
     log::logger().flush();
     println!("this is no log print by 'DisableLogIntercept'");
 }
-
 
 task_local! {pub static IS_SCHEDULE: u32;}
 
@@ -59,7 +64,7 @@ impl Intercept for DisableLogIntercept {
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
     ) -> Result<Action, Error> {
-        let is_schedule = IS_SCHEDULE.try_with(|v| { *v }).unwrap_or_default();
+        let is_schedule = IS_SCHEDULE.try_with(|v| *v).unwrap_or_default();
         if is_schedule == 1 {
             //return Ok(false) will be skip next Intercept!
             return Ok(Action::Return);
@@ -75,7 +80,7 @@ impl Intercept for DisableLogIntercept {
         _args: &mut Vec<Value>,
         _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
     ) -> Result<Action, Error> {
-        let is_schedule = IS_SCHEDULE.try_with(|v| { *v }).unwrap_or_default();
+        let is_schedule = IS_SCHEDULE.try_with(|v| *v).unwrap_or_default();
         if is_schedule == 1 {
             //return Ok(false) will be skip next Intercept!
             return Ok(Action::Return);

@@ -1,10 +1,10 @@
 use rbatis::dark_std::defer;
+use rbatis::impl_select_page;
 use rbatis::plugin::page::PageRequest;
+use rbatis::pysql_select_page;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
-use rbatis::impl_select_page;
-use rbatis::pysql_select_page;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -60,7 +60,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     let data = Activity::select_page(&rb, &PageRequest::new(1, 10)).await;
     println!("select_page = {}", json!(data));
@@ -68,8 +72,7 @@ pub async fn main() {
     let data = Activity::select_page_by_name(&rb, &PageRequest::new(1, 10), "").await;
     println!("select_page_by_name = {}", json!(data));
 
-    let data =
-        Activity::select_page_by_limit(&rb, &PageRequest::new(1, 10), "2").await;
+    let data = Activity::select_page_by_limit(&rb, &PageRequest::new(1, 10), "2").await;
     println!("select_page_by_limit = {}", json!(data));
 
     let data = select_page_data(&rb, &PageRequest::new(1, 10), "2").await;

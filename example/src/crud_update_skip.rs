@@ -1,11 +1,11 @@
 use log::LevelFilter;
+use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
-use rbatis::crud;
-use serde_json::json;
 use rbs::value;
+use serde_json::json;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -25,7 +25,7 @@ pub struct Activity {
 }
 
 // Generate CRUD methods including the new update_by_columns
-crud!(Activity{});
+crud!(Activity {});
 
 // cargo run --bin crud_update_skip
 #[tokio::main]
@@ -44,7 +44,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     // table sync done
     fast_log::logger().set_level(LevelFilter::Off);
@@ -67,7 +71,7 @@ pub async fn main() {
         },
         "activity",
     )
-        .await;
+    .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
     // Create a sample activity record
@@ -91,10 +95,15 @@ pub async fn main() {
     println!("Insert result: {}", json!(insert_result));
 
     // Test regular update (should work)
-    let regular_result = Activity::update_by_map(&rb, &activity, value!{"id": "123"}).await;
+    let regular_result = Activity::update_by_map(&rb, &activity, value! {"id": "123"}).await;
     println!("Regular update result: {}", json!(regular_result));
 
     // Update only name and status columns using set parameter
-    let result = Activity::update_by_map(&rb, &activity, value!{"id": "123", "column": ["name", "status"]}).await;
+    let result = Activity::update_by_map(
+        &rb,
+        &activity,
+        value! {"id": "123", "column": ["name", "status"]},
+    )
+    .await;
     println!("Update result (only name and status): {}", json!(result));
 }

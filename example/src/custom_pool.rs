@@ -36,13 +36,13 @@ mod my_pool {
     use futures_core::future::BoxFuture;
     use rbatis::async_trait;
     use rbatis::rbdc::db::{Connection, ExecResult, Row};
+    use rbatis::rbdc::pool::{ConnectionGuard, ConnectionManager, Pool};
     use rbatis::rbdc::{db, Error};
     use rbs::value::map::ValueMap;
     use rbs::{value, Value};
     use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
     use std::time::Duration;
-    use rbatis::rbdc::pool::{ConnectionGuard, ConnectionManager, Pool};
 
     pub struct DeadPool {
         pub manager: ConnManagerProxy,
@@ -81,8 +81,8 @@ mod my_pool {
                     inner: manager,
                     conn: None,
                 })
-                    .build()
-                    .map_err(|e| Error::from(e.to_string()))?,
+                .build()
+                .map_err(|e| Error::from(e.to_string()))?,
             })
         }
 
@@ -174,28 +174,32 @@ mod my_pool {
             &mut self,
             sql: &str,
             params: Vec<Value>,
-        ) -> BoxFuture<'_,Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             self.conn.as_mut().unwrap().get_rows(sql, params)
         }
 
-        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<'_,Result<ExecResult, Error>> {
+        fn exec(
+            &mut self,
+            sql: &str,
+            params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             self.conn.as_mut().unwrap().exec(sql, params)
         }
 
-        fn ping(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
             Box::pin(async { self.conn.as_mut().unwrap().ping().await })
         }
 
-        fn close(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }

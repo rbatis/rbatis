@@ -1,13 +1,13 @@
-use std::sync::Arc;
 use log::LevelFilter;
-use serde_json::json;
-use rbatis::{Action, Error, RBatis, async_trait, crud};
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
-use rbatis::rbdc::DateTime;
 use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::DateTime;
+use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
+use serde_json::json;
+use std::sync::Arc;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Activity {
@@ -34,9 +34,8 @@ pub async fn main() {
     });
     let rb_read = read_rb().await;
     let rb = write_rb().await;
-    rb.intercepts.push(Arc::new(ReadWriteIntercept {
-        read: rb_read,
-    }));
+    rb.intercepts
+        .push(Arc::new(ReadWriteIntercept { read: rb_read }));
 
     let table = Activity {
         id: Some("2".into()),
@@ -56,7 +55,7 @@ pub async fn main() {
     let data = Activity::insert(&rb, &table).await;
     println!("insert = {}", json!(data));
 
-    let data = Activity::select_by_map(&rb,  value!{"id":"2"}).await;
+    let data = Activity::select_by_map(&rb, value! {"id":"2"}).await;
     println!("select_by_map = {}", json!(data));
 }
 
@@ -66,7 +65,11 @@ async fn read_rb() -> RBatis {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite_read.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite_read.db",
+    )
+    .unwrap();
     rb
 }
 
@@ -80,7 +83,7 @@ async fn write_rb() -> RBatis {
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite_write.db",
     )
-        .unwrap();
+    .unwrap();
     rb
 }
 
@@ -91,34 +94,37 @@ pub struct ReadWriteIntercept {
 
 #[async_trait]
 impl Intercept for ReadWriteIntercept {
-    async fn before(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
+    async fn before(
+        &self,
+        _task_id: i64,
+        _rb: &dyn Executor,
+        sql: &mut String,
+        args: &mut Vec<Value>,
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if sql.trim().starts_with("select") {
             println!("-------------------------------------------------------run on read database------------------------------------------------------------");
             let conn = self.read.acquire().await?;
             let r = conn.query(&sql.clone(), args.clone()).await;
             match r {
-                Ok(r) => {
-                    match result {
-                        ResultType::Exec(exec) => {
-                            let result = rbatis::decode(r);
-                            *exec = Ok(result?);
-                        }
-                        ResultType::Query(q) => {
-                            let result = rbatis::decode(r);
-                            *q = Ok(result?);
-                        }
+                Ok(r) => match result {
+                    ResultType::Exec(exec) => {
+                        let result = rbatis::decode(r);
+                        *exec = Ok(result?);
                     }
-                }
-                Err(e) => {
-                    match result {
-                        ResultType::Exec(exec) => {
-                            *exec = Err(e);
-                        }
-                        ResultType::Query(q) => {
-                            *q = Err(e);
-                        }
+                    ResultType::Query(q) => {
+                        let result = rbatis::decode(r);
+                        *q = Ok(result?);
                     }
-                }
+                },
+                Err(e) => match result {
+                    ResultType::Exec(exec) => {
+                        *exec = Err(e);
+                    }
+                    ResultType::Query(q) => {
+                        *q = Err(e);
+                    }
+                },
             }
             Ok(Action::Return)
         } else {
@@ -127,33 +133,36 @@ impl Intercept for ReadWriteIntercept {
         }
     }
 
-    async fn after(&self, _task_id: i64, _rb: &dyn Executor, sql: &mut String, args: &mut Vec<Value>, result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>) -> Result<Action, Error> {
+    async fn after(
+        &self,
+        _task_id: i64,
+        _rb: &dyn Executor,
+        sql: &mut String,
+        args: &mut Vec<Value>,
+        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
         if sql.trim().starts_with("select") {
             let conn = self.read.acquire().await?;
             let r = conn.query(&sql.clone(), args.clone()).await;
             match r {
-                Ok(r) => {
-                    match result {
-                        ResultType::Exec(exec) => {
-                            let result = rbatis::decode(r);
-                            *exec = Ok(result?);
-                        }
-                        ResultType::Query(q) => {
-                            let result = rbatis::decode(r);
-                            *q = Ok(result?);
-                        }
+                Ok(r) => match result {
+                    ResultType::Exec(exec) => {
+                        let result = rbatis::decode(r);
+                        *exec = Ok(result?);
                     }
-                }
-                Err(e) => {
-                    match result {
-                        ResultType::Exec(exec) => {
-                            *exec = Err(e);
-                        }
-                        ResultType::Query(q) => {
-                            *q = Err(e);
-                        }
+                    ResultType::Query(q) => {
+                        let result = rbatis::decode(r);
+                        *q = Ok(result?);
                     }
-                }
+                },
+                Err(e) => match result {
+                    ResultType::Exec(exec) => {
+                        *exec = Err(e);
+                    }
+                    ResultType::Query(q) => {
+                        *q = Err(e);
+                    }
+                },
             }
             Ok(Action::Return)
         } else {
@@ -161,4 +170,3 @@ impl Intercept for ReadWriteIntercept {
         }
     }
 }
-

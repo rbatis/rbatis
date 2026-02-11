@@ -3,7 +3,7 @@ use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync;
 use rbdc_sqlite::driver::SqliteDriver;
-use rbs::{value};
+use rbs::value;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RBUser {
@@ -30,7 +30,8 @@ pub async fn main() {
     //rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     //rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     //rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(SqliteDriver {}, &"sqlite://target/sqlite.db".to_string()).unwrap();
+    rb.init(SqliteDriver {}, &"sqlite://target/sqlite.db".to_string())
+        .unwrap();
 
     // ------------choose column mapper------------
     let mapper = &table_sync::SqliteTableMapper {};
@@ -47,7 +48,9 @@ pub async fn main() {
         "version": "TEXT",
         "delete_flag": "INT8"
     };
-    RBatis::sync(&rb.acquire().await.unwrap(), mapper, &table, "rb_user").await.unwrap();
+    RBatis::sync(&rb.acquire().await.unwrap(), mapper, &table, "rb_user")
+        .await
+        .unwrap();
 
     //sync table struct
     RBatis::sync(
@@ -65,6 +68,6 @@ pub async fn main() {
         },
         "rb_user",
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 }

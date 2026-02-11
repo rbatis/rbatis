@@ -1,10 +1,10 @@
 use log::LevelFilter;
-use rbs::{value};
+use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
+use rbs::value;
 use serde_json::json;
-use rbatis::crud;
 
 /// table
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
@@ -37,7 +37,11 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
 
     let table = Activity {
         id: Some("2".into()),
@@ -65,21 +69,21 @@ pub async fn main() {
     let data = Activity::insert_batch(&rb, &tables, 10).await;
     println!("insert_batch = {}", json!(data));
 
-    let data = Activity::update_by_map(&rb, &table, value!{ "id": "1" }).await;
+    let data = Activity::update_by_map(&rb, &table, value! { "id": "1" }).await;
     println!("update_by_map = {}", json!(data));
 
-    let data = Activity::select_by_map(&rb, value!{"id":"2","name":"2"}).await;
+    let data = Activity::select_by_map(&rb, value! {"id":"2","name":"2"}).await;
     println!("select_by_map = {}", json!(data));
 
-    let data = Activity::select_by_map(&rb, value!{"id":"2","name like ":"%2"}).await;
+    let data = Activity::select_by_map(&rb, value! {"id":"2","name like ":"%2"}).await;
     println!("select_by_map like {}", json!(data));
 
-    let data = Activity::select_by_map(&rb, value!{"id > ":"2"}).await;
+    let data = Activity::select_by_map(&rb, value! {"id > ":"2"}).await;
     println!("select_by_map > {}", json!(data));
 
-    let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::select_by_map(&rb, value! {"id": &["1", "2", "3"]}).await;
     println!("select_by_map in {}", json!(data));
 
-    let data = Activity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::delete_by_map(&rb, value! {"id": &["1", "2", "3"]}).await;
     println!("delete_by_map = {}", json!(data));
 }

@@ -1,7 +1,7 @@
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{crud, RBatis};
-use rbs::{value};
+use rbs::value;
 use serde_json::json;
 
 /// table
@@ -20,7 +20,7 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-crud!(Activity{});
+crud!(Activity {});
 
 #[tokio::main]
 pub async fn main() {
@@ -38,11 +38,19 @@ pub async fn main() {
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
     // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
-  
-    let data = Activity::select_by_map(&rb, value!{
-        "id": "1",
-        "ids": ["1","2","3"]
-    }).await;
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )
+    .unwrap();
+
+    let data = Activity::select_by_map(
+        &rb,
+        value! {
+            "id": "1",
+            "ids": ["1","2","3"]
+        },
+    )
+    .await;
     println!("select_by_method = {}", json!(data));
 }
