@@ -3,7 +3,7 @@ use rbatis::dark_std::defer;
 use rbatis::plugin::PageRequest;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::RBatis;
+use rbatis::{Page, RBatis};
 use serde_json::json;
 use rbatis::htmlsql_select_page;
 
@@ -24,7 +24,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-htmlsql_select_page!(select_page_data(name: &str, dt: &DateTime) -> Activity => "example.html");
+htmlsql_select_page!(select_page_data(name: &str, dt: &DateTime) -> rbatis::Result<Page<Activity>> => "example.html");
 
 #[tokio::main]
 pub async fn main() {
@@ -41,8 +41,8 @@ pub async fn main() {
     // ------------choose database driver------------
     // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
     // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
-    //rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
+    //rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    rb.init(rbdc_sqlite::driver::SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
     // table sync done
     fast_log::logger().set_level(LevelFilter::Off);
     _ = RBatis::sync(
