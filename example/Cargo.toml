@@ -11,10 +11,6 @@ name = "macro_proc_htmlsql"
 path = "src/macro_proc_htmlsql.rs"
 
 [[bin]]
-name = "macro_proc_htmlsql_custom_func"
-path = "src/macro_proc_htmlsql_custom_func.rs"
-
-[[bin]]
 name = "macro_proc_pysql"
 path = "src/macro_proc_pysql.rs"
 
@@ -62,18 +58,6 @@ path = "src/transaction.rs"
 name = "raw_sql"
 path = "src/raw_sql.rs"
 [[bin]]
-name = "macro_proc_htmlsql_page_file"
-path = "src/macro_proc_htmlsql_page_file.rs"
-[[bin]]
-name = "macro_proc_htmlsql_page"
-path = "src/macro_proc_htmlsql_page.rs"
-[[bin]]
-name = "macro_proc_htmlsql_file2"
-path = "src/macro_proc_htmlsql_file2.rs"
-[[bin]]
-name = "macro_proc_htmlsql_file"
-path = "src/macro_proc_htmlsql_file.rs"
-[[bin]]
 name = "table_extend"
 path = "src/table_extend.rs"
 [[bin]]
@@ -100,10 +84,6 @@ path = "src/table_util.rs"
 [[bin]]
 name = "plugin_intercept_read_write_separation"
 path = "src/plugin_intercept_read_write_separation.rs"
-[[bin]]
-name = "macro_proc_htmlsql_file_update"
-path = "src/macro_proc_htmlsql_file_update.rs"
-
 [[bin]]
 name = "macro_proc_htmlsql_struct"
 path = "src/macro_proc_htmlsql_struct.rs"

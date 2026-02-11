@@ -23,7 +23,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-// Clion Smart tips: click code, choose 'Inject Language or Reference', and then choose html
+// or `#[html_sql("example.html")]`
 #[html_sql(
 r#"<select id="select_by_condition">
         `select * from activity`
