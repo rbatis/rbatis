@@ -66,4 +66,18 @@
         <set collection="arg"></set>
         ` where id = #{id} `
     </update>
+
+    <!-- Paginated query - automatically detected by return type Page<Activity> -->
+    <select id="select_by_page">
+        `select * from activity`
+        <where>
+            <if test="name != ''">
+                ` and name like #{name}`
+            </if>
+            <if test="dt != null">
+                ` and create_time < #{dt}`
+            </if>
+        </where>
+        <!-- PageIntercept will add limit/offset automatically -->
+    </select>
 </mapper>

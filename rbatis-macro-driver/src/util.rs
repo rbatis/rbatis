@@ -71,3 +71,70 @@ pub(crate) fn is_rb_ref(ty_stream: &str) -> bool {
     }
     false
 }
+
+/// Check if the return type is Page<T> or Result<Page<T>>
+/// Returns Some(inner_type) if it is, None otherwise
+pub(crate) fn is_page_return_type(return_str: &str) -> Option<String> {
+    let s = return_str.replace(" ", "");
+
+    // Handle Result<Page<T>> or rbatis::Result<Page<T>>
+    if s.contains("Result<Page<") || s.contains("Result<Page<") {
+        if let Some(start) = s.find("Page<") {
+            let inner = extract_type_after(&s, start + 5)?;
+            return Some(inner);
+        }
+    }
+
+    // Handle Page<T> or rbatis::plugin::Page<T>
+    if s.contains("Page<") || s.contains("::Page<") {
+        if let Some(start) = s.find("Page<") {
+            let inner = extract_type_after(&s, start + 5)?;
+            return Some(inner);
+        }
+    }
+
+    None
+}
+
+/// Extract type content between angle brackets
+/// e.g. "Activity>" -> "Activity", "Activity," -> "Activity"
+fn extract_type_after(s: &str, start: usize) -> Option<String> {
+    let mut depth = 0;
+    let mut end = start;
+
+    for (i, c) in s[start..].chars().enumerate() {
+        match c {
+            '<' => depth += 1,
+            '>' => {
+                if depth == 0 {
+                    end = start + i;
+                    break;
+                }
+                depth -= 1;
+            }
+            ',' if depth == 0 => {
+                end = start + i;
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    if end > start {
+        let inner = s[start..end].to_string();
+        // Handle nested generics like Vec<T>
+        if inner.contains('<') {
+            Some(inner)
+        } else {
+            Some(inner.trim().to_string())
+        }
+    } else {
+        None
+    }
+}
+
+/// Check if a type string is IPageRequest, PageRequest, or a reference to them
+pub(crate) fn is_page_request(ty_stream: &str) -> bool {
+    let s = ty_stream.replace(" ", "");
+    s.contains("IPageRequest") || s.contains("PageRequest")
+}

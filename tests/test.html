@@ -181,4 +181,14 @@
         <set>1,</set>
     </select>
 
+    <!-- Paginated query - automatically detected by Page<T> return type -->
+    <select id="test_page">
+        `select * from table`
+        <where>
+            <if test="name != ''">
+                ` and name like #{name}`
+            </if>
+        </where>
+    </select>
+
 </mapper>

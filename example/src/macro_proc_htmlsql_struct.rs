@@ -2,8 +2,9 @@
 
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
+use rbatis::plugin::PageRequest;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::RBatis;
+use rbatis::{Error, RBatis};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct Activity {
@@ -50,10 +51,22 @@ impl Activity {
     ) -> rbatis::Result<rbatis::rbdc::db::ExecResult> {
         impled!()
     }
+
+    /// Paginated query - automatically detected by return type Page<Activity>
+    /// Maps to <select id="select_by_page"> in HTML
+    /// The macro automatically generates pagination logic using PageIntercept
+    pub async fn select_by_page(
+        rb: &dyn Executor,
+        page_req: &dyn PageRequest,
+        name: &str,
+        dt: Option<DateTime>,
+    ) -> rbatis::Result<rbatis::plugin::Page<Activity>> {
+        impled!()
+    }
 }
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error>{
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -71,9 +84,8 @@ pub async fn main() {
     .unwrap();
 
     // Use impl block Mapper
-    let results: Vec<Activity> = Activity::select_by_condition(&rb, "Test", &DateTime::now())
-        .await
-        .unwrap();
+    let results = Activity::select_by_page(&rb, &PageRequest::new(1, 10), "", None)
+        .await?;
     println!("Query by condition: {:?}", results);
 
     let _ = Activity::update_by_id(
@@ -93,7 +105,6 @@ pub async fn main() {
             delete_flag: None,
         },
     )
-    .await
-    .unwrap();
-    println!("Updated successfully");
+    .await?;
+    Ok(())
 }

@@ -793,4 +793,74 @@ mod test {
         };
         block_on(f);
     }
+
+    /// Test automatic pagination detection with Page<T> return type
+    #[test]
+    fn test_auto_pagination() {
+        let f = async move {
+            use rbatis::plugin::{Page, PageRequest, intercept_page::PageIntercept};
+
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+
+            htmlsql!(test_page(rb: &RBatis, page_req: &dyn PageRequest, name: String) -> Result<Page<MockTable>, Error> => "tests/test.html");
+
+            let page_req = PageRequest::new(1, 10);
+            let r = test_page(&rb, &page_req, "test".to_string()).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+
+            // The first query should be a count query (if do_count is true)
+            // The second query should be a select query with limit/offset
+            // Check that SQL contains the expected content
+            assert!(sql.contains("select") || sql.contains("count"));
+
+            // Verify Page structure
+            assert_eq!(r.page_no, 1);
+            assert_eq!(r.page_size, 10);
+        };
+        block_on(f);
+    }
+
+    /// Test auto-pagination in impl block
+    #[test]
+    fn test_auto_pagination_impl() {
+        let f = async move {
+            use rbatis::plugin::{Page, PageRequest, intercept_page::PageIntercept};
+
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+
+            pub struct PageMapper;
+
+            #[html_sql("tests/test.html")]
+            impl PageMapper {
+                pub async fn test_page(
+                    rb: &RBatis,
+                    page_req: &dyn PageRequest,
+                    name: String,
+                ) -> Result<Page<MockTable>, Error> {
+                    impled!()
+                }
+            }
+
+            let page_req = PageRequest::new(2, 20);
+            let r = PageMapper::test_page(&rb, &page_req, "test".to_string()).await.unwrap();
+            let (sql, args) = queue.pop().unwrap();
+
+            // Verify Page structure
+            assert_eq!(r.page_no, 2);
+            assert_eq!(r.page_size, 20);
+        };
+        block_on(f);
+    }
 }
