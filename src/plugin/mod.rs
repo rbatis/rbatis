@@ -1,3 +1,4 @@
+pub mod gen_html_sql;
 pub mod id_generator;
 pub mod intercept;
 pub mod page;
