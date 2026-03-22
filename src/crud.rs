@@ -34,6 +34,9 @@ macro_rules! crud {
     ($table:ty{},$table_name:expr) => {
         // insert
         impl $table {
+            /// batch insert records
+            ///
+            /// sql: `INSERT INTO table_name (column1, column2, ...) VALUES (value1, value2, ...), (value1, value2, ...), ...`
             pub async fn insert_batch(
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
@@ -95,6 +98,9 @@ macro_rules! crud {
                 Ok(result)
             }
 
+            /// insert a single record
+            ///
+            /// sql: `INSERT INTO table_name (column1, column2, ...) VALUES (value1, value2, ...)`
             pub async fn insert(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
@@ -104,6 +110,17 @@ macro_rules! crud {
         }
         // select
         impl $table {
+            /// select records by condition map.
+            /// supports "column" key in condition to select specific columns, e.g. `value!{"id":"1", "column": ["id", "name"]}`
+            ///
+            /// sql: `SELECT column1, column2, ... FROM table_name WHERE key1 = ? and key2 in (?, ?, ...)`
+            ///
+            /// condition map -> where sql:
+            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
+            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
+            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
+            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - null values are skipped
             pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 // Extract column specification and remove it from condition
@@ -171,6 +188,18 @@ macro_rules! crud {
         }
         // update
         impl $table {
+            /// update records by condition map.
+            /// supports "column" key in condition to update specific columns, e.g. `value!{"id":"1", "column": ["name", "status"]}`
+            ///
+            /// sql: `UPDATE table_name SET column1 = ?, column2 = ?, ... WHERE key1 = ? and key2 in (?, ?, ...)`
+            /// note: skips null fields by default, skips 'id' field always
+            ///
+            /// condition map -> where sql:
+            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
+            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
+            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
+            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - null values are skipped
             pub async fn update_by_map(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
@@ -262,6 +291,16 @@ macro_rules! crud {
         }
         // delete
         impl $table {
+            /// delete records by condition map
+            ///
+            /// sql: `DELETE FROM table_name WHERE key1 = ? and key2 in (?, ?, ...)`
+            ///
+            /// condition map -> where sql:
+            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
+            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
+            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
+            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - null values are skipped
             pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 #[$crate::py_sql(
