@@ -10,7 +10,7 @@ extern crate test;
 
 use futures_core::future::BoxFuture;
 use rbatis::rbatis::RBatis;
-use rbatis::{impl_insert, impl_select};
+use rbatis::{crud};
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
 use rbdc::rt::block_on;
 use rbdc::Error;
@@ -273,5 +273,4 @@ struct MockTable {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-impl_insert!(MockTable {});
-impl_select!(MockTable {});
+crud!(MockTable {});
