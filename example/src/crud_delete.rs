@@ -1,5 +1,5 @@
 use rbatis::dark_std::defer;
-use rbatis::impl_delete;
+use rbatis::{crud};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
@@ -21,7 +21,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-impl_delete!(Activity {delete_by_name(name:&str) => "`where name= #{name}`"});
+crud!(Activity {});
 
 #[tokio::main]
 pub async fn main() {
@@ -45,6 +45,6 @@ pub async fn main() {
     )
     .unwrap();
 
-    let data = Activity::delete_by_name(&rb, "2").await;
+    let data = Activity::delete_by_map(&rb, rbs::value!{"name":"test"}).await;
     println!("delete_by_name = {}", json!(data));
 }

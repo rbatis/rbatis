@@ -1,5 +1,5 @@
 use rbatis::dark_std::defer;
-use rbatis::impl_select;
+use rbatis::crud;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
@@ -21,7 +21,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-impl_select!(Activity{select_id_name(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
+crud!(Activity{});
 
 #[tokio::main]
 pub async fn main() {
@@ -45,6 +45,6 @@ pub async fn main() {
     )
     .unwrap();
 
-    let data = Activity::select_id_name(&rb, "1", "1").await;
+    let data = Activity::select_by_map(&rb, rbs::value! {"id":"1","name":"1"}).await;
     println!("select_id_name = {}", json!(data));
 }

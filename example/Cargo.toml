@@ -31,9 +31,6 @@ path = "src/crud_delete.rs"
 name = "crud_select"
 path = "src/crud_select.rs"
 [[bin]]
-name = "crud_select_page"
-path = "src/crud_select_page.rs"
-[[bin]]
 name = "crud_update"
 path = "src/crud_update.rs"
 [[bin]]
@@ -42,9 +39,6 @@ path = "src/crud_update_skip.rs"
 [[bin]]
 name = "crud_map"
 path = "src/crud_map.rs"
-[[bin]]
-name = "crud_sql"
-path = "src/crud_sql.rs"
 [[bin]]
 name = "crud_json"
 path = "src/crud_json.rs"

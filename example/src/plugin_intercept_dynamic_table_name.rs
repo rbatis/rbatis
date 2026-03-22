@@ -40,7 +40,7 @@ pub async fn main() -> Result<(), rbatis::Error> {
 
     // Execute query to see the mock intercept in action
     let _ = conn.query("SELECT <my_table_name>", vec![]).await;
-    let data = Activity::select_all(&conn).await?;
+    let data = Activity::select_by_map(&conn,rbs::value! {}).await?;
     println!("data={:?}", json!(data));
     Ok(())
 }

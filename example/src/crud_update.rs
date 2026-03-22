@@ -1,6 +1,6 @@
 use log::LevelFilter;
 use rbatis::dark_std::defer;
-use rbatis::impl_update;
+use rbatis::crud;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
@@ -23,7 +23,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-impl_update!(Activity{update_by_name(name:&str) => "`where name = #{name}`"});
+crud!(Activity{});
 
 #[tokio::main]
 pub async fn main() {
@@ -85,6 +85,6 @@ pub async fn main() {
         delete_flag: Some(1),
     };
 
-    let data = Activity::update_by_name(&rb, &table, "2").await;
+    let data = Activity::update_by_map(&rb, &table, rbs::value! {"name":"2"}).await;
     println!("update_by_name = {}", json!(data));
 }
