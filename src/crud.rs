@@ -111,15 +111,15 @@ macro_rules! crud {
         // select
         impl $table {
             /// select records by condition map.
-            /// supports "column" key in condition to select specific columns, e.g. `value!{"id":"1", "column": ["id", "name"]}`
+            /// supports "column" key in condition to select specific columns, e.g. `value!{"col1":"val1", "column": ["col1", "col2"]}`
             ///
-            /// sql: `SELECT column1, column2, ... FROM table_name WHERE key1 = ? and key2 in (?, ?, ...)`
+            /// sql: `SELECT col1, col2, ... FROM table_name WHERE col1 = ? and col2 in (?, ?, ...)`
             ///
             /// condition map -> where sql:
-            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
-            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
-            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
-            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - `value!{"col1": "val1"}`                       -> `WHERE col1 = 'val1'`
+            /// - `value!{"col1": 1, "col2": "val2"}`           -> `WHERE col1 = 1 and col2 = 'val2'`
+            /// - `value!{"col1": ["v1", "v2", "v3"]}`          -> `WHERE col1 in ('v1', 'v2', 'v3')`
+            /// - `value!{"col1": "val1", "col2": ["a", "b"]}`  -> `WHERE col1 = 'val1' and col2 in ('a', 'b')`
             /// - null values are skipped
             pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
@@ -189,16 +189,16 @@ macro_rules! crud {
         // update
         impl $table {
             /// update records by condition map.
-            /// supports "column" key in condition to update specific columns, e.g. `value!{"id":"1", "column": ["name", "status"]}`
+            /// supports "column" key in condition to update specific columns, e.g. `value!{"col1":"val1", "column": ["col2", "col3"]}`
             ///
-            /// sql: `UPDATE table_name SET column1 = ?, column2 = ?, ... WHERE key1 = ? and key2 in (?, ?, ...)`
+            /// sql: `UPDATE table_name SET col1 = ?, col2 = ?, ... WHERE col1 = ? and col2 in (?, ?, ...)`
             /// note: skips null fields by default, skips 'id' field always
             ///
             /// condition map -> where sql:
-            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
-            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
-            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
-            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - `value!{"col1": "val1"}`                       -> `WHERE col1 = 'val1'`
+            /// - `value!{"col1": 1, "col2": "val2"}`           -> `WHERE col1 = 1 and col2 = 'val2'`
+            /// - `value!{"col1": ["v1", "v2", "v3"]}`          -> `WHERE col1 in ('v1', 'v2', 'v3')`
+            /// - `value!{"col1": "val1", "col2": ["a", "b"]}`  -> `WHERE col1 = 'val1' and col2 in ('a', 'b')`
             /// - null values are skipped
             pub async fn update_by_map(
                 executor: &dyn $crate::executor::Executor,
@@ -293,13 +293,13 @@ macro_rules! crud {
         impl $table {
             /// delete records by condition map
             ///
-            /// sql: `DELETE FROM table_name WHERE key1 = ? and key2 in (?, ?, ...)`
+            /// sql: `DELETE FROM table_name WHERE col1 = ? and col2 in (?, ?, ...)`
             ///
             /// condition map -> where sql:
-            /// - `value!{"id": "1"}` -> `WHERE id = '1'`
-            /// - `value!{"age": 18, "name": "test"}` -> `WHERE age = 18 and name = 'test'`
-            /// - `value!{"id": ["1", "2", "3"]}` -> `WHERE id in ('1', '2', '3')`
-            /// - `value!{"id": "1", "name": ["a", "b"]}` -> `WHERE id = '1' and name in ('a', 'b')`
+            /// - `value!{"col1": "val1"}`                       -> `WHERE col1 = 'val1'`
+            /// - `value!{"col1": 1, "col2": "val2"}`           -> `WHERE col1 = 1 and col2 = 'val2'`
+            /// - `value!{"col1": ["v1", "v2", "v3"]}`          -> `WHERE col1 in ('v1', 'v2', 'v3')`
+            /// - `value!{"col1": "val1", "col2": ["a", "b"]}`  -> `WHERE col1 = 'val1' and col2 in ('a', 'b')`
             /// - null values are skipped
             pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
