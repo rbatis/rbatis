@@ -101,19 +101,19 @@ log = "0.4"
 fast_log = "1.7"
 #async runtime lib
 tokio = { version = "1", features = ["full"] }
+rbatis = { version = "4.8", features = ["debug_mode"], path = "../" }
 rbs = { version = "4" }
-rbatis = { version = "4.7", features = ["debug_mode"], path = "../" }
-rbdc-sqlite = { version = "4.7" }
-rbdc-mysql = { version = "4.7" }
-rbdc-pg = { version = "4.7"}
-rbdc-mssql = { version = "4.7" }
+rbdc-sqlite = { version = "4" }
+rbdc-mysql = { version = "4" }
+rbdc-pg = { version = "4"}
+rbdc-mssql = { version = "4" }
 
 # you don't need this
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
+rbatis = { version = "4.8", features = ["debug_mode"], path = "../" }
 rbs = { version = "4" }
-rbatis = { version = "4.7", features = ["debug_mode"], path = "../" }
-rbdc-sqlite = { version = "4.7" }
+rbdc-sqlite = { version = "4" }
 
 log = "0.4"
 fast_log = "1.7"

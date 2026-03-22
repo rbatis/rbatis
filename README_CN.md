@@ -140,13 +140,13 @@ QPS: 288531 QPS/s
 ```toml
 # Cargo.toml
 [dependencies]
-rbs = { version = "4"}
-rbatis = { version = "4.7"}
+rbatis = { version = "4.8"}
 #drivers
-rbdc-sqlite = { version = "4.7" }
-# rbdc-mysql = { version = "4.7" }
-# rbdc-pg = { version = "4.7" }
-# rbdc-mssql = { version = "4.7" }
+rbs = { version = "4"}
+rbdc-sqlite = { version = "4" }
+# rbdc-mysql = { version = "4" }
+# rbdc-pg = { version = "4" }
+# rbdc-mssql = { version = "4" }
 
 # 其他依赖
 serde = { version = "1", features = ["derive"] }
