@@ -185,7 +185,7 @@ fn bench_select() {
         rbatis.init(MockDriver {}, "mock://").unwrap();
         rbatis.acquire().await.unwrap();
         rbench!(100000, {
-            MockTable::select_all(&rbatis).await.unwrap();
+            MockTable::select_by_map(&rbatis,rbs::value!{}).await.unwrap();
         });
     };
     block_on(f);
