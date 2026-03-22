@@ -1,7 +1,7 @@
 ///PySql: gen insert/insert_batch, select_by_map, update_by_map, delete_by_map methods
 ///```rust
 /// use rbs::value;
-/// use rbatis::{Error, RBatis};
+/// use rbatis::{Error, RBatis,ExecResult};
 ///
 /// #[derive(serde::Serialize, serde::Deserialize)]
 /// pub struct MockTable{
@@ -12,17 +12,15 @@
 /// //use
 /// async fn test_use(rb:&RBatis) -> Result<(),Error>{
 ///  let table = MockTable{id: Some("1".to_string())};
-///  let r = MockTable::insert(rb, &table).await;
-///  let r = MockTable::insert_batch(rb, std::slice::from_ref(&table),10).await;
+///  let result:ExecResult = MockTable::insert(rb, &table).await?;
+///  let result:ExecResult = MockTable::insert_batch(rb, std::slice::from_ref(&table),10).await?;
 ///
-///  let tables = MockTable::select_by_map(rb,value!{"id":"1"}).await;
-///  let tables = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await;
-///  let tables = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?; 
+///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":"1"}).await?;
+///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await?;
+///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?; 
 ///
-///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
-///
-///  let r = MockTable::delete_by_map(rb, value!{"id":"1"}).await;
-///  //... and more
+///  let result:ExecResult = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await?;
+///  let result:ExecResult = MockTable::delete_by_map(rb, value!{"id":"1"}).await?;
 ///  Ok(())
 /// }
 ///
