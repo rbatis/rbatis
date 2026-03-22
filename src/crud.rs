@@ -29,45 +29,10 @@
 #[macro_export]
 macro_rules! crud {
     ($table:ty{}) => {
-        $crate::impl_insert!($table {});
-        $crate::impl_select!($table {});
-        $crate::impl_update!($table {});
-        $crate::impl_delete!($table {});
+        $crate::crud!($table {}, "");
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_insert!($table {}, $table_name);
-        $crate::impl_select!($table {}, $table_name);
-        $crate::impl_update!($table {}, $table_name);
-        $crate::impl_delete!($table {}, $table_name);
-    };
-}
-
-///PySql: gen sql => INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...);
-///
-/// example:
-///```rust
-/// use rbatis::{Error, RBatis};
-/// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{
-///   pub id: Option<String>
-/// }
-/// rbatis::impl_insert!(MockTable{});
-///
-/// //use
-/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let table = MockTable{id: Some("1".to_string())};
-///  let r = MockTable::insert(rb, &table).await;
-///  let r = MockTable::insert_batch(rb, std::slice::from_ref(&table),10).await;
-///  Ok(())
-/// }
-/// ```
-///
-#[macro_export]
-macro_rules! impl_insert {
-    ($table:ty{}) => {
-        $crate::impl_insert!($table {}, "");
-    };
-    ($table:ty{},$table_name:expr) => {
+        // insert
         impl $table {
             pub async fn insert_batch(
                 executor: &dyn $crate::executor::Executor,
@@ -137,45 +102,10 @@ macro_rules! impl_insert {
                 <$table>::insert_batch(executor, std::slice::from_ref(table), 1).await
             }
         }
-    };
-}
-
-///PySql: gen sql => SELECT (column1,column2,column3,...) FROM table_name (column1,column2,column3,...)  *** WHERE ***
-///
-/// Supports selective column queries by specifying "column" key in condition:
-///```rust
-/// use rbs::value;
-/// use rbatis::{Error, RBatis};
-/// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{
-///   pub id: Option<String>,
-///   pub name: Option<String>,
-///   pub status: Option<String>
-/// }
-/// /// default
-///rbatis::impl_select!(MockTable{});
-///
-/// //usage
-/// async fn test_select(rb:&RBatis) -> Result<(),Error>{
-///    // Select all columns
-///    let r = MockTable::select_by_map(rb,value!{"id":"1"}).await?;
-///
-///    // Select only specific columns (id and name)
-///    let r = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?;
-///    Ok(())
-/// }
-/// ```
-///
-#[macro_export]
-macro_rules! impl_select {
-    ($table:ty{}) => {
-        $crate::impl_select!($table{},"");
-    };
-    ($table:ty{},$table_name:expr) => {
+        // select
         impl $table {
-         pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
+            pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
-
                 // Extract column specification and remove it from condition
                 let table_column = {
                     let mut columns = String::new();
@@ -237,49 +167,10 @@ macro_rules! impl_select {
                          table_name = snake_name();
                 }
                 select_by_map(executor, table_name, &table_column, &condition).await
-       }
-    }
-    };
-}
-
-/// PySql: gen sql = UPDATE table_name SET column1=value1,column2=value2,... WHERE some_column=some_value;
-///
-/// Supports selective column updates by specifying "column" key in condition (GitHub issue #591):
-/// ```rust
-/// use rbs::value;
-/// use rbatis::{Error, RBatis};
-/// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{
-///   pub id: Option<String>,
-///   pub name: Option<String>,
-///   pub status: Option<String>
-/// }
-/// rbatis::impl_update!(MockTable{});
-/// //use
-/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let table = MockTable{
-///     id: Some("1".to_string()),
-///     name: Some("test".to_string()),
-///     status: Some("active".to_string())
-///  };
-///  // Update all columns
-///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await;
-///
-///  // Update only specific columns (name and status)
-///  let r = MockTable::update_by_map(rb, &table, value!{"id":"1", "column": ["name", "status"]}).await;
-///  Ok(())
-/// }
-/// ```
-#[macro_export]
-macro_rules! impl_update {
-    ($table:ty{}) => {
-        $crate::impl_update!(
-            $table{},
-            ""
-        );
-    };
-    ($table:ty{},$table_name:expr) => {
-       impl $table {
+            }
+        }
+        // update
+        impl $table {
             pub async fn update_by_map(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
@@ -288,15 +179,12 @@ macro_rules! impl_update {
                 use rbatis::crud_traits::{ValueOperatorSql, FilterByColumns};
 
                 // Extract column list for selective updates - implements GitHub issue #591
-                // This allows updating only specific columns by specifying them in the condition
-                // Example: update_by_map(&rb, &activity, value!{"id": "123", "column": ["name", "status"]})
                 let set_columns = {
                     let mut columns = rbs::Value::Null;
                     let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
                     for (k, v) in condition {
                             match k.as_str() {
                                 Some("column") => {
-                                    // Normalize column specification to Array format for filter_by_columns
                                     columns = match v {
                                         rbs::Value::String(s) => {
                                             rbs::Value::Array(vec![rbs::Value::String(s.clone())])
@@ -372,36 +260,9 @@ macro_rules! impl_update {
                   update_by_map_internal(executor, table_name, &table, &condition, skip_null).await
             }
         }
-    };
-}
-
-/// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
-///
-/// ```rust
-/// use rbs::value;
-/// use rbatis::{Error, RBatis};
-/// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{}
-/// rbatis::impl_delete!(MockTable{});
-///
-/// //use
-/// async fn test_use(rb:&RBatis) -> Result<(),Error>{
-///  let r = MockTable::delete_by_map(rb, value!{"id":"1"}).await;
-///  //... and more
-///  Ok(())
-/// }
-/// ```
-#[macro_export]
-macro_rules! impl_delete {
-    ($table:ty{}) => {
-        $crate::impl_delete!(
-            $table{},
-            ""
-        );
-    };
-    ($table:ty{},$table_name:expr) => {
+        // delete
         impl $table {
-         pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 #[$crate::py_sql(
          "`delete from ${table_name}`
@@ -437,11 +298,10 @@ macro_rules! impl_delete {
                          table_name = snake_name();
                 }
                 delete_by_map(executor, table_name, &condition).await
-       }
-    }
-  };
+            }
+        }
+    };
 }
-
 
 /// impl html_sql select page.
 ///

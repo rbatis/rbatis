@@ -18,7 +18,7 @@ mod test {
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::intercept_page::PageIntercept;
     use rbatis::plugin::PageRequest;
-    use rbatis::{Action, impl_delete, impl_select, impl_update};
+    use rbatis::{Action};
     use rbatis::{DefaultPool, Error, RBatis};
     use rbdc::datetime::DateTime;
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};

@@ -1,7 +1,6 @@
 use rbatis::dark_std::defer;
-use rbatis::impl_insert;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::RBatis;
+use rbatis::{RBatis, crud};
 use serde_json::json;
 
 /// table
@@ -21,7 +20,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-impl_insert!(Activity {});
+crud!(Activity {});
 
 #[tokio::main]
 pub async fn main() {
