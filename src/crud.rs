@@ -16,7 +16,6 @@
 ///  let r = MockTable::insert_batch(rb, std::slice::from_ref(&table),10).await;
 ///
 ///  let tables = MockTable::select_by_map(rb,value!{"id":"1"}).await;
-///  let tables = MockTable::select_all(rb).await;
 ///  let tables = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await;
 ///  let tables = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?; 
 ///
@@ -157,10 +156,6 @@ macro_rules! impl_insert {
 /// }
 /// /// default
 ///rbatis::impl_select!(MockTable{});
-///rbatis::impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
-/// /// container result
-///rbatis::impl_select!(MockTable{select_by_id(id:String) -> Option => "`where id = #{id} limit 1`"});
-///rbatis::impl_select!(MockTable{select_by_id2(id:String) -> Vec => "`where id = #{id} limit 1`"});
 ///
 /// //usage
 /// async fn test_select(rb:&RBatis) -> Result<(),Error>{
@@ -169,10 +164,6 @@ macro_rules! impl_insert {
 ///
 ///    // Select only specific columns (id and name)
 ///    let r = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?;
-///
-///    let r = MockTable::select_all_by_id(rb,"1","xxx").await?;
-///    let r:Option<MockTable> = MockTable::select_by_id(rb,"1".to_string()).await?;
-///    let r:Vec<MockTable> = MockTable::select_by_id2(rb,"1".to_string()).await?;
 ///    Ok(())
 /// }
 /// ```
@@ -183,8 +174,7 @@ macro_rules! impl_select {
         $crate::impl_select!($table{},"");
     };
     ($table:ty{},$table_name:expr) => {
-        $crate::impl_select!($table{select_all() => ""},$table_name);
-          impl $table {
+        impl $table {
          pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
 
@@ -251,29 +241,6 @@ macro_rules! impl_select {
                 select_by_map(executor, table_name, &table_column, &condition).await
        }
     }
-    };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) => $sql:expr}$(,$table_name:expr)?) => {
-        $crate::impl_select!($table{$fn_name$(<$($gkey:$gtype,)*>)?($($param_key:$param_type,)*) ->Vec => $sql}$(,$table_name)?);
-    };
-    ($table:ty{$fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty $(,)?)*) -> $container:tt => $sql:expr}$(,$table_name:expr)?) => {
-        impl $table{
-            pub async fn $fn_name $(<$($gkey:$gtype,)*>)? (executor: &dyn  $crate::executor::Executor,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error>
-            {
-                     use rbatis::crud_traits::ValueOperatorSql;
-                     #[$crate::py_sql("`select ${table_column} from ${table_name} `\n",$sql)]
-                     async fn $fn_name$(<$($gkey: $gtype,)*>)?(executor: &dyn $crate::executor::Executor,table_column:&str,table_name:&str,$($param_key:$param_type,)*) -> std::result::Result<$container<$table>,$crate::rbdc::Error> {impled!()}
-                     
-                     let mut table_column = "*".to_string();
-                     let mut table_name = String::new();
-                     $(table_name = $table_name.to_string();)?
-                     if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
-                     }
-                     $fn_name(executor,&table_column,&table_name,$($param_key ,)*).await
-            }
-        }
     };
 }
 
@@ -408,38 +375,6 @@ macro_rules! impl_update {
             }
         }
     };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
-        impl $table {
-            pub async fn $fn_name(
-                executor: &dyn $crate::executor::Executor,
-                table: &$table,
-                $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
-                if $sql_where.is_empty(){
-                    return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
-                }
-                #[$crate::py_sql("`update ${table_name}`\n set collection='table',skips='id':\n",$sql_where)]
-                  async fn $fn_name(
-                      executor: &dyn $crate::executor::Executor,
-                      table_name: String,
-                      table: &rbs::Value,
-                      $($param_key:$param_type,)*
-                  ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                      impled!()
-                  }
-                  let mut table_name = String::new();
-                  $(table_name = $table_name.to_string();)?
-                  if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
-                  }
-                  let table = rbs::value!(table);
-                  $fn_name(executor, table_name, &table, $($param_key,)*).await
-            }
-        }
-    };
 }
 
 /// PySql: gen sql = DELETE FROM table_name WHERE some_column=some_value;
@@ -506,36 +441,7 @@ macro_rules! impl_delete {
                 delete_by_map(executor, table_name, &condition).await
        }
     }
-};
-( $ table:ty{$ fn_name:ident $(< $($gkey:ident:$gtype:path $(,)?)* >)? ($($param_key:ident:$param_type:ty$(,)?)*) => $sql_where:expr}$(,$table_name:expr)?) => {
-        impl $table {
-            pub async fn $fn_name$(<$($gkey:$gtype,)*>)?(
-                executor: &dyn $crate::executor::Executor,
-                $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
-                if $sql_where.is_empty(){
-                    return Err($crate::rbdc::Error::from("sql_where can't be empty!"));
-                }
-                #[$crate::py_sql("`delete from ${table_name} `\n",$sql_where)]
-                async fn $fn_name$(<$($gkey: $gtype,)*>)?(
-                    executor: &dyn $crate::executor::Executor,
-                    table_name: String,
-                    $($param_key:$param_type,)*
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                    impled!()
-                }
-                let mut table_name = String::new();
-                $(table_name = $table_name.to_string();)?
-                if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
-                }
-                $fn_name(executor, table_name, $($param_key,)*).await
-            }
-        }
-    };
+  };
 }
 
 

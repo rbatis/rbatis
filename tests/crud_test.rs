@@ -621,22 +621,6 @@ mod test {
         block_on(f);
     }
 
-
-    #[test]
-    fn test_select_all() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_all(&rb).await.unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{:?}", sql);
-            assert_eq!(sql.trim(), "select * from mock_table");
-        };
-        block_on(f);
-    }
-
     #[test]
     fn test_select_by_map_all() {
         let f = async move {
@@ -751,182 +735,13 @@ mod test {
         block_on(f);
     }
 
-    impl_select!(MockTable{select_all_by_id(id:&str,name:&str) => "`where id = #{id} and name = #{name}`"});
-    #[test]
-    fn test_select_all_by_id() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_all_by_id(&rb, "1", "1")
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where id = ? and name = ?");
-            assert_eq!(args, vec![value!("1"), value!("1")]);
-        };
-        block_on(f);
-    }
-    impl_select!(MockTable{select_by_id(id:&str) -> Option => "`where id = #{id} limit 1`"});
-    #[test]
-    fn test_select_by_id() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_by_id(&rb, "1").await.unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where id = ? limit 1");
-            assert_eq!(args, vec![value!("1")]);
-        };
-        block_on(f);
-    }
+
 
     #[derive(serde::Serialize, serde::Deserialize)]
     pub struct DTO {
         id: String,
     }
-    impl_select!(MockTable{select_by_dto(dto:DTO) -> Option => "`where id = '${dto.id}' limit 1`"});
-    #[test]
-    fn test_select_by_dto() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_by_dto(
-                &rb,
-                DTO {
-                    id: "1".to_string(),
-                },
-            )
-            .await
-            .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table where id = '1' limit 1");
-        };
-        block_on(f);
-    }
-    impl_update!(MockTable{update_by_name(name:&str) => "`where id = '2'`"});
-    #[test]
-    fn test_update_by_name() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
-                version: Some(1),
-                delete_flag: Some(1),
-                count: 0,
-            };
-            let r = MockTable::update_by_name(&rb, &t, "test")
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=? where id = '2'");
-            assert_eq!(
-                args,
-                vec![
-                    value!(t.name),
-                    value!(t.pc_link),
-                    value!(t.h5_link),
-                    value!(t.status),
-                    value!(t.remark),
-                    value!(t.create_time),
-                    value!(t.version),
-                    value!(t.delete_flag),
-                    value!(t.count),
-                ]
-            );
-        };
-        block_on(f);
-    }
-
-    impl_update!(MockTable{update_by_dto(dto:DTO) => "`where id = '${dto.id}'`"});
-    #[test]
-    fn test_update_by_dto() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let t = MockTable {
-                id: Some("2".into()),
-                name: Some("2".into()),
-                pc_link: Some("2".into()),
-                h5_link: Some("2".into()),
-                pc_banner_img: None,
-                h5_banner_img: None,
-                sort: None,
-                status: Some(2),
-                remark: Some("2".into()),
-                create_time: Some(DateTime::now()),
-                version: Some(1),
-                delete_flag: Some(1),
-                count: 0,
-            };
-            let r = MockTable::update_by_dto(
-                &rb,
-                &t,
-                DTO {
-                    id: "2".to_string(),
-                },
-            )
-            .await
-            .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "update mock_table set name=?, pc_link=?, h5_link=?, status=?, remark=?, create_time=?, version=?, delete_flag=?, count=? where id = '2'");
-            assert_eq!(
-                args,
-                vec![
-                    value!(t.name),
-                    value!(t.pc_link),
-                    value!(t.h5_link),
-                    value!(t.status),
-                    value!(t.remark),
-                    value!(t.create_time),
-                    value!(t.version),
-                    value!(t.delete_flag),
-                    value!(t.count),
-                ]
-            );
-        };
-        block_on(f);
-    }
-
-    impl_delete!(MockTable {delete_by_name(name:&str) => "`where name= '2'`"});
-    #[test]
-    fn test_delete_by_name() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::delete_by_name(&rb, "2").await.unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "delete from mock_table where name= '2'");
-        };
-        block_on(f);
-    }
+    
     impl_select_page!(MockTable{select_page(name:&str) => "`order by create_time desc`"});
     #[test]
     fn test_select_page() {
@@ -1092,45 +907,6 @@ mod test {
         block_on(f);
     }
 
-    impl_select!(MockTable{select_from_table_name_by_id(id:&str,table_name:&str) => "`where id = #{id}`"});
-
-    #[test]
-    fn test_select_from_table_name_by_id() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_from_table_name_by_id(&rb, "1", "mock_table2")
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select * from mock_table2 where id = ?");
-            assert_eq!(args, vec![value!("1")]);
-        };
-        block_on(f);
-    }
-
-    impl_select!(MockTable{select_table_column_from_table_name_by_id(id:&str,table_column:&str) => "`where id = #{id}`"});
-
-    #[test]
-    fn test_select_table_column_from_table_name_by_id() {
-        let f = async move {
-            let mut rb = RBatis::new();
-            let queue = Arc::new(SyncVec::new());
-            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
-            rb.init(MockDriver {}, "test").unwrap();
-            let r = MockTable::select_table_column_from_table_name_by_id(&rb, "1", "id,name")
-                .await
-                .unwrap();
-            let (sql, args) = queue.pop().unwrap();
-            println!("{}", sql);
-            assert_eq!(sql, "select id,name from mock_table where id = ?");
-            assert_eq!(args, vec![value!("1")]);
-        };
-        block_on(f);
-    }
 
     #[test]
     fn test_select_in_map() {
