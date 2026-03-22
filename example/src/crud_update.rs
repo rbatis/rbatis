@@ -1,6 +1,6 @@
 use log::LevelFilter;
-use rbatis::dark_std::defer;
 use rbatis::crud;
+use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
@@ -23,7 +23,7 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-crud!(Activity{});
+crud!(Activity {});
 
 #[tokio::main]
 pub async fn main() {

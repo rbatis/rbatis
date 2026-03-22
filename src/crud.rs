@@ -445,57 +445,6 @@ macro_rules! impl_delete {
 }
 
 
-/// pysql impl_select_page
-///
-/// do_count: default do_count is a bool param value to determine the statement type
-///
-/// ```rust
-/// #[derive(serde::Serialize, serde::Deserialize)]
-/// pub struct MockTable{}
-/// rbatis::impl_select_page!(MockTable{select_page() =>"
-///      if do_count == false:
-///        `order by create_time desc`"});
-/// ```
-///
-/// you can see ${page_no} = (page_no -1) * page_size;
-/// you can see ${page_size} = page_size;
-#[macro_export]
-macro_rules! impl_select_page {
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}) => {
-        $crate::impl_select_page!(
-            $table{$fn_name($($param_key:$param_type,)*)=> $where_sql},
-            ""
-        );
-    };
-    ($table:ty{$fn_name:ident($($param_key:ident:$param_type:ty$(,)?)*) => $where_sql:expr}$(,$table_name:expr)?) => {
-        impl $table {
-            pub async fn $fn_name(
-                executor: &dyn $crate::executor::Executor,
-                page_request: &dyn $crate::plugin::IPageRequest,
-                $($param_key:$param_type,)*
-            ) -> std::result::Result<$crate::plugin::Page::<$table>, $crate::rbdc::Error> {
-                let mut table_column = "*".to_string();
-                let mut table_name = String::new();
-                let mut table_name = String::new();
-                $(table_name = $table_name.to_string();)?
-                if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
-                }
-                $crate::pysql_select_page!($fn_name(
-                                     table_column:&str,
-                                     table_name: &str,
-                                     $($param_key:&$param_type,)*) -> $table => 
-               "`select ${table_column} from ${table_name} `\n",$where_sql);
-               
-                let page = $fn_name(executor,page_request,&table_column,&table_name,$(&$param_key,)*).await?;
-                Ok(page)
-            }
-        }
-    };
-}
-
 /// impl html_sql select page.
 ///
 /// you must deal with 3 param:

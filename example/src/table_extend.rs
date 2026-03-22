@@ -3,6 +3,7 @@ use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{crud, RBatis};
+use rbs::value;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -76,6 +77,8 @@ pub async fn main() {
     .await;
     fast_log::logger().set_level(LevelFilter::Debug);
 
-    let datas = Activity::select_all(&rb.clone()).await.unwrap();
+    let datas = Activity::select_by_map(&rb.clone(), value! {})
+        .await
+        .unwrap();
     println!("{}", json!(datas));
 }

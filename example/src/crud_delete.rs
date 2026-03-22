@@ -1,5 +1,5 @@
+use rbatis::crud;
 use rbatis::dark_std::defer;
-use rbatis::{crud};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::RBatis;
 use serde_json::json;
@@ -45,6 +45,6 @@ pub async fn main() {
     )
     .unwrap();
 
-    let data = Activity::delete_by_map(&rb, rbs::value!{"name":"test"}).await;
+    let data = Activity::delete_by_map(&rb, rbs::value! {"name":"test"}).await;
     println!("delete_by_name = {}", json!(data));
 }

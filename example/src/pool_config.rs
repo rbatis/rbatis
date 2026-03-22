@@ -1,5 +1,4 @@
 use rbatis::RBatis;
-use rbdc_sqlite::{SqliteDriver};
 use std::time::Duration;
 
 /// Example: Configure the default connection pool
