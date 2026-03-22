@@ -1,4 +1,4 @@
-///PySql: gen select*,update*,insert*,delete* ... methods
+///PySql: gen insert/insert_batch, select_by_map, update_by_map, delete_by_map methods
 ///```rust
 /// use rbs::value;
 /// use rbatis::{Error, RBatis};
