@@ -34,7 +34,7 @@ use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::plugin::page::{Page, PageRequest};
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BizActivity {
+pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub pc_link: Option<String>,
@@ -49,7 +49,7 @@ pub struct BizActivity {
     pub delete_flag: Option<i32>,
 }
 #[html_sql("example/example.html")]
-async fn select_by_condition(rb: &dyn Executor, page_req: &PageRequest, name: &str, dt: &DateTime) -> Vec<BizActivity> {
+async fn select_by_condition(rb: &dyn Executor, page_req: &PageRequest, name: &str, dt: &DateTime) -> Vec<Activity> {
     impled!()
 }
 ```
@@ -76,7 +76,7 @@ async fn select_by_condition(
     rb: &dyn Executor,
     name: &str,
     a: bool,
-) -> rbatis::Result<Vec<BizActivity>> {
+) -> rbatis::Result<Vec<Activity>> {
     impled!()
 }
 ```
@@ -98,7 +98,7 @@ pub async fn select_by_condition(
     rb: &dyn Executor,
     name: &str,
     a: bool,
-) -> rbatis::Result<Vec<BizActivity>> {
+) -> rbatis::Result<Vec<Activity>> {
     let mut rb_arg_map = rbs::value::map::ValueMap::new();
     rb_arg_map.insert(
         "name".to_string().into(),

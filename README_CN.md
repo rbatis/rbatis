@@ -166,7 +166,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BizActivity {
+pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub status: Option<i32>,
@@ -175,7 +175,7 @@ pub struct BizActivity {
 }
 
 // 自动生成 CRUD 方法
-crud!(BizActivity{});
+crud!(Activity{});
 
 #[tokio::main]
 async fn main() {
@@ -192,7 +192,7 @@ async fn main() {
     // rb.init(PgDriver{}, "postgres://postgres:123456@localhost:5432/postgres").expect("pool init fail");
     
     // 创建数据
-    let activity = BizActivity {
+    let activity = Activity {
         id: Some("1".into()),
         name: Some("测试活动".into()),
         status: Some(1),
@@ -201,16 +201,16 @@ async fn main() {
     };
 
     // 插入数据
-    let data = BizActivity::insert(&rb, &activity).await;
+    let data = Activity::insert(&rb, &activity).await;
 
     // 批量插入
-    let data = BizActivity::insert_batch(&rb, &vec![BizActivity {
+    let data = Activity::insert_batch(&rb, &vec![Activity {
             id: Some("2".into()),
             name: Some("活动 2".into()),
             status: Some(1),
             create_time: Some(DateTime::now()),
             additional_field: Some("信息 2".into()),
-        }, BizActivity {
+        }, Activity {
             id: Some("3".into()),
             name: Some("活动 3".into()),
             status: Some(1),
@@ -220,25 +220,25 @@ async fn main() {
     ], 10).await;
 
     // 根据 map 条件更新（更新所有字段）
-    let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
+    let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
 
     // 使用条件中的 "column" 键更新特定字段（GitHub issue #591）
-    let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1", "column": ["name", "status"] }).await;
+    let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1", "column": ["name", "status"] }).await;
 
     // 根据 map 条件查询
-    let data = BizActivity::select_by_map(&rb, value!{"id":"2","name":"活动 2"}).await;
+    let data = Activity::select_by_map(&rb, value!{"id":"2","name":"活动 2"}).await;
 
     // LIKE 查询
-    let data = BizActivity::select_by_map(&rb, value!{"name like ":"%活动%"}).await;
+    let data = Activity::select_by_map(&rb, value!{"name like ":"%活动%"}).await;
 
     // 大于查询
-    let data = BizActivity::select_by_map(&rb, value!{"id > ":"2"}).await;
+    let data = Activity::select_by_map(&rb, value!{"id > ":"2"}).await;
 
     // IN 查询
-    let data = BizActivity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
 
     // 根据 map 条件删除
-    let data = BizActivity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
 }
 ```
 
@@ -248,9 +248,9 @@ async fn main() {
 
 ```rust
 #[rbatis::html_sql("example/example.html")]
-impl BizActivity {
+impl Activity {
     // 分页查询（PageIntercept 会自动处理 limit/offset）
-    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<BizActivity>> {..}
+    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {..}
 }
 ```
 

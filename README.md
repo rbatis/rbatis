@@ -161,7 +161,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BizActivity {
+pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
     pub status: Option<i32>,
@@ -170,7 +170,7 @@ pub struct BizActivity {
 }
 
 // Automatically generate CRUD methods
-crud!(BizActivity{});
+crud!(Activity{});
 
 #[tokio::main]
 async fn main() {
@@ -187,7 +187,7 @@ async fn main() {
     // rb.init(MysqlDriver{}, "mysql://root:123456@localhost:3306/test").expect("pool init fail");
     
     // Create data
-    let activity = BizActivity {
+    let activity = Activity {
         id: Some("1".into()),
         name: Some("Test Activity".into()),
         status: Some(1),
@@ -196,16 +196,16 @@ async fn main() {
     };
 
     // Insert data
-    let data = BizActivity::insert(&rb, &activity).await;
+    let data = Activity::insert(&rb, &activity).await;
 
     // Batch insert
-    let data = BizActivity::insert_batch(&rb, &vec![BizActivity {
+    let data = Activity::insert_batch(&rb, &vec![Activity {
             id: Some("2".into()),
             name: Some("Activity 2".into()),
             status: Some(1),
             create_time: Some(DateTime::now()),
             additional_field: Some("Info 2".into()),
-        }, BizActivity {
+        }, Activity {
             id: Some("3".into()),
             name: Some("Activity 3".into()),
             status: Some(1),
@@ -215,25 +215,25 @@ async fn main() {
     ], 10).await;
 
     // Update by map condition (updates all fields)
-    let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
+    let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
 
     // Update only specific columns using the "column" key in condition (GitHub issue #591)
-    let data = BizActivity::update_by_map(&rb, &activity, value!{ "id": "1", "column": ["name", "status"] }).await;
+    let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1", "column": ["name", "status"] }).await;
 
     // Query by map condition
-    let data = BizActivity::select_by_map(&rb, value!{"id":"2","name":"Activity 2"}).await;
+    let data = Activity::select_by_map(&rb, value!{"id":"2","name":"Activity 2"}).await;
 
     // LIKE query
-    let data = BizActivity::select_by_map(&rb, value!{"name like ":"%Activity%"}).await;
+    let data = Activity::select_by_map(&rb, value!{"name like ":"%Activity%"}).await;
 
     // Greater than query
-    let data = BizActivity::select_by_map(&rb, value!{"id > ":"2"}).await;
+    let data = Activity::select_by_map(&rb, value!{"id > ":"2"}).await;
 
     // IN query
-    let data = BizActivity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::select_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
 
     // Delete by map condition
-    let data = BizActivity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
+    let data = Activity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
 }
 ```
 
@@ -243,9 +243,9 @@ Use `#[rbatis::html_sql()]` macro for complex queries like pagination, join quer
 
 ```rust
 #[rbatis::html_sql("example/example.html")]
-impl BizActivity {
+impl Activity {
     // Paginated query (PageIntercept handles limit/offset automatically)
-    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<BizActivity>> {..}
+    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {..}
 }
 ```
 
