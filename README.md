@@ -237,6 +237,35 @@ async fn main() {
 }
 ```
 
+### Advanced Usage (html_sql)
+
+Use `#[rbatis::html_sql()]` macro for complex queries like pagination, join queries, etc.:
+
+```rust
+#[rbatis::html_sql("example/example.html")]
+impl BizActivity {
+    // Paginated query (PageIntercept handles limit/offset automatically)
+    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<BizActivity>> {..}
+}
+```
+
+Corresponding HTML template file `example/example.html`:
+```html
+<select id="select_by_page">
+    SELECT * FROM activity
+    <where>
+        <if test="name != ''">
+            AND name LIKE #{name}
+        </if>
+        <if test="dt != null">
+            AND create_time < #{dt}
+        </if>
+    </where>
+</select>
+```
+
+**Applicable scenarios**: paginated queries, join queries, complex dynamic SQL, multi-condition search
+
 ## Creating a Custom Database Driver
 
 To implement a custom database driver for Rbatis:

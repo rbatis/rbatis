@@ -1,6 +1,6 @@
 # Rbatis
 
-##### 📖 [英文文档](Readme.md) | 📖 中文文档
+##### 📖 [英文文档](README.md) | 📖 中文文档
 （机翻中文，如有差异，以英文原版为主）
 
 [Website](https://rbatis.github.io/rbatis.io) | [Showcase](https://github.com/rbatis/rbatis/network/dependents) | [Examples](https://github.com/rbatis/rbatis/tree/master/example)
@@ -241,6 +241,35 @@ async fn main() {
     let data = BizActivity::delete_by_map(&rb, value!{"id": &["1", "2", "3"]}).await;
 }
 ```
+
+### 复杂用法（html_sql）
+
+使用 `#[rbatis::html_sql()]` 宏处理复杂查询，如分页、联表查询等：
+
+```rust
+#[rbatis::html_sql("example/example.html")]
+impl BizActivity {
+    // 分页查询（PageIntercept 会自动处理 limit/offset）
+    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<BizActivity>> {..}
+}
+```
+
+对应的 HTML 模板文件 `example/example.html`：
+```html
+<select id="select_by_page">
+    SELECT * FROM activity
+    <where>
+        <if test="name != ''">
+            AND name LIKE #{name}
+        </if>
+        <if test="dt != null">
+            AND create_time < #{dt}
+        </if>
+    </where>
+</select>
+```
+
+**适用场景**：分页查询、联表查询、复杂动态 SQL、多条件搜索
 
 ## 创建自定义数据库驱动
 
