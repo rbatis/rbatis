@@ -245,7 +245,7 @@ Use `#[rbatis::html_sql()]` macro for complex queries like pagination, join quer
 #[rbatis::html_sql("example/example.html")]
 impl Activity {
     // Paginated query (PageIntercept handles limit/offset automatically)
-    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {..}
+    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
 }
 ```
 
