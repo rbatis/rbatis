@@ -37,9 +37,6 @@ path = "src/crud_update.rs"
 name = "crud_update_skip"
 path = "src/crud_update_skip.rs"
 [[bin]]
-name = "crud_map"
-path = "src/crud_map.rs"
-[[bin]]
 name = "crud_json"
 path = "src/crud_json.rs"
 [[bin]]

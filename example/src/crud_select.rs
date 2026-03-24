@@ -1,7 +1,7 @@
-use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::RBatis;
+use rbatis::{crud, RBatis};
+use rbs::value;
 use serde_json::json;
 
 /// table
@@ -20,7 +20,6 @@ pub struct Activity {
     pub version: Option<i64>,
     pub delete_flag: Option<i32>,
 }
-
 crud!(Activity {});
 
 #[tokio::main]
@@ -45,6 +44,13 @@ pub async fn main() {
     )
     .unwrap();
 
-    let data = Activity::select_by_map(&rb, rbs::value! {"id":"1","name":"1"}).await;
-    println!("select_id_name = {}", json!(data));
+    let data = Activity::select_by_map(
+        &rb,
+        value! {
+            "id": "1",
+            "ids": ["1","2","3"]
+        },
+    )
+    .await;
+    println!("select_by_method = {}", json!(data));
 }
