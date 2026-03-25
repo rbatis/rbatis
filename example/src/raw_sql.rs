@@ -64,16 +64,16 @@ pub async fn main() {
     )
     .await;
     fast_log::logger().set_level(LevelFilter::Debug);
-    //query
-    let table: Option<Activity> = rb
-        .query_decode("select * from activity limit ?", vec![value!(1)])
-        .await
-        .unwrap();
-    println!(">>>>> table={}", json!(table));
     //exec
     let result = rb
         .exec("update activity set status = 0 where id > 0", vec![])
         .await
         .unwrap();
     println!(">>>>> exec={}", result);
+    //query
+    let table: Option<Activity> = rb
+        .query_decode("select * from activity limit ?", vec![value!(1)])
+        .await
+        .unwrap();
+    println!(">>>>> table={}", json!(table));
 }
