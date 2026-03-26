@@ -239,7 +239,7 @@ async fn main() {
 
 ### Advanced Usage (html_sql)
 
-Use `#[rbatis::html_sql()]` macro for complex queries like pagination, join queries, etc.:
+Use `#[rbatis::html_sql("html/file_path")]` macro for complex queries like pagination, join queries, etc.:
 
 ```rust
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

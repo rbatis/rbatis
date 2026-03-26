@@ -244,7 +244,7 @@ async fn main() {
 
 ### 复杂用法（html_sql）
 
-使用 `#[rbatis::html_sql()]` 宏处理复杂查询，如分页、联表查询等：
+使用 `#[rbatis::html_sql("html/file_path")]` 宏处理复杂查询，如分页、联表查询等：
 
 ```rust
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
