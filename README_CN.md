@@ -249,9 +249,9 @@ async fn main() {
 ```rust
 #[rbatis::html_sql("example/example.html")]
 impl Activity {
-    // 分页查询（PageIntercept 会自动处理 limit/offset）
-    pub async fn select_by_page(rb: &dyn Executor, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
-    pub async fn select_by_condition(rb: &dyn Executor,name: &str) -> rbatis::Result<Vec<Activity>> {impled!()}
+    // Paginated query (PageIntercept handles limit/offset automatically)
+    pub async fn select_by_page(rb: &dyn rbatis::Executor, page_req: &rbatis::PageRequest, name: &str) -> rbatis::Result<rbatis::Page<Activity>> {impled!()}
+    pub async fn select_by_condition(rb: &dyn rbatis::Executor,name: &str) -> rbatis::Result<Vec<Activity>> {impled!()}
 }
 ```
 

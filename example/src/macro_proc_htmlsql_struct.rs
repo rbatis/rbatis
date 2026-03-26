@@ -1,8 +1,6 @@
 //! Example: Using #[html_sql] at impl block level
 
 use rbatis::dark_std::defer;
-use rbatis::executor::Executor;
-use rbatis::plugin::PageRequest;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
 
@@ -27,7 +25,7 @@ pub struct Activity {
 impl Activity {
     /// Maps to <select id="select_by_condition"> in HTML
     pub async fn select_by_condition(
-        rb: &dyn Executor,
+        rb: &dyn rbatis::Executor,
         name: &str,
         dt: &DateTime,
     ) -> rbatis::Result<Vec<Activity>> {
@@ -36,16 +34,17 @@ impl Activity {
 
     /// Maps to <select id="select_page_data"> in HTML
     pub async fn select_page_data(
-        rb: &dyn Executor,
+        rb: &dyn rbatis::Executor,
+        page_req: &rbatis::PageRequest,
         name: &str,
         dt: &DateTime,
-    ) -> rbatis::Result<Vec<Activity>> {
+    ) -> rbatis::Result<rbatis::Page<Activity>> {
         impled!()
     }
 
     /// Maps to <update id="update_by_id"> in HTML
     pub async fn update_by_id(
-        rb: &dyn Executor,
+        rb: &dyn rbatis::Executor,
         arg: &Activity,
     ) -> rbatis::Result<rbatis::rbdc::db::ExecResult> {
         impled!()
@@ -55,7 +54,7 @@ impl Activity {
     /// Maps to <select id="select_by_page"> in HTML
     /// The macro automatically generates pagination logic using PageIntercept
     pub async fn select_by_page(
-        rb: &dyn Executor,
+        rb: &dyn rbatis::Executor,
         page_req: &rbatis::PageRequest,
         name: &str,
         dt: Option<DateTime>,
@@ -76,14 +75,9 @@ pub async fn main() -> Result<(), Error> {
     });
 
     let rb = RBatis::new();
-    rb.init(
-        rbdc_sqlite::driver::SqliteDriver {},
-        "sqlite://target/sqlite.db",
-    )
-    .unwrap();
-
+    rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db")?;
     // Use impl block Mapper
-    let results = Activity::select_by_page(&rb, &PageRequest::new(1, 10), "", None).await?;
+    let results = Activity::select_by_page(&rb, &rbatis::PageRequest::new(1, 10), "", None).await?;
     println!("Query by condition: {:?}", results);
     Ok(())
 }

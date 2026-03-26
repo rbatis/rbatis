@@ -25,4 +25,5 @@ pub use decode::*;
 pub use error::*;
 pub use plugin::*;
 pub use rbatis::*;
+pub use executor::*;
 pub use rbdc_pool_fast::FastPool as DefaultPool;
