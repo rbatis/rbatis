@@ -250,7 +250,7 @@ async fn main() {
 #[rbatis::html_sql("example/example.html")]
 impl Activity {
     // 分页查询（PageIntercept 会自动处理 limit/offset）
-    pub async fn select_by_page(rb: &RBatis, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
+    pub async fn select_by_page(rb: &dyn Executor, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
 }
 ```
 
@@ -261,9 +261,6 @@ impl Activity {
     <where>
         <if test="name != ''">
             AND name LIKE #{name}
-        </if>
-        <if test="dt != null">
-            AND create_time < #{dt}
         </if>
     </where>
 </select>
