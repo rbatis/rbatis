@@ -246,11 +246,14 @@ Use `#[rbatis::html_sql()]` macro for complex queries like pagination, join quer
 impl Activity {
     // Paginated query (PageIntercept handles limit/offset automatically)
     pub async fn select_by_page(rb: &dyn Executor, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
+    pub async fn select_by_condition(rb: &dyn Executor,name: &str) -> rbatis::Result<Vec<Activity>> {impled!()}
 }
 ```
 
 Corresponding HTML template file `example/example.html`:
 ```html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
 <select id="select_by_page">
     SELECT * FROM activity
     <where>
@@ -259,6 +262,15 @@ Corresponding HTML template file `example/example.html`:
         </if>
     </where>
 </select>
+<select id="select_by_condition">
+    SELECT * FROM activity
+    <where>
+        <if test="name != ''">
+            AND name LIKE #{name}
+        </if>
+    </where>
+</select>
+</mapper>
 ```
 
 **Applicable scenarios**: paginated queries, join queries, complex dynamic SQL, multi-condition search

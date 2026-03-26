@@ -251,11 +251,14 @@ async fn main() {
 impl Activity {
     // 分页查询（PageIntercept 会自动处理 limit/offset）
     pub async fn select_by_page(rb: &dyn Executor, page_req: &PageRequest, name: &str) -> rbatis::Result<Page<Activity>> {impled!()}
+    pub async fn select_by_condition(rb: &dyn Executor,name: &str) -> rbatis::Result<Vec<Activity>> {impled!()}
 }
 ```
 
 对应的 HTML 模板文件 `example/example.html`：
 ```html
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"  "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<mapper>
 <select id="select_by_page">
     SELECT * FROM activity
     <where>
@@ -264,6 +267,15 @@ impl Activity {
         </if>
     </where>
 </select>
+<select id="select_by_condition">
+    SELECT * FROM activity
+    <where>
+        <if test="name != ''">
+            AND name LIKE #{name}
+        </if>
+    </where>
+</select>
+</mapper>
 ```
 
 **适用场景**：分页查询、联表查询、复杂动态 SQL、多条件搜索
