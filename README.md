@@ -164,9 +164,7 @@ use serde_json::json;
 pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
-    pub status: Option<i32>,
-    pub create_time: Option<DateTime>,
-    pub additional_field: Option<String>,
+    pub create_time: Option<DateTime>
 }
 
 // Automatically generate CRUD methods
@@ -190,27 +188,23 @@ async fn main() {
     let activity = Activity {
         id: Some("1".into()),
         name: Some("Test Activity".into()),
-        status: Some(1),
         create_time: Some(DateTime::now()),
-        additional_field: Some("Extra Information".into()),
     };
 
     // Insert data
     let data = Activity::insert(&rb, &activity).await;
 
     // Batch insert
-    let data = Activity::insert_batch(&rb, &vec![Activity {
+    let data = Activity::insert_batch(&rb, &vec![
+        Activity {
             id: Some("2".into()),
             name: Some("Activity 2".into()),
-            status: Some(1),
-            create_time: Some(DateTime::now()),
-            additional_field: Some("Info 2".into()),
-        }, Activity {
+            create_time: Some(DateTime::now())
+        },
+        Activity {
             id: Some("3".into()),
             name: Some("Activity 3".into()),
-            status: Some(1),
-            create_time: Some(DateTime::now()),
-            additional_field: Some("Info 3".into()),
+            create_time: Some(DateTime::now())
         },
     ], 10).await;
 
