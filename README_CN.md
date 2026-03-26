@@ -53,12 +53,13 @@ Rbatis 是一个基于编译时代码生成的高性能 Rust ORM 框架。它在
 
 ## 支持的数据库驱动
 
-| 数据库 (crates.io)                               | GitHub 链接                                                                       |
+| 数据库 (crates.io)                                  | GitHub 链接                                                                       |
 |----------------------------------------------------|-----------------------------------------------------------------------------------|
 | [MySQL](https://crates.io/crates/rbdc-mysql)       | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)        |
 | [PostgreSQL](https://crates.io/crates/rbdc-pg)     | [rbatis/rbdc-pg](https://github.com/rbatis/rbdc/tree/master/rbdc-pg)              |
 | [SQLite](https://crates.io/crates/rbdc-sqlite)     | [rbatis/rbdc-sqlite](https://github.com/rbatis/rbdc/tree/master/rbdc-sqlite)      |
 | [MSSQL](https://crates.io/crates/rbdc-mssql)       | [rbatis/rbdc-mssql](https://github.com/rbatis/rbdc/tree/master/rbdc-mssql)        |
+| [Truso](https://crates.io/crates/rbdc-turso)       | [rbatis/rbdc-turso](https://github.com/rbatis/rbdc/tree/master/rbdc-turso)        |
 | [MariaDB](https://crates.io/crates/rbdc-mysql)     | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)        |
 | [TiDB](https://crates.io/crates/rbdc-mysql)        | [rbatis/rbdc-mysql](https://github.com/rbatis/rbdc/tree/master/rbdc-mysql)        |
 | [CockroachDB](https://crates.io/crates/rbdc-pg)    | [rbatis/rbdc-pg](https://github.com/rbatis/rbdc/tree/master/rbdc-pg)              |
