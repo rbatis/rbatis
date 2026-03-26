@@ -1,5 +1,3 @@
-//! Example: Using #[html_sql] at impl block level
-
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
