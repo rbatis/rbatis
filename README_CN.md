@@ -247,34 +247,50 @@ async fn main() {
 使用 `#[rbatis::html_sql()]` 宏处理复杂查询，如分页、联表查询等：
 
 ```rust
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct Activity {
+    pub id: Option<String>,
+    pub name: Option<String>
+}
 #[rbatis::html_sql("example/example.html")]
 impl Activity {
     // Paginated query (PageIntercept handles limit/offset automatically)
     pub async fn select_by_page(rb: &dyn rbatis::Executor, page_req: &rbatis::PageRequest, name: &str) -> rbatis::Result<rbatis::Page<Activity>> {impled!()}
     pub async fn select_by_condition(rb: &dyn rbatis::Executor,name: &str) -> rbatis::Result<Vec<Activity>> {impled!()}
+    pub async fn update_by_id(rb: &dyn rbatis::Executor,arg: &Activity) -> rbatis::Result<rbatis::rbdc::ExecResult> {impled!()}
+    pub async fn delete_by_id(rb: &dyn rbatis::Executor,id: &str) -> rbatis::Result<rbatis::rbdc::ExecResult> {impled!()}
 }
 ```
 
 对应的 HTML 模板文件 `example/example.html`：
+Corresponding HTML template file `example/example.html`:
 ```html
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"  "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "https://raw.githubusercontent.com/rbatis/rbatis/master/rbatis-codegen/mybatis-3-mapper.dtd">
 <mapper>
-<select id="select_by_page">
+ <select id="select_by_page">
     SELECT * FROM activity
     <where>
         <if test="name != ''">
             AND name LIKE #{name}
         </if>
     </where>
-</select>
-<select id="select_by_condition">
+ </select>
+ <select id="select_by_condition">
     SELECT * FROM activity
     <where>
         <if test="name != ''">
             AND name LIKE #{name}
         </if>
     </where>
-</select>
+ </select>
+ <update id="update_by_id">
+        ` update activity `
+        <set collection="arg"></set>
+        ` where id = #{id} `
+ </update>
+ <delete id="delete_by_id">
+    DELETE FROM activity WHERE id = #{id}
+ </delete>   
 </mapper>
 ```
 
