@@ -190,12 +190,7 @@ async fn main() {
         name: Some("Test Activity".into()),
         create_time: Some(DateTime::now()),
     };
-
-    // Insert data
-    let data = Activity::insert(&rb, &activity).await;
-
-    // Batch insert
-    let data = Activity::insert_batch(&rb, &vec![
+    let arrays = vec![
         Activity {
             id: Some("2".into()),
             name: Some("Activity 2".into()),
@@ -206,7 +201,13 @@ async fn main() {
             name: Some("Activity 3".into()),
             create_time: Some(DateTime::now())
         },
-    ], 10).await;
+    ];
+
+    // Insert data
+    let data = Activity::insert(&rb, &activity).await;
+
+    // Batch insert
+    let data = Activity::insert_batch(&rb, &arrays, 10).await;
 
     // Update by map condition (updates all fields)
     let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;

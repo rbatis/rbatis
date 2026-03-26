@@ -169,9 +169,7 @@ use serde_json::json;
 pub struct Activity {
     pub id: Option<String>,
     pub name: Option<String>,
-    pub status: Option<i32>,
-    pub create_time: Option<DateTime>,
-    pub additional_field: Option<String>,
+    pub create_time: Option<DateTime>
 }
 
 // 自动生成 CRUD 方法
@@ -194,30 +192,27 @@ async fn main() {
     // 创建数据
     let activity = Activity {
         id: Some("1".into()),
-        name: Some("测试活动".into()),
-        status: Some(1),
+        name: Some("Test Activity".into()),
         create_time: Some(DateTime::now()),
-        additional_field: Some("额外信息".into()),
     };
+    let arrays = vec![
+        Activity {
+            id: Some("2".into()),
+            name: Some("Activity 2".into()),
+            create_time: Some(DateTime::now())
+        },
+        Activity {
+            id: Some("3".into()),
+            name: Some("Activity 3".into()),
+            create_time: Some(DateTime::now())
+        },
+    ];
 
     // 插入数据
     let data = Activity::insert(&rb, &activity).await;
 
     // 批量插入
-    let data = Activity::insert_batch(&rb, &vec![Activity {
-            id: Some("2".into()),
-            name: Some("活动 2".into()),
-            status: Some(1),
-            create_time: Some(DateTime::now()),
-            additional_field: Some("信息 2".into()),
-        }, Activity {
-            id: Some("3".into()),
-            name: Some("活动 3".into()),
-            status: Some(1),
-            create_time: Some(DateTime::now()),
-            additional_field: Some("信息 3".into()),
-        },
-    ], 10).await;
+    let data = Activity::insert_batch(&rb, &arrays, 10).await;
 
     // 根据 map 条件更新（更新所有字段）
     let data = Activity::update_by_map(&rb, &activity, value!{ "id": "1" }).await;
