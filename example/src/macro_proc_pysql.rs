@@ -4,7 +4,7 @@ use rbatis::executor::Executor;
 use rbatis::pysql;
 use rbatis::rbatis_codegen::IntoSql;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{py_sql, Error, RBatis};
 use serde_json::json;

@@ -46,7 +46,7 @@ impl Activity {
     pub async fn update_by_id(
         rb: &dyn rbatis::Executor,
         arg: &Activity,
-    ) -> rbatis::Result<rbatis::rbdc::db::ExecResult> {
+    ) -> rbatis::Result<rbatis::rbdc::ExecResult> {
         impled!()
     }
 

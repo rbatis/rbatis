@@ -4,7 +4,7 @@ use rbatis::dark_std::sync::SyncHashMap;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::ExecResult;
 use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};

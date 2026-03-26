@@ -3,7 +3,7 @@ use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::ExecResult;
 use rbatis::{async_trait, Action, RBatis};
 use rbs::Value;
 use serde_json::json;

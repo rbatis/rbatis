@@ -1,7 +1,7 @@
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
-use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::ExecResult;
 use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
 use std::sync::Arc;
