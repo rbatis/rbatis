@@ -64,20 +64,14 @@ path = "src/pool_custom.rs"
 name = "plugin_intercept_log"
 path = "src/plugin_intercept_log.rs"
 [[bin]]
-name = "plugin_intercept_log_next"
-path = "src/plugin_intercept_log_next.rs"
-[[bin]]
-name = "plugin_intercept_log_scope"
-path = "src/plugin_intercept_log_scope.rs"
-[[bin]]
 name = "plugin_intercept_returing_id"
 path = "src/plugin_intercept_returing_id.rs"
 [[bin]]
 name = "table_util"
 path = "src/table_util.rs"
 [[bin]]
-name = "plugin_intercept_read_write_separation"
-path = "src/plugin_intercept_read_write_separation.rs"
+name = "plugin_intercept_read_write_router"
+path = "src/plugin_intercept_read_write_router.rs"
 [[bin]]
 name = "macro_proc_htmlsql_struct"
 path = "src/macro_proc_htmlsql_struct.rs"
