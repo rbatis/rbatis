@@ -1,8 +1,8 @@
-use std::env::current_dir;
 use crate::ParseArgs;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
+use std::env::current_dir;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -38,7 +38,10 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     let mut sql_ident = quote!();
     if args.sqls.len() >= 1 {
         if rbatis_name.is_empty() {
-            panic!("[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!", target_fn.sig.ident);
+            panic!(
+                "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
+                target_fn.sig.ident
+            );
         }
         let mut s = "".to_string();
         for v in &args.sqls {
@@ -51,8 +54,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                         .to_string();
                     let file_path = PathBuf::from(file_name.clone());
                     if file_path.is_relative() {
-                        let mut manifest_dir =
-                            std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
+                        let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
+                            .expect("Failed to read CARGO_MANIFEST_DIR");
                         manifest_dir.push_str("/");
                         let mut current = PathBuf::from(manifest_dir);
                         current.push(file_name.clone());
@@ -62,7 +65,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                         }
                         file_name = current.to_str().unwrap_or_default().to_string();
                     }
-                    let mut f = File::open(&file_name).expect(&format!("can't find file={}", file_name));
+                    let mut f =
+                        File::open(&file_name).expect(&format!("can't find file={}", file_name));
                     let mut data = String::new();
                     _ = f.read_to_string(&mut data);
                     data = data.replace("\r\n", "\n");

@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use proc_macro2::TokenStream;
+use super::{ContinueTagNode, ForeachTagNode, HtmlAstNode, IfTagNode, NodeContext, TrimTagNode};
 use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext, TrimTagNode, ForeachTagNode, IfTagNode, ContinueTagNode};
+use proc_macro2::TokenStream;
+use std::collections::HashMap;
 
 /// Represents a <set> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -14,12 +14,18 @@ pub struct SetTagNode {
 }
 
 impl HtmlAstNode for SetTagNode {
-    fn node_tag_name() -> &'static str { "set" }
+    fn node_tag_name() -> &'static str {
+        "set"
+    }
 
     fn from_element(element: &Element) -> Self {
         let collection = element.attrs.get("collection").cloned();
         let skip_null = element.attrs.get("skip_null").cloned();
-        let skips = element.attrs.get("skips").cloned().unwrap_or_else(|| "id".to_string());
+        let skips = element
+            .attrs
+            .get("skips")
+            .cloned()
+            .unwrap_or_else(|| "id".to_string());
 
         Self {
             collection,
@@ -30,30 +36,42 @@ impl HtmlAstNode for SetTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
         if let Some(collection_name) = &self.collection {
             // Logic from `make_sets` in original parser_html.rs
             let is_skip_null = self.skip_null.as_deref().map_or(true, |v| v != "false");
-            let skip_strs: Vec<&str> = self.skips.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+            let skip_strs: Vec<&str> = self
+                .skips
+                .split(',')
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .collect();
 
-            let mut for_each_child_elements: Vec<Element> = skip_strs.iter().map(|x| Element {
-                tag: IfTagNode::node_tag_name().to_string(),
-                data: String::new(),
-                attrs: {
-                    let mut attr = HashMap::new();
-                    attr.insert("test".to_string(), format!("k == '{}'", x));
-                    attr
-                },
-                childs: vec![Element {
-                    tag: ContinueTagNode::node_tag_name().to_string(),
+            let mut for_each_child_elements: Vec<Element> = skip_strs
+                .iter()
+                .map(|x| Element {
+                    tag: IfTagNode::node_tag_name().to_string(),
                     data: String::new(),
-                    attrs: HashMap::new(),
-                    childs: vec![],
-                }],
-            }).collect::<Vec<_>>();
+                    attrs: {
+                        let mut attr = HashMap::new();
+                        attr.insert("test".to_string(), format!("k == '{}'", x));
+                        attr
+                    },
+                    childs: vec![Element {
+                        tag: ContinueTagNode::node_tag_name().to_string(),
+                        data: String::new(),
+                        attrs: HashMap::new(),
+                        childs: vec![],
+                    }],
+                })
+                .collect::<Vec<_>>();
 
             if is_skip_null {
                 for_each_child_elements.push(Element {
@@ -79,7 +97,7 @@ impl HtmlAstNode for SetTagNode {
                 attrs: HashMap::new(),
                 childs: vec![],
             });
-            
+
             let foreach_element = Element {
                 tag: ForeachTagNode::node_tag_name().to_string(),
                 data: String::new(),
@@ -101,7 +119,7 @@ impl HtmlAstNode for SetTagNode {
                     attr.insert("prefix".to_string(), "".to_string());
                     attr.insert("suffix".to_string(), "".to_string());
                     attr.insert("start".to_string(), ",".to_string()); //trim_start_matches for comma
-                    attr.insert("end".to_string(), ",".to_string());   //trim_end_matches for comma
+                    attr.insert("end".to_string(), ",".to_string()); //trim_end_matches for comma
                     attr
                 },
                 childs: vec![foreach_element],
@@ -115,7 +133,7 @@ impl HtmlAstNode for SetTagNode {
                     attr.insert("prefix".to_string(), " set ".to_string());
                     attr.insert("suffix".to_string(), " ".to_string());
                     // These were blank in original `make_sets` outer trim, meaning no override trimming at this level
-                    attr.insert("start".to_string(), " ".to_string()); 
+                    attr.insert("start".to_string(), " ".to_string());
                     attr.insert("end".to_string(), " ".to_string());
                     attr
                 },
@@ -125,7 +143,6 @@ impl HtmlAstNode for SetTagNode {
             // Now, create a TrimTagNode from outer_trim_element and generate its tokens.
             let trim_node = TrimTagNode::from_element(&outer_trim_element);
             trim_node.generate_tokens(context, ignore)
-
         } else {
             // Default behavior: acts like a <trim prefix=" set " suffix=" " prefixOverrides="," suffixOverrides=",">
             // This is slightly different from original parser_html which used " |," for overrides.
@@ -141,4 +158,4 @@ impl HtmlAstNode for SetTagNode {
             trim_node.generate_tokens(context, ignore)
         }
     }
-} 
+}

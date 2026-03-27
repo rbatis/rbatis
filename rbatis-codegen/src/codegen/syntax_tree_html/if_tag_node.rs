@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents an <if> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -14,11 +14,20 @@ pub struct IfTagNode {
 }
 
 impl HtmlAstNode for IfTagNode {
-    fn node_tag_name() -> &'static str { "if" }
+    fn node_tag_name() -> &'static str {
+        "if"
+    }
 
     fn from_element(element: &Element) -> Self {
-        let test = element.attrs.get("test")
-            .unwrap_or_else(|| panic!("[rbatis-codegen] <if> element must have test field! Found: {:?}", element.attrs))
+        let test = element
+            .attrs
+            .get("test")
+            .unwrap_or_else(|| {
+                panic!(
+                    "[rbatis-codegen] <if> element must have test field! Found: {:?}",
+                    element.attrs
+                )
+            })
             .clone();
         Self {
             test,
@@ -27,7 +36,11 @@ impl HtmlAstNode for IfTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -45,7 +58,7 @@ impl HtmlAstNode for IfTagNode {
             false,
             ignore, // Pass the ignore vector here
         );
-        
+
         // The original `impl_condition` had `appends` which was empty for `if` but `return sql;` for `when`.
         // For a direct `if` node, appends is empty.
         quote! {

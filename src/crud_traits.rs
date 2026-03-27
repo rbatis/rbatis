@@ -51,8 +51,6 @@ impl ColumnSet for Value {
     }
 }
 
-
-
 /// create sql opt from rbs::Value
 pub trait ValueOperatorSql {
     fn operator_sql(&self) -> String;
@@ -64,12 +62,12 @@ impl ValueOperatorSql for Value {
             Value::String(v) => {
                 if v.contains(" ") {
                     v.to_string()
-                }else{
-                    format!("{}{}",v," = ")
+                } else {
+                    format!("{}{}", v, " = ")
                 }
             }
-            Value::Ext(_, v) => {v.operator_sql()}
-            _=>{"".to_string()}
+            Value::Ext(_, v) => v.operator_sql(),
+            _ => "".to_string(),
         }
     }
 }
@@ -116,7 +114,7 @@ impl FilterByColumns for Value {
 
                 Value::Map(filtered_map)
             }
-            _ => self.clone()
+            _ => self.clone(),
         }
     }
 }

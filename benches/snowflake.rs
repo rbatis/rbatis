@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use rbatis::snowflake::{Snowflake};
+use rbatis::snowflake::Snowflake;
 use test::Bencher;
 
 #[bench]

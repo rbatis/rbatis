@@ -1,5 +1,8 @@
-use std::any::Any;
 use crate::executor::{Executor, RBatisConnExecutor, RBatisTxExecutor};
+use crate::intercept::intercept_log::LogInterceptor;
+use crate::intercept::intercept_page::PageIntercept;
+use crate::intercept::Intercept;
+use crate::plugin::{IdGenerator, Snowflake};
 use crate::table_sync::{sync, ColumnMapper};
 use crate::{DefaultPool, Error};
 use dark_std::sync::SyncVec;
@@ -8,14 +11,11 @@ use rbdc::pool::ConnectionManager;
 use rbdc::pool::Pool;
 use rbs::value;
 use serde::Serialize;
+use std::any::Any;
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
-use crate::intercept::Intercept;
-use crate::intercept::intercept_log::LogInterceptor;
-use crate::intercept::intercept_page::PageIntercept;
-use crate::plugin::{IdGenerator, Snowflake};
 
 /// RBatis engine
 #[derive(Clone, Debug)]
@@ -45,7 +45,8 @@ impl RBatis {
         let rb = RBatis::default();
         //default use LogInterceptor
         rb.intercepts.push(Arc::new(PageIntercept::new()));
-        rb.intercepts.push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
+        rb.intercepts
+            .push(Arc::new(LogInterceptor::new(LevelFilter::Debug)));
         rb
     }
 

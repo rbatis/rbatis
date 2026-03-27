@@ -21,7 +21,7 @@ mod test {
             "test"
         }
 
-        fn connect(&self, _url: &str) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
+        fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -102,7 +102,7 @@ mod test {
             &mut self,
             sql: &str,
             _params: Vec<Value>,
-        ) -> BoxFuture<'_,Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
                 let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
@@ -114,7 +114,7 @@ mod test {
             &mut self,
             _sql: &str,
             _params: Vec<Value>,
-        ) -> BoxFuture<'_,Result<ExecResult, Error>> {
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
             Box::pin(async move {
                 Ok(ExecResult {
                     rows_affected: 0,
@@ -123,11 +123,11 @@ mod test {
             })
         }
 
-        fn close(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             Box::pin(async { Ok(()) })
         }
 
-        fn ping(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             Box::pin(async { Ok(()) })
         }
     }
@@ -136,7 +136,7 @@ mod test {
     struct MockConnectOptions {}
 
     impl ConnectOptions for MockConnectOptions {
-        fn connect(&self) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
+        fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -209,8 +209,7 @@ mod test {
     #[test]
     fn test_add_new_intercept() {
         #[derive(Debug)]
-        pub struct MockIntercept {
-        }
+        pub struct MockIntercept {}
 
         #[async_trait]
         impl Intercept for MockIntercept {}

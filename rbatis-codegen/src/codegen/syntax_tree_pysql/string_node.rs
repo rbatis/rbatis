@@ -34,7 +34,6 @@ impl Name for String {
     }
 }
 
-
 impl ToHtml for StringNode {
     fn as_html(&self) -> String {
         if self.value.starts_with("`") && self.value.ends_with("`") {

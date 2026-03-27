@@ -1,4 +1,5 @@
 //! ObjectId
+use super::IdGenerator;
 use hex::FromHexError;
 use rand::rng;
 use rand::RngExt;
@@ -9,7 +10,6 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::SystemTime,
 };
-use super::IdGenerator;
 
 const TIMESTAMP_SIZE: usize = 4;
 const PROCESS_ID_SIZE: usize = 5;

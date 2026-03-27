@@ -17,13 +17,13 @@ pub mod executor;
 pub mod crud;
 #[macro_use]
 pub mod error;
-pub mod decode;
 pub mod crud_traits;
+pub mod decode;
 
 pub use async_trait::async_trait;
 pub use decode::*;
 pub use error::*;
+pub use executor::*;
 pub use plugin::*;
 pub use rbatis::*;
-pub use executor::*;
 pub use rbdc_pool_fast::FastPool as DefaultPool;

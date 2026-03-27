@@ -61,7 +61,7 @@ mod test {
             "test"
         }
 
-        fn connect(&self, _url: &str) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
+        fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -142,7 +142,7 @@ mod test {
             &mut self,
             sql: &str,
             params: Vec<Value>,
-        ) -> BoxFuture<'_,Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
             let sql = sql.to_string();
             Box::pin(async move {
                 let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
@@ -150,7 +150,11 @@ mod test {
             })
         }
 
-        fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<'_,Result<ExecResult, Error>> {
+        fn exec(
+            &mut self,
+            sql: &str,
+            params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
             Box::pin(async move {
                 Ok(ExecResult {
                     rows_affected: 0,
@@ -159,11 +163,11 @@ mod test {
             })
         }
 
-        fn close(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             Box::pin(async { Ok(()) })
         }
 
-        fn ping(&mut self) -> BoxFuture<'_,Result<(), Error>> {
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             Box::pin(async { Ok(()) })
         }
     }
@@ -172,7 +176,7 @@ mod test {
     struct MockConnectOptions {}
 
     impl ConnectOptions for MockConnectOptions {
-        fn connect(&self) -> BoxFuture<'_,Result<Box<dyn Connection>, Error>> {
+        fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -720,7 +724,9 @@ mod test {
 
             impl<T> GenericMapper<T> {
                 pub fn new() -> Self {
-                    Self { _phantom: std::marker::PhantomData }
+                    Self {
+                        _phantom: std::marker::PhantomData,
+                    }
                 }
             }
 
@@ -798,7 +804,7 @@ mod test {
     #[test]
     fn test_auto_pagination() {
         let f = async move {
-            use rbatis::plugin::{Page, PageRequest, intercept_page::PageIntercept};
+            use rbatis::plugin::{intercept_page::PageIntercept, Page, PageRequest};
 
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
@@ -830,7 +836,7 @@ mod test {
     #[test]
     fn test_auto_pagination_impl() {
         let f = async move {
-            use rbatis::plugin::{Page, PageRequest, intercept_page::PageIntercept};
+            use rbatis::plugin::{intercept_page::PageIntercept, Page, PageRequest};
 
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
@@ -854,7 +860,9 @@ mod test {
             }
 
             let page_req = PageRequest::new(2, 20);
-            let r = PageMapper::test_page(&rb, &page_req, "test".to_string()).await.unwrap();
+            let r = PageMapper::test_page(&rb, &page_req, "test".to_string())
+                .await
+                .unwrap();
             let (sql, args) = queue.pop().unwrap();
 
             // Verify Page structure

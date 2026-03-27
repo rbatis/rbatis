@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <mapper> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,7 +12,9 @@ pub struct MapperTagNode {
 }
 
 impl HtmlAstNode for MapperTagNode {
-    fn node_tag_name() -> &'static str { "mapper" }
+    fn node_tag_name() -> &'static str {
+        "mapper"
+    }
 
     fn from_element(element: &Element) -> Self {
         Self {
@@ -21,7 +23,11 @@ impl HtmlAstNode for MapperTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -31,4 +37,4 @@ impl HtmlAstNode for MapperTagNode {
         let child_tokens = context.parse_children(&self.childs, ignore);
         quote! { #child_tokens }
     }
-} 
+}

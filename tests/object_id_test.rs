@@ -56,5 +56,4 @@ mod test {
         println!("{}", ObjectId::new());
         println!("{}", ObjectId::new().u128());
     }
-    
 }

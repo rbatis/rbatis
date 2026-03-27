@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents an <otherwise> tag node (child of <choose>) in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,7 +12,9 @@ pub struct OtherwiseTagNode {
 }
 
 impl HtmlAstNode for OtherwiseTagNode {
-    fn node_tag_name() -> &'static str { "otherwise" }
+    fn node_tag_name() -> &'static str {
+        "otherwise"
+    }
 
     fn from_element(element: &Element) -> Self {
         // No specific attributes to extract for <otherwise> itself beyond common ones.
@@ -22,7 +24,11 @@ impl HtmlAstNode for OtherwiseTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -36,4 +42,4 @@ impl HtmlAstNode for OtherwiseTagNode {
             // The `return sql;` is implicit at the end of the choose block closure.
         }
     }
-} 
+}

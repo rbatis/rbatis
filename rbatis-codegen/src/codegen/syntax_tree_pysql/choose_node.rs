@@ -28,7 +28,6 @@ impl Name for ChooseNode {
     }
 }
 
-
 impl ToHtml for ChooseNode {
     fn as_html(&self) -> String {
         let mut childs = String::new();

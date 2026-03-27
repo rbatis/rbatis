@@ -73,7 +73,10 @@ pub async fn main() -> Result<(), Error> {
     });
 
     let rb = RBatis::new();
-    rb.init(rbdc_sqlite::driver::SqliteDriver {},"sqlite://target/sqlite.db")?;
+    rb.init(
+        rbdc_sqlite::driver::SqliteDriver {},
+        "sqlite://target/sqlite.db",
+    )?;
     // Use impl block Mapper
     let results = Activity::select_by_page(&rb, &rbatis::PageRequest::new(1, 10), "", None).await?;
     println!("Query by condition: {:?}", results);

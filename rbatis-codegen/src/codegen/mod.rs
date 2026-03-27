@@ -13,8 +13,8 @@ pub mod loader_html;
 pub mod parser_html;
 pub mod parser_pysql;
 pub mod string_util;
-pub mod syntax_tree_pysql;
 pub mod syntax_tree_html;
+pub mod syntax_tree_pysql;
 
 pub struct ParseArgs {
     pub sqls: Vec<syn::LitStr>,

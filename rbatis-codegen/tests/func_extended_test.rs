@@ -18,7 +18,7 @@ fn test_translate_path_expression() {
     // Test that translate works with a path expression
     let result = func::translate("", expr, &[]);
     assert!(result.is_ok());
-    
+
     // The result should contain a reference to the argument
     let translated = result.unwrap();
     let token_stream = quote::quote! { #translated };
@@ -31,7 +31,7 @@ fn test_translate_ignored_variable() {
     // Test that translate works with ignored variables
     let result = func::translate("", expr, &["ignored_var".to_string()]);
     assert!(result.is_ok());
-    
+
     // The result should not contain a reference to the argument
     let translated = result.unwrap();
     let token_stream = quote::quote! { #translated };
@@ -44,7 +44,7 @@ fn test_translate_null() {
     // Test that translate works with null
     let result = func::translate("", expr, &[]);
     assert!(result.is_ok());
-    
+
     // The result should contain the null value
     let translated = result.unwrap();
     let token_stream = quote::quote! { #translated };
@@ -57,7 +57,7 @@ fn test_translate_sql_keyword() {
     // Test that translate works with the sql keyword
     let result = func::translate("", expr, &[]);
     assert!(result.is_ok());
-    
+
     // The result should contain the sql keyword directly
     let translated = result.unwrap();
     let token_stream = quote::quote! { #translated };
@@ -69,10 +69,10 @@ fn test_impl_fn_basic() {
     // Test that impl_fn works with a basic SQL statement
     // Use a simple expression instead of a full SQL statement
     let result = func::impl_fn("", "test_fn", "\"1\"", true, &[]);
-    
+
     // Just check that it doesn't panic
     let token_stream = quote::quote! { #result };
-    
+
     // We don't need to check specific implementation details, just that it works
     assert!(!token_stream.to_string().is_empty());
 }
@@ -81,10 +81,10 @@ fn test_impl_fn_basic() {
 fn test_impl_fn_with_simple_expression() {
     // Test that impl_fn works with a simple expression
     let result = func::impl_fn("", "test_fn", "\"1 + 2\"", true, &[]);
-    
+
     // Just check that it doesn't panic
     let token_stream = quote::quote! { #result };
-    
+
     // We don't need to check specific implementation details, just that it works
     assert!(!token_stream.to_string().is_empty());
 }
@@ -92,11 +92,17 @@ fn test_impl_fn_with_simple_expression() {
 #[test]
 fn test_impl_fn_with_ignored_variables() {
     // Test that impl_fn works with ignored variables
-    let result = func::impl_fn("", "test_fn", "\"test + ignored\"", true, &["ignored".to_string()]);
-    
+    let result = func::impl_fn(
+        "",
+        "test_fn",
+        "\"test + ignored\"",
+        true,
+        &["ignored".to_string()],
+    );
+
     // Just check that it doesn't panic
     let token_stream = quote::quote! { #result };
-    
+
     // We don't need to check specific implementation details, just that it works
     assert!(!token_stream.to_string().is_empty());
 }

@@ -1,8 +1,8 @@
+use parking_lot::ReentrantMutex;
 use std::hint::spin_loop;
 use std::sync::atomic::{AtomicI64, AtomicU16, Ordering};
 use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
-use parking_lot::ReentrantMutex;
 
 /// ID generator trait for generating unique task IDs
 pub trait IdGenerator: Send + Sync + std::fmt::Debug {
@@ -17,7 +17,7 @@ pub struct Snowflake {
     pub last_timestamp: AtomicI64, // Atomic to replace mutable i64
     pub machine_id: i32,
     pub node_id: i32,
-    pub mode: i32, // mode [0=fast_generate,1=realtime_generate]
+    pub mode: i32,      // mode [0=fast_generate,1=realtime_generate]
     pub idx: AtomicU16, // Atomic to replace mutable u16
     lock: ReentrantMutex<()>,
 }
@@ -68,7 +68,12 @@ impl Snowflake {
     /// use rbatis::id_generator::Snowflake;
     /// let snowflake = Snowflake::with_last_timestamp(1,1,0, 1726417159);
     /// ```
-    pub fn with_last_timestamp(machine_id: i32, node_id: i32, mode: i32, last_timestamp: i64) -> Snowflake {
+    pub fn with_last_timestamp(
+        machine_id: i32,
+        node_id: i32,
+        mode: i32,
+        last_timestamp: i64,
+    ) -> Snowflake {
         Snowflake {
             epoch: UNIX_EPOCH,
             last_timestamp: AtomicI64::new(last_timestamp),
@@ -110,7 +115,6 @@ impl Snowflake {
             | (idx as i64)
     }
 
-
     #[inline(always)]
     pub fn get_time_millis(epoch: SystemTime) -> i64 {
         SystemTime::now()
@@ -133,9 +137,7 @@ impl Snowflake {
 }
 
 /// Note:  if you have multiple machines/server, please modify the machine ID and node ID
-pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| {
-    Snowflake::new(1, 1, 0)
-});
+pub static SNOWFLAKE: LazyLock<Snowflake> = LazyLock::new(|| Snowflake::new(1, 1, 0));
 
 ///gen new snowflake_id
 pub fn new_snowflake_id() -> i64 {

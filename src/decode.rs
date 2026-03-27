@@ -78,7 +78,7 @@ where
                     || type_name.starts_with("rbdc::types::")
                     || type_name.starts_with("core::option::Option<rbdc::types::")
                 {
-                    if let Some((_, value)) = map.into_iter().next(){
+                    if let Some((_, value)) = map.into_iter().next() {
                         return Ok(rbs::from_value_ref::<T>(value)?);
                     }
                 }

@@ -1,5 +1,5 @@
-use rbs::Value;
 use crate::ops::StrMethods;
+use rbs::Value;
 
 impl StrMethods for Value {
     fn contains_str(self, s: &str) -> bool {

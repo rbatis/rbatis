@@ -1,9 +1,9 @@
-use std::collections::HashMap;
-use proc_macro2::{ Span, TokenStream};
-use quote::quote;
-use syn::LitStr;
-use crate::codegen::loader_html::Element;
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
+use proc_macro2::{Span, TokenStream};
+use quote::quote;
+use std::collections::HashMap;
+use syn::LitStr;
 
 /// Represents a <bind> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -18,13 +18,19 @@ pub struct BindTagNode {
 }
 
 impl HtmlAstNode for BindTagNode {
-    fn node_tag_name() -> &'static str { "bind" }
+    fn node_tag_name() -> &'static str {
+        "bind"
+    }
 
     fn from_element(element: &Element) -> Self {
-        let name = element.attrs.get("name")
+        let name = element
+            .attrs
+            .get("name")
             .expect("[rbatis-codegen] <bind> element must have name!")
             .clone();
-        let value = element.attrs.get("value")
+        let value = element
+            .attrs
+            .get("value")
             .expect("[rbatis-codegen] <bind> element must have value!")
             .clone();
         Self {
@@ -35,7 +41,11 @@ impl HtmlAstNode for BindTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, _context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        _context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -70,4 +80,4 @@ impl HtmlAstNode for BindTagNode {
             arg[#lit_str_name] = rbs::value(#method_impl).unwrap_or_default();
         }
     }
-} 
+}

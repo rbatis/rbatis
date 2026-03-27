@@ -3,10 +3,10 @@ mod test {
     use rbatis_codegen::ops::{Add, BitAnd, BitOr, Div, Mul, Not, PartialEq, PartialOrd, Rem, Sub};
     use rbdc::datetime::DateTime;
     use rbdc::Timestamp;
+    use rbs::value::map::ValueMap;
     use rbs::{value, Value};
     use serde::{Deserialize, Serialize};
     use std::cmp::Ordering;
-    use rbs::value::map::ValueMap;
 
     #[test]
     fn test_set() {

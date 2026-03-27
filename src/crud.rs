@@ -17,7 +17,7 @@
 ///
 ///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":"1"}).await?;
 ///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":["1","2","3"]}).await?;
-///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?; 
+///  let tables:Vec<MockTable> = MockTable::select_by_map(rb,value!{"id":"1", "column": ["id", "name"]}).await?;
 ///
 ///  let result:ExecResult = MockTable::update_by_map(rb, &table, value!{"id":"1"}).await?;
 ///  let result:ExecResult = MockTable::delete_by_map(rb, value!{"id":"1"}).await?;
@@ -75,16 +75,17 @@ macro_rules! crud {
                     ));
                 }
                 let mut table_name = $table_name.to_string();
-                if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
+                if table_name.is_empty() {
+                    #[$crate::snake_name($table)]
+                    fn snake_name() {}
+                    table_name = snake_name();
                 }
                 let mut result = $crate::rbdc::db::ExecResult {
                     rows_affected: 0,
                     last_insert_id: rbs::Value::Null,
                 };
-                let ranges = $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
+                let ranges =
+                    $crate::plugin::Page::<()>::make_ranges(tables.len() as u64, batch_size);
                 for (offset, limit) in ranges {
                     let exec_result = insert_batch(
                         executor,
@@ -121,36 +122,46 @@ macro_rules! crud {
             /// - `value!{"col1": ["v1", "v2", "v3"]}`          -> `WHERE col1 in ('v1', 'v2', 'v3')`
             /// - `value!{"col1": "val1", "col2": ["a", "b"]}`  -> `WHERE col1 = 'val1' and col2 in ('a', 'b')`
             /// - null values are skipped
-            pub async fn select_by_map(executor: &dyn $crate::executor::Executor, mut condition: rbs::Value) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
+            pub async fn select_by_map(
+                executor: &dyn $crate::executor::Executor,
+                mut condition: rbs::Value,
+            ) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 // Extract column specification and remove it from condition
                 let table_column = {
                     let mut columns = String::new();
                     let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
                     for (k, v) in condition {
-                            match k.as_str() {
-                                Some("column") => {
-                                    columns = match v {
-                                        rbs::Value::String(s) => s.clone(),
-                                        rbs::Value::Array(arr) => {
-                                            let cols: Vec<&str> = arr.iter()
-                                                .filter_map(|v| v.as_str())
-                                                .collect();
-                                            if cols.is_empty() { "*".to_string() } else { cols.join(", ") }
+                        match k.as_str() {
+                            Some("column") => {
+                                columns = match v {
+                                    rbs::Value::String(s) => s.clone(),
+                                    rbs::Value::Array(arr) => {
+                                        let cols: Vec<&str> =
+                                            arr.iter().filter_map(|v| v.as_str()).collect();
+                                        if cols.is_empty() {
+                                            "*".to_string()
+                                        } else {
+                                            cols.join(", ")
                                         }
-                                        _ => "*".to_string(),
-                                    };
-                                }
-                                _ => { clean_map.insert(k.clone(), v.clone()); }
+                                    }
+                                    _ => "*".to_string(),
+                                };
                             }
+                            _ => {
+                                clean_map.insert(k.clone(), v.clone());
+                            }
+                        }
                     }
-                    if columns.is_empty() { columns = "*".to_string(); }
+                    if columns.is_empty() {
+                        columns = "*".to_string();
+                    }
                     condition = rbs::Value::Map(clean_map);
                     columns
                 };
 
                 #[$crate::py_sql(
-          "`select ${table_column} from ${table_name}`
+                    "`select ${table_column} from ${table_name}`
            trim end=' where ':
              ` where `
              trim ' and ': for key,item in condition:
@@ -163,25 +174,26 @@ macro_rules! crud {
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        ")]
+        "
+                )]
                 async fn select_by_map(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
                     table_column: &str,
-                    condition: &rbs::Value
+                    condition: &rbs::Value,
                 ) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
-                    for (_,v) in condition {
-                        if v.is_array() && v.is_empty(){
-                           return Ok(vec![]);
+                    for (_, v) in condition {
+                        if v.is_array() && v.is_empty() {
+                            return Ok(vec![]);
                         }
                     }
                     impled!()
                 }
                 let mut table_name = $table_name.to_string();
-                if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
+                if table_name.is_empty() {
+                    #[$crate::snake_name($table)]
+                    fn snake_name() {}
+                    table_name = snake_name();
                 }
                 select_by_map(executor, table_name, &table_column, &condition).await
             }
@@ -203,37 +215,40 @@ macro_rules! crud {
             pub async fn update_by_map(
                 executor: &dyn $crate::executor::Executor,
                 table: &$table,
-                mut condition: rbs::Value
+                mut condition: rbs::Value,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::{ValueOperatorSql, FilterByColumns};
+                use rbatis::crud_traits::{FilterByColumns, ValueOperatorSql};
 
                 // Extract column list for selective updates - implements GitHub issue #591
                 let set_columns = {
                     let mut columns = rbs::Value::Null;
                     let mut clean_map = rbs::value::map::ValueMap::with_capacity(condition.len());
                     for (k, v) in condition {
-                            match k.as_str() {
-                                Some("column") => {
-                                    columns = match v {
-                                        rbs::Value::String(s) => {
-                                            rbs::Value::Array(vec![rbs::Value::String(s.clone())])
+                        match k.as_str() {
+                            Some("column") => {
+                                columns = match v {
+                                    rbs::Value::String(s) => {
+                                        rbs::Value::Array(vec![rbs::Value::String(s.clone())])
+                                    }
+                                    rbs::Value::Array(arr) => {
+                                        let filtered_array: Vec<rbs::Value> = arr
+                                            .iter()
+                                            .filter(|v| v.as_str().is_some())
+                                            .cloned()
+                                            .collect();
+                                        if filtered_array.is_empty() {
+                                            rbs::Value::Null
+                                        } else {
+                                            rbs::Value::Array(filtered_array)
                                         }
-                                        rbs::Value::Array(arr) => {
-                                            let filtered_array: Vec<rbs::Value> = arr.iter()
-                                                .filter(|v| v.as_str().is_some())
-                                                .cloned()
-                                                .collect();
-                                            if filtered_array.is_empty() {
-                                                rbs::Value::Null
-                                            } else {
-                                                rbs::Value::Array(filtered_array)
-                                            }
-                                        }
-                                        _ => rbs::Value::Null,
-                                    };
-                                }
-                                _ => { clean_map.insert(k.clone(), v.clone()); }
+                                    }
+                                    _ => rbs::Value::Null,
+                                };
                             }
+                            _ => {
+                                clean_map.insert(k.clone(), v.clone());
+                            }
+                        }
                     }
                     condition = rbs::Value::Map(clean_map);
                     columns
@@ -258,35 +273,36 @@ macro_rules! crud {
                               `)`
                     "
                 )]
-                  async fn update_by_map_internal(
-                      executor: &dyn $crate::executor::Executor,
-                      table_name: String,
-                      table: &rbs::Value,
-                      condition: &rbs::Value,
-                      skip_null: bool,
-                  ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                      for (_,v) in condition {
-                        if v.is_array() && v.is_empty(){
-                           return Ok($crate::rbdc::db::ExecResult::default());
+                async fn update_by_map_internal(
+                    executor: &dyn $crate::executor::Executor,
+                    table_name: String,
+                    table: &rbs::Value,
+                    condition: &rbs::Value,
+                    skip_null: bool,
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
+                {
+                    for (_, v) in condition {
+                        if v.is_array() && v.is_empty() {
+                            return Ok($crate::rbdc::db::ExecResult::default());
                         }
-                      }
-                      impled!()
-                  }
-                  let mut table_name = $table_name.to_string();
-                  if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
-                  }
-                  let table_value = rbs::value!(table);
-                  let mut skip_null = true;
-                  let table = if set_columns != rbs::Value::Null {
+                    }
+                    impled!()
+                }
+                let mut table_name = $table_name.to_string();
+                if table_name.is_empty() {
+                    #[$crate::snake_name($table)]
+                    fn snake_name() {}
+                    table_name = snake_name();
+                }
+                let table_value = rbs::value!(table);
+                let mut skip_null = true;
+                let table = if set_columns != rbs::Value::Null {
                     skip_null = false;
                     table_value.filter_by_columns(&set_columns)
-                  } else {
+                } else {
                     table_value
-                  };
-                  update_by_map_internal(executor, table_name, &table, &condition, skip_null).await
+                };
+                update_by_map_internal(executor, table_name, &table, &condition, skip_null).await
             }
         }
         // delete
@@ -301,10 +317,13 @@ macro_rules! crud {
             /// - `value!{"col1": ["v1", "v2", "v3"]}`          -> `WHERE col1 in ('v1', 'v2', 'v3')`
             /// - `value!{"col1": "val1", "col2": ["a", "b"]}`  -> `WHERE col1 = 'val1' and col2 in ('a', 'b')`
             /// - null values are skipped
-            pub async fn delete_by_map(executor: &dyn $crate::executor::Executor, condition: rbs::Value) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
+            pub async fn delete_by_map(
+                executor: &dyn $crate::executor::Executor,
+                condition: rbs::Value,
+            ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use rbatis::crud_traits::ValueOperatorSql;
                 #[$crate::py_sql(
-         "`delete from ${table_name}`
+                    "`delete from ${table_name}`
            trim end=' where ':
              ` where `
              trim ' and ': for key,item in condition:
@@ -317,24 +336,26 @@ macro_rules! crud {
                                trim ',': for _,item_array in item:
                                     #{item_array},
                             `)`
-        ")]
+        "
+                )]
                 async fn delete_by_map(
                     executor: &dyn $crate::executor::Executor,
                     table_name: String,
-                    condition: &rbs::Value
-                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                    for (_,v) in condition {
-                        if v.is_array() && v.is_empty(){
-                           return Ok($crate::rbdc::db::ExecResult::default());
+                    condition: &rbs::Value,
+                ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error>
+                {
+                    for (_, v) in condition {
+                        if v.is_array() && v.is_empty() {
+                            return Ok($crate::rbdc::db::ExecResult::default());
                         }
                     }
                     impled!()
                 }
                 let mut table_name = $table_name.to_string();
-                if table_name.is_empty(){
-                         #[$crate::snake_name($table)]
-                         fn snake_name(){}
-                         table_name = snake_name();
+                if table_name.is_empty() {
+                    #[$crate::snake_name($table)]
+                    fn snake_name() {}
+                    table_name = snake_name();
                 }
                 delete_by_map(executor, table_name, &condition).await
             }

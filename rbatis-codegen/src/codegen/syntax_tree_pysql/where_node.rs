@@ -30,7 +30,6 @@ impl Name for WhereNode {
     }
 }
 
-
 impl ToHtml for WhereNode {
     fn as_html(&self) -> String {
         let mut childs = String::new();

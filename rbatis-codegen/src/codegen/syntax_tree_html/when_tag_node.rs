@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <when> tag node (child of <choose>) in the HTML AST.
 #[derive(Debug, Clone)]
@@ -14,11 +14,20 @@ pub struct WhenTagNode {
 }
 
 impl HtmlAstNode for WhenTagNode {
-    fn node_tag_name() -> &'static str { "when" }
+    fn node_tag_name() -> &'static str {
+        "when"
+    }
 
     fn from_element(element: &Element) -> Self {
-        let test = element.attrs.get("test")
-            .unwrap_or_else(|| panic!("[rbatis-codegen] <when> element must have test field! Found: {:?}", element.attrs))
+        let test = element
+            .attrs
+            .get("test")
+            .unwrap_or_else(|| {
+                panic!(
+                    "[rbatis-codegen] <when> element must have test field! Found: {:?}",
+                    element.attrs
+                )
+            })
             .clone();
         Self {
             test,
@@ -27,7 +36,11 @@ impl HtmlAstNode for WhenTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -48,7 +61,7 @@ impl HtmlAstNode for WhenTagNode {
             false,
             ignore,
         );
-        
+
         // For <when> inside <choose>, if the condition is true, its body is evaluated,
         // and then the <choose> block should terminate for that path.
         // The original `handle_choose_element` used `appends: quote! { return sql; }` for `impl_condition`.
@@ -59,4 +72,4 @@ impl HtmlAstNode for WhenTagNode {
             }
         }
     }
-} 
+}

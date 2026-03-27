@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <sql> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -14,10 +14,14 @@ pub struct SqlTagNode {
 }
 
 impl HtmlAstNode for SqlTagNode {
-    fn node_tag_name() -> &'static str { "sql" }
+    fn node_tag_name() -> &'static str {
+        "sql"
+    }
 
     fn from_element(element: &Element) -> Self {
-        let id = element.attrs.get("id")
+        let id = element
+            .attrs
+            .get("id")
             .expect("[rbatis-codegen] <sql> element must have id!")
             .clone();
         Self {
@@ -27,7 +31,11 @@ impl HtmlAstNode for SqlTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -38,4 +46,4 @@ impl HtmlAstNode for SqlTagNode {
         let child_tokens = context.parse_children(&self.childs, ignore);
         quote! { #child_tokens }
     }
-} 
+}

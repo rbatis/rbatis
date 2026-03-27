@@ -43,9 +43,9 @@ mod my_pool {
     use deadpool::Status;
     use futures_core::future::BoxFuture;
     use rbatis::async_trait;
-    use rbatis::rbdc::{Connection, ExecResult, Row};
     use rbatis::rbdc::pool::{ConnectionGuard, ConnectionManager, Pool};
     use rbatis::rbdc::{db, Error};
+    use rbatis::rbdc::{Connection, ExecResult, Row};
     use rbs::value::map::ValueMap;
     use rbs::{value, Value};
     use std::borrow::Cow;

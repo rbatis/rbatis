@@ -47,7 +47,10 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
     if cfg!(debug_assertions) {
         use quote::ToTokens;
         let func_name_ident = target_fn.sig.ident.to_token_stream();
-        println!("............#[sql] '{}'...................\n {}", func_name_ident, stream);
+        println!(
+            "............#[sql] '{}'...................\n {}",
+            func_name_ident, stream
+        );
         println!(".......................................................");
     }
 
@@ -118,7 +121,10 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
-        println!("............#[py_sql] '{}'............\n {}", func_name_ident, code);
+        println!(
+            "............#[py_sql] '{}'............\n {}",
+            func_name_ident, code
+        );
         println!(".......................................................");
     }
     stream
@@ -194,7 +200,10 @@ pub fn html_sql(args: TokenStream, item: TokenStream) -> TokenStream {
         let code = RustFmt::default()
             .format_str(&stream_str)
             .unwrap_or_else(|_e| stream_str.to_string());
-        println!("............#[html_sql] '{}'............\n {}", func_name_ident, code);
+        println!(
+            "............#[html_sql] '{}'............\n {}",
+            func_name_ident, code
+        );
         println!(".......................................................");
     }
     stream

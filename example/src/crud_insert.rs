@@ -1,6 +1,6 @@
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::{RBatis, crud};
+use rbatis::{crud, RBatis};
 use serde_json::json;
 
 /// table

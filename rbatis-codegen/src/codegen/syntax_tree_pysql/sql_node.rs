@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{ToHtml, Name, NodeType};
+use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a reusable SQL fragment node in py_sql, defined by a `<sql>` tag in XML or an equivalent in py_sql.
 /// It allows defining a piece of SQL that can be included elsewhere.

@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{ToHtml, Name};
+use crate::codegen::syntax_tree_pysql::{Name, ToHtml};
 
 /// Represents a `break` node in py_sql.
 /// It's used to exit a loop, typically within a `foreach` block.

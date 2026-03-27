@@ -1,6 +1,9 @@
 use crate::macros::py_sql_impl;
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_page_request, is_page_return_type, is_query, is_rb_ref};
+use crate::util::{
+    find_fn_body, find_return_type, get_fn_args, is_page_request, is_page_return_type, is_query,
+    is_rb_ref,
+};
 use crate::ParseArgs;
 use proc_macro2::{Ident, Span};
 use quote::quote;
@@ -11,7 +14,11 @@ use std::io::Read;
 use std::path::PathBuf;
 use syn::{FnArg, ItemFn, ItemImpl};
 
-pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs, is_trait_impl: bool) -> TokenStream {
+pub(crate) fn impl_macro_html_sql(
+    target_fn: &ItemFn,
+    args: &ParseArgs,
+    is_trait_impl: bool,
+) -> TokenStream {
     let return_ty = find_return_type(target_fn);
     let return_ty_str = return_ty.to_string();
 
@@ -69,8 +76,8 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs, is_trait
         //relative path append realpath
         let file_path = PathBuf::from(file_name.clone());
         if file_path.is_relative() {
-            let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-                .expect("Failed to read CARGO_MANIFEST_DIR");
+            let mut manifest_dir =
+                std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
             manifest_dir.push_str("/");
             let mut current = PathBuf::from(manifest_dir);
             current.push(file_name.clone());
@@ -158,7 +165,11 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs, is_trait
         .matches("rb_arg_map.insert")
         .count();
 
-    let visibility = if is_trait_impl { quote!() } else { target_fn.vis.to_token_stream() };
+    let visibility = if is_trait_impl {
+        quote!()
+    } else {
+        target_fn.vis.to_token_stream()
+    };
     return quote! {
        #visibility async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          #include_data
@@ -178,10 +189,16 @@ pub(crate) fn impl_macro_html_sql(target_fn: &ItemFn, args: &ParseArgs, is_trait
 
 /// Generate paginated html_sql implementation
 /// When Page<T> is detected, generate a call to htmlsql_select_page! macro
-fn impl_macro_html_sql_with_page(target_fn: &ItemFn, args: &ParseArgs, inner_type: &str, _is_trait_impl: bool) -> TokenStream {
+fn impl_macro_html_sql_with_page(
+    target_fn: &ItemFn,
+    args: &ParseArgs,
+    inner_type: &str,
+    _is_trait_impl: bool,
+) -> TokenStream {
     let func_name = target_fn.sig.ident.clone();
     // Parse inner_type string as a type
-    let inner_type_ts: proc_macro2::TokenStream = inner_type.parse()
+    let inner_type_ts: proc_macro2::TokenStream = inner_type
+        .parse()
         .unwrap_or_else(|_| inner_type.parse().unwrap());
 
     // Extract business parameters (exclude rb/executor and page_request)
@@ -198,14 +215,21 @@ fn impl_macro_html_sql_with_page(target_fn: &ItemFn, args: &ParseArgs, inner_typ
     }
 
     // Build business parameters for htmlsql_select_page! macro
-    let params_for_macro: Vec<_> = business_params.iter().map(|(pat, ty)| {
-        quote! { #pat: #ty }
-    }).collect();
+    let params_for_macro: Vec<_> = business_params
+        .iter()
+        .map(|(pat, ty)| {
+            quote! { #pat: #ty }
+        })
+        .collect();
 
     // Build html file arguments
-    let html_file_args: Vec<_> = args.sqls.iter().map(|sql| {
-        quote! { #sql }
-    }).collect();
+    let html_file_args: Vec<_> = args
+        .sqls
+        .iter()
+        .map(|sql| {
+            quote! { #sql }
+        })
+        .collect();
 
     // Generate: rbatis::htmlsql_select_page!(func_name(params) -> Type => "file.html")
     // Note: htmlsql_select_page! macro already handles pub visibility
@@ -218,21 +242,21 @@ fn impl_macro_html_sql_with_page(target_fn: &ItemFn, args: &ParseArgs, inner_typ
 pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) -> TokenStream {
     // Get all items in the impl block
     let items = &impl_block.items;
-    
+
     // Check if impl block is empty
     if items.is_empty() {
         panic!("#[html_sql] applied to impl block requires at least one item");
     }
-    
+
     // Generate code for each item
     let mut processed_items = Vec::new();
     let mut has_function = false;
-    
+
     for item in items {
         if let syn::ImplItem::Fn(func) = item {
             // Mark that a function was found
             has_function = true;
-            
+
             // Convert ImplItemFn to ItemFn for processing
             let item_fn = ItemFn {
                 attrs: func.attrs.clone(),
@@ -240,7 +264,7 @@ pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) 
                 sig: func.sig.clone(),
                 block: Box::new(func.block.clone()),
             };
-            
+
             // Generate html sql implementation for each function
             let is_trait_impl = impl_block.trait_.is_some();
             let func_stream = impl_macro_html_sql(&item_fn, args, is_trait_impl);
@@ -250,12 +274,12 @@ pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) 
             processed_items.push(item.to_token_stream());
         }
     }
-    
+
     // Check if impl block contains at least one function
     if !has_function {
         panic!("#[html_sql] applied to impl block requires at least one function");
     }
-    
+
     // Reconstruct impl block
     let attrs = &impl_block.attrs;
     let defaultness = &impl_block.defaultness;
@@ -264,15 +288,15 @@ pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) 
     let generics = &impl_block.generics;
     let trait_ = &impl_block.trait_;
     let self_ty = &impl_block.self_ty;
-    
+
     // Manually handle trait_ field because its type is complex
     let trait_tokens = match trait_ {
         Some((not, path, for_token)) => {
             quote! { #not #path #for_token }
         }
-        None => quote! {}
+        None => quote! {},
     };
-    
+
     // Generate final TokenStream
     return quote! {
         #(#attrs)*

@@ -1,10 +1,10 @@
 use crate::codegen::parser_html::parse_html;
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree_pysql::{
-    bind_node::BindNode, break_node::BreakNode, choose_node::ChooseNode, continue_node::ContinueNode,
-    error::Error, foreach_node::ForEachNode, if_node::IfNode, otherwise_node::OtherwiseNode,
-    set_node::SetNode, sql_node::SqlNode, string_node::StringNode, trim_node::TrimNode,
-    when_node::WhenNode, where_node::WhereNode, DefaultName, Name, NodeType,
+    bind_node::BindNode, break_node::BreakNode, choose_node::ChooseNode,
+    continue_node::ContinueNode, error::Error, foreach_node::ForEachNode, if_node::IfNode,
+    otherwise_node::OtherwiseNode, set_node::SetNode, sql_node::SqlNode, string_node::StringNode,
+    trim_node::TrimNode, when_node::WhenNode, where_node::WhereNode, DefaultName, Name, NodeType,
 };
 use crate::codegen::ParseArgs;
 use quote::ToTokens;
@@ -19,7 +19,9 @@ pub trait ParsePySql {
 pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
 
-    let mut data = args.sqls.iter()
+    let mut data = args
+        .sqls
+        .iter()
         .map(|x| x.to_token_stream().to_string())
         .collect::<String>();
 
@@ -29,11 +31,11 @@ pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
 
     data = data.replace("\\n", "\n");
 
-    let nodes = NodeType::parse_pysql(&data)
-        .expect("[rbatis-codegen] parse py_sql fail!");
+    let nodes = NodeType::parse_pysql(&data).expect("[rbatis-codegen] parse py_sql fail!");
 
     let is_select = data.starts_with("select") || data.starts_with(" select");
-    let htmls = crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
+    let htmls =
+        crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
 
     parse_html(&htmls, &fn_name, &mut vec![]).into()
 }
@@ -61,7 +63,8 @@ impl ParsePySql for NodeType {
                 space = count_index;
             }
 
-            let (child_str, do_skip) = Self::find_child_str(line, count_index, arg, &line_space_map);
+            let (child_str, do_skip) =
+                Self::find_child_str(line, count_index, arg, &line_space_map);
             if do_skip != -1 && do_skip >= skip {
                 skip = do_skip;
             }
@@ -133,9 +136,7 @@ impl NodeType {
     }
 
     fn count_space(arg: &str) -> i32 {
-        arg.chars()
-            .take_while(|&c| c == ' ')
-            .count() as i32
+        arg.chars().take_while(|&c| c == ' ').count() as i32
     }
 
     fn find_child_str(
@@ -185,13 +186,19 @@ impl NodeType {
                 test: s.trim_start_matches("if ").to_string(),
             })),
 
-            s if s.starts_with(ForEachNode::name()) => Self::parse_for_each_node(s, source_str, childs),
+            s if s.starts_with(ForEachNode::name()) => {
+                Self::parse_for_each_node(s, source_str, childs)
+            }
 
-            s if s.starts_with(TrimNode::name()) => Self::parse_trim_tag_node(s, source_str, childs),
+            s if s.starts_with(TrimNode::name()) => {
+                Self::parse_trim_tag_node(s, source_str, childs)
+            }
 
             s if s.starts_with(ChooseNode::name()) => Self::parse_choose_node(childs),
 
-            s if s.starts_with(OtherwiseNode::default_name()) || s.starts_with(OtherwiseNode::name()) => {
+            s if s.starts_with(OtherwiseNode::default_name())
+                || s.starts_with(OtherwiseNode::name()) =>
+            {
                 Ok(NodeType::NOtherwise(OtherwiseNode { childs }))
             }
 
@@ -204,7 +211,7 @@ impl NodeType {
                 Self::parse_bind_node(s)
             }
 
-            s if s.starts_with(SetNode::name()) => Self::parse_set_node(s,source_str,childs),
+            s if s.starts_with(SetNode::name()) => Self::parse_set_node(s, source_str, childs),
 
             s if s.starts_with(WhereNode::name()) => Ok(NodeType::NWhere(WhereNode { childs })),
 
@@ -214,23 +221,34 @@ impl NodeType {
 
             s if s.starts_with(SqlNode::name()) => Self::parse_sql_node(s, childs),
 
-            _ => Err(Error::from("[rbatis-codegen] unknown tag: ".to_string() + source_str)),
+            _ => Err(Error::from(
+                "[rbatis-codegen] unknown tag: ".to_string() + source_str,
+            )),
         }
     }
 
-    fn parse_for_each_node(express: &str, source_str: &str, childs: Vec<NodeType>) -> Result<NodeType, Error> {
+    fn parse_for_each_node(
+        express: &str,
+        source_str: &str,
+        childs: Vec<NodeType>,
+    ) -> Result<NodeType, Error> {
         const FOR_TAG: &str = "for";
         const IN_TAG: &str = " in ";
 
         if !express.starts_with(FOR_TAG) {
-            return Err(Error::from("[rbatis-codegen] parser express fail:".to_string() + source_str));
+            return Err(Error::from(
+                "[rbatis-codegen] parser express fail:".to_string() + source_str,
+            ));
         }
 
         if !express.contains(IN_TAG) {
-            return Err(Error::from("[rbatis-codegen] parser express fail:".to_string() + source_str));
+            return Err(Error::from(
+                "[rbatis-codegen] parser express fail:".to_string() + source_str,
+            ));
         }
 
-        let in_index = express.find(IN_TAG)
+        let in_index = express
+            .find(IN_TAG)
             .ok_or_else(|| Error::from(format!("{} not have {}", express, IN_TAG)))?;
 
         let col = express[in_index + IN_TAG.len()..].trim();
@@ -254,11 +272,15 @@ impl NodeType {
         }))
     }
 
-    fn parse_trim_tag_node(express: &str, _source_str: &str, childs: Vec<NodeType>) -> Result<NodeType, Error> {
+    fn parse_trim_tag_node(
+        express: &str,
+        _source_str: &str,
+        childs: Vec<NodeType>,
+    ) -> Result<NodeType, Error> {
         let trim_express = express.trim().trim_start_matches("trim ").trim();
 
-        if (trim_express.starts_with('\'') && trim_express.ends_with('\'')) ||
-            (trim_express.starts_with('`') && trim_express.ends_with('`'))
+        if (trim_express.starts_with('\'') && trim_express.ends_with('\''))
+            || (trim_express.starts_with('`') && trim_express.ends_with('`'))
         {
             let trimmed = if trim_express.starts_with('`') {
                 trim_express.trim_matches('`')
@@ -278,13 +300,15 @@ impl NodeType {
             for expr in trim_express.split(',') {
                 let expr = expr.trim();
                 if expr.starts_with("start") {
-                    prefix = expr.trim_start_matches("start")
+                    prefix = expr
+                        .trim_start_matches("start")
                         .trim()
                         .trim_start_matches('=')
                         .trim()
                         .trim_matches(|c| c == '\'' || c == '`');
                 } else if expr.starts_with("end") {
-                    suffix = expr.trim_start_matches("end")
+                    suffix = expr
+                        .trim_start_matches("end")
                         .trim()
                         .trim_start_matches('=')
                         .trim()
@@ -362,8 +386,8 @@ impl NodeType {
 
         let id_value = expr.trim_start_matches("id=").trim();
 
-        let id = if (id_value.starts_with('\'') && id_value.ends_with('\'')) ||
-            (id_value.starts_with('"') && id_value.ends_with('"'))
+        let id = if (id_value.starts_with('\'') && id_value.ends_with('\''))
+            || (id_value.starts_with('"') && id_value.ends_with('"'))
         {
             id_value[1..id_value.len() - 1].to_string()
         } else {
@@ -377,21 +401,30 @@ impl NodeType {
 
     fn strip_quotes_for_attr(s: &str) -> String {
         let val = s.trim(); // Trim whitespace around the value first
-        if val.starts_with('\'') && val.ends_with('\'') ||
-           (val.starts_with('"') && val.ends_with('"')) {
+        if val.starts_with('\'') && val.ends_with('\'')
+            || (val.starts_with('"') && val.ends_with('"'))
+        {
             if val.len() >= 2 {
-                return val[1..val.len()-1].to_string();
+                return val[1..val.len() - 1].to_string();
             }
         }
         val.to_string() // Return the trimmed string if no quotes or malformed quotes
     }
-    
-    fn parse_set_node(express: &str, source_str: &str,  childs: Vec<NodeType>) -> Result<NodeType, Error>  {
+
+    fn parse_set_node(
+        express: &str,
+        source_str: &str,
+        childs: Vec<NodeType>,
+    ) -> Result<NodeType, Error> {
         let actual_attrs_str = if express.starts_with(SetNode::name()) {
             express[SetNode::name().len()..].trim()
         } else {
             // This case should ideally not happen if called correctly from the match arm
-            return Err(Error::from(format!("[rbatis-codegen] SetNode expression '{}' does not start with '{}'", express, SetNode::name())));
+            return Err(Error::from(format!(
+                "[rbatis-codegen] SetNode expression '{}' does not start with '{}'",
+                express,
+                SetNode::name()
+            )));
         };
         let mut collection_opt: Option<String> = None;
         let mut skip_null_val = None; // Default
@@ -404,7 +437,10 @@ impl NodeType {
 
             let kv: Vec<&str> = clean_part.splitn(2, '=').collect();
             if kv.len() != 2 {
-                return Err(Error::from(format!("[rbatis-codegen] Malformed attribute in set node near '{}' in '{}'", clean_part, source_str)));
+                return Err(Error::from(format!(
+                    "[rbatis-codegen] Malformed attribute in set node near '{}' in '{}'",
+                    clean_part, source_str
+                )));
             }
 
             let key = kv[0].trim();
@@ -416,14 +452,17 @@ impl NodeType {
                 }
                 "skip_null" => {
                     let val_bool_str = Self::strip_quotes_for_attr(value_str_raw);
-                    if val_bool_str.is_empty(){
+                    if val_bool_str.is_empty() {
                         skip_null_val = None;
-                    }else if val_bool_str.eq_ignore_ascii_case("true") {
+                    } else if val_bool_str.eq_ignore_ascii_case("true") {
                         skip_null_val = Some(true);
                     } else if val_bool_str.eq_ignore_ascii_case("false") {
                         skip_null_val = Some(false);
                     } else {
-                        return Err(Error::from(format!("[rbatis-codegen] Invalid boolean value for skip_null: '{}' in '{}'", value_str_raw, source_str)));
+                        return Err(Error::from(format!(
+                            "[rbatis-codegen] Invalid boolean value for skip_null: '{}' in '{}'",
+                            value_str_raw, source_str
+                        )));
                     }
                 }
                 "skips" => {
@@ -431,7 +470,10 @@ impl NodeType {
                     skips_val = inner_skips_str;
                 }
                 _ => {
-                    return Err(Error::from(format!("[rbatis-codegen] Unknown attribute '{}' for set node in '{}'", key, source_str)));
+                    return Err(Error::from(format!(
+                        "[rbatis-codegen] Unknown attribute '{}' for set node in '{}'",
+                        key, source_str
+                    )));
                 }
             }
         }

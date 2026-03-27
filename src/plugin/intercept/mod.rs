@@ -1,12 +1,12 @@
 pub mod intercept_log;
 pub mod intercept_page;
 
-use std::any::Any;
 use crate::executor::Executor;
 use crate::Error;
 use async_trait::async_trait;
 use rbdc::db::ExecResult;
 use rbs::Value;
+use std::any::Any;
 use std::fmt::Debug;
 
 #[derive(Debug, Clone)]
@@ -26,13 +26,12 @@ impl<A, B> ResultType<A, B> {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
     /// run next
     Next,
     /// return result
-    Return
+    Return,
 }
 
 /// sql intercept

@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <break> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -13,7 +13,9 @@ pub struct BreakTagNode {
 }
 
 impl HtmlAstNode for BreakTagNode {
-    fn node_tag_name() -> &'static str { "break" }
+    fn node_tag_name() -> &'static str {
+        "break"
+    }
 
     fn from_element(element: &Element) -> Self {
         Self {
@@ -22,11 +24,15 @@ impl HtmlAstNode for BreakTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, _context: &mut NodeContext<FChildParser>, _ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        _context: &mut NodeContext<FChildParser>,
+        _ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
         // Replicates `impl_break`
         quote! { break; }
     }
-} 
+}

@@ -59,7 +59,6 @@ pub trait IPage<T>: IPageRequest {
     fn records_take(&mut self) -> Vec<T>;
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct PageRequest {
     /// total num
@@ -157,7 +156,6 @@ impl IPageRequest for PageRequest {
     }
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Page<T: Send + Sync> {
     /// data
@@ -196,9 +194,14 @@ impl<T: Send + Sync> Page<T> {
     }
 
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
-        Self::new(page_no, page_size, total, Vec::with_capacity(page_size as usize))
+        Self::new(
+            page_no,
+            page_size,
+            total,
+            Vec::with_capacity(page_size as usize),
+        )
     }
-    
+
     pub fn set_total(mut self, total: u64) -> Self {
         self.total = total;
         self
@@ -230,7 +233,12 @@ impl<T: Send + Sync> Page<T> {
         let mut result = vec![];
         let pages = PageRequest::new(1, page_size).set_total(total).pages();
         for idx in 0..pages {
-            let mut current_page = Page::<T>::new(idx + 1, page_size, total, Vec::with_capacity(page_size as usize));
+            let mut current_page = Page::<T>::new(
+                idx + 1,
+                page_size,
+                total,
+                Vec::with_capacity(page_size as usize),
+            );
             for _ in current_page.offset()..current_page.offset_limit() {
                 current_page.records.push(data.remove(0));
             }
@@ -349,7 +357,12 @@ impl<V: Send + Sync> Page<V> {
     where
         V: From<T>,
     {
-        let mut page = Page::<V>::new(arg.page_no, arg.page_size, arg.total, Vec::with_capacity(arg.records.len()));
+        let mut page = Page::<V>::new(
+            arg.page_no,
+            arg.page_size,
+            arg.total,
+            Vec::with_capacity(arg.records.len()),
+        );
         page.page_no = arg.page_no;
         page.page_size = arg.page_size;
         page.total = arg.total;

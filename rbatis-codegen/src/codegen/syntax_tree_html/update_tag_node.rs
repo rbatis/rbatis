@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents an <update> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,7 +12,9 @@ pub struct UpdateTagNode {
 }
 
 impl HtmlAstNode for UpdateTagNode {
-    fn node_tag_name() -> &'static str { "update" }
+    fn node_tag_name() -> &'static str {
+        "update"
+    }
 
     fn from_element(element: &Element) -> Self {
         Self {
@@ -21,16 +23,20 @@ impl HtmlAstNode for UpdateTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
         // Replicates logic from `handle_crud_element` for <update>
         let method_name = Ident::new(context.fn_name, Span::call_site());
         let child_body = context.parse_children(&self.childs, ignore);
-        
+
         let capacity = 1024usize; // Placeholder
-        let push_count = 10usize;   // Placeholder
+        let push_count = 10usize; // Placeholder
 
         let function_token = quote! {
             pub fn #method_name(mut arg: rbs::Value, _tag: char) -> (String, Vec<rbs::Value>) {
@@ -41,8 +47,8 @@ impl HtmlAstNode for UpdateTagNode {
                 (sql, args)
             }
         };
-        
+
         context.methods.extend(function_token);
         quote! { /* <update> defines a method, no direct SQL output here */ }
     }
-} 
+}

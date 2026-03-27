@@ -1,8 +1,7 @@
-use proc_macro2::{TokenStream};
+use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::collections::{BTreeMap};
-use syn::{ItemFn};
-
+use std::collections::BTreeMap;
+use syn::ItemFn;
 
 use crate::codegen::loader_html::{load_html, Element};
 use crate::codegen::proc_macro::TokenStream as MacroTokenStream;
@@ -63,30 +62,38 @@ pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
 }
 
 /// Handles include directives and replaces them with referenced content
-fn include_replace(elements: Vec<Element>, sql_map: &mut BTreeMap<String, Element>) -> Vec<Element> {
-    elements.into_iter().map(|mut element| {
-        match element.tag.as_str() {
-            SQL_TAG => {
-                let id = element.attrs.get("id")
-                    .expect("[rbatis-codegen] <sql> element must have id!");
-                sql_map.insert(id.clone(), element.clone());
-            }
-            INCLUDE_TAG => {
-                element = IncludeTagNode::from_element(&element).process_include(sql_map);
-            }
-            _ => {
-                if let Some(id) = element.attrs.get("id").filter(|id| !id.is_empty()) {
+fn include_replace(
+    elements: Vec<Element>,
+    sql_map: &mut BTreeMap<String, Element>,
+) -> Vec<Element> {
+    elements
+        .into_iter()
+        .map(|mut element| {
+            match element.tag.as_str() {
+                SQL_TAG => {
+                    let id = element
+                        .attrs
+                        .get("id")
+                        .expect("[rbatis-codegen] <sql> element must have id!");
                     sql_map.insert(id.clone(), element.clone());
                 }
+                INCLUDE_TAG => {
+                    element = IncludeTagNode::from_element(&element).process_include(sql_map);
+                }
+                _ => {
+                    if let Some(id) = element.attrs.get("id").filter(|id| !id.is_empty()) {
+                        sql_map.insert(id.clone(), element.clone());
+                    }
+                }
             }
-        }
 
-        if !element.childs.is_empty() {
-            element.childs = include_replace(element.childs, sql_map);
-        }
+            if !element.childs.is_empty() {
+                element.childs = include_replace(element.childs, sql_map);
+            }
 
-        element
-    }).collect()
+            element
+        })
+        .collect()
 }
 
 /// Parses HTML content into a function TokenStream
@@ -100,18 +107,16 @@ pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> TokenS
     let elements = load_mapper_map(&processed_html)
         .unwrap_or_else(|_| panic!("Failed to load html: {}", processed_html));
 
-    let (_, element) = elements.into_iter().next()
+    let (_, element) = elements
+        .into_iter()
+        .next()
         .unwrap_or_else(|| panic!("HTML not found for function: {}", fn_name));
 
     parse_html_node(vec![element], ignore, fn_name)
 }
 
 /// Parses HTML nodes into Rust code
-fn parse_html_node(
-    elements: Vec<Element>,
-    ignore: &mut Vec<String>,
-    fn_name: &str,
-) -> TokenStream {
+fn parse_html_node(elements: Vec<Element>, ignore: &mut Vec<String>, fn_name: &str) -> TokenStream {
     let mut methods = quote!();
     let fn_impl = parse_elements(&elements, &mut methods, ignore, fn_name);
     quote! { #methods #fn_impl }
@@ -220,12 +225,8 @@ fn parse_elements(
                 let code = node.generate_tokens(&mut context, ignore);
                 body = quote! { #body #code };
             }
-            WHEN_TAG => {
-               
-            }
-            OTHERWISE_TAG => {
-
-            }
+            WHEN_TAG => {}
+            OTHERWISE_TAG => {}
             _ => {}
         }
     }
@@ -234,11 +235,7 @@ fn parse_elements(
 }
 
 /// Handles plain text elements
-fn handle_text_element(
-    element: &Element,
-    body: &mut TokenStream,
-    ignore: &mut Vec<String>,
-) {
+fn handle_text_element(element: &Element, body: &mut TokenStream, ignore: &mut Vec<String>) {
     let mut string_data = remove_extra(&element.data);
     let convert_list = find_convert_string(&string_data);
 

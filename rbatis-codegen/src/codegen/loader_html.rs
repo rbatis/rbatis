@@ -1,7 +1,7 @@
+use crate::error::Error;
 use html_parser::{Dom, Node, Result};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
-use crate::error::Error;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Element {

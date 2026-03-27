@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <foreach> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -18,7 +18,9 @@ pub struct ForeachTagNode {
 }
 
 impl HtmlAstNode for ForeachTagNode {
-    fn node_tag_name() -> &'static str { "foreach" }
+    fn node_tag_name() -> &'static str {
+        "foreach"
+    }
 
     fn from_element(element: &Element) -> Self {
         let empty = String::new();
@@ -28,12 +30,32 @@ impl HtmlAstNode for ForeachTagNode {
         let collection = element.attrs.get("collection").cloned().unwrap_or_else(|| {
             panic!("[rbatis-codegen] <foreach> element must have a 'collection' attribute.")
         });
-        
-        let mut item = element.attrs.get("item").cloned().unwrap_or(def_item.clone());
-        let mut index = element.attrs.get("index").cloned().unwrap_or(def_index.clone());
-        let open = element.attrs.get("open").cloned().unwrap_or_else(|| empty.clone());
-        let close = element.attrs.get("close").cloned().unwrap_or_else(|| empty.clone());
-        let separator = element.attrs.get("separator").cloned().unwrap_or_else(|| empty.clone());
+
+        let mut item = element
+            .attrs
+            .get("item")
+            .cloned()
+            .unwrap_or(def_item.clone());
+        let mut index = element
+            .attrs
+            .get("index")
+            .cloned()
+            .unwrap_or(def_index.clone());
+        let open = element
+            .attrs
+            .get("open")
+            .cloned()
+            .unwrap_or_else(|| empty.clone());
+        let close = element
+            .attrs
+            .get("close")
+            .cloned()
+            .unwrap_or_else(|| empty.clone());
+        let separator = element
+            .attrs
+            .get("separator")
+            .cloned()
+            .unwrap_or_else(|| empty.clone());
 
         if item.is_empty() || item == "_" {
             item = def_item;
@@ -54,7 +76,11 @@ impl HtmlAstNode for ForeachTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -66,7 +92,7 @@ impl HtmlAstNode for ForeachTagNode {
 
         // Parse children using the new, extended ignore list.
         let foreach_body = context.parse_children(&self.childs, &mut item_specific_ignores);
-        
+
         // The collection expression itself should be parsed using the original ignore list.
         let collection_method_impl = crate::codegen::func::impl_fn(
             "", // body_to_string context placeholder
@@ -98,7 +124,7 @@ impl HtmlAstNode for ForeachTagNode {
         let (split_code, split_code_trim) = if !separator_str.is_empty() {
             (
                 quote! { sql.push_str(#separator_str); },
-                quote! { sql = sql.trim_end_matches(#separator_str).to_string(); }
+                quote! { sql = sql.trim_end_matches(#separator_str).to_string(); },
             )
         } else {
             (quote! {}, quote! {})
@@ -126,4 +152,4 @@ impl HtmlAstNode for ForeachTagNode {
             #close_impl
         }
     }
-} 
+}

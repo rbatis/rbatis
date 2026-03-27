@@ -5,11 +5,11 @@ fn test_load_mapper_map_basic() {
     let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
     let result = load_mapper_map(html);
     assert!(result.is_ok());
-    
+
     let map = result.unwrap();
     assert_eq!(map.len(), 1);
     assert!(map.contains_key("find_user"));
-    
+
     let element = map.get("find_user").unwrap();
     assert_eq!(element.tag, "select");
     assert_eq!(element.attrs.get("id").unwrap(), "find_user");
@@ -25,7 +25,7 @@ fn test_load_mapper_map_multiple() {
     "#;
     let result = load_mapper_map(html);
     assert!(result.is_ok());
-    
+
     let map = result.unwrap();
     assert_eq!(map.len(), 2);
     assert!(map.contains_key("find_user"));
@@ -37,7 +37,7 @@ fn test_load_mapper_vec_basic() {
     let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
     let result = load_mapper_vec(html);
     assert!(result.is_ok());
-    
+
     let elements = result.unwrap();
     assert_eq!(elements.len(), 1);
     assert_eq!(elements[0].tag, "select");
@@ -53,7 +53,7 @@ fn test_load_mapper_vec_with_wrapper() {
     "#;
     let result = load_mapper_vec(html);
     assert!(result.is_ok());
-    
+
     let elements = result.unwrap();
     assert_eq!(elements.len(), 1);
     assert_eq!(elements[0].tag, "select");
@@ -65,7 +65,7 @@ fn test_load_mapper_vec_no_wrapper() {
     let html = r#"<select id="find_user">SELECT * FROM users WHERE id = #{id}</select>"#;
     let result = load_mapper_vec(html);
     assert!(result.is_ok());
-    
+
     let elements = result.unwrap();
     assert_eq!(elements.len(), 1);
     assert_eq!(elements[0].tag, "select");
@@ -77,7 +77,7 @@ fn test_load_mapper_vec_no_id() {
     let html = r#"<select>SELECT * FROM users</select>"#;
     let result = load_mapper_vec(html);
     assert!(result.is_ok());
-    
+
     let elements = result.unwrap();
     assert_eq!(elements.len(), 1);
     assert_eq!(elements[0].tag, "select");

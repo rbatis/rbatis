@@ -447,11 +447,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut before_result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
+                match next {
+                    Action::Next => {
                         //run next intercept
                     }
-                    Action::Return=>{
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -468,11 +468,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Exec(&mut result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
+                match next {
+                    Action::Next => {
                         //run next intercept
                     }
-                    Action::Return=>{
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -495,11 +495,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut before_result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
+                match next {
+                    Action::Next => {
                         //run next intercept
                     }
-                    Action::Return=>{
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -517,11 +517,11 @@ impl Executor for RBatisTxExecutor {
                         ResultType::Query(&mut result),
                     )
                     .await?;
-                match next{
-                    Action::Next=>{
+                match next {
+                    Action::Next => {
                         //run next intercept
                     }
-                    Action::Return=>{
+                    Action::Return => {
                         return before_result;
                     }
                 }
@@ -645,7 +645,10 @@ impl RBatis {
     {
         // Fast path: no interceptors - skip all overhead
         if self.intercepts.is_empty() {
-            let pool = self.pool.get().ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
+            let pool = self
+                .pool
+                .get()
+                .ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
             let mut conn = pool.get().await?;
             let result = conn.get_values(sql, args).await;
             return result.and_then(|v| decode(v));
@@ -681,7 +684,10 @@ impl RBatis {
         }
 
         // Execute query
-        let pool = self.pool.get().ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
+        let pool = self
+            .pool
+            .get()
+            .ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
         let mut conn = pool.get().await?;
         let mut args_after = if args.is_empty() {
             Vec::new()
@@ -735,4 +741,3 @@ impl Executor for RBatis {
         })
     }
 }
-

@@ -1,4 +1,4 @@
-use crate::codegen::syntax_tree_pysql::{ToHtml, Name};
+use crate::codegen::syntax_tree_pysql::{Name, ToHtml};
 
 /// Represents a `continue` node in py_sql.
 /// It's used to skip the current iteration of a loop and proceed to the next one, typically within a `foreach` block.

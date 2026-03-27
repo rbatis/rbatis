@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext, TrimTagNode};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext, TrimTagNode}; // Import TrimTagNode for reuse
+use std::collections::HashMap; // Import TrimTagNode for reuse
 
 /// Represents a <where> tag node in the HTML AST.
 /// This is a specialized form of the <trim> tag.
@@ -16,7 +16,9 @@ pub struct WhereTagNode {
 }
 
 impl HtmlAstNode for WhereTagNode {
-    fn node_tag_name() -> &'static str { "where" }
+    fn node_tag_name() -> &'static str {
+        "where"
+    }
 
     fn from_element(element: &Element) -> Self {
         // No specific attributes to extract for <where> itself beyond common ones.
@@ -26,7 +28,11 @@ impl HtmlAstNode for WhereTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -51,4 +57,4 @@ impl HtmlAstNode for WhereTagNode {
             }
         }
     }
-} 
+}

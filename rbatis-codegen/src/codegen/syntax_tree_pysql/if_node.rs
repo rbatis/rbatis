@@ -26,7 +26,6 @@ impl Name for IfNode {
     }
 }
 
-
 impl ToHtml for IfNode {
     fn as_html(&self) -> String {
         let mut childs = String::new();

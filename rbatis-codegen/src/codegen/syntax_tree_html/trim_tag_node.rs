@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext};
+use std::collections::HashMap;
 
 /// Represents a <trim> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -16,17 +16,31 @@ pub struct TrimTagNode {
 }
 
 impl HtmlAstNode for TrimTagNode {
-    fn node_tag_name() -> &'static str { "trim" }
+    fn node_tag_name() -> &'static str {
+        "trim"
+    }
 
     fn from_element(element: &Element) -> Self {
         let empty = String::new();
-        let prefix = element.attrs.get("prefix").cloned().unwrap_or_else(|| empty.clone());
-        let suffix = element.attrs.get("suffix").cloned().unwrap_or_else(|| empty.clone());
-        let prefix_overrides = element.attrs.get("start")
+        let prefix = element
+            .attrs
+            .get("prefix")
+            .cloned()
+            .unwrap_or_else(|| empty.clone());
+        let suffix = element
+            .attrs
+            .get("suffix")
+            .cloned()
+            .unwrap_or_else(|| empty.clone());
+        let prefix_overrides = element
+            .attrs
+            .get("start")
             .or_else(|| element.attrs.get("prefixOverrides"))
             .cloned()
             .unwrap_or_else(|| empty.clone());
-        let suffix_overrides = element.attrs.get("end")
+        let suffix_overrides = element
+            .attrs
+            .get("end")
             .or_else(|| element.attrs.get("suffixOverrides"))
             .cloned()
             .unwrap_or_else(|| empty.clone());
@@ -41,18 +55,26 @@ impl HtmlAstNode for TrimTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
         let trim_body = context.parse_children(&self.childs, ignore);
 
-        let prefixes: Vec<String> = self.prefix_overrides.split('|')
+        let prefixes: Vec<String> = self
+            .prefix_overrides
+            .split('|')
             .map(|s| s.to_string())
             .filter(|s| !s.is_empty())
             .collect();
 
-        let suffixes: Vec<String> = self.suffix_overrides.split('|')
+        let suffixes: Vec<String> = self
+            .suffix_overrides
+            .split('|')
             .map(|s| s.to_string())
             .filter(|s| !s.is_empty())
             .collect();
@@ -114,4 +136,4 @@ impl HtmlAstNode for TrimTagNode {
 
         final_tokens
     }
-} 
+}

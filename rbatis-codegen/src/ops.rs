@@ -576,7 +576,6 @@ pub trait Neg {
     fn neg(self) -> Self::Output;
 }
 
-
 /// string contains method
 pub trait StrMethods {
     fn contains_str(self, s: &str) -> bool;
@@ -584,11 +583,10 @@ pub trait StrMethods {
     fn ends_with(self, other: &str) -> bool;
 }
 
-
 #[cfg(test)]
 mod test {
     use crate::ops::AsProxy;
-    use rbs::{value};
+    use rbs::value;
 
     #[test]
     fn test_cast() {

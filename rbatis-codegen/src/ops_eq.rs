@@ -357,7 +357,7 @@ eq_diff!(eq_f64[(f64,f32),]);
 
 #[cfg(test)]
 mod test {
-    use crate::ops::{Add};
+    use crate::ops::Add;
     use rbs::{value, Value};
 
     #[test]

@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod test {
+    use dark_std::sync::WaitGroup;
     use rbatis::plugin::snowflake::new_snowflake_id;
     use rbatis::snowflake::Snowflake;
     use std::collections::HashMap;
     use std::thread::sleep;
     use std::time::Duration;
-    use dark_std::sync::WaitGroup;
-    
+
     #[test]
     fn test_new_snowflake_id() {
         println!("{}", new_snowflake_id());
@@ -19,7 +19,7 @@ mod test {
         let id = sf.generate_id();
         assert_ne!(id, 0);
     }
-    
+
     #[test]
     fn test_gen() {
         let id = Snowflake::new(1, 1, 0);

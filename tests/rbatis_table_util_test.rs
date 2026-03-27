@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod test {
-    use rbatis::{field_key, field_name, table_field_set, table, table_field_map, table_field_btree, table_field_vec};
+    use rbatis::{
+        field_key, field_name, table, table_field_btree, table_field_map, table_field_set,
+        table_field_vec,
+    };
     use std::collections::{BTreeMap, HashMap, HashSet};
 
     #[derive(Clone, Debug, Eq, PartialEq, Default)]

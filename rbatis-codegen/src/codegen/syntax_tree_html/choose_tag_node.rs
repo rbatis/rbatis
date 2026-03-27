@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use super::{HtmlAstNode, NodeContext, OtherwiseTagNode, WhenTagNode};
+use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::codegen::loader_html::Element;
-use super::{HtmlAstNode, NodeContext, WhenTagNode, OtherwiseTagNode};
+use std::collections::HashMap;
 
 /// Represents a <choose> tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,7 +12,9 @@ pub struct ChooseTagNode {
 }
 
 impl HtmlAstNode for ChooseTagNode {
-    fn node_tag_name() -> &'static str { "choose" }
+    fn node_tag_name() -> &'static str {
+        "choose"
+    }
 
     fn from_element(element: &Element) -> Self {
         Self {
@@ -21,7 +23,11 @@ impl HtmlAstNode for ChooseTagNode {
         }
     }
 
-    fn generate_tokens<FChildParser>(&self, context: &mut NodeContext<FChildParser>, ignore: &mut Vec<String>) -> TokenStream
+    fn generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> TokenStream
     where
         FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
     {
@@ -43,7 +49,7 @@ impl HtmlAstNode for ChooseTagNode {
             }
         }
 
-        // TODO: Replace with a proper capacity estimation. 
+        // TODO: Replace with a proper capacity estimation.
         // The original code used element.child_string_cup(), which needs to be available
         // or re-implemented here or in a shared utility.
         let capacity = 1024usize; // Placeholder capacity
@@ -56,4 +62,4 @@ impl HtmlAstNode for ChooseTagNode {
             }());
         }
     }
-} 
+}

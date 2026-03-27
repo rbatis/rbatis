@@ -14,8 +14,8 @@ pub mod ops_mul;
 pub mod ops_neg;
 pub mod ops_not;
 pub mod ops_rem;
+pub mod ops_string;
 pub mod ops_sub;
 pub mod ops_xor;
-pub mod ops_string;
 
 pub use codegen::{rb_html, rb_py};

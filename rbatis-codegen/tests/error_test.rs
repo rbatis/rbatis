@@ -1,8 +1,8 @@
+use proc_macro2;
 use rbatis_codegen::error::Error;
 use std::error::Error as StdError;
 use std::io::{self, ErrorKind};
 use syn;
-use proc_macro2;
 
 #[test]
 fn test_error_display() {
@@ -41,7 +41,7 @@ fn test_error_clone() {
     let error = Error::from("原始错误");
     let cloned_error = error.clone();
     assert_eq!(cloned_error.to_string(), "原始错误");
-    
+
     let mut error1 = Error::from("错误1");
     let error2 = Error::from("错误2");
     error1.clone_from(&error2);
@@ -53,4 +53,4 @@ fn test_error_from_syn_error() {
     let syn_error = syn::Error::new(proc_macro2::Span::call_site(), "语法错误");
     let error = Error::from(syn_error);
     assert_eq!(error.to_string(), "语法错误");
-} 
+}
