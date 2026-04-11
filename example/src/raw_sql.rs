@@ -72,7 +72,7 @@ pub async fn main() {
     println!(">>>>> exec={}", result);
     //query
     let table: Option<Activity> = rb
-        .query_decode("select * from activity limit ?", vec![value!(1)])
+        .exec_decode("select * from activity limit ?", vec![value!(1)])
         .await
         .unwrap();
     println!(">>>>> table={}", json!(table));

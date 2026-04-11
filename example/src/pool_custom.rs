@@ -178,7 +178,7 @@ mod my_pool {
     }
 
     impl db::Connection for ConnManagerProxy {
-        fn get_rows(
+        fn exec_rows(
             &mut self,
             sql: &str,
             params: Vec<Value>,
@@ -186,7 +186,7 @@ mod my_pool {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }
-            self.conn.as_mut().unwrap().get_rows(sql, params)
+            self.conn.as_mut().unwrap().exec_rows(sql, params)
         }
 
         fn exec(

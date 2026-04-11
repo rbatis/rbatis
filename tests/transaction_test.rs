@@ -53,14 +53,14 @@ fn test_transaction_commit() {
         // 提交事务
         tx.commit().await?;
 
-        // 使用query_decode验证数据已提交
+        // 使用exec_decode验证数据已提交
         #[derive(serde::Deserialize, Debug)]
         struct Count {
             count: i64,
         }
 
         let count: Count = rb
-            .query_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
+            .exec_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
             .await?;
         Ok::<_, rbatis::Error>(count)
     });
@@ -98,7 +98,7 @@ fn test_transaction_rollback() {
         }
 
         let count: Count = rb
-            .query_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
+            .exec_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
             .await?;
         Ok::<_, rbatis::Error>(count)
     });
@@ -142,7 +142,7 @@ fn test_nested_transaction() {
         }
 
         let count: Count = rb
-            .query_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
+            .exec_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
             .await?;
         Ok::<_, rbatis::Error>(count)
     });
@@ -188,7 +188,7 @@ fn test_transaction_guard() {
         }
 
         let count: Count = rb
-            .query_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
+            .exec_decode("SELECT COUNT(*) as count FROM test_tx", vec![])
             .await?;
         Ok::<_, rbatis::Error>(count)
     });

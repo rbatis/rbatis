@@ -138,7 +138,7 @@ mod test {
     struct MockConnection {}
 
     impl Connection for MockConnection {
-        fn get_rows(
+        fn exec_rows(
             &mut self,
             sql: &str,
             params: Vec<Value>,
@@ -204,7 +204,7 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode() {
+    fn test_exec_decode() {
         let f = async move {
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();

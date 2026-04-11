@@ -145,7 +145,7 @@ mod test {
     struct MockConnection {}
 
     impl Connection for MockConnection {
-        fn get_rows(
+        fn exec_rows(
             &mut self,
             sql: &str,
             params: Vec<Value>,
@@ -211,17 +211,17 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode() {
+    fn test_exec_decode() {
         let f = async move {
             let mut rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let r: Vec<MockTable> = rb
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
             let mut conn = rb.acquire().await.unwrap();
             let r: Vec<MockTable> = conn
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };
@@ -229,13 +229,13 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode_tx() {
+    fn test_exec_decode_tx() {
         let f = async move {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap();
             let r: Vec<MockTable> = tx
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };
@@ -243,13 +243,13 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode_tx_commit_done() {
+    fn test_exec_decode_tx_commit_done() {
         let f = async move {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap();
             let r: Vec<MockTable> = tx
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
             assert_eq!(tx.done(), false);
@@ -260,13 +260,13 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode_tx_rollback_done() {
+    fn test_exec_decode_tx_rollback_done() {
         let f = async move {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap();
             let r: Vec<MockTable> = tx
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
             assert_eq!(tx.done(), false);
@@ -277,13 +277,13 @@ mod test {
     }
 
     #[test]
-    fn test_query_decode_tx_guard() {
+    fn test_exec_decode_tx_guard() {
         let f = async move {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let mut tx = rb.acquire_begin().await.unwrap().defer_async(|tx| async {});
             let r: Vec<MockTable> = tx
-                .query_decode("select * from mock_table", vec![])
+                .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
         };

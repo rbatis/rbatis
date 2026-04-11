@@ -63,7 +63,7 @@ fn bench_raw() {
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
         rbench!(100000, {
-            let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
+            let v = rbatis.exec_decode::<Vec<i32>>("", vec![]).await;
         });
     };
     block_on(f);
@@ -78,7 +78,7 @@ fn bench_raw_no_intercepts() {
         rbatis.init(MockDriver {}, "mock://");
         rbatis.acquire().await.unwrap();
         rbench!(100000, {
-            let v = rbatis.query_decode::<Vec<i32>>("", vec![]).await;
+            let v = rbatis.exec_decode::<Vec<i32>>("", vec![]).await;
         });
     };
     block_on(f);
@@ -137,7 +137,7 @@ fn bench_raw_bare_min() {
         rbatis.init(MockDriver {}, "mock://");
         let executor = rbatis.acquire().await.unwrap();
         rbench!(100000, {
-            let v = executor.query_decode::<Vec<i32>>("", vec![]).await;
+            let v = executor.exec_decode::<Vec<i32>>("", vec![]).await;
         });
     };
     block_on(f);

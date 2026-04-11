@@ -89,27 +89,24 @@ impl RBatisConnExecutor {
         Ok(v)
     }
 
-    // Fast path for query_decode - inlined to avoid trait method call overhead
-    pub async fn query_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
+    // Fast path for exec_decode - inlined to avoid trait method call overhead
+    pub async fn exec_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
         // Fast path: no interceptors - skip all overhead
         if self.intercepts.is_empty() {
-            let result = self.conn.lock().await.get_values(sql, args).await;
+            let result = self.conn.lock().await.exec_decode(sql, args).await;
             return result.and_then(|v| decode(v));
         }
-
         // Inline the query logic to avoid double async call
         let mut sql = if sql.is_empty() {
             String::new()
         } else {
             sql.to_string()
         };
-
         let rb_task_id = self.rb.task_id_generator.generate();
         let mut before_result: Result<Value, Error> = Err(Error::from(""));
-
         // Before intercepts
         for item in self.intercepts.iter() {
             let next = item
@@ -137,7 +134,7 @@ impl RBatisConnExecutor {
         } else {
             args.clone()
         };
-        let mut result = conn.get_values(&sql, args).await;
+        let mut result = conn.exec_decode(&sql, args).await;
         drop(conn); // Release lock early
 
         // After intercepts
@@ -261,7 +258,7 @@ impl Executor for RBatisConnExecutor {
             } else {
                 args.clone()
             };
-            let mut result = conn.get_values(&sql, args).await;
+            let mut result = conn.exec_decode(&sql, args).await;
             for item in self.intercepts.iter() {
                 let next = item
                     .after(
@@ -360,7 +357,7 @@ impl<'a> RBatisTxExecutor {
         Ok(v)
     }
     /// query and decode
-    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn exec_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -506,7 +503,7 @@ impl Executor for RBatisTxExecutor {
             }
             let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
-            let mut result = conn.get_values(&sql, args).await;
+            let mut result = conn.exec_decode(&sql, args).await;
             for item in self.conn_executor.intercepts.iter() {
                 let next = item
                     .after(
@@ -583,11 +580,11 @@ impl RBatisTxExecutorGuard {
         self.tx.clone().take_connection()
     }
 
-    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    pub async fn exec_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
-        self.tx.query_decode(sql, args).await
+        self.tx.exec_decode(sql, args).await
     }
 }
 
@@ -639,7 +636,17 @@ impl RBatis {
     }
 
     /// query and decode - fully inlined to avoid RBatisConnExecutor allocation
-    pub async fn query_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
+    #[deprecated(note = "use exec_decode instead")]
+    pub async fn query_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
+    where
+        T: DeserializeOwned,
+    {
+        let v = self.exec_decode(sql, args).await?;
+        Ok(v)
+    }
+
+    /// query and decode - fully inlined to avoid RBatisConnExecutor allocation
+    pub async fn exec_decode<T>(&self, sql: &str, mut args: Vec<Value>) -> Result<T, Error>
     where
         T: DeserializeOwned,
     {
@@ -650,7 +657,7 @@ impl RBatis {
                 .get()
                 .ok_or_else(|| Error::from("[rb] rbatis pool not inited!"))?;
             let mut conn = pool.get().await?;
-            let result = conn.get_values(sql, args).await;
+            let result = conn.exec_decode(sql, args).await;
             return result.and_then(|v| decode(v));
         }
 
@@ -694,7 +701,7 @@ impl RBatis {
         } else {
             args.clone()
         };
-        let mut result = conn.get_values(&sql, args).await;
+        let mut result = conn.exec_decode(&sql, args).await;
 
         // After intercepts
         for item in self.intercepts.iter() {

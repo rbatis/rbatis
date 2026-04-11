@@ -49,7 +49,7 @@ fn test_exec_query() {
 }
 
 #[test]
-fn test_query_decode() {
+fn test_exec_decode() {
     let rb = make_test_rbatis();
 
     #[derive(serde::Deserialize, Debug)]
@@ -59,7 +59,6 @@ fn test_query_decode() {
     }
 
     let result = block_on(async move {
-        // 确保表存在并有数据
         rb.exec(
             "CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY, name TEXT)",
             vec![],
@@ -71,10 +70,8 @@ fn test_query_decode() {
             vec![Value::I32(3), Value::String("test3".to_string())],
         )
         .await?;
-
-        // 使用query_decode方法
         let result: TestRow = rb
-            .query_decode("SELECT * FROM test_table WHERE id = ?", vec![Value::I32(3)])
+            .exec_decode("SELECT * FROM test_table WHERE id = ?", vec![Value::I32(3)])
             .await?;
         Ok::<_, rbatis::Error>(result)
     });
@@ -175,7 +172,7 @@ fn test_transaction_rollback() {
 }
 
 #[test]
-fn test_transaction_query_decode() {
+fn test_transaction_exec_decode() {
     let rb = make_test_rbatis();
 
     #[derive(serde::Deserialize, Debug)]
@@ -203,7 +200,7 @@ fn test_transaction_query_decode() {
 
         // 使用事务执行查询并解码
         let row: TestRow = tx
-            .query_decode("SELECT * FROM tx_test WHERE id = ?", vec![Value::I32(3)])
+            .exec_decode("SELECT * FROM tx_test WHERE id = ?", vec![Value::I32(3)])
             .await?;
 
         // 提交事务
