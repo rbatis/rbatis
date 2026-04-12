@@ -19,8 +19,12 @@
 
 Rbatis 是一个基于编译时代码生成的高性能 Rust ORM 框架。它在开发效率、性能和稳定性之间实现了完美平衡，既是一个 ORM，也是一个动态 SQL 编译器。
 
-## AI 支持
-* - [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
+## 更多支持
+
+- [完整文档](https://rbatis.github.io/rbatis.io)
+- [变更日志](https://github.com/rbatis/rbatis/releases/)
+- [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)        AI 驱动的数据库驱动访问工具
+- [rbatis-skil](https://github.com/rbatis/rbatis-skill) AI 驱动的RBatisORM框架自动化编码和使用
 
 ## 核心优势
 
@@ -338,13 +342,6 @@ async fn main() -> Result<(), rbatis::Error> {
   rb.init(YourDatabaseDriver {}, "database://username:password@host:port/dbname")?;
 }
 ```
-
-## 更多信息
-
-- [完整文档](https://rbatis.github.io/rbatis.io)
-- [变更日志](https://github.com/rbatis/rbatis/releases/)
-- [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)        AI 驱动的数据库驱动访问工具
-- [rbatis-skil](https://github.com/rbatis/rbatis-skill) AI 驱动的RBatisORM框架自动化编码和使用
 
 ## Claude Code 集成
 
