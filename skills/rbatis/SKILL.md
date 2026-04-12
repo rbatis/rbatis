@@ -108,6 +108,7 @@ The `crud!` macro generates: `insert`, `insert_batch`, `select_by_map`, `update_
 ```rust
 use serde::{Deserialize, Serialize};
 use rbatis::rbdc::datetime::DateTime;
+use rbs::value;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BizActivity {
@@ -292,7 +293,7 @@ htmlsql!(select_by_condition(
         `insert into biz_activity`
         <foreach collection="arg" index="key" item="item" open="(" close=")" separator=",">
             <if test="key == 'id'">
-                <continue/>
+                <continue></continue>
             </if>
             ${key}
         </foreach>
@@ -330,7 +331,8 @@ htmlsql!(select_by_condition(
 | `` <trim prefixOverrides=" and">` and name != '' `</trim> `` | `sql.trim(" and")` |
 | `` <if test="key == 'id'">`select * from table`</if> `` | `if key == "id"{sql.push_str("select * from table");}` |
 | `` <foreach collection="arg" index="key" item="item" open="(" close=")" separator=","/> `` | `for (key,item) in arg{}` |
-| `` <continue/> `` | `continue;` |
+| `` <continue></continue> `` | `continue;` |
+| `` <break></break> `` | `break;` |
 | `` <set> `` | `sql.trim("set ").push_str(" set ");` |
 | `` <set collection="arg"> `` | `sql.trim("set ").push_str(" set name=?,age=? ");` |
 | `` <choose> `` | `match {}` |
@@ -421,6 +423,15 @@ impl User {
 ` and create_date <= #{end_date}`
 ```
 
+**Collection to SQL list (.sql() method):**
+```python
+`select * from activity where delete_flag = 0`
+if !ids.is_empty():
+    ` and id in `
+    ${ids.sql()}
+```
+Result: `select * from activity where delete_flag = 0 and id in (1, 2, 3)`
+
 ### py_sql Syntax Tree
 
 | Syntax | Generated Rust Code |
@@ -466,16 +477,16 @@ impl User {
 Use native SQL directly, driver handles placeholder `?` conversion automatically.
 
 ```rust
-use rbs::to_value;
+use rbs::value;
+
+// Execute SQL (INSERT/UPDATE/DELETE)
+let result = rb
+    .exec("update activity set status = 0 where id > 0", vec![])
+    .await?;
 
 // Query and decode result
 let table: Option<BizActivity> = rb
-    .query_decode("select * from biz_activity limit ?", vec![to_value!(1)])
-    .await?;
-
-// Query count
-let count: u64 = rb
-    .query_decode("select count(1) as count from biz_activity", vec![])
+    .exec_decode("select * from biz_activity limit ?", vec![value!(1)])
     .await?;
 ```
 
@@ -498,10 +509,12 @@ tx.rollback().await?;
 let tx = rb.acquire_begin().await?;
 
 // defer_async: rollback automatically if transaction is dropped without commit
-let tx = tx.defer_async(|mut tx| async move {
-    if !tx.done() {
+let tx = tx.defer_async(|tx| async move {
+    if tx.done() {
+        log::info!("transaction [{}] complete", tx.tx_id());
+    } else {
         tx.rollback().await.unwrap();
-        println!("rollback");
+        log::info!("transaction [{}] rollback", tx.tx_id());
     }
 });
 
@@ -513,10 +526,29 @@ tx.commit().await?;  // after commit, tx.done() == true, no rollback
 
 ## 8. Pagination
 
-### Auto Pagination (htmlsql_select_page!)
+### Auto Pagination
 
-When return type is `Page<T>`, pagination is handled automatically.
+When return type is `Page<T>`, `PageIntercept` handles pagination automatically.
 
+**Using impl block (recommended):**
+```rust
+#[rbatis::html_sql("example/example.html")]
+impl Activity {
+    // PageIntercept automatically adds LIMIT/OFFSET
+    pub async fn select_by_page(
+        rb: &dyn rbatis::Executor,
+        page_req: &rbatis::PageRequest,
+        name: &str,
+    ) -> rbatis::Result<rbatis::Page<Activity>> {
+        impled!()
+    }
+}
+
+// Usage
+let page = Activity::select_by_page(&rb, &PageRequest::new(1, 10), "test").await?;
+```
+
+**Using htmlsql_select_page! macro:**
 ```html
 <!-- example.html -->
 <select id="select_page_data">
@@ -533,14 +565,14 @@ When return type is `Page<T>`, pagination is handled automatically.
 ```rust
 use rbatis::htmlsql_select_page;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::plugin::page::PageRequest;
+use rbatis::PageRequest;
 
 htmlsql_select_page!(select_page_data(name: &str, dt: &DateTime) -> BizActivity => "example/example.html");
 
 // Usage
 let page = select_page_data(
     &rb,
-    &PageRequest::new(1, 10),  // page_no, page_size
+    &PageRequest::new(1, 10),
     "test",
     &DateTime::now(),
 ).await?;
@@ -549,8 +581,8 @@ let page = select_page_data(
 ### Page Type
 
 ```rust
-use rbatis::plugin::Page;
-use rbatis::plugin::page::PageRequest;
+use rbatis::Page;
+use rbatis::PageRequest;
 
 let page_req = PageRequest::new(1, 10);
 
@@ -572,7 +604,7 @@ page.records;    // data Vec<T>
 Auto-sync Rust struct to database table (creates table/add columns only, never modifies existing columns).
 
 ```rust
-use rbatis::table_sync::{SqliteTableMapper, ColumMapper};
+use rbatis::table_sync;
 use rbatis::RBatis;
 
 #[tokio::main]
@@ -581,12 +613,23 @@ pub async fn main() {
     rb.init(SqliteDriver {}, "sqlite://target/sqlite.db").unwrap();
 
     // Select mapper for your database
-    let mapper = &SqliteTableMapper{} as &dyn ColumMapper;
-    // let mapper = &PGTableMapper{} as &dyn ColumMapper;
-    // let mapper = &MysqlTableMapper{} as &dyn ColumMapper;
-    // let mapper = &MssqlTableMapper{} as &dyn ColumMapper;
+    let mapper = &table_sync::SqliteTableMapper {};
+    // let mapper = &table_sync::PGTableMapper{};
+    // let mapper = &table_sync::MysqlTableMapper{};
+    // let mapper = &table_sync::MssqlTableMapper{};
 
-    // Sync table structure
+    // Method 1: Using value! macro to define column types
+    let table = value! {
+        "id": "INTEGER",
+        "name": "TEXT",
+        "remark": "TEXT",
+        "create_time": "TEXT",
+        "version": "TEXT",
+        "delete_flag": "INT8"
+    };
+    RBatis::sync(&rb.acquire().await.unwrap(), mapper, &table, "rb_user").await?;
+
+    // Method 2: Using struct directly
     RBatis::sync(
         &rb.acquire().await.unwrap(),
         mapper,
@@ -610,40 +653,42 @@ pub async fn main() {
 ### Implement Intercept Trait
 
 ```rust
-use rbatis::{Error, RBatis};
+use rbatis::async_trait;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
-use rbatis::rbdc::db::ExecResult;
+use rbatis::rbdc::ExecResult;
+use rbatis::{Action, Error};
 use rbs::Value;
 use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct MyInterceptor {}
 
+#[async_trait]
 impl Intercept for MyInterceptor {
     /// before: called before SQL execution
-    /// Return Some(true) to continue, Some(false) to stop, None to return result
-    fn before(
+    /// Return Action::Next to continue, Action::Stop to stop
+    async fn before(
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
-        Ok(Some(true))  // continue
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
+        Ok(Action::Next)  // continue
     }
 
     /// after: called after SQL execution
-    fn after(
+    async fn after(
         &self,
         _task_id: i64,
         _rb: &dyn Executor,
         _sql: &mut String,
         _args: &mut Vec<Value>,
-        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Vec<Value>, Error>>,
-    ) -> Result<Option<bool>, Error> {
-        Ok(Some(true))
+        _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+    ) -> Result<Action, Error> {
+        Ok(Action::Next)
     }
 }
 
