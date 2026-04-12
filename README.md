@@ -339,6 +339,26 @@ async fn main() -> Result<(), rbatis::Error> {
 - [Changelog](https://github.com/rbatis/rbatis/releases/)
 - [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
 
+## Claude Code Integration
+
+This project includes a Claude Code skill for AI-assisted development. To use it:
+
+**Installation:**
+```bash
+# Copy the skill to your Claude Code skills directory
+cp -r skills/rbatis ~/.claude/skills/
+```
+
+**Usage:**
+When working with rbatis in your project, Claude Code will automatically use the skill to provide accurate code generation and answers about:
+- CRUD operations with `crud!` macro
+- Dynamic SQL with `html_sql` and `py_sql`
+- Transaction handling
+- Pagination
+- Interceptors
+- Table synchronization
+- Custom driver development
+
 ## Contact Us
 
 [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
