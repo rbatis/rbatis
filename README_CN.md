@@ -347,23 +347,7 @@ async fn main() -> Result<(), rbatis::Error> {
 
 ## Claude Code 集成
 
-本项目包含 Claude Code skill，用于 AI 辅助开发。使用方法：
-
-**安装：**
-```bash
-# 将 skill 复制到 Claude Code skills 目录
-cp -r skills/rbatis ~/.claude/skills/
-```
-
-**使用：**
-在项目中使用 rbatis 时，Claude Code 会自动使用该 skill 提供准确的代码生成和问答，包括：
-- `crud!` 宏的 CRUD 操作
-- `html_sql` 和 `py_sql` 动态 SQL
-- 事务处理
-- 分页
-- 拦截器
-- 表同步
-- 自定义驱动开发
+本项目包含 Claude Code skill，用于 AI 辅助开发。使用方法请访问：[https://github.com/rbatis/rbatis-skill](https://github.com/rbatis/rbatis-skill)
 
 ## 联系我们
 
