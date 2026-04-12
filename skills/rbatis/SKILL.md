@@ -769,7 +769,7 @@ impl Row for MockRow {
 }
 
 impl Connection for MockConnection {
-    fn get_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> { todo!() }
+    fn exec_rows(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<Vec<Box<dyn Row>>, Error>> { todo!() }
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<Result<ExecResult, Error>> { todo!() }
     fn close(&mut self) -> BoxFuture<Result<(), Error>> { todo!() }
     fn ping(&mut self) -> BoxFuture<Result<(), Error>> { todo!() }

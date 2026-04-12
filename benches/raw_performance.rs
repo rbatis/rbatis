@@ -220,7 +220,7 @@ impl Driver for MockDriver {
 struct MockConnection {}
 
 impl Connection for MockConnection {
-    fn get_rows(
+    fn exec_rows(
         &mut self,
         sql: &str,
         params: Vec<Value>,
