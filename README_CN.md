@@ -343,7 +343,8 @@ async fn main() -> Result<(), rbatis::Error> {
 
 - [完整文档](https://rbatis.github.io/rbatis.io)
 - [变更日志](https://github.com/rbatis/rbatis/releases/)
-- [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)
+- [rbdc-mcp](https://github.com/rbatis/rbdc-mcp)        AI 驱动的数据库驱动访问工具
+- [rbatis-skil](https://github.com/rbatis/rbatis-skill) AI 驱动的RBatisORM框架自动化编码和使用
 
 ## Claude Code 集成
 
