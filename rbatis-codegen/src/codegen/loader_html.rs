@@ -1,7 +1,7 @@
 use crate::error::Error;
-use html_parser::{Dom, Node, Result};
+use scraper::{Html, Node};
 use std::collections::HashMap;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Element {
@@ -41,60 +41,46 @@ impl Display for Element {
     }
 }
 
-pub fn as_element(args: &Vec<Node>) -> Vec<Element> {
+fn collect_elements(el: scraper::ElementRef<'_>) -> Vec<Element> {
     let mut els = vec![];
-    for x in args {
-        let mut el = Element {
-            tag: "".to_string(),
-            data: "".to_string(),
-            attrs: HashMap::with_capacity(50),
-            childs: vec![],
-        };
-        match x {
-            Node::Text(txt) => {
-                if txt.is_empty() {
+    for node in el.children() {
+        match node.value() {
+            Node::Text(text) => {
+                let txt = text.to_string();
+                if txt.trim().is_empty() {
                     continue;
                 }
-                el.data = txt.to_string();
+                els.push(Element {
+                    tag: String::new(),
+                    data: txt,
+                    attrs: HashMap::new(),
+                    childs: vec![],
+                });
             }
-            Node::Element(element) => {
-                el.tag = element.name.to_string();
-                if el.tag == "bk" {
-                    el.tag = "break".to_string();
-                }
-                if element.id.is_some() {
-                    el.attrs.insert(
-                        "id".to_string(),
-                        element.id.as_ref().unwrap_or(&String::new()).clone(),
-                    );
-                }
-                for (k, v) in &element.attributes {
-                    el.attrs
-                        .insert(k.clone(), v.as_ref().unwrap_or(&String::new()).clone());
-                }
-                if !element.children.is_empty() {
-                    let childs = as_element(&element.children);
-                    el.childs = childs;
+            Node::Element(elem) => {
+                if let Some(child_ref) = scraper::ElementRef::wrap(node) {
+                    let mut attrs = HashMap::new();
+                    for (k, v) in elem.attrs() {
+                        attrs.insert(k.to_string(), v.to_string());
+                    }
+                    els.push(Element {
+                        tag: elem.name().to_string(),
+                        data: String::new(),
+                        attrs,
+                        childs: collect_elements(child_ref),
+                    });
                 }
             }
-            Node::Comment(_comment) => {
-                // println!("comment:{}", comment);
-            }
+            Node::Comment(_) => {}
+            _ => {}
         }
-        els.push(el);
     }
     els
 }
 
-pub fn load_html(html: &str) -> Result<Vec<Element>> {
-    let mut html = html.to_string();
-    html = html
-        .replace("<break>", "<bk>")
-        .replace("<break/>", "<bk/>")
-        .replace("</break>", "</bk>");
-    let dom = Dom::parse(&html)?;
-    let els = as_element(&dom.children);
-    return Ok(els);
+pub fn load_html(html: &str) -> std::result::Result<Vec<Element>, String> {
+    let document = Html::parse_fragment(html);
+    Ok(collect_elements(document.root_element()))
 }
 
 impl Element {
@@ -124,7 +110,7 @@ impl Element {
 
 /// Loads HTML content into a vector of elements
 pub fn load_mapper_vec(html: &str) -> std::result::Result<Vec<Element>, Error> {
-    let elements = load_html(html).map_err(|e| Error::from(e.to_string()))?;
+    let elements = load_html(html).map_err(|e| Error::from(e))?;
 
     let mut mappers = Vec::new();
     for element in elements {

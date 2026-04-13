@@ -36,12 +36,14 @@ impl HtmlAstNode for TrimTagNode {
             .attrs
             .get("start")
             .or_else(|| element.attrs.get("prefixOverrides"))
+            .or_else(|| element.attrs.get("prefixoverrides"))
             .cloned()
             .unwrap_or_else(|| empty.clone());
         let suffix_overrides = element
             .attrs
             .get("end")
             .or_else(|| element.attrs.get("suffixOverrides"))
+            .or_else(|| element.attrs.get("suffixoverrides"))
             .cloned()
             .unwrap_or_else(|| empty.clone());
 

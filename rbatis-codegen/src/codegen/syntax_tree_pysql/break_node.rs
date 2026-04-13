@@ -16,7 +16,7 @@ pub struct BreakNode {}
 
 impl ToHtml for BreakNode {
     fn as_html(&self) -> String {
-        format!("<break/>")
+        format!("<break></break>")
     }
 }
 

@@ -30,6 +30,6 @@ impl Name for BindNode {
 
 impl ToHtml for BindNode {
     fn as_html(&self) -> String {
-        format!("<bind name=\"{}\" value=\"{}\"/>", self.name, self.value)
+        format!("<bind name=\"{}\" value=\"{}\"></bind>", self.name, self.value)
     }
 }
