@@ -206,6 +206,24 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                     .map_err(|e| Error::from(e));
                 }
                 // The `<<` operator (shift left)
+                BinOp::Shl(_) => {
+                    return syn::parse_str::<Expr>(&format!(
+                        "({}).op_shl(&{})",
+                        b.left.to_token_stream(),
+                        b.right.to_token_stream()
+                    ))
+                    .map_err(|e| Error::from(e));
+                }
+                // The `>>` operator (shift right)
+                BinOp::Shr(_) => {
+                    return syn::parse_str::<Expr>(&format!(
+                        "({}).op_shr(&{})",
+                        b.left.to_token_stream(),
+                        b.right.to_token_stream()
+                    ))
+                    .map_err(|e| Error::from(e));
+                }
+                // Unknown operator
                 _ => {
                     return Err(Error::from(format!(
                         "unsupported token {}",

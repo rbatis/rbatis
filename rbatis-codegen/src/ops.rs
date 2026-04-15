@@ -532,6 +532,40 @@ pub trait BitXor<Rhs = Self> {
     fn op_bitxor(self, rhs: Rhs) -> Self::Output;
 }
 
+pub trait BitShl<Rhs = Self> {
+    /// The resulting type after applying the `<<` operator.
+    type Output;
+
+    /// Performs the `<<` operation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(1u8 << 1, 2);
+    /// assert_eq!(1u8 << 2, 4);
+    /// assert_eq!(4u16 << 3, 32);
+    /// ```
+    #[must_use]
+    fn op_shl(self, rhs: Rhs) -> Self::Output;
+}
+
+pub trait BitShr<Rhs = Self> {
+    /// The resulting type after applying the `>>` operator.
+    type Output;
+
+    /// Performs the `>>` operation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(8u8 >> 1, 4);
+    /// assert_eq!(8u8 >> 2, 2);
+    /// assert_eq!(32u16 >> 3, 4);
+    /// ```
+    #[must_use]
+    fn op_shr(self, rhs: Rhs) -> Self::Output;
+}
+
 pub trait OpsIndex<Idx: ?Sized> {
     /// The returned type after indexing.
     type Output: ?Sized;

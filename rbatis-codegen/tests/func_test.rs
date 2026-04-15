@@ -171,6 +171,22 @@ fn test_translate_binary_or() {
 }
 
 #[test]
+fn test_translate_binary_shl() {
+    let expr: Expr = parse_str("a << b").unwrap();
+    let result = func::translate("", expr, &[]).unwrap();
+    let token_stream = quote::quote! { #result };
+    assert!(token_stream.to_string().contains("op_shl"));
+}
+
+#[test]
+fn test_translate_binary_shr() {
+    let expr: Expr = parse_str("a >> b").unwrap();
+    let result = func::translate("", expr, &[]).unwrap();
+    let token_stream = quote::quote! { #result };
+    assert!(token_stream.to_string().contains("op_shr"));
+}
+
+#[test]
 fn test_translate_method_call() {
     let expr: Expr = parse_str("user.get_name()").unwrap();
     let result = func::translate("", expr, &[]).unwrap();
