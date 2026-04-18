@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-    use rbs::value::map::ValueMap;
     use rbs::{value, Value};
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
@@ -107,10 +106,6 @@ mod test {
     #[test]
     fn test_decode_json_array() {
         // CSV format for multiple rows
-        let m = value! {
-            "1" : 1,
-            "2" : 2,
-        };
         let v: serde_json::Value = rbatis::decode(Value::Array(vec![
             Value::Array(vec![Value::String("1".to_string()), Value::String("2".to_string())]),
             Value::Array(vec![Value::I64(1), Value::I64(2)]),

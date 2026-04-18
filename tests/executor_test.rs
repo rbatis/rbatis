@@ -93,7 +93,6 @@ fn test_transaction_commit() {
 
     #[derive(serde::Deserialize, Debug)]
     struct TestRow {
-        id: i32,
         name: String,
     }
 
@@ -221,7 +220,6 @@ fn test_nested_transaction() {
 
     #[derive(serde::Deserialize, Debug)]
     struct TestRow {
-        id: i32,
         name: String,
     }
 
@@ -275,7 +273,6 @@ fn test_transaction_with_defer() {
 
     #[derive(serde::Deserialize, Debug)]
     struct TestRow {
-        id: i32,
         name: String,
     }
 
