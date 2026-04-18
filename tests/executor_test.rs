@@ -8,6 +8,12 @@ use rbs::Value;
 fn test_exec_query() {
     let rb = make_test_rbatis();
 
+    #[derive(serde::Deserialize, Debug)]
+    struct TestRow {
+        id: i32,
+        name: String,
+    }
+
     // 创建测试表
     let result = block_on(async move {
         rb.exec(
@@ -28,24 +34,17 @@ fn test_exec_query() {
         )
         .await?;
 
-        // 查询数据
-        let result = rb
-            .query("SELECT * FROM test_table WHERE id = ?", vec![Value::I32(1)])
+        // 查询数据 - 使用 exec_decode
+        let result: TestRow = rb
+            .exec_decode("SELECT * FROM test_table WHERE id = ?", vec![Value::I32(1)])
             .await?;
         Ok::<_, rbatis::Error>(result)
     });
 
     assert!(result.is_ok());
-    let result = result.unwrap();
-    assert!(result.is_array());
-    let arr = result.as_array().unwrap();
-    assert_eq!(arr.len(), 1);
-
-    let row = &arr[0];
-    // 使用as_map()方法先将Value转换为map
-    let row_map = row.as_map().unwrap();
-    assert_eq!(row_map["id"].as_i64().unwrap(), 1);
-    assert_eq!(row_map["name"].as_str().unwrap(), "test1");
+    let row = result.unwrap();
+    assert_eq!(row.id, 1);
+    assert_eq!(row.name, "test1");
 }
 
 #[test]
@@ -92,6 +91,12 @@ fn test_rbatis_ref() {
 fn test_transaction_commit() {
     let rb = make_test_rbatis();
 
+    #[derive(serde::Deserialize, Debug)]
+    struct TestRow {
+        id: i32,
+        name: String,
+    }
+
     let result = block_on(async move {
         // 创建测试表
         rb.exec(
@@ -114,21 +119,16 @@ fn test_transaction_commit() {
         // 提交事务
         tx.commit().await?;
 
-        // 事务提交后验证数据是否存在
-        let result = rb
-            .query("SELECT * FROM tx_test WHERE id = ?", vec![Value::I32(1)])
+        // 事务提交后验证数据是否存在 - 使用 exec_decode
+        let result: TestRow = rb
+            .exec_decode("SELECT * FROM tx_test WHERE id = ?", vec![Value::I32(1)])
             .await?;
         Ok::<_, rbatis::Error>(result)
     });
 
     assert!(result.is_ok());
-    let result = result.unwrap();
-    let arr = result.as_array().unwrap();
-    assert_eq!(arr.len(), 1);
-    assert_eq!(
-        arr[0].as_map().unwrap()["name"].as_str().unwrap(),
-        "tx_test"
-    );
+    let row = result.unwrap();
+    assert_eq!(row.name, "tx_test");
 }
 
 #[test]
@@ -219,6 +219,12 @@ fn test_transaction_exec_decode() {
 fn test_nested_transaction() {
     let rb = make_test_rbatis();
 
+    #[derive(serde::Deserialize, Debug)]
+    struct TestRow {
+        id: i32,
+        name: String,
+    }
+
     // SQLite不支持真正的嵌套事务，但我们可以测试事务提交的基本功能
     let result = block_on(async move {
         // 创建测试表
@@ -249,24 +255,29 @@ fn test_nested_transaction() {
         // 提交事务
         tx.commit().await?;
 
-        // 验证插入的数据
-        let result = rb
-            .query("SELECT * FROM nested_tx_test ORDER BY id", vec![])
+        // 验证插入的数据 - 使用 exec_decode
+        let result: Vec<TestRow> = rb
+            .exec_decode("SELECT * FROM nested_tx_test ORDER BY id", vec![])
             .await?;
         Ok::<_, rbatis::Error>(result)
     });
 
     assert!(result.is_ok());
-    let result = result.unwrap();
-    let arr = result.as_array().unwrap();
-    assert_eq!(arr.len(), 2);
-    assert_eq!(arr[0].as_map().unwrap()["name"].as_str().unwrap(), "tx1");
-    assert_eq!(arr[1].as_map().unwrap()["name"].as_str().unwrap(), "tx2");
+    let rows = result.unwrap();
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0].name, "tx1");
+    assert_eq!(rows[1].name, "tx2");
 }
 
 #[test]
 fn test_transaction_with_defer() {
     let rb = make_test_rbatis();
+
+    #[derive(serde::Deserialize, Debug)]
+    struct TestRow {
+        id: i32,
+        name: String,
+    }
 
     let result = block_on(async move {
         // 创建测试表
@@ -298,9 +309,9 @@ fn test_transaction_with_defer() {
         // 手动提交
         guard.commit().await?;
 
-        // 验证数据
-        let result = rb
-            .query(
+        // 验证数据 - 使用 exec_decode
+        let result: TestRow = rb
+            .exec_decode(
                 "SELECT * FROM defer_tx_test WHERE id = ?",
                 vec![Value::I32(1)],
             )
@@ -309,18 +320,19 @@ fn test_transaction_with_defer() {
     });
 
     assert!(result.is_ok());
-    let result = result.unwrap();
-    let arr = result.as_array().unwrap();
-    assert_eq!(arr.len(), 1);
-    assert_eq!(
-        arr[0].as_map().unwrap()["name"].as_str().unwrap(),
-        "defer_test"
-    );
+    let row = result.unwrap();
+    assert_eq!(row.name, "defer_test");
 }
 
 #[test]
 fn test_executor_interface() {
     let rb = make_test_rbatis();
+
+    #[derive(serde::Deserialize, Debug)]
+    struct TestRow {
+        id: i32,
+        name: String,
+    }
 
     let result = block_on(async move {
         // 测试Executor trait的方法
@@ -344,17 +356,16 @@ fn test_executor_interface() {
         // 验证执行结果
         assert_eq!(exec_result.rows_affected, 1);
 
-        // 使用Executor trait的query方法
-        let query_result = Executor::query(
-            &rb,
-            "SELECT * FROM exec_test WHERE id = ?",
-            vec![Value::I32(1)],
-        )
-        .await?;
+        // 使用rb的exec_decode方法
+        let row: TestRow = rb
+            .exec_decode(
+                "SELECT * FROM exec_test WHERE id = ?",
+                vec![Value::I32(1)],
+            )
+            .await?;
 
-        assert!(query_result.is_array());
-        let arr = query_result.as_array().unwrap();
-        assert_eq!(arr.len(), 1);
+        assert_eq!(row.id, 1);
+        assert_eq!(row.name, "exec_test");
 
         Ok::<_, rbatis::Error>(())
     });
