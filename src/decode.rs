@@ -1,5 +1,7 @@
 //! Types and traits for decoding values from the database.
-use rbs::Value;
+use std::ops::Index;
+
+use rbs::{Value};
 use serde::de::DeserializeOwned;
 
 use crate::Error;
@@ -8,20 +10,21 @@ use crate::Error;
 /// support decode types:
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
+/// values = [[col1,col2],[val1,val2],...]]
 pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
     // Check if value is Array first (required by API contract)
     match values {
-        Value::Array(datas) => {
-            // First try to decode as array, if that fails try as single object
-            let array_result = rbs::from_value_ref::<T>(values);
-            if array_result.is_ok() {
-                return array_result;
+        Value::Array(_) => {
+            // First try rbs direct decode (handles CSV format [[col1,col2],[val1,val2],...])
+            let direct_result = rbs::from_value_ref::<T>(values);
+            if direct_result.is_ok() {
+                return direct_result;
             }
-            // If array decode failed, try decoding as single object
-            try_decode_map(datas)
+            // If direct decode failed, try the old map format conversion
+            try_decode_map(values)
         }
         _ => {
             // Non-array values are not supported (maintain API contract)
@@ -38,25 +41,27 @@ where
 }
 
 //decode doc or one type
-pub fn try_decode_map<T>(datas: &Vec<Value>) -> Result<T, Error>
+/// values = [[col1,col2],[val1,val2],...]]
+pub fn try_decode_map<T>(datas: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
     //decode struct
-    if datas.len() > 1 {
+    if datas.len() > 2 {
         return Err(Error::from(format!(
             "[rb] rows.rows_affected > 1,but decode one type ({})!",
             std::any::type_name::<T>()
         )));
     }
     //single try decode
-    if datas.is_empty() {
+    if datas.len() <= 1 {
         return Ok(rbs::from_value::<T>(Value::Null)?);
     }
-    let m = datas.get(0).unwrap_or(&Value::Null);
-    match &m {
-        Value::Map(map) => {
-            if map.len() == 1 {
+    //let columns = datas.index(0);
+    let values = datas.index(1);
+    match values {
+        Value::Array(arr) => {
+             if arr.len() == 1 {
                 //try one
                 let type_name = std::any::type_name::<T>();
                 if type_name == std::any::type_name::<i32>()
@@ -78,15 +83,17 @@ where
                     || type_name.starts_with("rbdc::types::")
                     || type_name.starts_with("core::option::Option<rbdc::types::")
                 {
-                    if let Some((_, value)) = map.into_iter().next() {
+                    if let Some(value) = arr.into_iter().next() {
                         return Ok(rbs::from_value_ref::<T>(value)?);
                     }
                 }
             }
         }
         _ => {}
-    }
-    Ok(rbs::from_value_ref::<T>(m)?)
+     }
+     //convert to map
+     let arr = rbs::from_value_ref::<Vec<T>>(datas)?;
+     arr.into_iter().next().ok_or_else(||Error::from("fail type"))
 }
 
 pub fn is_debug_mode() -> bool {
@@ -101,22 +108,5 @@ pub fn is_debug_mode() -> bool {
         }
     } else {
         false
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::decode::decode;
-    use rbs::value::map::ValueMap;
-    use rbs::Value;
-    use std::collections::HashMap;
-
-    #[test]
-    fn test_decode_hashmap() {
-        let mut v = ValueMap::new();
-        v.insert(1.into(), 2.into());
-        let m: HashMap<i32, Value> = decode(Value::Array(vec![Value::Map(v)])).unwrap();
-        println!("{:#?}", m);
-        assert_eq!(m.get(&1).unwrap().as_i64(), Value::I32(2).as_i64());
     }
 }

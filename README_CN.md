@@ -308,7 +308,7 @@ tls-rustls=["rbdc/tls-rustls"]
 tls-native-tls=["rbdc/tls-native-tls"]
 [dependencies]
 rbs = { version = "4"}
-rbdc = { version = "4.7", default-features = false, optional = true }
+rbdc = { version = "4", default-features = false, optional = true }
 fastdate = { version = "0.3" }
 tokio = { version = "1", features = ["full"] }
 ```

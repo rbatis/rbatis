@@ -6,6 +6,13 @@ mod test {
     use std::collections::HashMap;
     use std::str::FromStr;
 
+     #[test]
+    fn test_decode_hashmap() {
+        let m: HashMap<String, Value> = rbatis::decode(value!(vec![value!("a")],vec![value!(1)])).unwrap();
+        println!("{:#?}", m);
+        assert_eq!(m.get("a").unwrap().as_i64(), Value::I32(1).as_i64());
+    }
+
     #[test]
     fn test_decode_value() {
         let m = Value::Array(vec![value! {
@@ -113,13 +120,6 @@ mod test {
         assert_eq!(datetime, datetime_new);
     }
 
-    #[test]
-    fn test_decode_hashmap() {
-        let mut v = ValueMap::new();
-        v.insert(Value::String("key".to_string()), Value::I32(2));
-        let m: HashMap<String, i32> = rbatis::decode(Value::Array(vec![Value::Map(v)])).unwrap();
-        assert_eq!(*m.get("key").unwrap(), 2);
-    }
 
     #[test]
     fn test_decode_empty_array() {
