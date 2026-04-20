@@ -13,7 +13,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
 [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
-<img style="width: 200px;height: 190px;" width="200" height="190" src="logo.png" />
+<img style="width: 180px;height: 180px;" width="200" height="190" src="logo.png" />
 
 ## 简介
 
