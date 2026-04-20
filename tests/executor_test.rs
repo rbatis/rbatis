@@ -355,10 +355,7 @@ fn test_executor_interface() {
 
         // 使用rb的exec_decode方法
         let row: TestRow = rb
-            .exec_decode(
-                "SELECT * FROM exec_test WHERE id = ?",
-                vec![Value::I32(1)],
-            )
+            .exec_decode("SELECT * FROM exec_test WHERE id = ?", vec![Value::I32(1)])
             .await?;
 
         assert_eq!(row.id, 1);

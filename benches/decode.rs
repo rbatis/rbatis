@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use rbs::{Value};
+use rbs::Value;
 use test::Bencher;
 
 #[bench]
@@ -11,7 +11,6 @@ fn bench_rbatis_decode(b: &mut Bencher) {
         rbatis::decode_ref::<i32>(&m).unwrap();
     });
 }
-
 
 #[bench]
 fn bench_rbs_decode_inner(b: &mut Bencher) {
@@ -25,6 +24,6 @@ fn bench_rbs_decode_inner(b: &mut Bencher) {
 fn csv_data() -> Value {
     Value::Array(vec![
         Value::Array(vec![Value::String("a".to_string())]),
-        Value::Array(vec![Value::I64(1)])
+        Value::Array(vec![Value::I64(1)]),
     ])
 }
