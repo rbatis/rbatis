@@ -79,6 +79,6 @@ pub async fn main() -> Result<(), Error> {
     )?;
     // Use impl block Mapper
     let results = Activity::select_by_page(&rb, &rbatis::PageRequest::new(1, 10), "", None).await?;
-    println!("Query by condition: {:?}", results);
+    println!("Query by condition: {}", rbs::value!(results));
     Ok(())
 }
