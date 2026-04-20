@@ -1,52 +1,30 @@
 #![feature(test)]
 extern crate test;
 
-use rbs::{value, Value};
+use rbs::{Value};
 use test::Bencher;
 
 #[bench]
-fn bench_rbs_decode(b: &mut Bencher) {
-    let v: Value = value!(1);
-    b.iter(|| {
-        rbs::from_value_ref::<i32>(&v).unwrap();
-    });
-}
-
-#[bench]
-fn bench_rbs_decode_value(b: &mut Bencher) {
-    let v: Value = 1.into();
-    b.iter(|| {
-        rbs::from_value_ref::<Value>(&v).unwrap();
-    });
-}
-
-#[bench]
 fn bench_rbatis_decode(b: &mut Bencher) {
-    let array = Value::Array(vec![value! {
-        1 : 1,
-    }]);
+    let m = csv_data();
     b.iter(|| {
-        rbatis::decode_ref::<i32>(&array).unwrap();
+        rbatis::decode_ref::<i32>(&m).unwrap();
     });
 }
 
-#[bench]
-fn bench_rbatis_decode_map(b: &mut Bencher) {
-    let date = rbdc::types::datetime::DateTime::now();
-    let array = Value::Array(vec![value! {
-        1 : date,
-    }]);
-    b.iter(|| {
-        rbatis::decode_ref::<rbdc::types::datetime::DateTime>(&array).unwrap();
-    });
-}
 
 #[bench]
 fn bench_rbs_decode_inner(b: &mut Bencher) {
-    let m = Value::Array(vec![value! {
-        "aa": 0
-    }]);
+    let m = csv_data();
     b.iter(|| {
         rbatis::decode_ref::<i64>(&m).unwrap();
     });
+}
+
+// CSV格式: [[col_name], [value]]
+fn csv_data() -> Value {
+    Value::Array(vec![
+        Value::Array(vec![Value::String("a".to_string())]),
+        Value::Array(vec![Value::I64(1)])
+    ])
 }

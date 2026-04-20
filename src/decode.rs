@@ -18,7 +18,7 @@ where
     // Check if value is Array first (required by API contract)
     match values {
         Value::Array(_) => {
-            // First try rbs direct decode (handles CSV format [[col1,col2],[val1,val2],...])
+            // First try rbs direct decode (handles CSV format [[col1,col2],[val1,val2],...] to Vec<T>)
             let direct_result = rbs::from_value_ref::<T>(values);
             if direct_result.is_ok() {
                 return direct_result;
@@ -62,36 +62,17 @@ where
     match values {
         Value::Array(arr) => {
              if arr.len() == 1 {
-                //try one
-                let type_name = std::any::type_name::<T>();
-                if type_name == std::any::type_name::<i32>()
-                    || type_name == std::any::type_name::<i64>()
-                    || type_name == std::any::type_name::<f32>()
-                    || type_name == std::any::type_name::<f64>()
-                    || type_name == std::any::type_name::<u32>()
-                    || type_name == std::any::type_name::<u64>()
-                    || type_name == std::any::type_name::<String>()
-                    || type_name == std::any::type_name::<bool>()
-                    || type_name == std::any::type_name::<Option<i32>>()
-                    || type_name == std::any::type_name::<Option<i64>>()
-                    || type_name == std::any::type_name::<Option<f32>>()
-                    || type_name == std::any::type_name::<Option<f64>>()
-                    || type_name == std::any::type_name::<Option<u32>>()
-                    || type_name == std::any::type_name::<Option<u64>>()
-                    || type_name == std::any::type_name::<Option<String>>()
-                    || type_name == std::any::type_name::<Option<bool>>()
-                    || type_name.starts_with("rbdc::types::")
-                    || type_name.starts_with("core::option::Option<rbdc::types::")
-                {
-                    if let Some(value) = arr.into_iter().next() {
-                        return Ok(rbs::from_value_ref::<T>(value)?);
+                // 尝试直接解码单个元素，失败则继续 fallback 到 Vec 方式
+                if let Some(value) = arr.first() {
+                    if let Ok(result) = rbs::from_value_ref::<T>(value) {
+                        return Ok(result);
                     }
                 }
             }
         }
         _ => {}
      }
-     //convert to map
+     //convert to map (for struct types or when direct decode fails)
      let arr = rbs::from_value_ref::<Vec<T>>(datas)?;
      arr.into_iter().next().ok_or_else(||Error::from("fail type"))
 }
