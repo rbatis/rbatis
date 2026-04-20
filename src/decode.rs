@@ -11,6 +11,7 @@ use crate::Error;
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
 /// values = [[col1,col2],[val1,val2],...]]
+/// T = Vec<YourStruct>
 pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
@@ -73,7 +74,7 @@ where
         _ => {}
      }
      //convert to map (for struct types or when direct decode fails)
-     let arr = rbs::from_value_ref::<Vec<T>>(datas)?;
+     let arr:Vec<T> = rbs::from_value_ref(datas)?;
      arr.into_iter().next().ok_or_else(||Error::from("fail type"))
 }
 

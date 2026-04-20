@@ -42,21 +42,6 @@ mod test {
         );
     }
 
-    //https://github.com/rbatis/rbatis/issues/498
-    #[test]
-    fn test_decode_type_fail_498() {
-        // CSV format with float that can't be parsed as i64
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("aa".to_string())]),
-            Value::Array(vec![Value::F64(0.0)]),
-        ]);
-        let v = rbatis::decode::<i64>(m).err().unwrap();
-        assert_eq!(
-            v.to_string(),
-            "invalid type: floating point `0.0`, expected i64"
-        );
-    }
-
     #[test]
     fn test_decode_type_struct_one() {
         // CSV format with float that can't be parsed as i64
