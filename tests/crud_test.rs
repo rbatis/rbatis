@@ -94,7 +94,7 @@ mod test {
             if self.sql.contains("select count") {
                 1
             } else {
-                2
+                13 // MockTable fields: id, name, pc_link, h5_link, pc_banner_img, h5_banner_img, sort, status, remark, create_time, version, delete_flag, count
             }
         }
 
@@ -102,10 +102,21 @@ mod test {
             if self.sql.contains("select count") {
                 "count".to_string()
             } else {
-                if i == 0 {
-                    "sql".to_string()
-                } else {
-                    "count".to_string()
+                match i {
+                    0 => "id".to_string(),
+                    1 => "name".to_string(),
+                    2 => "pc_link".to_string(),
+                    3 => "h5_link".to_string(),
+                    4 => "pc_banner_img".to_string(),
+                    5 => "h5_banner_img".to_string(),
+                    6 => "sort".to_string(),
+                    7 => "status".to_string(),
+                    8 => "remark".to_string(),
+                    9 => "create_time".to_string(),
+                    10 => "version".to_string(),
+                    11 => "delete_flag".to_string(),
+                    12 => "count".to_string(),
+                    _ => "unknown".to_string(),
                 }
             }
         }
@@ -132,11 +143,24 @@ mod test {
             if self.sql.contains("select count") {
                 Ok(Value::U64(self.count))
             } else {
-                if i == 0 {
-                    Ok(Value::String(self.sql.clone()))
-                } else {
-                    Ok(Value::U64(self.count.clone()))
-                }
+                // Return rbs Value format for MockTable fields
+                let result = match i {
+                    0 => Value::String("1".to_string()),        // id
+                    1 => Value::String("test_name".to_string()), // name
+                    2 => Value::Null,                           // pc_link
+                    3 => Value::Null,                           // h5_link
+                    4 => Value::Null,                           // pc_banner_img
+                    5 => Value::Null,                           // h5_banner_img
+                    6 => Value::Null,                           // sort
+                    7 => Value::I32(1),                        // status
+                    8 => Value::Null,                           // remark
+                    9 => Value::String("2023-01-01 00:00:00".to_string()), // create_time
+                    10 => Value::I64(1),                        // version
+                    11 => Value::I32(0),                       // delete_flag
+                    12 => Value::U64(self.count),               // count
+                    _ => Value::Null,
+                };
+                Ok(result)
             }
         }
     }
@@ -1007,6 +1031,29 @@ mod test {
             let (sql, args) = queue.pop().unwrap();
             println!("{}", sql);
             assert_eq!(sql, "select count(1) as count from table");
+        };
+        block_on(f);
+    }
+
+    // Test htmlsql_select_page returns data with total > 0
+    rbatis::htmlsql_select_page!(htmlsql_select_page_with_data(name: &str) -> MockTable => r#"<select id="select_page_data">`select `<if test="do_count == true">`count(1) from table`</if><if test="do_count == false">`* from table limit ${page_no},${page_size}`</if></select>"#);
+    #[test]
+    fn test_htmlsql_select_page_with_data() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.set_intercepts(vec![Arc::new(PageIntercept::new())]);
+            rb.init(MockDriver {}, "test").unwrap();
+
+            // Call select_by_page function
+            let page = htmlsql_select_page_with_data(&rb, &PageRequest::new(1, 10), "")
+                .await
+                .unwrap();
+
+            // Verify: 1. has data, 2. total > 0
+            println!("page total: {}", page.total);
+            println!("page records: {:?}", page.records);
+            assert!(page.total > 0, "total should be > 0");
+            assert!(!page.records.is_empty(), "records should not be empty");
         };
         block_on(f);
     }
