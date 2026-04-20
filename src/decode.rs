@@ -42,29 +42,28 @@ where
 }
 
 //decode doc or one type
-/// values = [[col1,col2],[val1,val2],...]]
+/// values = [{k:v},...] or [[col1,col2],[val1,val2],...]]
 pub fn try_decode_map<T>(datas: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
+    // Handle empty array case
+    if datas.len() == 0 {
+        return Err(Error::from("decode empty array value"));
+    }
     //decode struct
-    if datas.len() > 2 {
+    if datas.len() > 1 {
         return Err(Error::from(format!(
             "[rb] rows.rows_affected > 1,but decode one type ({})!",
             std::any::type_name::<T>()
         )));
     }
-    //single try decode
-    if datas.len() <= 1 {
-        return Ok(rbs::from_value::<T>(Value::Null)?);
-    }
-    //let columns = datas.index(0);
-    let values = datas.index(1);
+    let values = datas.index(0);
     match values {
-        Value::Array(arr) => {
+        Value::Map(arr) => {
              if arr.len() == 1 {
                 // 尝试直接解码单个元素，失败则继续 fallback 到 Vec 方式
-                if let Some(value) = arr.first() {
+                if let Some((_key,value)) = arr.into_iter().next() {
                     if let Ok(result) = rbs::from_value_ref::<T>(value) {
                         return Ok(result);
                     }

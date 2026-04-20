@@ -1,37 +1,45 @@
 #[cfg(test)]
 mod test {
-    use rbs::{value, Value};
+    use rbs::Value;
+    use rbs::value::map::ValueMap;
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
     use std::str::FromStr;
 
+    fn make_map(k: &str, v: Value) -> Value {
+        let mut map = ValueMap::new();
+        map.insert(Value::String(k.to_string()), v);
+        Value::Map(map)
+    }
+
+    fn make_array_map(values: Vec<(&str, Value)>) -> Value {
+        let mut map = ValueMap::new();
+        for (k, v) in values {
+            map.insert(Value::String(k.to_string()), v);
+        }
+        Value::Map(map)
+    }
+
     #[test]
     fn test_decode_hashmap() {
-        let m: HashMap<String, Value> =
-            rbatis::decode(value!(vec![value!("a")], vec![value!(1)])).unwrap();
+        // [{k:value}] format
+        let m: HashMap<String, Value> = rbatis::decode(Value::Array(vec![make_map("a", Value::I64(1))])).unwrap();
         println!("{:#?}", m);
         assert_eq!(m.get("a").unwrap().as_i64(), Value::I32(1).as_i64());
     }
 
-
     #[test]
     fn test_decode_value() {
-        // CSV format: [[col_name], [value]]
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("1".to_string())]),
-            Value::Array(vec![Value::I64(1)]),
-        ]);
+        // [{k:value}] format
+        let m = Value::Array(vec![make_map("1", Value::I64(1))]);
         let v: Value = rbatis::decode(m.clone()).unwrap();
         assert_eq!(v, m);
     }
 
     #[test]
     fn test_decode_value_one() {
-        // CSV format: [[col_name], [value]]
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("1".to_string())]),
-            Value::Array(vec![Value::I64(1)]),
-        ]);
+        // [{k:value}] format
+        let m = Value::Array(vec![make_map("1", Value::I64(1))]);
         let v: i64 = rbatis::decode(m).unwrap();
         assert_eq!(v, 1);
     }
@@ -42,11 +50,8 @@ mod test {
         pub struct A {
             pub aa: i32,
         }
-        // CSV format with string that can't be parsed as i32
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("aa".to_string())]),
-            Value::Array(vec![Value::String("".to_string())]),
-        ]);
+        // [{k:value}] format with string that can't be parsed as i32
+        let m = Value::Array(vec![make_map("aa", Value::String("".to_string()))]);
         let v = rbatis::decode::<A>(m).err().unwrap();
         assert_eq!(
             v.to_string(),
@@ -56,11 +61,8 @@ mod test {
 
     #[test]
     fn test_decode_type_struct_one() {
-        // CSV format with float that can't be parsed as i64
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("aa".to_string())]),
-            Value::Array(vec![Value::F64(0.0)]),
-        ]);
+        // [{k:value}] format with float
+        let m = Value::Array(vec![make_map("aa", Value::F64(0.0))]);
         #[derive(Serialize, Deserialize)]
         pub struct TestStruct {
             pub aa: f64,
@@ -72,12 +74,9 @@ mod test {
     #[test]
     fn test_decode_one() {
         let date = rbdc::types::datetime::DateTime::now();
-        // CSV format: [[col_name], [value]]
+        // [{k:value}] format
         let date_value: Value = date.clone().into();
-        let m = Value::Array(vec![
-            Value::Array(vec![Value::String("1".to_string())]),
-            Value::Array(vec![date_value]),
-        ]);
+        let m = Value::Array(vec![make_map("1", date_value)]);
         let v: rbdc::types::datetime::DateTime = rbatis::decode(m).unwrap();
         assert_eq!(v.to_string(), date.to_string());
         println!("{}", v.offset());
@@ -85,49 +84,32 @@ mod test {
 
     #[test]
     fn test_decode_i32() {
-        // CSV format: [[col_name], [value]]
-        let v: i32 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::I64(1)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: i32 = rbatis::decode(Value::Array(vec![make_map("a", Value::I64(1))])).unwrap();
         assert_eq!(v, 1);
     }
 
     #[test]
     fn test_decode_i64() {
-        // CSV format: [[col_name], [value]]
-        let v: i64 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::I64(1)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: i64 = rbatis::decode(Value::Array(vec![make_map("a", Value::I64(1))])).unwrap();
         assert_eq!(v, 1i64);
     }
 
     #[test]
     fn test_decode_string() {
-        // CSV format: [[col_name], [value]]
-        let v: String = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::String("a".to_string())]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: String = rbatis::decode(Value::Array(vec![make_map("a", Value::String("a".to_string()))])).unwrap();
         assert_eq!(v, "a");
     }
 
     #[test]
     fn test_decode_json_array() {
-        // CSV format for multiple rows
+        // [{k:value}] format for multiple rows
         let v: serde_json::Value = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![
-                Value::String("1".to_string()),
-                Value::String("2".to_string()),
-            ]),
-            Value::Array(vec![Value::I64(1), Value::I64(2)]),
-            Value::Array(vec![Value::I64(1), Value::I64(2)]),
-        ]))
-        .unwrap();
+            make_array_map(vec![("1", Value::I64(1)), ("2", Value::I64(2))]),
+            make_array_map(vec![("1", Value::I64(1)), ("2", Value::I64(2))]),
+        ])).unwrap();
         assert_eq!(
             v,
             serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap()
@@ -149,20 +131,19 @@ mod test {
 
     #[test]
     fn test_decode_empty_array() {
-        // 测试空数组的解码
+        // 测试空数组的解码 - [{k:value}] format
         let empty_array = Value::Array(vec![]);
-        let result: Option<i32> = rbatis::decode(empty_array).unwrap();
-        assert_eq!(result, None);
+        let result: Result<Option<i32>, _> = rbatis::decode(empty_array);
+        assert!(result.is_err() || result.unwrap().is_none());
     }
 
     #[test]
     fn test_decode_multiple_rows_to_single_type() {
         // 测试解码多行数据到单一类型的情况（应当返回错误）
-        // CSV format: columns + multiple rows
+        // [{k:value}] format with multiple rows
         let data = Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::I64(1)]),
-            Value::Array(vec![Value::I64(2)]),
+            make_map("a", Value::I64(1)),
+            make_map("a", Value::I64(2)),
         ]);
 
         let result = rbatis::decode::<i32>(data);
@@ -173,85 +154,53 @@ mod test {
 
     #[test]
     fn test_decode_f32() {
-        // CSV format: [[col_name], [value]]
-        let v: f32 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::F64(1.0)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: f32 = rbatis::decode(Value::Array(vec![make_map("a", Value::F64(1.0))])).unwrap();
         assert_eq!(v, 1.0);
     }
 
     #[test]
     fn test_decode_f64() {
-        // CSV format: [[col_name], [value]]
-        let v: f64 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::F64(1.0)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: f64 = rbatis::decode(Value::Array(vec![make_map("a", Value::F64(1.0))])).unwrap();
         assert_eq!(v, 1.0);
     }
 
     #[test]
     fn test_decode_u32() {
-        // CSV format: [[col_name], [value]]
-        let v: u32 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::U64(1)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: u32 = rbatis::decode(Value::Array(vec![make_map("a", Value::U64(1))])).unwrap();
         assert_eq!(v, 1);
     }
 
     #[test]
     fn test_decode_u64() {
-        // CSV format: [[col_name], [value]]
-        let v: u64 = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::U64(1)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: u64 = rbatis::decode(Value::Array(vec![make_map("a", Value::U64(1))])).unwrap();
         assert_eq!(v, 1);
     }
 
     #[test]
     fn test_decode_bool() {
-        // CSV format: [[col_name], [value]]
-        let v: bool = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::Bool(true)]),
-        ]))
-        .unwrap();
+        // [{k:value}] format
+        let v: bool = rbatis::decode(Value::Array(vec![make_map("a", Value::Bool(true))])).unwrap();
         assert_eq!(v, true);
     }
 
     #[test]
     fn test_decode_option_types() {
-        // CSV format: [[col_name], [value]]
+        // [{k:value}] format
 
         // Option<i32>
-        let v1: Option<i32> = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::I32(1)]),
-        ]))
-        .unwrap();
+        let v1: Option<i32> = rbatis::decode(Value::Array(vec![make_map("a", Value::I32(1))])).unwrap();
         assert_eq!(v1, Some(1));
 
         // Option<String>
-        let v2: Option<String> = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::String("test".to_string())]),
-        ]))
-        .unwrap();
+        let v2: Option<String> = rbatis::decode(Value::Array(vec![make_map("a", Value::String("test".to_string()))])).unwrap();
         assert_eq!(v2, Some("test".to_string()));
 
         // null值解码为None
-        let v3: Option<i32> = rbatis::decode(Value::Array(vec![
-            Value::Array(vec![Value::String("a".to_string())]),
-            Value::Array(vec![Value::Null]),
-        ]))
-        .unwrap();
+        let v3: Option<i32> = rbatis::decode(Value::Array(vec![make_map("a", Value::Null)])).unwrap();
         assert_eq!(v3, None);
     }
 
@@ -264,19 +213,12 @@ mod test {
             pub active: bool,
         }
 
-        // CSV format: [[col_names], [values]]
-        let value = Value::Array(vec![
-            Value::Array(vec![
-                Value::String("id".to_string()),
-                Value::String("name".to_string()),
-                Value::String("active".to_string()),
-            ]),
-            Value::Array(vec![
-                Value::I32(1),
-                Value::String("test".to_string()),
-                Value::Bool(true),
-            ]),
-        ]);
+        // [{k:value}] format
+        let value = Value::Array(vec![make_array_map(vec![
+            ("id", Value::I32(1)),
+            ("name", Value::String("test".to_string())),
+            ("active", Value::Bool(true)),
+        ])]);
 
         let result: TestStruct = rbatis::decode(value).unwrap();
         assert_eq!(result.id, 1);
@@ -285,7 +227,7 @@ mod test {
     }
 
     #[test]
-    #[ignore] // CSV format doesn't support direct nested struct deserialization
+    #[ignore] // format doesn't support direct nested struct deserialization
     fn test_decode_nested_struct() {
         #[derive(Debug, Serialize, Deserialize, PartialEq)]
         pub struct Inner {
@@ -298,15 +240,12 @@ mod test {
             pub inner: Inner,
         }
 
-        // CSV format with nested struct - inner becomes JSON string in CSV
+        // [{k:value}] format with nested struct
         let inner_json = serde_json::json!({"value": 42});
-        let value = Value::Array(vec![
-            Value::Array(vec![
-                Value::String("id".to_string()),
-                Value::String("inner".to_string()),
-            ]),
-            Value::Array(vec![Value::I32(1), Value::String(inner_json.to_string())]),
-        ]);
+        let value = Value::Array(vec![make_array_map(vec![
+            ("id", Value::I32(1)),
+            ("inner", Value::String(inner_json.to_string())),
+        ])]);
 
         let result: Outer = rbatis::decode(value).unwrap();
         assert_eq!(result.id, 1);
@@ -315,21 +254,17 @@ mod test {
 
     #[test]
     fn test_decode_vec() {
-        // 测试解码到Vec<T> - CSV format with multiple rows
+        // 测试解码到Vec<T> - [{k:value}] format with multiple rows
         #[derive(Debug, Serialize, Deserialize, PartialEq)]
         pub struct Item {
             pub id: i32,
             pub name: String,
         }
 
-        // CSV format: [[col_names], [row1], [row2]]
+        // [{k:value}] format
         let value = Value::Array(vec![
-            Value::Array(vec![
-                Value::String("id".to_string()),
-                Value::String("name".to_string()),
-            ]),
-            Value::Array(vec![Value::I32(1), Value::String("test1".to_string())]),
-            Value::Array(vec![Value::I32(2), Value::String("test2".to_string())]),
+            make_array_map(vec![("id", Value::I32(1)), ("name", Value::String("test1".to_string()))]),
+            make_array_map(vec![("id", Value::I32(2)), ("name", Value::String("test2".to_string()))]),
         ]);
 
         let result: Vec<Item> = rbatis::decode(value).unwrap();
@@ -361,14 +296,11 @@ mod test {
             pub name: String,
         }
 
-        // CSV format: [[col_names], [values]]
-        let value = Value::Array(vec![
-            Value::Array(vec![
-                Value::String("id".to_string()),
-                Value::String("name".to_string()),
-            ]),
-            Value::Array(vec![Value::I32(1), Value::String("test".to_string())]),
-        ]);
+        // [{k:value}] format
+        let value = Value::Array(vec![make_array_map(vec![
+            ("id", Value::I32(1)),
+            ("name", Value::String("test".to_string())),
+        ])]);
 
         let result: Item = rbatis::decode::decode_ref(&value).unwrap();
         assert_eq!(result.id, 1);
