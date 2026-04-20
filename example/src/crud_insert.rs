@@ -62,36 +62,23 @@ pub async fn main() {
     let data = Activity::insert(&rb, &table).await;
     println!("insert = {}", json!(data));
 
-    let tables = vec![
-        Activity {
-            id: Some("2".into()),
-            name: Some("2".into()),
-            pc_link: Some("2".into()),
-            h5_link: Some("2".into()),
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: Some("2".to_string()),
-            status: Some(2),
-            remark: Some("2".into()),
-            create_time: Some(DateTime::now()),
-            version: Some(2),
-            delete_flag: Some(2),
-        },
-        Activity {
-            id: Some("3".into()),
-            name: Some("3".into()),
-            pc_link: Some("3".into()),
-            h5_link: Some("3".into()),
-            pc_banner_img: None,
-            h5_banner_img: None,
-            sort: Some("3".to_string()),
-            status: Some(3),
-            remark: Some("3".into()),
-            create_time: Some(DateTime::now()),
-            version: Some(3),
-            delete_flag: Some(3),
-        },
-    ];
+    let total = 100;
+    let mut tables = Vec::with_capacity(total);
+    for i in 0..total {
+        let mut table = table.clone();
+        table.id = Some(i.to_string());
+        table.name = Some(i.to_string());
+        table.pc_link = Some(i.to_string());
+        table.h5_link = Some(i.to_string());
+        table.pc_banner_img = None;
+        table.h5_banner_img = None;
+        table.sort = Some(i.to_string());
+        table.status = Some(1);
+        table.remark = Some(i.to_string());
+        table.create_time = Some(DateTime::now());
+        table.version = Some(1);
+        tables.push(table);
+    }
     let data = Activity::insert_batch(&rb, &tables, 10).await;
     println!("insert_batch = {}", json!(data));
 }
