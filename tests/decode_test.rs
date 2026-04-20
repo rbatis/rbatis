@@ -13,8 +13,20 @@ mod test {
         assert_eq!(m.get("a").unwrap().as_i64(), Value::I32(1).as_i64());
     }
 
+
     #[test]
     fn test_decode_value() {
+        // CSV format: [[col_name], [value]]
+        let m = Value::Array(vec![
+            Value::Array(vec![Value::String("1".to_string())]),
+            Value::Array(vec![Value::I64(1)]),
+        ]);
+        let v: Value = rbatis::decode(m.clone()).unwrap();
+        assert_eq!(v, m);
+    }
+
+    #[test]
+    fn test_decode_value_one() {
         // CSV format: [[col_name], [value]]
         let m = Value::Array(vec![
             Value::Array(vec![Value::String("1".to_string())]),
