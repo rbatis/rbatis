@@ -1,8 +1,6 @@
-use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{html_sql, RBatis};
 use serde_json::json;
 
@@ -81,29 +79,6 @@ pub async fn main() {
         "sqlite://target/sqlite.db",
     )
     .unwrap();
-    // table sync done
-    fast_log::logger().set_level(LevelFilter::Off);
-    _ = RBatis::sync(
-        &rb.acquire().await.unwrap(),
-        &SqliteTableMapper {},
-        &Activity {
-            id: Some(String::new()),
-            name: Some(String::new()),
-            pc_link: Some(String::new()),
-            h5_link: Some(String::new()),
-            pc_banner_img: Some(String::new()),
-            h5_banner_img: Some(String::new()),
-            sort: Some(String::new()),
-            status: Some(0),
-            remark: Some(String::new()),
-            create_time: Some(DateTime::now()),
-            version: Some(0),
-            delete_flag: Some(0),
-        },
-        "activity",
-    )
-    .await;
-    fast_log::logger().set_level(LevelFilter::Debug);
 
     let a = select_by_condition(&rb, "test", &DateTime::now(), false)
         .await
