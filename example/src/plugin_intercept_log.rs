@@ -1,7 +1,7 @@
 use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::intercept_log::LogInterceptor;
-use rbatis::{crud, RBatis};
+use rbatis::{crud, Error, RBatis};
 use rbs::value;
 use std::time::Duration;
 
@@ -14,7 +14,7 @@ crud!(Activity {});
 
 /// control log level or close log
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -29,8 +29,7 @@ pub async fn main() {
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
+    )?;
 
     println!("-----------------log level = info--------------------------------------");
     rb.get_intercept::<LogInterceptor>()
@@ -49,4 +48,5 @@ pub async fn main() {
     println!("-----------------------------------------------------------------------");
 
     log::logger().flush();
+    Ok(())
 }

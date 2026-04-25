@@ -57,7 +57,7 @@ pysql!(py_exec2(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult
                      ${ids.sql()}" );
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
     defer!(|| {
         log::logger().flush();
@@ -65,21 +65,21 @@ pub async fn main() {
     //use static ref
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
-   
-    let a = py_select(&rb, "", &[1, 2, 3]).await.unwrap();
+    )?;
+
+    let a = py_select(&rb, "", &[1, 2, 3]).await?;
     println!(">>>>>>>>>>>> {}", json!(a));
 
-    let a = py_exec(&rb, "", &[1, 2, 3]).await.unwrap();
+    let a = py_exec(&rb, "", &[1, 2, 3]).await?;
     println!(">>>>>>>>>>>> {}", json!(a));
 
-    let a = py_exec2(&rb, "", &[1, 2, 3]).await.unwrap();
+    let a = py_exec2(&rb, "", &[1, 2, 3]).await?;
     println!(">>>>>>>>>>>> {}", json!(a));
+    Ok(())
 }

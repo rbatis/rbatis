@@ -63,7 +63,7 @@ crud!(Activity {});
 
 //docker run -d --name postgres  -e POSTGRES_PASSWORD=123456 -p 5432:5432 -d postgres
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -74,8 +74,7 @@ pub async fn main() {
     rb.init(
         rbdc_pg::driver::PgDriver {},
         "postgres://postgres:123456@localhost:5432/postgres",
-    )
-    .unwrap();
+    )?;
     //insert to log intercept before
     rb.intercepts.insert(0, Arc::new(ReturningIdPlugin {}));
     let table = Activity {
@@ -94,4 +93,5 @@ pub async fn main() {
     };
     let data = Activity::insert(&rb, &table).await;
     println!("insert = {}", json!(data));
+    Ok(())
 }

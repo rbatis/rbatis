@@ -1,16 +1,16 @@
-use rbatis::crud;
 use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::ExecResult;
 use rbatis::{async_trait, Action, RBatis};
+use rbatis::{crud, Error};
 use rbs::Value;
 use serde_json::json;
 use std::sync::Arc;
 
 #[tokio::main]
-pub async fn main() -> Result<(), rbatis::Error> {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(fast_log::Config::new().console());
     let rb = RBatis::new();
     rb.init(

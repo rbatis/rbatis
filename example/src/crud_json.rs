@@ -2,7 +2,7 @@ use log::LevelFilter;
 use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::table_sync::SqliteTableMapper;
-use rbatis::{table_sync, RBatis};
+use rbatis::{table_sync, Error, RBatis};
 use rbs::value;
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -23,7 +23,7 @@ pub struct User {
 crud!(User {});
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -35,15 +35,14 @@ pub async fn main() {
 
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
-    create_table(&rb).await;
+    )?;
+    create_table(&rb).await?;
     let user = User {
         id: Some(1),
         account1: Account {
@@ -61,9 +60,10 @@ pub async fn main() {
 
     let users = User::select_by_map(&rb.clone(), value! {"id":1}).await;
     println!("select:{}", value!(users));
+    Ok(())
 }
 
-async fn create_table(rb: &RBatis) {
+async fn create_table(rb: &RBatis) -> Result<(), Error> {
     fast_log::logger().set_level(LevelFilter::Off);
     defer!(|| {
         fast_log::logger().set_level(LevelFilter::Info);
@@ -73,6 +73,7 @@ async fn create_table(rb: &RBatis) {
         "account1":"JSON",
         "account2":"JSON",
     };
-    let conn = rb.acquire().await.unwrap();
+    let conn = rb.acquire().await?;
     _ = table_sync::sync(&conn, &SqliteTableMapper {}, value!(&table), "user").await;
+    Ok(())
 }

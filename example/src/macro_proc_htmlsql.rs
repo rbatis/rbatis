@@ -1,7 +1,7 @@
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::{html_sql, RBatis};
+use rbatis::{html_sql, Error, RBatis};
 use serde_json::json;
 
 /// table
@@ -58,7 +58,7 @@ async fn select_by_condition(
 }
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -71,17 +71,15 @@ pub async fn main() {
     //use static ref
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
+    )?;
 
-    let a = select_by_condition(&rb, "test", &DateTime::now(), false)
-        .await
-        .unwrap();
+    let a = select_by_condition(&rb, "test", &DateTime::now(), false).await?;
     println!("{}", json!(a));
+    Ok(())
 }

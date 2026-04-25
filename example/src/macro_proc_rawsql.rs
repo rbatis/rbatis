@@ -1,7 +1,7 @@
 use rbatis::dark_std::defer;
 use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::sql;
+use rbatis::{sql, Error};
 use serde_json::json;
 
 /// table
@@ -28,7 +28,7 @@ async fn raw_sql(rb: &RBatis, delete_flag: &i32) -> rbatis::Result<Vec<Activity>
 }
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -39,14 +39,14 @@ pub async fn main() {
     });
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
-    let a = raw_sql(&rb, &0).await.unwrap();
+    )?;
+    let a = raw_sql(&rb, &0).await?;
     println!("{}", json!(a));
+    Ok(())
 }

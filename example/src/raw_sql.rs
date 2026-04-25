@@ -1,6 +1,6 @@
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::RBatis;
+use rbatis::{Error, RBatis};
 use rbs::value;
 use serde_json::json;
 
@@ -22,7 +22,7 @@ pub struct Activity {
 }
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -31,24 +31,22 @@ pub async fn main() {
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
+    )?;
     //exec
     let result = rb
         .exec("update activity set status = 0 where id > 0", vec![])
-        .await
-        .unwrap();
+        .await?;
     println!(">>>>> exec={}", result);
     //query
     let table: Option<Activity> = rb
         .exec_decode("select * from activity limit ?", vec![value!(1)])
-        .await
-        .unwrap();
+        .await?;
     println!(">>>>> table={}", json!(table));
+    Ok(())
 }

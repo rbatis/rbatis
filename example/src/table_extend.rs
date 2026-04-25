@@ -1,6 +1,6 @@
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::{crud, RBatis};
+use rbatis::{crud, Error, RBatis};
 use rbs::value;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -29,7 +29,7 @@ pub struct Activity {
 crud!(Activity {});
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
@@ -41,16 +41,14 @@ pub async fn main() {
 
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test").unwrap();
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres").unwrap();
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;").unwrap();
+    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
-    )
-    .unwrap();
-    let datas = Activity::select_by_map(&rb.clone(), value! {})
-        .await
-        .unwrap();
+    )?;
+    let datas = Activity::select_by_map(&rb.clone(), value! {}).await?;
     println!("{}", json!(datas));
+    Ok(())
 }
