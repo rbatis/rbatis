@@ -9,6 +9,7 @@
 extern crate test;
 
 use futures_core::future::BoxFuture;
+use futures_core::Stream;
 use rbatis::crud;
 use rbatis::rbatis::RBatis;
 use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
@@ -16,6 +17,7 @@ use rbdc::rt::block_on;
 use rbdc::Error;
 use rbs::Value;
 use std::any::Any;
+use std::pin::Pin;
 use test::Bencher;
 
 pub trait QPS {
@@ -224,8 +226,15 @@ impl Connection for MockConnection {
         &mut self,
         sql: &str,
         params: Vec<Value>,
-    ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
-        Box::pin(async { Ok(vec![]) })
+    ) -> BoxFuture<
+        '_,
+        Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+    > {
+        Box::pin(async {
+            let stream: Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>> =
+                Box::pin(futures::stream::iter(vec![]));
+            Ok(stream)
+        })
     }
 
     fn exec(&mut self, sql: &str, params: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {

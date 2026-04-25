@@ -177,12 +177,18 @@ mod my_pool {
         }
     }
 
+    use futures_core::Stream;
+    use std::pin::Pin;
+
     impl db::Connection for ConnManagerProxy {
         fn exec_rows(
             &mut self,
             sql: &str,
             params: Vec<Value>,
-        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
             if self.conn.is_none() {
                 return Box::pin(async { Err(Error::from("conn is drop")) });
             }

@@ -4,12 +4,14 @@ mod test {
     use async_trait::async_trait;
     use dark_std::sync::SyncVec;
     use futures_core::future::BoxFuture;
+    use futures_core::Stream;
     use rbatis::executor::Executor;
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::{Action, Error, RBatis};
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, MetaData, Row};
     use rbdc::rt::block_on;
     use rbs::Value;
+    use std::pin::Pin;
     use std::sync::atomic::{AtomicI64, Ordering};
     use std::sync::Arc;
 
@@ -102,11 +104,16 @@ mod test {
             &mut self,
             sql: &str,
             _params: Vec<Value>,
-        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
             let sql = sql.to_string();
             Box::pin(async move {
                 let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
-                Ok(vec![data])
+                let stream: Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>> =
+                    Box::pin(futures::stream::iter(vec![Ok(data)]));
+                Ok(stream)
             })
         }
 

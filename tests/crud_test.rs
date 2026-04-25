@@ -14,6 +14,7 @@ extern crate rbatis;
 mod test {
     use dark_std::sync::SyncVec;
     use futures_core::future::BoxFuture;
+    use futures_core::Stream;
     use rbatis::executor::{Executor, RBatisConnExecutor};
     use rbatis::intercept::{Intercept, ResultType};
     use rbatis::intercept_page::PageIntercept;
@@ -145,19 +146,19 @@ mod test {
             } else {
                 // Return rbs Value format for MockTable fields
                 let result = match i {
-                    0 => Value::String("1".to_string()),        // id
-                    1 => Value::String("test_name".to_string()), // name
-                    2 => Value::Null,                           // pc_link
-                    3 => Value::Null,                           // h5_link
-                    4 => Value::Null,                           // pc_banner_img
-                    5 => Value::Null,                           // h5_banner_img
-                    6 => Value::Null,                           // sort
-                    7 => Value::I32(1),                        // status
-                    8 => Value::Null,                           // remark
+                    0 => Value::String("1".to_string()),                   // id
+                    1 => Value::String("test_name".to_string()),           // name
+                    2 => Value::Null,                                      // pc_link
+                    3 => Value::Null,                                      // h5_link
+                    4 => Value::Null,                                      // pc_banner_img
+                    5 => Value::Null,                                      // h5_banner_img
+                    6 => Value::Null,                                      // sort
+                    7 => Value::I32(1),                                    // status
+                    8 => Value::Null,                                      // remark
                     9 => Value::String("2023-01-01 00:00:00".to_string()), // create_time
-                    10 => Value::I64(1),                        // version
-                    11 => Value::I32(0),                       // delete_flag
-                    12 => Value::U64(self.count),               // count
+                    10 => Value::I64(1),                                   // version
+                    11 => Value::I32(0),                                   // delete_flag
+                    12 => Value::U64(self.count),                          // count
                     _ => Value::Null,
                 };
                 Ok(result)
@@ -173,11 +174,16 @@ mod test {
             &mut self,
             sql: &str,
             params: Vec<Value>,
-        ) -> BoxFuture<'_, Result<Vec<Box<dyn Row>>, Error>> {
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
             let sql = sql.to_string();
             Box::pin(async move {
                 let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
-                Ok(vec![data])
+                let stream: Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>> =
+                    Box::pin(futures::stream::iter(vec![Ok(data)]));
+                Ok(stream)
             })
         }
 

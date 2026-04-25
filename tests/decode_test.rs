@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
-    use rbs::Value;
     use rbs::value::map::ValueMap;
+    use rbs::Value;
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
     use std::str::FromStr;
@@ -23,7 +23,8 @@ mod test {
     #[test]
     fn test_decode_hashmap() {
         // [{k:value}] format
-        let m: HashMap<String, Value> = rbatis::decode(Value::Array(vec![make_map("a", Value::I64(1))])).unwrap();
+        let m: HashMap<String, Value> =
+            rbatis::decode(Value::Array(vec![make_map("a", Value::I64(1))])).unwrap();
         println!("{:#?}", m);
         assert_eq!(m.get("a").unwrap().as_i64(), Value::I32(1).as_i64());
     }
@@ -99,7 +100,11 @@ mod test {
     #[test]
     fn test_decode_string() {
         // [{k:value}] format
-        let v: String = rbatis::decode(Value::Array(vec![make_map("a", Value::String("a".to_string()))])).unwrap();
+        let v: String = rbatis::decode(Value::Array(vec![make_map(
+            "a",
+            Value::String("a".to_string()),
+        )]))
+        .unwrap();
         assert_eq!(v, "a");
     }
 
@@ -109,7 +114,8 @@ mod test {
         let v: serde_json::Value = rbatis::decode(Value::Array(vec![
             make_array_map(vec![("1", Value::I64(1)), ("2", Value::I64(2))]),
             make_array_map(vec![("1", Value::I64(1)), ("2", Value::I64(2))]),
-        ])).unwrap();
+        ]))
+        .unwrap();
         assert_eq!(
             v,
             serde_json::from_str::<serde_json::Value>(r#"[{"1":1,"2":2},{"1":1,"2":2}]"#).unwrap()
@@ -192,15 +198,21 @@ mod test {
         // [{k:value}] format
 
         // Option<i32>
-        let v1: Option<i32> = rbatis::decode(Value::Array(vec![make_map("a", Value::I32(1))])).unwrap();
+        let v1: Option<i32> =
+            rbatis::decode(Value::Array(vec![make_map("a", Value::I32(1))])).unwrap();
         assert_eq!(v1, Some(1));
 
         // Option<String>
-        let v2: Option<String> = rbatis::decode(Value::Array(vec![make_map("a", Value::String("test".to_string()))])).unwrap();
+        let v2: Option<String> = rbatis::decode(Value::Array(vec![make_map(
+            "a",
+            Value::String("test".to_string()),
+        )]))
+        .unwrap();
         assert_eq!(v2, Some("test".to_string()));
 
         // null值解码为None
-        let v3: Option<i32> = rbatis::decode(Value::Array(vec![make_map("a", Value::Null)])).unwrap();
+        let v3: Option<i32> =
+            rbatis::decode(Value::Array(vec![make_map("a", Value::Null)])).unwrap();
         assert_eq!(v3, None);
     }
 
@@ -263,8 +275,14 @@ mod test {
 
         // [{k:value}] format
         let value = Value::Array(vec![
-            make_array_map(vec![("id", Value::I32(1)), ("name", Value::String("test1".to_string()))]),
-            make_array_map(vec![("id", Value::I32(2)), ("name", Value::String("test2".to_string()))]),
+            make_array_map(vec![
+                ("id", Value::I32(1)),
+                ("name", Value::String("test1".to_string())),
+            ]),
+            make_array_map(vec![
+                ("id", Value::I32(2)),
+                ("name", Value::String("test2".to_string())),
+            ]),
         ]);
 
         let result: Vec<Item> = rbatis::decode(value).unwrap();

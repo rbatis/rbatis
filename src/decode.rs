@@ -1,7 +1,7 @@
 //! Types and traits for decoding values from the database.
 use std::ops::Index;
 
-use rbs::{Value};
+use rbs::Value;
 use serde::de::DeserializeOwned;
 
 use crate::Error;
@@ -61,9 +61,9 @@ where
     let values = datas.index(0);
     match values {
         Value::Map(arr) => {
-             if arr.len() == 1 {
+            if arr.len() == 1 {
                 // 尝试直接解码单个元素，失败则继续 fallback 到 Vec 方式
-                if let Some((_key,value)) = arr.into_iter().next() {
+                if let Some((_key, value)) = arr.into_iter().next() {
                     if let Ok(result) = rbs::from_value_ref::<T>(value) {
                         return Ok(result);
                     }
@@ -71,10 +71,12 @@ where
             }
         }
         _ => {}
-     }
-     //convert to map (for struct types or when direct decode fails)
-     let arr:Vec<T> = rbs::from_value_ref(datas)?;
-     arr.into_iter().next().ok_or_else(||Error::from("fail type"))
+    }
+    //convert to map (for struct types or when direct decode fails)
+    let arr: Vec<T> = rbs::from_value_ref(datas)?;
+    arr.into_iter()
+        .next()
+        .ok_or_else(|| Error::from("fail type"))
 }
 
 pub fn is_debug_mode() -> bool {
