@@ -2,7 +2,6 @@ use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::RBatisTxExecutor;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{Error, RBatis};
 use rbs::value;
 
@@ -38,29 +37,6 @@ pub async fn main() -> Result<(), Error> {
         rbdc_sqlite::driver::SqliteDriver {},
         "sqlite://target/sqlite.db",
     )?;
-    // table sync done
-    fast_log::logger().set_level(LevelFilter::Off);
-    _ = RBatis::sync(
-        &rb.acquire().await?,
-        &SqliteTableMapper {},
-        &Activity {
-            id: Some(String::new()),
-            name: Some(String::new()),
-            pc_link: Some(String::new()),
-            h5_link: Some(String::new()),
-            pc_banner_img: Some(String::new()),
-            h5_banner_img: Some(String::new()),
-            sort: Some(String::new()),
-            status: Some(0),
-            remark: Some(String::new()),
-            create_time: Some(DateTime::now()),
-            version: Some(0),
-            delete_flag: Some(0),
-        },
-        "activity",
-    )
-    .await;
-    fast_log::logger().set_level(LevelFilter::Debug);
 
     //clear data
     let _ = Activity::delete_by_map(&rb.clone(), value! {"id":["3"]}).await;
