@@ -47,7 +47,7 @@ pub async fn main() -> Result<(), Error> {
         &rb,
         value! {
             "id": "1",
-            "ids": ["1","2","3"]
+            "name": ["1","2","3"]
         },
     )
     .await?;
