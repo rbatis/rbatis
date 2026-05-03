@@ -101,7 +101,7 @@ mod test {
                 .or_insert(1);
         }
         for (_, v) in id_map {
-            assert_eq!(v <= 1, true);
+            assert!(v <= 1);
         }
     }
 

@@ -85,10 +85,19 @@ impl Snowflake {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> Snowflake {
+        <Snowflake as Default>::default()
+    }
+}
+
+impl Default for Snowflake {
+    fn default() -> Self {
         Snowflake::new(1, 1, 0)
     }
+}
 
+impl Snowflake {
     #[inline]
     pub fn generate_id(&self) -> i64 {
         let g = self.lock.lock();

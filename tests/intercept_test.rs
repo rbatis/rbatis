@@ -90,7 +90,7 @@ mod test {
                 if i == 0 {
                     Ok(Value::String(self.sql.clone()))
                 } else {
-                    Ok(Value::U64(self.count.clone()))
+                    Ok(Value::U64(self.count))
                 }
             }
         }
@@ -110,7 +110,7 @@ mod test {
         > {
             let sql = sql.to_string();
             Box::pin(async move {
-                let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
+                let data = Box::new(MockRow { sql, count: 1 }) as Box<dyn Row>;
                 let stream: Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>> =
                     Box::pin(futures::stream::iter(vec![Ok(data)]));
                 Ok(stream)
@@ -207,7 +207,7 @@ mod test {
             inner: AtomicI64::new(0),
         }));
         let m = rb.get_intercept::<MockIntercept>();
-        assert_eq!(m.is_some(), true);
+        assert!(m.is_some());
         let m = m.unwrap();
         m.inner.store(1, Ordering::SeqCst);
         assert_eq!(m.inner.load(Ordering::Relaxed), 1);

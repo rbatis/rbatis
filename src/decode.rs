@@ -12,7 +12,7 @@ use crate::Error;
 /// or object used rbs::Value macro object
 /// values = [{k:v},...]
 /// T = Vec<YourStruct>
-pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
+pub fn decode_ref<T>(values: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
@@ -34,7 +34,7 @@ where
     }
 }
 
-pub fn decode<T: ?Sized>(bs: Value) -> Result<T, Error>
+pub fn decode<T>(bs: Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
 {
@@ -48,7 +48,7 @@ where
     T: DeserializeOwned,
 {
     // Handle empty array case
-    if datas.len() == 0 {
+    if datas.is_empty() {
         return Err(Error::from("decode empty array value"));
     }
     //decode struct
@@ -59,18 +59,15 @@ where
         )));
     }
     let values = datas.index(0);
-    match values {
-        Value::Map(arr) => {
-            if arr.len() == 1 {
-                // 尝试直接解码单个元素，失败则继续 fallback 到 Vec 方式
-                if let Some((_key, value)) = arr.into_iter().next() {
-                    if let Ok(result) = rbs::from_value_ref::<T>(value) {
-                        return Ok(result);
-                    }
+    if let Value::Map(arr) = values {
+        if arr.len() == 1 {
+            // 尝试直接解码单个元素，失败则继续 fallback 到 Vec 方式
+            if let Some((_key, value)) = arr.into_iter().next() {
+                if let Ok(result) = rbs::from_value_ref::<T>(value) {
+                    return Ok(result);
                 }
             }
         }
-        _ => {}
     }
     //convert to map (for struct types or when direct decode fails)
     let arr: Vec<T> = rbs::from_value_ref(datas)?;
@@ -85,16 +82,5 @@ where
 }
 
 pub fn is_debug_mode() -> bool {
-    if cfg!(debug_assertions) {
-        #[cfg(feature = "debug_mode")]
-        {
-            true
-        }
-        #[cfg(not(feature = "debug_mode"))]
-        {
-            false
-        }
-    } else {
-        false
-    }
+    cfg!(all(debug_assertions, feature = "debug_mode"))
 }

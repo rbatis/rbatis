@@ -161,7 +161,7 @@ fn test_element_with_nested_children() {
         .expect("Should find a nested if element");
 
     assert_eq!(nested_if_element.tag, "if");
-    assert!(nested_if_element.childs.len() >= 1);
+    assert!(!nested_if_element.childs.is_empty());
     assert!(nested_if_element
         .childs
         .iter()

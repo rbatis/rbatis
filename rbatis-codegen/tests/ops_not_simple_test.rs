@@ -10,5 +10,5 @@ fn test_not_trait_exists() {
     let _v = Value::Bool(true);
 
     // If this compiles, the trait is available
-    assert!(true);
+    let _ = _v;
 }

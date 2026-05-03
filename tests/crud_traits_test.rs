@@ -241,7 +241,7 @@ mod test {
 
     #[test]
     fn test_operator_sql_f64() {
-        let v = Value::F64(3.14);
+        let v = Value::F64(1.23);
         let result = v.operator_sql();
         assert_eq!(result, "");
     }

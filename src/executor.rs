@@ -50,7 +50,7 @@ pub struct RBatisConnExecutor {
 impl RBatisConnExecutor {
     pub fn new(id: i64, conn: Box<dyn Connection>, rb: RBatis) -> Self {
         Self {
-            id: id,
+            id,
             conn: Arc::new(Mutex::new(conn)),
             rb: rb.clone(),
             intercepts: rb.intercepts.clone(),
@@ -294,7 +294,7 @@ impl RBatisConnExecutor {
             let id = self.id;
             let rb = self.rb.clone();
             let conn = self.take_connection();
-            let mut conn = conn.ok_or_else(|| Error::from("Failed to unwrap Arc"))?;
+            let mut conn = conn.ok_or_else(|| Error::from("[rb] failed to take connection: connection Arc is still shared (this may happen if the executor was cloned)"))?;
             conn.begin().await?;
             let conn_executor = RBatisConnExecutor::new(id, conn, rb);
             Ok(RBatisTxExecutor::new(task_id, conn_executor))
@@ -302,11 +302,11 @@ impl RBatisConnExecutor {
     }
 
     pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async { Ok(self.conn.lock().await.rollback().await?) })
+        Box::pin(async { self.conn.lock().await.rollback().await })
     }
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
-        Box::pin(async { Ok(self.conn.lock().await.commit().await?) })
+        Box::pin(async { self.conn.lock().await.commit().await })
     }
 }
 
@@ -337,11 +337,11 @@ impl Debug for RBatisTxExecutor {
     }
 }
 
-impl<'a> RBatisTxExecutor {
+impl RBatisTxExecutor {
     pub fn new(tx_id: i64, conn_executor: RBatisConnExecutor) -> Self {
         RBatisTxExecutor {
-            tx_id: tx_id,
-            conn_executor: conn_executor,
+            tx_id,
+            conn_executor,
             done: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -362,7 +362,7 @@ impl<'a> RBatisTxExecutor {
         T: DeserializeOwned,
     {
         let v = Executor::query(self, sql, args).await?;
-        Ok(decode(v)?)
+        decode(v)
     }
 
     pub fn begin(self) -> BoxFuture<'static, Result<Self, Error>> {
@@ -374,17 +374,17 @@ impl<'a> RBatisTxExecutor {
 
     pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn_executor.conn.lock().await.rollback().await?;
+            self.conn_executor.conn.lock().await.rollback().await?;
             self.done.store(true, Ordering::Relaxed);
-            Ok(r)
+            Ok(())
         })
     }
 
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
-            let r = self.conn_executor.conn.lock().await.commit().await?;
+            self.conn_executor.conn.lock().await.commit().await?;
             self.done.store(true, Ordering::Relaxed);
-            Ok(r)
+            Ok(())
         })
     }
 
@@ -523,7 +523,7 @@ impl Executor for RBatisTxExecutor {
                     }
                 }
             }
-            Ok(result?)
+            result
         })
     }
 }

@@ -103,7 +103,7 @@ mod test {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
         };
         block_on(f);
     }
@@ -115,7 +115,7 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
             tx.set_done(true);
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -127,9 +127,9 @@ mod test {
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
             tx.set_done(true);
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
             tx.set_done(false);
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
         };
         block_on(f);
     }
@@ -140,9 +140,9 @@ mod test {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
             tx.commit().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -153,9 +153,9 @@ mod test {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
             tx.rollback().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -168,10 +168,10 @@ mod test {
             let tx = rb.acquire_begin().await.unwrap();
 
             tx.commit().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
 
             tx.commit().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -184,10 +184,10 @@ mod test {
             let tx = rb.acquire_begin().await.unwrap();
 
             tx.rollback().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
 
             tx.rollback().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -202,7 +202,7 @@ mod test {
             let tx = rb.acquire_begin().await.unwrap();
 
             let tx2 = tx.begin().await.unwrap();
-            assert_eq!(tx2.done(), false);
+            assert!(!tx2.done());
         };
         block_on(f);
     }
@@ -215,7 +215,7 @@ mod test {
             let tx = rb.acquire_begin().await.unwrap();
             let tx2 = tx.begin().await.unwrap();
             let tx3 = tx2.begin().await.unwrap();
-            assert_eq!(tx3.done(), false);
+            assert!(!tx3.done());
         };
         block_on(f);
     }
@@ -288,7 +288,7 @@ mod test {
             let guard = tx.defer_async(|_tx| async {});
 
             guard.commit().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -302,7 +302,7 @@ mod test {
             let guard = tx.defer_async(|_tx| async {});
 
             guard.rollback().await.unwrap();
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -344,7 +344,7 @@ mod test {
             drop(_guard);
 
             // Verify tx still accessible
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
         };
         block_on(f);
     }
@@ -507,7 +507,7 @@ mod test {
         let rb = RBatis::new();
         rb.init(MockDriver {}, "test").unwrap();
         let tx = rb.try_acquire_begin().await.unwrap();
-        assert_eq!(tx.done(), false);
+        assert!(!tx.done());
     }
 
     #[tokio::test]

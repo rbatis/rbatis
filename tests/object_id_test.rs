@@ -6,10 +6,10 @@ mod test {
 
     #[test]
     fn test_new() {
-        println!("objectId:{}", ObjectId::new().to_string());
-        println!("objectId:{}", ObjectId::new().to_string());
-        println!("objectId:{}", ObjectId::new().to_string());
-        println!("objectId:{}", ObjectId::new().to_string());
+        println!("objectId:{}", ObjectId::new());
+        println!("objectId:{}", ObjectId::new());
+        println!("objectId:{}", ObjectId::new());
+        println!("objectId:{}", ObjectId::new());
     }
 
     #[test]

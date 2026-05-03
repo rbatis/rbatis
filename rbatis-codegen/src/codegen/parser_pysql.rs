@@ -401,13 +401,11 @@ impl NodeType {
 
     fn strip_quotes_for_attr(s: &str) -> String {
         let val = s.trim(); // Trim whitespace around the value first
-        if val.starts_with('\'') && val.ends_with('\'')
-            || (val.starts_with('"') && val.ends_with('"'))
-        {
-            if val.len() >= 2 {
+        if (val.starts_with('\'') && val.ends_with('\'')
+            || (val.starts_with('"') && val.ends_with('"')))
+            && val.len() >= 2 {
                 return val[1..val.len() - 1].to_string();
             }
-        }
         val.to_string() // Return the trimmed string if no quotes or malformed quotes
     }
 

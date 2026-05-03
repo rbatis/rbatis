@@ -287,34 +287,34 @@ fn test_string_cmp() {
     // &String vs &str
     let a_string = "a".to_string();
     let b_string = "b".to_string();
-    assert_eq!((&a_string).op_partial_cmp(&"a"), Some(Ordering::Equal));
-    assert_eq!((&b_string).op_partial_cmp(&"a"), Some(Ordering::Greater));
-    assert_eq!((&a_string).op_partial_cmp(&"b"), Some(Ordering::Less));
+    assert_eq!(a_string.op_partial_cmp(&"a"), Some(Ordering::Equal));
+    assert_eq!(b_string.op_partial_cmp(&"a"), Some(Ordering::Greater));
+    assert_eq!(a_string.op_partial_cmp(&"b"), Some(Ordering::Less));
 
     // &String vs String
     assert_eq!(
-        (&a_string).op_partial_cmp(&"a".to_string()),
+        a_string.op_partial_cmp(&"a".to_string()),
         Some(Ordering::Equal)
     );
     assert_eq!(
-        (&b_string).op_partial_cmp(&"a".to_string()),
+        b_string.op_partial_cmp(&"a".to_string()),
         Some(Ordering::Greater)
     );
     assert_eq!(
-        (&a_string).op_partial_cmp(&"b".to_string()),
+        a_string.op_partial_cmp(&"b".to_string()),
         Some(Ordering::Less)
     );
 
     // &String vs &String
     assert_eq!(
-        (&a_string).op_partial_cmp(&&a_string),
+        a_string.op_partial_cmp(&&a_string),
         Some(Ordering::Equal)
     );
     assert_eq!(
-        (&b_string).op_partial_cmp(&&a_string),
+        b_string.op_partial_cmp(&&a_string),
         Some(Ordering::Greater)
     );
-    assert_eq!((&a_string).op_partial_cmp(&&b_string), Some(Ordering::Less));
+    assert_eq!(a_string.op_partial_cmp(&&b_string), Some(Ordering::Less));
 }
 
 #[test]
@@ -429,10 +429,10 @@ fn test_reference_variants() {
     );
 
     // &Value vs primitive
-    assert_eq!((&value).op_partial_cmp(&val_i64), Some(Ordering::Equal));
+    assert_eq!(value.op_partial_cmp(&val_i64), Some(Ordering::Equal));
 
     // &Value vs &primitive
-    assert_eq!((&value).op_partial_cmp(&&val_i64), Some(Ordering::Equal));
+    assert_eq!(value.op_partial_cmp(&&val_i64), Some(Ordering::Equal));
 
     // primitive vs Value
     assert_eq!(val_i64.op_partial_cmp(&value), Some(Ordering::Equal));
@@ -457,10 +457,10 @@ fn test_reference_variants() {
     assert_eq!(val_i64.op_partial_cmp(&&value), Some(Ordering::Equal));
 
     // &primitive vs Value
-    assert_eq!((&val_i64).op_partial_cmp(&value), Some(Ordering::Equal));
+    assert_eq!(val_i64.op_partial_cmp(&value), Some(Ordering::Equal));
 
     // &primitive vs &Value
-    assert_eq!((&val_i64).op_partial_cmp(&&value), Some(Ordering::Equal));
+    assert_eq!(val_i64.op_partial_cmp(&&value), Some(Ordering::Equal));
 
     // String引用相关测试 - 确保只测试已实现的比较
     // String vs &str
@@ -474,19 +474,19 @@ fn test_reference_variants() {
 
     // &String vs &str
     assert_eq!(
-        (&val_string).op_partial_cmp(&val_str),
+        val_string.op_partial_cmp(&val_str),
         Some(Ordering::Equal)
     );
 
     // &String vs String
     assert_eq!(
-        (&val_string).op_partial_cmp(&val_string),
+        val_string.op_partial_cmp(&val_string),
         Some(Ordering::Equal)
     );
 
     // &String vs &String
     assert_eq!(
-        (&val_string).op_partial_cmp(&&val_string),
+        val_string.op_partial_cmp(&&val_string),
         Some(Ordering::Equal)
     );
 
@@ -639,13 +639,13 @@ fn test_bool_value_comparison_comprehensive() {
     // 带引用版本 &Value::Bool -> bool
     let true_value = Value::Bool(true);
     let false_value = Value::Bool(false);
-    assert_eq!((&true_value).op_partial_cmp(&true), Some(Ordering::Equal));
+    assert_eq!(true_value.op_partial_cmp(&true), Some(Ordering::Equal));
     assert_eq!(
-        (&true_value).op_partial_cmp(&false),
+        true_value.op_partial_cmp(&false),
         Some(Ordering::Greater)
     );
-    assert_eq!((&false_value).op_partial_cmp(&true), Some(Ordering::Less));
-    assert_eq!((&false_value).op_partial_cmp(&false), Some(Ordering::Equal));
+    assert_eq!(false_value.op_partial_cmp(&true), Some(Ordering::Less));
+    assert_eq!(false_value.op_partial_cmp(&false), Some(Ordering::Equal));
 
     // 带引用版本 bool -> &Value::Bool
     assert_eq!(true.op_partial_cmp(&&true_value), Some(Ordering::Equal));
@@ -657,37 +657,37 @@ fn test_bool_value_comparison_comprehensive() {
     let true_bool = true;
     let false_bool = false;
     assert_eq!(
-        (&true_bool).op_partial_cmp(&true_value),
+        true_bool.op_partial_cmp(&true_value),
         Some(Ordering::Equal)
     );
     assert_eq!(
-        (&true_bool).op_partial_cmp(&false_value),
+        true_bool.op_partial_cmp(&false_value),
         Some(Ordering::Greater)
     );
     assert_eq!(
-        (&false_bool).op_partial_cmp(&true_value),
+        false_bool.op_partial_cmp(&true_value),
         Some(Ordering::Less)
     );
     assert_eq!(
-        (&false_bool).op_partial_cmp(&false_value),
+        false_bool.op_partial_cmp(&false_value),
         Some(Ordering::Equal)
     );
 
     // 带引用版本 &bool -> &Value::Bool
     assert_eq!(
-        (&true_bool).op_partial_cmp(&&true_value),
+        true_bool.op_partial_cmp(&&true_value),
         Some(Ordering::Equal)
     );
     assert_eq!(
-        (&true_bool).op_partial_cmp(&&false_value),
+        true_bool.op_partial_cmp(&&false_value),
         Some(Ordering::Greater)
     );
     assert_eq!(
-        (&false_bool).op_partial_cmp(&&true_value),
+        false_bool.op_partial_cmp(&&true_value),
         Some(Ordering::Less)
     );
     assert_eq!(
-        (&false_bool).op_partial_cmp(&&false_value),
+        false_bool.op_partial_cmp(&&false_value),
         Some(Ordering::Equal)
     );
 }

@@ -45,28 +45,28 @@ impl Parse for ParseArgs {
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);
     let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = func::impl_fn(
+    
+    func::impl_fn(
         "",
         &target_fn.sig.ident.to_string(),
         &args.to_string(),
         true,
         &[],
     )
-    .into();
-    stream
+    .into()
 }
 
 pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = parser_html::impl_fn_html(&target_fn, &args);
-    stream
+    
+    parser_html::impl_fn_html(&target_fn, &args)
 }
 
 /// support py_sql fn convert
 pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
     let args = parse_macro_input!(args as ParseArgs);
     let target_fn = syn::parse(func).unwrap();
-    let stream = parser_pysql::impl_fn_py(&target_fn, &args);
-    return stream;
+    
+    parser_pysql::impl_fn_py(&target_fn, &args)
 }

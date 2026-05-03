@@ -51,7 +51,7 @@ fn test_value_into_sql() {
 fn test_value_ref_into_sql() {
     // 测试Value引用类型
     let val = Value::String("test".into());
-    assert_eq!((&val).sql(), "'test'");
+    assert_eq!(val.sql(), "'test'");
 
     // 测试Cow<Value>
     let cow = Cow::Borrowed(&val);

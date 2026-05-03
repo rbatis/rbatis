@@ -49,7 +49,7 @@ pub(crate) fn impl_macro_html_sql(
         }
     }
     let mut sql_ident = quote!();
-    if args.sqls.len() >= 1 {
+    if !args.sqls.is_empty() {
         if rbatis_name.is_empty() {
             panic!(
                 "[rb] you should add rbatis ref param   `rb:&dyn Executor`  on '{}()'!",
@@ -58,7 +58,7 @@ pub(crate) fn impl_macro_html_sql(
         }
         let mut s = "".to_string();
         for v in &args.sqls {
-            s = s + v.value().as_str();
+            s += v.value().as_str();
         }
         sql_ident = quote!(#s);
     } else {
@@ -78,7 +78,7 @@ pub(crate) fn impl_macro_html_sql(
         if file_path.is_relative() {
             let mut manifest_dir =
                 std::env::var("CARGO_MANIFEST_DIR").expect("Failed to read CARGO_MANIFEST_DIR");
-            manifest_dir.push_str("/");
+            manifest_dir.push('/');
             let mut current = PathBuf::from(manifest_dir);
             current.push(file_name.clone());
             if !current.exists() {
@@ -89,9 +89,9 @@ pub(crate) fn impl_macro_html_sql(
         }
         let mut html_data = String::new();
         let mut f = File::open(file_name.as_str())
-            .expect(&format!("File Name = '{}' does not exist", file_name));
+            .unwrap_or_else(|_| panic!("File Name = '{}' does not exist", file_name));
         f.read_to_string(&mut html_data)
-            .expect(&format!("{} read_to_string fail", file_name));
+            .unwrap_or_else(|_| panic!("{} read_to_string fail", file_name));
         let htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
             .expect("load html content fail");
         let token = htmls.get(&func_name_ident.to_string()).expect("");
@@ -109,7 +109,7 @@ pub(crate) fn impl_macro_html_sql(
     }
     if rbatis_ident.to_string().starts_with("mut ") {
         rbatis_ident = Ident::new(
-            &rbatis_ident.to_string().trim_start_matches("mut "),
+            rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
         .to_token_stream();
@@ -170,7 +170,7 @@ pub(crate) fn impl_macro_html_sql(
     } else {
         target_fn.vis.to_token_stream()
     };
-    return quote! {
+    quote! {
        #visibility async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          #include_data
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
@@ -184,7 +184,7 @@ pub(crate) fn impl_macro_html_sql(
          #call_method
        }
     }
-    .into();
+    .into()
 }
 
 /// Generate paginated html_sql implementation
@@ -298,11 +298,11 @@ pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) 
     };
 
     // Generate final TokenStream
-    return quote! {
+    quote! {
         #(#attrs)*
         #defaultness #unsafety #impl_token #generics #trait_tokens #self_ty {
             #(#processed_items)*
         }
     }
-    .into();
+    .into()
 }

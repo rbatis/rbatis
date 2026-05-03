@@ -23,10 +23,7 @@ fn cmp_bool(value: bool, rhs: bool) -> Option<Ordering> {
     Some(value.cmp(&rhs))
 }
 
-/**
-PartialOrd
- **/
-
+/// PartialOrd
 fn eq_u64(value: &Value, rhs: u64) -> Option<Ordering> {
     let value = value.u64();
     if value == rhs {
@@ -64,7 +61,7 @@ fn eq_bool(value: &Value, rhs: bool) -> Option<Ordering> {
     let value = value.bool();
     if value == rhs {
         Some(Ordering::Equal)
-    } else if value == true && rhs == false {
+    } else if value && !rhs {
         Some(Ordering::Greater)
     } else {
         Some(Ordering::Less)
@@ -89,7 +86,7 @@ fn op_partial_cmp_value(left: &Value, rhs: &Value) -> Option<Ordering> {
         Value::I32(n) => cmp_f64(*n as f64, rhs.f64()),
         Value::I64(n) => cmp_f64(*n as f64, rhs.f64()),
         Value::U32(n) => cmp_u64(*n as u64, rhs.u64()),
-        Value::U64(n) => cmp_u64(*n as u64, rhs.u64()),
+        Value::U64(n) => cmp_u64(*n , rhs.u64()),
         Value::F32(n) => cmp_f64(*n as f64, rhs.f64()),
         Value::F64(n) => cmp_f64(*n, rhs.f64()),
         Value::String(s) => Some(s.as_str().cmp(&rhs.clone().string())),

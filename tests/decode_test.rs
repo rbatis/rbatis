@@ -190,7 +190,7 @@ mod test {
     fn test_decode_bool() {
         // [{k:value}] format
         let v: bool = rbatis::decode(Value::Array(vec![make_map("a", Value::Bool(true))])).unwrap();
-        assert_eq!(v, true);
+        assert!(v);
     }
 
     #[test]
@@ -235,7 +235,7 @@ mod test {
         let result: TestStruct = rbatis::decode(value).unwrap();
         assert_eq!(result.id, 1);
         assert_eq!(result.name, "test");
-        assert_eq!(result.active, true);
+        assert!(result.active);
     }
 
     #[test]

@@ -108,7 +108,7 @@ mod test {
 
     #[test]
     fn test_decode_f64_from_non_array() {
-        let value = Value::F64(3.14);
+        let value = Value::F64(1.23);
         let result = rbatis::decode::<f64>(value);
         assert!(result.is_err());
         assert_eq!(
@@ -306,7 +306,7 @@ mod test {
                 Value::String("two".to_string()),
             );
             m.insert(Value::String("f3".to_string()), Value::Bool(true));
-            m.insert(Value::String("f4".to_string()), Value::F64(3.14));
+            m.insert(Value::String("f4".to_string()), Value::F64(1.23));
             m.insert(Value::String("f5".to_string()), Value::I64(999));
             m.insert(
                 Value::String("f6".to_string()),
@@ -319,8 +319,8 @@ mod test {
         let result: ManyFields = rbatis::decode(value).unwrap();
         assert_eq!(result.f1, 1);
         assert_eq!(result.f2, "two");
-        assert_eq!(result.f3, true);
-        assert!((result.f4 - 3.14).abs() < f64::EPSILON);
+        assert!(result.f3);
+        assert!((result.f4 - 1.23).abs() < f64::EPSILON);
         assert_eq!(result.f5, 999);
         assert_eq!(result.f6, Some("some".to_string()));
         assert_eq!(result.f7, None);

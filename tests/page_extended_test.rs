@@ -19,7 +19,7 @@ mod test {
         assert_eq!(req.page_no, 1);
         assert_eq!(req.page_size, 10);
         assert_eq!(req.total, DEFAULT_PAGE_SIZE); // default total from new()
-        assert_eq!(req.do_count, true);
+        assert!(req.do_count);
     }
 
     #[test]
@@ -28,7 +28,7 @@ mod test {
         assert_eq!(req.page_no, 2);
         assert_eq!(req.page_size, 5);
         assert_eq!(req.total, 100);
-        assert_eq!(req.do_count, true);
+        assert!(req.do_count);
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod test {
     #[test]
     fn test_page_request_set_do_count_chain() {
         let req = PageRequest::new(1, 10).set_do_count(false);
-        assert_eq!(req.do_count, false);
+        assert!(!req.do_count);
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod test {
         assert_eq!(req.total, 200);
         assert_eq!(req.page_size, 25);
         assert_eq!(req.page_no, 5);
-        assert_eq!(req.do_count, false);
+        assert!(!req.do_count);
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod test {
         assert_eq!(req.total, 0);
         assert_eq!(req.page_no, 1);
         assert_eq!(req.page_size, DEFAULT_PAGE_SIZE);
-        assert_eq!(req.do_count, true);
+        assert!(req.do_count);
     }
 
     // ==================== IPageRequest::offset_limit Tests ====================
@@ -214,7 +214,7 @@ mod test {
     fn test_page_from_preserves_do_count() {
         let source = Page::new(1, 10, 100, vec![1, 2, 3]).set_do_count(false);
         let target: Page<i64> = Page::from(source);
-        assert_eq!(target.do_count, false);
+        assert!(!target.do_count);
     }
 
     // ==================== Page::records_take Tests ====================
@@ -309,7 +309,7 @@ mod test {
     #[test]
     fn test_page_set_do_count_chain() {
         let page: Page<i32> = Page::new(1, 10, 0, vec![]).set_do_count(false);
-        assert_eq!(page.do_count, false);
+        assert!(!page.do_count);
     }
 
     #[test]
@@ -340,7 +340,7 @@ mod test {
         assert_eq!(page.total, 0);
         assert_eq!(page.page_no, 1);
         assert_eq!(page.page_size, DEFAULT_PAGE_SIZE);
-        assert_eq!(page.do_count, true);
+        assert!(page.do_count);
     }
 
     // ==================== IPageRequest pages() edge cases ====================

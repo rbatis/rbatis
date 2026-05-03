@@ -180,7 +180,7 @@ mod test {
         > {
             let sql = sql.to_string();
             Box::pin(async move {
-                let data = Box::new(MockRow { sql: sql, count: 1 }) as Box<dyn Row>;
+                let data = Box::new(MockRow { sql, count: 1 }) as Box<dyn Row>;
                 let stream: Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>> =
                     Box::pin(futures::stream::iter(vec![Ok(data)]));
                 Ok(stream)
@@ -282,9 +282,9 @@ mod test {
                 .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
             tx.commit().await;
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -299,9 +299,9 @@ mod test {
                 .exec_decode("select * from mock_table", vec![])
                 .await
                 .unwrap();
-            assert_eq!(tx.done(), false);
+            assert!(!tx.done());
             tx.rollback().await;
-            assert_eq!(tx.done(), true);
+            assert!(tx.done());
         };
         block_on(f);
     }
@@ -647,7 +647,7 @@ mod test {
             let r = MockTable::update_by_map(&rb, &t, value! {"ids": ids})
                 .await
                 .unwrap();
-            assert_eq!(queue.is_empty(), true);
+            assert!(queue.is_empty());
             assert_eq!(r.rows_affected, 0);
         };
         block_on(f);
@@ -747,14 +747,14 @@ mod test {
             )
             .await
             .unwrap();
-            assert_eq!(queue.is_empty(), true);
+            assert!(queue.is_empty());
             assert_eq!(r.rows_affected, 0);
         };
         block_on(f);
     }
 
     #[derive(serde::Serialize, serde::Deserialize)]
-    pub struct DTO {
+    pub struct Dto {
         id: String,
     }
 
@@ -889,14 +889,14 @@ mod test {
                 count: 0,
             };
             let mut tx = rb.acquire_begin().await.unwrap();
-            let _r = MockTable::insert(&mut tx, &t).await.unwrap();
+            let _r = MockTable::insert(&tx, &t).await.unwrap();
 
             let mut tx = rb
                 .acquire_begin()
                 .await
                 .unwrap()
                 .defer_async(|_tx| async {});
-            let _r = MockTable::insert(&mut tx, &t).await.unwrap();
+            let _r = MockTable::insert(&tx, &t).await.unwrap();
         };
         block_on(f);
     }

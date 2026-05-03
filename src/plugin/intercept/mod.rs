@@ -18,7 +18,7 @@ pub enum ResultType<A, B> {
 }
 
 impl<A, B> ResultType<A, B> {
-    pub fn type_name<'a, 'b>(&'a self) -> &'b str {
+    pub fn type_name<'b>(&self) -> &'b str {
         match self {
             ResultType::Exec(_) => "exec",
             ResultType::Query(_) => "query",

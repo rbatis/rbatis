@@ -41,6 +41,12 @@ pub struct PageIntercept {
     pub count_ids: Arc<SyncHashMap<i64, PageRequest>>,
 }
 
+impl Default for PageIntercept {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PageIntercept {
     pub fn new() -> PageIntercept {
         Self {
@@ -75,18 +81,18 @@ impl Intercept for PageIntercept {
                 let v = &sql[start..end];
                 *sql = sql.replace(v, "count(1) as count").to_string();
                 if let Some(idx) = sql.rfind(" limit ") {
-                    *sql = (&sql[..idx]).to_string();
+                    *sql = sql[..idx].to_string();
                 }
                 if let Some(idx) = sql.rfind(" order by ") {
                     //remove args(args.pop())
                     let order_by_clause = &sql[idx..];
                     let driver_type = executor.driver_type().unwrap_or_default();
-                    let param_count = self.count_param_count(driver_type, &order_by_clause);
+                    let param_count = self.count_param_count(driver_type, order_by_clause);
                     // 移除对应的参数
                     for _ in 0..param_count {
                         args.pop();
                     }
-                    *sql = (&sql[..idx]).to_string();
+                    *sql = sql[..idx].to_string();
                 }
             }
         }

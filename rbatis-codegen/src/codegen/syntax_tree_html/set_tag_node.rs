@@ -46,7 +46,7 @@ impl HtmlAstNode for SetTagNode {
     {
         if let Some(collection_name) = &self.collection {
             // Logic from `make_sets` in original parser_html.rs
-            let is_skip_null = self.skip_null.as_deref().map_or(true, |v| v != "false");
+            let is_skip_null = self.skip_null.as_deref() != Some("false");
             let skip_strs: Vec<&str> = self
                 .skips
                 .split(',')

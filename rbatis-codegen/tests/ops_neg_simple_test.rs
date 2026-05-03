@@ -10,5 +10,5 @@ fn test_neg_trait_exists() {
     let _v = Value::I32(42);
 
     // If this compiles, the trait is available
-    assert!(true);
+    let _ = _v;
 }

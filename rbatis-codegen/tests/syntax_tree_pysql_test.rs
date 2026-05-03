@@ -6,10 +6,10 @@ fn test_pysql_basic_parsing() {
     // covered in parser_pysql_test.rs
 
     // Just verify modules are accessible
-    let _ = rbatis_codegen::codegen::syntax_tree_pysql::string_node::StringNode {
+    let node = rbatis_codegen::codegen::syntax_tree_pysql::string_node::StringNode {
         value: "test".to_string(),
     };
 
     // If this compiles, basic imports work
-    assert!(true);
+    let _ = node;
 }

@@ -1,13 +1,9 @@
 use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
+#[derive(Default)]
 pub struct MysqlTableMapper {}
 
-impl Default for MysqlTableMapper {
-    fn default() -> Self {
-        MysqlTableMapper {}
-    }
-}
 
 impl ColumnMapper for MysqlTableMapper {
     fn driver_type(&self) -> String {
@@ -24,7 +20,7 @@ impl ColumnMapper for MysqlTableMapper {
             Value::F32(_) => "FLOAT".to_string(),
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
-                if v != "" {
+                if !v.is_empty() {
                     v.to_string()
                 } else {
                     if column.eq("id") || column.ends_with("_id") || column.starts_with("id_") {

@@ -91,14 +91,14 @@ mod test {
     fn test_bit_and() {
         let a = rbs::value!(true);
         let b = rbs::value!(true);
-        assert_eq!(a.op_bitand(b), true);
+        assert!(a.op_bitand(b));
     }
 
     #[test]
     fn test_bit_or() {
         let a = rbs::value!(true);
         let b = rbs::value!(true);
-        assert_eq!(a.op_bitor(b), true);
+        assert!(a.op_bitor(b));
     }
 
     #[test]
@@ -119,7 +119,7 @@ mod test {
     fn test_eq() {
         let a = rbs::value!(1);
         let b = rbs::value!(1);
-        assert_eq!(a.op_eq(&b), true);
+        assert!(a.op_eq(&b));
     }
 
     #[test]
@@ -153,7 +153,7 @@ mod test {
     fn test_xor() {
         let a = rbs::value!(true);
         let b = rbs::value!(false);
-        assert_eq!(a.op_bitor(b), true);
+        assert!(a.op_bitor(b));
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod test {
             pub name: Option<String>,
         }
         let v: Option<MockTable> = rbs::from_value(Value::Null).unwrap();
-        assert_eq!(v.is_none(), true);
+        assert!(v.is_none());
     }
 
     #[test]
@@ -300,12 +300,11 @@ mod test {
             "name": 0,
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
-        println!("{}", v.to_string());
-        assert_eq!(
+        println!("{}", v);
+        assert!(
             v.to_string()
-                .contains("invalid type: integer `0`, expected a string, key ="),
-            true
+                .contains("invalid type: integer `0`, expected a string, key =")
         );
-        assert_eq!(v.to_string().contains("name"), true);
+        assert!(v.to_string().contains("name"));
     }
 }

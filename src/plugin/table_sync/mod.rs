@@ -13,7 +13,7 @@ pub use pg_mapper::*;
 use rbs::Value;
 pub use sqlite_mapper::*;
 
-const PRIMARY_KEY: &'static str = " PRIMARY KEY ";
+const PRIMARY_KEY: &str = " PRIMARY KEY ";
 
 /// create table if not exists, add column if not exists
 /// ```rust
@@ -92,19 +92,19 @@ pub fn sync<'a>(
                     )));
                 }
                 let mut sql_create = format!("CREATE TABLE {} ", name);
-                let mut sql_column = format!("");
+                let mut sql_column = String::new();
                 for (k, v) in &m {
                     let k = k.as_str().unwrap_or_default();
-                    let column_type_value = mapper.get_column_type(k, &v);
+                    let column_type_value = mapper.get_column_type(k, v);
                     sql_column.push_str(k);
-                    sql_column.push_str(" ");
+                    sql_column.push(' ');
                     sql_column.push_str(column_type_value.as_str());
                     if column_type_value.is_empty() && k.eq("id")
                         || v.as_str().unwrap_or_default() == "id"
                     {
-                        sql_column.push_str(&PRIMARY_KEY);
+                        sql_column.push_str(PRIMARY_KEY);
                     }
-                    sql_column.push_str(",");
+                    sql_column.push(',');
                 }
                 if sql_column.ends_with(",") {
                     sql_column = sql_column.trim_end_matches(",").to_string();
@@ -120,9 +120,9 @@ pub fn sync<'a>(
                                 let k = k.as_str().unwrap_or_default();
                                 let mut id_key = "";
                                 if k.eq("id") || v.as_str().unwrap_or_default() == "id" {
-                                    id_key = &PRIMARY_KEY;
+                                    id_key = PRIMARY_KEY;
                                 }
-                                let column_type = mapper.get_column_type(k, &v);
+                                let column_type = mapper.get_column_type(k, v);
                                 match executor
                                     .exec(
                                         &format!(

@@ -37,7 +37,7 @@ impl Display for Element {
                 f.write_str(">")?;
             }
         }
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -88,7 +88,7 @@ impl Element {
     pub fn child_strings(&self) -> Vec<&str> {
         let mut elements = vec![];
         for x in &self.childs {
-            if x.tag.eq("") {
+            if x.tag.is_empty() {
                 elements.push(x.data.as_str());
             }
             let v = x.child_strings();
@@ -110,7 +110,7 @@ impl Element {
 
 /// Loads HTML content into a vector of elements
 pub fn load_mapper_vec(html: &str) -> std::result::Result<Vec<Element>, Error> {
-    let elements = load_html(html).map_err(|e| Error::from(e))?;
+    let elements = load_html(html).map_err(Error::from)?;
 
     let mut mappers = Vec::new();
     for element in elements {

@@ -1,8 +1,6 @@
-use proc_macro2;
 use rbatis_codegen::error::Error;
 use std::error::Error as StdError;
 use std::io::{self, ErrorKind};
-use syn;
 
 #[test]
 fn test_error_display() {
@@ -31,7 +29,7 @@ fn test_error_from_io_error() {
 
 #[test]
 fn test_error_from_dyn_error() {
-    let io_error: Box<dyn StdError> = Box::new(io::Error::new(ErrorKind::Other, "其他错误"));
+    let io_error: Box<dyn StdError> = Box::new(io::Error::other("其他错误"));
     let error = Error::from(io_error.as_ref());
     assert_eq!(error.to_string(), "其他错误");
 }

@@ -19,7 +19,7 @@ impl ColumnMapper for SqliteTableMapper {
             Value::F32(_) => "DOUBLE".to_string(),
             Value::F64(_) => "DOUBLE".to_string(),
             Value::String(v) => {
-                if v != "" {
+                if !v.is_empty() {
                     v.to_string()
                 } else {
                     "TEXT".to_string()

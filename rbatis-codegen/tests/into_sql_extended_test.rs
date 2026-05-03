@@ -15,9 +15,9 @@ fn test_value_into_sql() {
     let sql = value.sql();
     assert_eq!(sql, "100");
 
-    let value = Value::F64(3.14);
+    let value = Value::F64(2.5);
     let sql = value.sql();
-    assert!(sql.contains("3.14"));
+    assert!(sql.contains("2.5"));
 
     let value = Value::Bool(true);
     let sql = value.sql();
@@ -77,9 +77,9 @@ fn test_number_into_sql() {
     let sql = value.sql();
     assert_eq!(sql, "20");
 
-    let value: f64 = 3.14;
+    let value: f64 = 2.5;
     let sql = value.sql();
-    assert!(sql.contains("3.14"));
+    assert!(sql.contains("2.5"));
 
     let value: f32 = 2.71;
     let sql = value.sql();

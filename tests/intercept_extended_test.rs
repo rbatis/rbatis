@@ -1,11 +1,11 @@
-/// Extended tests for intercept module covering:
-/// - ResultType::type_name()
-/// - Action::Next / Action::Return equality
-/// - LogInterceptor (level filter, clone, before/after behavior)
-/// - Intercept trait default implementations
-/// - RBatis::remove_intercept_dyn
-/// - RBatis::get_intercept_dyn
-/// - RBatis::is_debug_mode / driver_type
+//! Extended tests for intercept module covering:
+//! - ResultType::type_name()
+//! - Action::Next / Action::Return equality
+//! - LogInterceptor (level filter, clone, before/after behavior)
+//! - Intercept trait default implementations
+//! - RBatis::remove_intercept_dyn
+//! - RBatis::get_intercept_dyn
+//! - RBatis::is_debug_mode / driver_type
 
 #[cfg(test)]
 mod test {

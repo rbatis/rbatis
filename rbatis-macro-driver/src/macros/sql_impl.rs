@@ -32,7 +32,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
     }
 
     let mut sql_ident = quote!();
-    if args.sqls.len() >= 1 {
+    if !args.sqls.is_empty() {
         if rbatis_name.is_empty() {
             panic!(
                 "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
@@ -41,7 +41,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         }
         let mut s = "".to_string();
         for v in &args.sqls {
-            s = s + v.value().as_str();
+            s += v.value().as_str();
         }
         sql_ident = quote!(#s);
     } else {
@@ -59,7 +59,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
     }
     if rbatis_ident.to_string().starts_with("mut ") {
         rbatis_ident = Ident::new(
-            &rbatis_ident.to_string().trim_start_matches("mut "),
+            rbatis_ident.to_string().trim_start_matches("mut "),
             Span::call_site(),
         )
         .to_token_stream();
@@ -92,12 +92,12 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            #decode
        }
     };
-    return gen_token_temple.into();
+    gen_token_temple.into()
 }
 
 fn filter_args_context_id(
     rbatis_name: &str,
-    fn_arg_name_vec: &Vec<Box<Pat>>,
+    fn_arg_name_vec: &[Box<Pat>],
     skip_names: &[String],
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};

@@ -83,7 +83,7 @@ impl RBatis {
         let pool = DefaultPool::new(manager)?;
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("[rb] pool already initialized, init can only be called once"))?;
+            .map_err(|e| Error::from(format!("[rb] pool already initialized (existing pool: {:?}), init can only be called once", e)))?;
         Ok(())
     }
 
@@ -110,14 +110,14 @@ impl RBatis {
         let pool = Pool::new(ConnectionManager::new_options(driver, option))?;
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("[rb] pool already initialized, init_option can only be called once"))?;
+            .map_err(|e| Error::from(format!("[rb] pool already initialized (existing pool: {:?}), init_option can only be called once", e)))?;
         Ok(())
     }
 
     pub fn init_pool<Pool: rbdc::pool::Pool + 'static>(&self, pool: Pool) -> Result<(), Error> {
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("[rb] pool already initialized, init_pool can only be called once"))?;
+            .map_err(|e| Error::from(format!("[rb] pool already initialized (existing pool: {:?}), init_pool can only be called once", e)))?;
         Ok(())
     }
 
@@ -184,7 +184,7 @@ impl RBatis {
     /// get an DataBase Connection,and call begin method,used for the next step
     pub async fn acquire_begin(&self) -> Result<RBatisTxExecutor, Error> {
         let conn = self.acquire().await?;
-        Ok(conn.begin().await?)
+        conn.begin().await
     }
 
     /// try get an DataBase Connection,and call begin method,used for the next step
@@ -263,13 +263,10 @@ impl RBatis {
     /// let name = std::any::type_name::<Intercept>();
     /// ```
     pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        let mut index = 0;
-        for item in self.intercepts.iter() {
+        for (index, item) in self.intercepts.iter().enumerate() {
             if item.name() == name {
-                //this is safe
                 return self.intercepts.remove(index);
             }
-            index += 1;
         }
         None
     }

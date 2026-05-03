@@ -18,7 +18,7 @@ impl ColumnMapper for MssqlTableMapper {
             Value::F32(_) => "REAL".to_string(),
             Value::F64(_) => "FLOAT".to_string(),
             Value::String(v) => {
-                if v != "" {
+                if !v.is_empty() {
                     v.to_string()
                 } else {
                     "NVARCHAR(MAX)".to_string()

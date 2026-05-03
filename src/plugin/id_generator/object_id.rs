@@ -134,19 +134,19 @@ impl ObjectId {
     pub fn u128(&self) -> u128 {
         //4-TIMESTAMP 10
         let b: [u8; 4] = [self.id[0], self.id[1], self.id[2], self.id[3]];
-        let u4 = u32::from_be_bytes(b.into());
+        let u4 = u32::from_be_bytes(b);
 
         //5-PROCESS_ID_OFFSET 10
         let b: [u8; 8] = [
             0u8, 0u8, 0u8, self.id[4], self.id[5], self.id[6], self.id[7], self.id[8],
         ];
-        let u5 = u64::from_be_bytes(b.into());
+        let u5 = u64::from_be_bytes(b);
 
         //3-COUNTER_OFFSET  8
         let b: [u8; 4] = [0u8, self.id[9], self.id[10], self.id[11]];
-        let u3 = u32::from_be_bytes(b.into());
-        let v = u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128;
-        v
+        let u3 = u32::from_be_bytes(b);
+        
+        u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128
     }
 
     pub fn with_u128(arg: u128) -> Self {

@@ -17,7 +17,7 @@ impl ColumnMapper for PGTableMapper {
             Value::F32(_) => "REAL".to_string(),
             Value::F64(_) => "DOUBLE PRECISION".to_string(),
             Value::String(v) => {
-                if v != "" {
+                if !v.is_empty() {
                     v.to_string()
                 } else {
                     if column.eq("id") || column.ends_with("_id") || column.starts_with("id_") {

@@ -235,6 +235,7 @@ fn parse_elements(
 }
 
 /// Handles plain text elements
+#[allow(clippy::ptr_arg)]
 fn handle_text_element(element: &Element, body: &mut TokenStream, ignore: &mut Vec<String>) {
     let mut string_data = remove_extra(&element.data);
     let convert_list = find_convert_string(&string_data);

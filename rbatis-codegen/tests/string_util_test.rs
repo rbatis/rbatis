@@ -31,15 +31,15 @@ fn test_find_convert_string() {
 #[test]
 fn test_count_string_num() {
     let s = "hello, world, hello";
-    assert_eq!(count_string_num(&s.to_string(), 'h'), 2);
-    assert_eq!(count_string_num(&s.to_string(), 'l'), 5);
-    assert_eq!(count_string_num(&s.to_string(), 'o'), 3);
-    assert_eq!(count_string_num(&s.to_string(), ','), 2);
-    assert_eq!(count_string_num(&s.to_string(), 'x'), 0);
+    assert_eq!(count_string_num(s, 'h'), 2);
+    assert_eq!(count_string_num(s, 'l'), 5);
+    assert_eq!(count_string_num(s, 'o'), 3);
+    assert_eq!(count_string_num(s, ','), 2);
+    assert_eq!(count_string_num(s, 'x'), 0);
 
     // Test with empty string
     let s = "";
-    assert_eq!(count_string_num(&s.to_string(), 'a'), 0);
+    assert_eq!(count_string_num(s, 'a'), 0);
 }
 
 #[test]

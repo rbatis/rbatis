@@ -23,13 +23,11 @@ impl<'a> RbsValueDisplay<'a> {
 impl<'a> Display for RbsValueDisplay<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("[")?;
-        let mut idx = 0;
-        for x in self.inner.deref() {
+        for (idx, x) in self.inner.deref().iter().enumerate() {
             std::fmt::Display::fmt(x, f)?;
             if (idx + 1) < self.inner.len() {
                 f.write_str(",")?;
             }
-            idx += 1;
         }
         f.write_str("]")?;
         Ok(())

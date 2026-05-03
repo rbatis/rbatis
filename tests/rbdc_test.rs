@@ -16,7 +16,7 @@ mod test {
     fn test_bytes_old() {
         let bytes1 = rbdc::Bytes::from(vec![1u8]);
         let bytes2 = rbdc::Bytes::from(vec![0u8]);
-        assert_eq!(bytes1 > bytes2, true);
+        assert!(bytes1 > bytes2);
     }
 
     #[test]

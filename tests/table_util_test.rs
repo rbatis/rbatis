@@ -123,9 +123,9 @@ fn test_table_field_set() {
     // 测试从引用中获取另一个字段
     let names_ref: HashSet<String> = rbatis::table_field_set!(&tables, name);
     assert_eq!(names_ref.len(), 3); // name都不同，所以有3个元素
-    assert!(names_ref.contains(&"name1".to_string()));
-    assert!(names_ref.contains(&"name2".to_string()));
-    assert!(names_ref.contains(&"name3".to_string()));
+    assert!(names_ref.contains("name1"));
+    assert!(names_ref.contains("name2"));
+    assert!(names_ref.contains("name3"));
 }
 
 #[test]

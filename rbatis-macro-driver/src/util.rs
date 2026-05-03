@@ -5,11 +5,8 @@ use syn::{FnArg, ItemFn, Pat, ReturnType};
 //find and check method return type
 pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let mut return_ty = target_fn.sig.output.to_token_stream();
-    match &target_fn.sig.output {
-        ReturnType::Type(_, b) => {
-            return_ty = b.to_token_stream();
-        }
-        _ => {}
+    if let ReturnType::Type(_, b) = &target_fn.sig.output {
+        return_ty = b.to_token_stream();
     }
     let s = format!("{}", return_ty);
     if !s.contains(":: Result") && !s.starts_with("Result") {
@@ -20,15 +17,13 @@ pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     return_ty
 }
 
+#[allow(clippy::vec_box)]
 pub(crate) fn get_fn_args(target_fn: &ItemFn) -> Vec<Box<Pat>> {
     let mut fn_arg_name_vec = vec![];
     for arg in &target_fn.sig.inputs {
-        match arg {
-            FnArg::Typed(t) => {
-                fn_arg_name_vec.push(t.pat.clone());
-                //println!("arg_name {}", arg_name);
-            }
-            _ => {}
+        if let FnArg::Typed(t) = arg {
+            fn_arg_name_vec.push(t.pat.clone());
+            //println!("arg_name {}", arg_name);
         }
     }
     fn_arg_name_vec
@@ -56,8 +51,8 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 }
 
 pub(crate) fn is_query(return_source: &str) -> bool {
-    let is_select = !return_source.contains("ExecResult");
-    return is_select;
+    
+    !return_source.contains("ExecResult")
 }
 
 pub(crate) fn is_rb_ref(ty_stream: &str) -> bool {
