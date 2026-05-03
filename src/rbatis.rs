@@ -277,9 +277,8 @@ impl RBatis {
     /// create table if not exists, add column if not exists
     ///
     /// ```rust
-    /// use rbatis::executor::Executor;
+    /// use rbatis::executor::{Executor, RBatisRef};
     /// use rbatis::RBatis;
-    /// use rbatis::table_sync::{SqliteTableMapper};
     ///
     /// /// let rb = RBatis::new();
     /// /// let conn = rb.acquire().await;
@@ -288,15 +287,14 @@ impl RBatis {
     ///             "id":"INT",
     ///             "name":"TEXT",
     ///      };
-    ///      let _ = RBatis::sync(conn,&SqliteTableMapper{},&map,"user").await;
+    ///      let _ = RBatis::sync(conn, conn.rb_ref(),&map,"user").await;
     /// }
     /// ```
     ///
     /// sync table struct
     /// ```rust
-    /// use rbatis::executor::Executor;
+    /// use rbatis::executor::{Executor, RBatisRef};
     /// use rbatis::RBatis;
-    /// use rbatis::table_sync::{SqliteTableMapper};
     ///
     /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     /// pub struct User{
@@ -308,7 +306,7 @@ impl RBatis {
     /// /// let conn = rb.acquire().await;
     /// pub async fn do_sync_table(conn: &dyn Executor){
     ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-    ///      let _ = RBatis::sync(conn,&SqliteTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(conn, conn.rb_ref(),&table,"user").await;
     /// }
     /// ```
     ///
@@ -316,7 +314,6 @@ impl RBatis {
     /// ```rust
     /// use rbatis::executor::Executor;
     /// use rbatis::RBatis;
-    /// use rbatis::table_sync::{MysqlTableMapper};
     ///
     /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
     /// pub struct User{
@@ -329,7 +326,7 @@ impl RBatis {
     /// pub async fn do_sync_table_mysql(conn: &dyn Executor){
     ///      //empty string: auto create type,  "VARCHAR(50)" -> sqlite type
     ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-    ///      let _ = RBatis::sync(conn,&MysqlTableMapper{},&table,"user").await;
+    ///      let _ = RBatis::sync(conn, conn.rb_ref(),&table,"user").await;
     /// }
     /// ```
     pub async fn sync<T: Serialize>(

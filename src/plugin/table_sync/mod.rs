@@ -9,9 +9,9 @@ const PRIMARY_KEY: &str = " PRIMARY KEY ";
 
 /// create table if not exists, add column if not exists
 /// ```rust
-/// use rbatis::executor::{Executor, RBatisConnExecutor};
+/// use rbatis::executor::{Executor, RBatisRef};
 /// use rbatis::RBatis;
-/// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
+/// use rbatis::table_sync::sync;
 ///
 /// /// let rb = RBatis::new();
 /// /// let conn = rb.acquire().await;
@@ -20,16 +20,16 @@ const PRIMARY_KEY: &str = " PRIMARY KEY ";
 ///             "id":"TEXT",
 ///             "name":"TEXT",
 ///      };
-///      let _ = sync(conn, &SqliteTableMapper{},map,"user").await;
+///      let _ = sync(conn, conn.rb_ref(),map,"user").await;
 /// }
 ///
 /// ```
 ///
 /// sync table struct
 /// ```rust
-/// use rbatis::executor::{Executor, RBatisConnExecutor};
+/// use rbatis::executor::{Executor, RBatisRef};
 /// use rbatis::RBatis;
-/// use rbatis::table_sync::{MysqlTableMapper, SqliteTableMapper, sync};
+/// use rbatis::table_sync::sync;
 /// use rbs::value;
 ///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -42,7 +42,7 @@ const PRIMARY_KEY: &str = " PRIMARY KEY ";
 /// /// let conn = rb.acquire().await;
 /// pub async fn do_sync_table(conn: &dyn Executor){
 ///      let table = User{id: "".to_string(), name: Some("".to_string())};
-///      let _ = sync(conn, &SqliteTableMapper{},value!(table),"user").await;
+///      let _ = sync(conn, conn.rb_ref(),value!(table),"user").await;
 /// }
 ///
 /// ```
@@ -51,7 +51,7 @@ const PRIMARY_KEY: &str = " PRIMARY KEY ";
 /// ```rust
 /// use rbatis::executor::Executor;
 /// use rbatis::RBatis;
-/// use rbatis::table_sync::{MysqlTableMapper, sync};
+/// use rbatis::table_sync::sync;
 /// use rbs::value;
 ///
 /// #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -62,7 +62,7 @@ const PRIMARY_KEY: &str = " PRIMARY KEY ";
 ///
 /// pub async fn do_sync_table_mysql(conn: &dyn Executor){
 ///      let table = User{id: "".to_string(), name: Some("VARCHAR(50)".to_string())};
-///      let _ = sync(conn, &MysqlTableMapper{},value!(table),"user").await;
+///      let _ = sync(conn, conn.rb_ref(),value!(table),"user").await;
 /// }
 /// ```
 pub fn sync<'a>(
