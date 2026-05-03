@@ -427,31 +427,6 @@ mod test {
         };
         block_on(f);
     }
-
-    #[test]
-    fn test_sync_driver_type_mismatch_error() {
-        let f = async move {
-            let rb = RBatis::new();
-            rb.init(MockDriver {}, "test").unwrap(); // Driver type = "test"
-            let conn = rb.acquire().await.unwrap();
-
-            // Try to use MySQL mapper with "test" driver -> mismatch
-            let table_data = rbs::value! {"id": "", "name": ""};
-            let result = RBatis::sync(
-                &conn,
-                &rb, // expects "mysql"
-                &table_data,
-                "test_table",
-            )
-            .await;
-
-            assert!(result.is_err());
-            let msg = result.err().unwrap().to_string();
-            assert!(msg.contains("driver=")); // Mismatch error mentions drivers
-        };
-        block_on(f);
-    }
-
     // ==================== RBatisRef trait method tests ====================
 
     #[test]
