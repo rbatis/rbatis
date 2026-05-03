@@ -52,8 +52,10 @@ mod my_pool {
     use rbs::{value, Value};
     use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
-    use std::pin::Pin;
-    use std::time::Duration;
+    use std::ops::Deref;
+use std::pin::Pin;
+    use std::sync::Arc;
+use std::time::Duration;
 
     /// Connection wrapper that implements Connection trait by delegating to the pooled connection
     pub struct ConnWrapper {
@@ -133,6 +135,7 @@ mod my_pool {
     pub struct DeadPool {
         inner: deadpool::managed::Pool<ConnManagerProxy>,
         driver_type: String,
+        driver: Arc<dyn Driver>,
     }
 
     unsafe impl Send for DeadPool {}
@@ -158,12 +161,13 @@ mod my_pool {
         where
             Self: Sized,
         {
+            let driver = manager.driver();
             let driver_type = manager.driver_type().to_string();
             let manager_proxy = ConnManagerProxy::new(manager);
             let inner = deadpool::managed::Pool::builder(manager_proxy)
                 .build()
                 .map_err(|e| Error::from(e.to_string()))?;
-            Ok(Self { inner, driver_type })
+            Ok(Self { inner, driver_type, driver})
         }
 
         async fn get(&self) -> Result<Box<dyn Connection>, Error> {
@@ -214,7 +218,7 @@ mod my_pool {
         }
 
         fn driver(&self) -> &dyn Driver {
-            self.manager.driver.deref()
+            self.driver.deref()
         }
     }
 }
