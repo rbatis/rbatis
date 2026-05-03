@@ -292,12 +292,8 @@ fn eq_str_f64(value: &str, other: f64) -> bool {
 
 fn eq_str_bool(value: &str, other: bool) -> bool {
     match value {
-        "true" => {
-            other
-        }
-        "false" => {
-            !other
-        }
+        "true" => other,
+        "false" => !other,
         _ => false,
     }
 }

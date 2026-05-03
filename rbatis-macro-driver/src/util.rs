@@ -51,7 +51,6 @@ pub(crate) fn find_fn_body(target_fn: &ItemFn) -> proc_macro2::TokenStream {
 }
 
 pub(crate) fn is_query(return_source: &str) -> bool {
-    
     !return_source.contains("ExecResult")
 }
 

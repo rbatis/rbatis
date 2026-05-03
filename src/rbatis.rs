@@ -81,9 +81,12 @@ impl RBatis {
             option: std::sync::Arc::new(option),
         };
         let pool = DefaultPool::new(manager)?;
-        self.pool
-            .set(Box::new(pool))
-            .map_err(|e| Error::from(format!("[rb] pool already initialized (existing pool: {:?}), init can only be called once", e)))?;
+        self.pool.set(Box::new(pool)).map_err(|e| {
+            Error::from(format!(
+                "[rb] pool already initialized (existing pool: {:?}), init can only be called once",
+                e
+            ))
+        })?;
         Ok(())
     }
 

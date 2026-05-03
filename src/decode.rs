@@ -71,14 +71,12 @@ where
     }
     //convert to map (for struct types or when direct decode fails)
     let arr: Vec<T> = rbs::from_value_ref(datas)?;
-    arr.into_iter()
-        .next()
-        .ok_or_else(|| {
-            Error::from(format!(
-                "[rb] decode fail: cannot decode into type {} from empty result",
-                std::any::type_name::<T>()
-            ))
-        })
+    arr.into_iter().next().ok_or_else(|| {
+        Error::from(format!(
+            "[rb] decode fail: cannot decode into type {} from empty result",
+            std::any::type_name::<T>()
+        ))
+    })
 }
 
 pub fn is_debug_mode() -> bool {

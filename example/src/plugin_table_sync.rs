@@ -1,7 +1,6 @@
 use rbatis::dark_std::defer;
 use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::table_sync;
 use rbatis::Error;
 use rbdc_sqlite::SqliteDriver;
 use rbs::value;
@@ -33,12 +32,6 @@ pub async fn main() -> Result<(), Error> {
     //rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver::localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(SqliteDriver {}, &"sqlite://target/sqlite.db".to_string())?;
 
-    // ------------choose column mapper------------
-    let mapper = &table_sync::SqliteTableMapper {};
-    //let mapper = &table_sync::PGTableMapper{} ;
-    //let mapper = &table_sync::MysqlTableMapper{} ;
-    //let mapper = &table_sync::MssqlTableMapper{} ;
-
     // let table = RBUser{};
     let table = value! {
         "id": "INTEGER",
@@ -48,12 +41,12 @@ pub async fn main() -> Result<(), Error> {
         "version": "TEXT",
         "delete_flag": "INT8"
     };
-    RBatis::sync(&rb.acquire().await?, mapper, &table, "rb_user").await?;
+    RBatis::sync(&rb.acquire().await?, &rb, &table, "rb_user").await?;
 
     //sync table struct
     RBatis::sync(
         &rb.acquire().await?,
-        mapper,
+        &rb,
         &RBUser {
             id: 0,
             //name: Some("TEXT".to_string()),// Custom String Database Type

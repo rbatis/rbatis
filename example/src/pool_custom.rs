@@ -46,7 +46,7 @@ mod my_pool {
     use futures_core::Stream;
     use rbatis::async_trait;
     use rbatis::rbdc::pool::{ConnectionGuard, ConnectionManager, Pool};
-    use rbatis::rbdc::{db, Error};
+    use rbatis::rbdc::{db, Driver, Error};
     use rbatis::rbdc::{Connection, ExecResult, Row};
     use rbs::value::map::ValueMap;
     use rbs::{value, Value};
@@ -211,6 +211,10 @@ mod my_pool {
             m.insert(value!("available"), value!(state.available));
             m.insert(value!("waiting"), value!(state.waiting));
             Value::Map(m)
+        }
+
+        fn driver(&self) -> &dyn Driver {
+            self.manager.driver.deref()
         }
     }
 }

@@ -306,14 +306,8 @@ fn test_string_cmp() {
     );
 
     // &String vs &String
-    assert_eq!(
-        a_string.op_partial_cmp(&&a_string),
-        Some(Ordering::Equal)
-    );
-    assert_eq!(
-        b_string.op_partial_cmp(&&a_string),
-        Some(Ordering::Greater)
-    );
+    assert_eq!(a_string.op_partial_cmp(&&a_string), Some(Ordering::Equal));
+    assert_eq!(b_string.op_partial_cmp(&&a_string), Some(Ordering::Greater));
     assert_eq!(a_string.op_partial_cmp(&&b_string), Some(Ordering::Less));
 }
 
@@ -473,10 +467,7 @@ fn test_reference_variants() {
     );
 
     // &String vs &str
-    assert_eq!(
-        val_string.op_partial_cmp(&val_str),
-        Some(Ordering::Equal)
-    );
+    assert_eq!(val_string.op_partial_cmp(&val_str), Some(Ordering::Equal));
 
     // &String vs String
     assert_eq!(
@@ -640,10 +631,7 @@ fn test_bool_value_comparison_comprehensive() {
     let true_value = Value::Bool(true);
     let false_value = Value::Bool(false);
     assert_eq!(true_value.op_partial_cmp(&true), Some(Ordering::Equal));
-    assert_eq!(
-        true_value.op_partial_cmp(&false),
-        Some(Ordering::Greater)
-    );
+    assert_eq!(true_value.op_partial_cmp(&false), Some(Ordering::Greater));
     assert_eq!(false_value.op_partial_cmp(&true), Some(Ordering::Less));
     assert_eq!(false_value.op_partial_cmp(&false), Some(Ordering::Equal));
 
@@ -656,18 +644,12 @@ fn test_bool_value_comparison_comprehensive() {
     // 带引用版本 &bool -> Value::Bool
     let true_bool = true;
     let false_bool = false;
-    assert_eq!(
-        true_bool.op_partial_cmp(&true_value),
-        Some(Ordering::Equal)
-    );
+    assert_eq!(true_bool.op_partial_cmp(&true_value), Some(Ordering::Equal));
     assert_eq!(
         true_bool.op_partial_cmp(&false_value),
         Some(Ordering::Greater)
     );
-    assert_eq!(
-        false_bool.op_partial_cmp(&true_value),
-        Some(Ordering::Less)
-    );
+    assert_eq!(false_bool.op_partial_cmp(&true_value), Some(Ordering::Less));
     assert_eq!(
         false_bool.op_partial_cmp(&false_value),
         Some(Ordering::Equal)

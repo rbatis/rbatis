@@ -17,9 +17,7 @@ pub fn find_convert_string(arg: &str) -> LinkedList<(String, String)> {
             }
             continue;
         }
-        if (*v == b'#' || *v == b'$')
-            && chars.get(index as usize + 1).eq(&Some(&b'{'))
-        {
+        if (*v == b'#' || *v == b'$') && chars.get(index as usize + 1).eq(&Some(&b'{')) {
             item.push(*v as char);
         }
     }

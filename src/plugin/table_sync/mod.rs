@@ -1,6 +1,7 @@
 pub mod mssql_mapper;
 pub mod mysql_mapper;
 pub mod pg_mapper;
+pub mod rbdc_mapper;
 pub mod sqlite_mapper;
 
 use crate::executor::Executor;

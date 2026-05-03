@@ -1,9 +1,9 @@
 use crate::table_sync::ColumnMapper;
 use rbs::Value;
 
+#[deprecated(note = "use rbatis::RBatis")]
 #[derive(Default)]
 pub struct MysqlTableMapper {}
-
 
 impl ColumnMapper for MysqlTableMapper {
     fn driver_type(&self) -> String {

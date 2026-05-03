@@ -301,10 +301,9 @@ mod test {
         };
         let v = rbs::from_value::<MockTable>(value).err().unwrap();
         println!("{}", v);
-        assert!(
-            v.to_string()
-                .contains("invalid type: integer `0`, expected a string, key =")
-        );
+        assert!(v
+            .to_string()
+            .contains("invalid type: integer `0`, expected a string, key ="));
         assert!(v.to_string().contains("name"));
     }
 }

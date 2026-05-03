@@ -298,13 +298,11 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                 Lit::Char(_) => {}
                 Lit::Int(i) => {
                     //cast int to i64
-                    return syn::parse_str::<Expr>(&format!("{}i64", i))
-                        .map_err(Error::from);
+                    return syn::parse_str::<Expr>(&format!("{}i64", i)).map_err(Error::from);
                 }
                 Lit::Float(f) => {
                     //cast int to f64
-                    return syn::parse_str::<Expr>(&format!("{}f64", f))
-                        .map_err(Error::from);
+                    return syn::parse_str::<Expr>(&format!("{}f64", f)).map_err(Error::from);
                 }
                 Lit::Bool(_) => {}
                 Lit::Verbatim(_) => {}
@@ -338,20 +336,12 @@ pub fn impl_fn(
         last_char = x;
     }
     string_data = string_data_new;
-    let mut t = syn::parse_str::<Expr>(&string_data).unwrap_or_else(|e| {
-        panic!(
-            "[rbatis-codegen]syn::parse_str: {} fail: {}",
-            args, e
-        )
-    });
+    let mut t = syn::parse_str::<Expr>(&string_data)
+        .unwrap_or_else(|e| panic!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e));
     t = translate(context, t, ignore).expect("translate fail");
     string_data = t.to_token_stream().to_string();
-    let t = syn::parse_str::<Expr>(&string_data).unwrap_or_else(|e| {
-        panic!(
-            "[rbatis-codegen]syn::parse_str: {} fail: {}",
-            args, e
-        )
-    });
+    let t = syn::parse_str::<Expr>(&string_data)
+        .unwrap_or_else(|e| panic!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e));
     let mut result_impl = quote! { {#t} };
     if serialize_result {
         result_impl = quote! {rbs::value({#t}).unwrap_or_default()};

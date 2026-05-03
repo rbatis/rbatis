@@ -110,8 +110,14 @@ pub async fn apply_before(
 ) -> Result<bool, Error> {
     for item in intercepts.iter() {
         let next = match &mut result {
-            ResultType::Exec(r) => item.before(id, executor, sql, args, ResultType::Exec(*r)).await?,
-            ResultType::Query(r) => item.before(id, executor, sql, args, ResultType::Query(*r)).await?,
+            ResultType::Exec(r) => {
+                item.before(id, executor, sql, args, ResultType::Exec(*r))
+                    .await?
+            }
+            ResultType::Query(r) => {
+                item.before(id, executor, sql, args, ResultType::Query(*r))
+                    .await?
+            }
         };
         if matches!(next, Action::Return) {
             return Ok(true);
@@ -132,8 +138,14 @@ pub async fn apply_after(
 ) -> Result<bool, Error> {
     for item in intercepts.iter() {
         let next = match &mut result {
-            ResultType::Exec(r) => item.after(id, executor, sql, args, ResultType::Exec(*r)).await?,
-            ResultType::Query(r) => item.after(id, executor, sql, args, ResultType::Query(*r)).await?,
+            ResultType::Exec(r) => {
+                item.after(id, executor, sql, args, ResultType::Exec(*r))
+                    .await?
+            }
+            ResultType::Query(r) => {
+                item.after(id, executor, sql, args, ResultType::Query(*r))
+                    .await?
+            }
         };
         if matches!(next, Action::Return) {
             return Ok(true);

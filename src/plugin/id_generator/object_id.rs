@@ -145,7 +145,7 @@ impl ObjectId {
         //3-COUNTER_OFFSET  8
         let b: [u8; 4] = [0u8, self.id[9], self.id[10], self.id[11]];
         let u3 = u32::from_be_bytes(b);
-        
+
         u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128
     }
 

@@ -65,8 +65,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                         }
                         file_name = current.to_str().unwrap_or_default().to_string();
                     }
-                    let mut f =
-                        File::open(&file_name).unwrap_or_else(|_| panic!("can't find file={}", file_name));
+                    let mut f = File::open(&file_name)
+                        .unwrap_or_else(|_| panic!("can't find file={}", file_name));
                     let mut data = String::new();
                     _ = f.read_to_string(&mut data);
                     data = data.replace("\r\n", "\n");
