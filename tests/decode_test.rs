@@ -301,7 +301,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 

@@ -1,5 +1,4 @@
 /// Extended tests for decode module covering:
-/// - decode_ref for CSV format ([[col1,col2],[val1,val2],...])
 /// - try_decode_map edge cases (single element fallback)
 /// - Non-array value decode errors
 /// - Various type decodes beyond existing coverage
@@ -10,110 +9,10 @@ mod test {
     use rbs::Value;
     use serde::{Deserialize, Serialize};
 
-    fn make_csv_value(headers: &[&str], rows: Vec<Vec<Value>>) -> Value {
-        let header_row: Vec<Value> = headers
-            .iter()
-            .map(|h| Value::String(h.to_string()))
-            .collect();
-        let data_rows: Vec<Value> = rows.into_iter().map(|r| Value::Array(r)).collect();
-        Value::Array(vec![Value::Array(header_row), Value::Array(data_rows)])
-    }
-
     fn make_map(k: &str, v: Value) -> Value {
         let mut map = ValueMap::new();
         map.insert(Value::String(k.to_string()), v);
         Value::Map(map)
-    }
-
-    // ==================== CSV Format Decode Tests ====================
-    // Note: CSV format [[col1,col2],[val1,val2],...] is not currently supported
-
-    #[test]
-    #[ignore]
-    fn test_decode_csv_single_row_single_col() {
-        // CSV format: [["id"],["1"]]
-        let value = make_csv_value(&["id"], vec![vec![Value::I32(1)]]);
-        let result: Vec<SimpleStruct> = rbatis::decode(value).unwrap();
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].id, 1);
-    }
-
-    #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct SimpleStruct {
-        id: i32,
-    }
-
-    #[test]
-    #[ignore]
-    fn test_decode_csv_single_row_multi_col() {
-        // CSV format: [["id","name"],["1","test"]]
-        let value = make_csv_value(
-            &["id", "name"],
-            vec![vec![Value::I32(1), Value::String("test".to_string())]],
-        );
-
-        let result: Vec<MultiColStruct> = rbatis::decode(value).unwrap();
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].id, 1);
-        assert_eq!(result[0].name, "test");
-    }
-
-    #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct MultiColStruct {
-        id: i32,
-        name: String,
-    }
-
-    #[test]
-    #[ignore]
-    fn test_decode_csv_multi_row() {
-        // CSV format: [["id","name"],["1","a"],["2","b"]]
-        let value = make_csv_value(
-            &["id", "name"],
-            vec![
-                vec![Value::I32(1), Value::String("a".to_string())],
-                vec![Value::I32(2), Value::String("b".to_string())],
-            ],
-        );
-
-        let result: Vec<MultiColStruct> = rbatis::decode(value).unwrap();
-        assert_eq!(result.len(), 2);
-        assert_eq!(result[0].id, 1);
-        assert_eq!(result[0].name, "a");
-        assert_eq!(result[1].id, 2);
-        assert_eq!(result[1].name, "b");
-    }
-
-    #[test]
-    #[ignore]
-    fn test_decode_csv_with_nulls() {
-        // CSV format: [["id","name"],["1",null]]
-        let value = make_csv_value(&["id", "name"], vec![vec![Value::I32(1), Value::Null]]);
-
-        let result: Vec<OptionNameStruct> = rbatis::decode(value).unwrap();
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0].id, 1);
-        assert_eq!(result[0].name, None);
-    }
-
-    #[derive(Debug, Serialize, Deserialize, PartialEq)]
-    struct OptionNameStruct {
-        id: i32,
-        name: Option<String>,
-    }
-
-    #[test]
-    #[ignore]
-    fn test_decode_csv_empty_data() {
-        // CSV format: [["id","name"]] - no data rows
-        let header_row: Vec<Value> = vec![
-            Value::String("id".to_string()),
-            Value::String("name".to_string()),
-        ];
-        let value = Value::Array(vec![Value::Array(header_row)]);
-
-        let result: Vec<MultiColStruct> = rbatis::decode(value).unwrap();
-        assert_eq!(result.len(), 0);
     }
 
     // ==================== try_decode_map Edge Cases ====================
@@ -159,7 +58,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -170,7 +69,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -181,7 +80,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -192,7 +91,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -203,7 +102,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -214,7 +113,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 
@@ -225,7 +124,7 @@ mod test {
         assert!(result.is_err());
         assert_eq!(
             result.err().unwrap().to_string(),
-            "decode an not array value"
+            "decode error: expected array value"
         );
     }
 

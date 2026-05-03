@@ -10,7 +10,7 @@ use crate::Error;
 /// support decode types:
 /// Value,BigDecimal, i8..i64,u8..u64,i64,bool,String
 /// or object used rbs::Value macro object
-/// values = [[col1,col2],[val1,val2],...]]
+/// values = [{k:v},...]
 /// T = Vec<YourStruct>
 pub fn decode_ref<T: ?Sized>(values: &Value) -> Result<T, Error>
 where
@@ -19,7 +19,7 @@ where
     // Check if value is Array first (required by API contract)
     match values {
         Value::Array(_) => {
-            // First try rbs direct decode (handles CSV format [[col1,col2],[val1,val2],...] to Vec<T>)
+            // First try rbs direct decode (handles [{k:v},...] format to Vec<T>)
             let direct_result = rbs::from_value_ref::<T>(values);
             if direct_result.is_ok() {
                 return direct_result;
@@ -29,7 +29,7 @@ where
         }
         _ => {
             // Non-array values are not supported (maintain API contract)
-            Err(Error::from("decode an not array value"))
+            Err(Error::from("decode error: expected array value"))
         }
     }
 }
@@ -41,8 +41,8 @@ where
     decode_ref(&bs)
 }
 
-//decode doc or one type
-/// values = [{k:v},...] or [[col1,col2],[val1,val2],...]]
+//decode one type from array of maps
+/// values = [{k:v},...]
 pub fn try_decode_map<T>(datas: &Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
