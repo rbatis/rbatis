@@ -410,13 +410,7 @@ mod test {
             let conn = rb.acquire().await.unwrap();
 
             let table_data = rbs::Value::I32(42); // Not a Map!
-            let result = RBatis::sync(
-                &conn,
-                &rb,
-                &table_data,
-                "test_table",
-            )
-            .await;
+            let result = RBatis::sync(&conn, &rb, &table_data, "test_table").await;
 
             assert!(result.is_err());
             assert!(result

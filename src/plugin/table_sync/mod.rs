@@ -1,5 +1,5 @@
-pub mod rbdc_mapper;
 pub mod deprecated;
+pub mod rbdc_mapper;
 
 pub use deprecated::*;
 
