@@ -8,10 +8,10 @@
 
 #[cfg(test)]
 mod test {
-    use rbs::Value;
     use rbatis::table_sync::{
-        ColumnMapper, MysqlTableMapper, MssqlTableMapper, PGTableMapper, SqliteTableMapper,
+        ColumnMapper, MssqlTableMapper, MysqlTableMapper, PGTableMapper, SqliteTableMapper,
     };
+    use rbs::Value;
 
     // ==================== MysqlTableMapper Tests ====================
 
@@ -99,10 +99,7 @@ mod test {
     #[test]
     fn test_mysql_array_map_json() {
         let mapper = MysqlTableMapper {};
-        assert_eq!(
-            mapper.get_column_type("col", &Value::Array(vec![])),
-            "JSON"
-        );
+        assert_eq!(mapper.get_column_type("col", &Value::Array(vec![])), "JSON");
         assert_eq!(
             mapper.get_column_type("col", &Value::Map(rbs::value::map::ValueMap::new())),
             "JSON"
@@ -164,7 +161,10 @@ mod test {
         assert_eq!(mapper.get_column_type("col", &Value::U32(0)), "INTEGER");
         assert_eq!(mapper.get_column_type("col", &Value::U64(0)), "BIGINT");
         assert_eq!(mapper.get_column_type("col", &Value::F32(0.0)), "REAL");
-        assert_eq!(mapper.get_column_type("col", &Value::F64(0.0)), "DOUBLE PRECISION");
+        assert_eq!(
+            mapper.get_column_type("col", &Value::F64(0.0)),
+            "DOUBLE PRECISION"
+        );
     }
 
     #[test]
@@ -281,10 +281,7 @@ mod test {
             mapper.get_column_type("col", &Value::Binary(vec![])),
             "BLOB"
         );
-        assert_eq!(
-            mapper.get_column_type("col", &Value::Array(vec![])),
-            "BLOB"
-        );
+        assert_eq!(mapper.get_column_type("col", &Value::Array(vec![])), "BLOB");
         assert_eq!(
             mapper.get_column_type("col", &Value::Map(rbs::value::map::ValueMap::new())),
             "BLOB"
@@ -406,7 +403,10 @@ mod test {
         let mssql = MssqlTableMapper {};
 
         let val = Value::Bool(true);
-        assert_ne!(mysql.get_column_type("col", &val), pg.get_column_type("col", &val));
+        assert_ne!(
+            mysql.get_column_type("col", &val),
+            pg.get_column_type("col", &val)
+        );
         assert_eq!(mysql.get_column_type("col", &val), "TINYINT");
         assert_eq!(pg.get_column_type("col", &val), "BOOLEAN");
         assert_eq!(sqlite.get_column_type("col", &val), "BOOLEAN");

@@ -71,13 +71,10 @@ pub async fn main() -> Result<(), Error> {
     //use static ref
     let rb = RBatis::new();
     // ------------choose database driver------------
-    // rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
-    // rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
-    // rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
-    rb.init(
-        rbdc_sqlite::driver::SqliteDriver {},
-        "sqlite://target/sqlite.db",
-    )?;
+    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
+    rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
 
     let a = select_by_condition(&rb, "test", &DateTime::now(), false).await?;
     println!("{}", json!(a));

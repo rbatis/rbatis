@@ -72,7 +72,7 @@ pub async fn main() -> Result<(), Error> {
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
     rb.init(
-        rbdc_pg::driver::PgDriver {},
+        rbdc_pg::PgDriver {},
         "postgres://postgres:123456@localhost:5432/postgres",
     )?;
     //insert to log intercept before

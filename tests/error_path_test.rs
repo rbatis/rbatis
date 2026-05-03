@@ -28,14 +28,21 @@ mod test {
     struct MockDriver {}
 
     impl Driver for MockDriver {
-        fn name(&self) -> &str { "test" }
+        fn name(&self) -> &str {
+            "test"
+        }
         fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn connect_opt<'a>(&'a self, _option: &'a dyn ConnectOptions) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
+        fn connect_opt<'a>(
+            &'a self,
+            _option: &'a dyn ConnectOptions,
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn default_option(&self) -> Box<dyn ConnectOptions> { Box::new(MockConnectOptions {}) }
+        fn default_option(&self) -> Box<dyn ConnectOptions> {
+            Box::new(MockConnectOptions {})
+        }
     }
 
     /// A mock driver that always fails to connect (for error path testing)
@@ -43,27 +50,54 @@ mod test {
     struct FailingDriver {}
 
     impl Driver for FailingDriver {
-        fn name(&self) -> &str { "failing" }
+        fn name(&self) -> &str {
+            "failing"
+        }
         fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Err(Error::from("connection refused")) })
         }
-        fn connect_opt<'a>(&'a self, _option: &'a dyn ConnectOptions) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
+        fn connect_opt<'a>(
+            &'a self,
+            _option: &'a dyn ConnectOptions,
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Err(Error::from("connection refused")) })
         }
-        fn default_option(&self) -> Box<dyn ConnectOptions> { Box::new(FailingConnectOptions {}) }
+        fn default_option(&self) -> Box<dyn ConnectOptions> {
+            Box::new(FailingConnectOptions {})
+        }
     }
 
     #[derive(Clone, Debug)]
     struct MockConnection {}
     impl Connection for MockConnection {
-        fn exec_rows(&mut self, _sql: &str, _params: Vec<Value>) -> BoxFuture<'_, Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>> {
+        fn exec_rows(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
             Box::pin(async { Err(Error::from("mock")) })
         }
-        fn exec(&mut self, _sql: &str, _params: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-            Box::pin(async { Ok(ExecResult { rows_affected: 1, last_insert_id: Value::Null }) })
+        fn exec(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
+            Box::pin(async {
+                Ok(ExecResult {
+                    rows_affected: 1,
+                    last_insert_id: Value::Null,
+                })
+            })
         }
-        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> { Box::pin(async { Ok(()) }) }
-        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> { Box::pin(async { Ok(()) }) }
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
     }
 
     #[derive(Clone, Debug)]
@@ -72,7 +106,9 @@ mod test {
         fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> { Ok(()) }
+        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> {
+            Ok(())
+        }
     }
 
     #[derive(Clone, Debug)]
@@ -81,7 +117,9 @@ mod test {
         fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Err(Error::from("connect failed")) })
         }
-        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> { Ok(()) }
+        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> {
+            Ok(())
+        }
     }
 
     // ==================== Init Error Path Tests ====================
@@ -92,7 +130,11 @@ mod test {
         let result = rb.init(MockDriver {}, "");
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("url is empty"), "Expected url is empty error, got: {}", msg);
+        assert!(
+            msg.contains("url is empty"),
+            "Expected url is empty error, got: {}",
+            msg
+        );
     }
 
     // ==================== Pool Not Initialized Errors ====================
@@ -103,7 +145,11 @@ mod test {
         let result = rb.get_pool();
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -112,7 +158,11 @@ mod test {
         let result = rb.acquire().await;
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -121,7 +171,11 @@ mod test {
         let result = rb.try_acquire().await;
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -130,7 +184,11 @@ mod test {
         let result = rb.exec("select 1", vec![]).await;
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -139,7 +197,11 @@ mod test {
         let result = rb.query("select 1", vec![]).await;
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -148,7 +210,11 @@ mod test {
         let result: Result<i32, _> = rb.exec_decode("select 1", vec![]).await;
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool not inited"), "Expected pool not inited error, got: {}", msg);
+        assert!(
+            msg.contains("pool not inited"),
+            "Expected pool not inited error, got: {}",
+            msg
+        );
     }
 
     #[tokio::test]
@@ -294,7 +360,8 @@ mod test {
             _args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
         ) -> Result<Action, Error> {
-            self.call_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.call_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             Err(Error::from("intercept after error"))
         }
     }
@@ -352,7 +419,11 @@ mod test {
             .await;
 
             assert!(result.is_err());
-            assert!(result.err().unwrap().to_string().contains("not is an struct or map"));
+            assert!(result
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("not is an struct or map"));
         };
         block_on(f);
     }

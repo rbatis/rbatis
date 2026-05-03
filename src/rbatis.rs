@@ -136,7 +136,7 @@ impl RBatis {
     /// #[tokio::main]
     /// async fn main(){
     ///   let rb = RBatis::new();
-    ///   rb.init(rbdc_sqlite::driver::SqliteDriver{},"sqlite://target/sqlite.db").unwrap();
+    ///   rb.init(rbdc_sqlite::SqliteDriver{},"sqlite://target/sqlite.db").unwrap();
     ///   rb.get_pool().unwrap().set_max_open_conns(10).await;
     /// }
     /// ```

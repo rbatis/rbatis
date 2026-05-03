@@ -5,9 +5,9 @@
 
 #[cfg(test)]
 mod test {
-    use rbs::{value, Value};
     use rbatis::crud_traits::{ColumnSet, FilterByColumns, ValueOperatorSql};
     use rbs::value::map::ValueMap;
+    use rbs::{value, Value};
 
     // ==================== ColumnSet Tests ====================
 
@@ -36,7 +36,10 @@ mod test {
     fn test_column_set_single_row_all_non_null() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
         map.insert(Value::String("age".to_string()), Value::I32(25));
 
         let v = Value::Array(vec![Value::Map(map)]);
@@ -90,7 +93,10 @@ mod test {
         // Slow path: multiple elements - use HashSet to collect unique columns across all rows
         let mut map1 = ValueMap::new();
         map1.insert(Value::String("id".to_string()), Value::I32(1));
-        map1.insert(Value::String("name".to_string()), Value::String("a".to_string()));
+        map1.insert(
+            Value::String("name".to_string()),
+            Value::String("a".to_string()),
+        );
         // email is null in row 1
         map1.insert(Value::String("email".to_string()), Value::Null);
 
@@ -98,7 +104,10 @@ mod test {
         map2.insert(Value::String("id".to_string()), Value::I32(2));
         // name is null in row 2
         map2.insert(Value::String("name".to_string()), Value::Null);
-        map2.insert(Value::String("email".to_string()), Value::String("b@test.com".to_string()));
+        map2.insert(
+            Value::String("email".to_string()),
+            Value::String("b@test.com".to_string()),
+        );
 
         let v = Value::Array(vec![Value::Map(map1), Value::Map(map2)]);
         let result = v.column_sets();
@@ -145,7 +154,10 @@ mod test {
         let mut map2 = ValueMap::new();
         map2.insert(Value::String("id".to_string()), Value::I32(2));
         // name is non-null in second row
-        map2.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map2.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
 
         let v = Value::Array(vec![Value::Map(map1), Value::Map(map2)]);
         let result = v.column_sets();
@@ -240,9 +252,15 @@ mod test {
     fn test_filter_by_columns_basic() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
         map.insert(Value::String("age".to_string()), Value::I32(25));
-        map.insert(Value::String("email".to_string()), Value::String("a@b.com".to_string()));
+        map.insert(
+            Value::String("email".to_string()),
+            Value::String("a@b.com".to_string()),
+        );
 
         let v = Value::Map(map);
         let columns = Value::Array(vec![
@@ -259,14 +277,21 @@ mod test {
     fn test_filter_by_columns_empty_columns_array() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
 
         let v = Value::Map(map);
         let columns = Value::Array(vec![]);
 
         let result = v.filter_by_columns(&columns);
         let result_map = result.as_map().unwrap();
-        assert_eq!(result_map.len(), 0, "No matching columns should return empty map");
+        assert_eq!(
+            result_map.len(),
+            0,
+            "No matching columns should return empty map"
+        );
     }
 
     #[test]
@@ -274,7 +299,10 @@ mod test {
         // If columns is not an array, return original value unchanged
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
 
         let v = Value::Map(map);
         let columns = Value::String("id".to_string());
@@ -299,7 +327,10 @@ mod test {
     fn test_filter_by_columns_no_matching_columns() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
 
         let v = Value::Map(map);
         let columns = Value::Array(vec![
@@ -309,14 +340,21 @@ mod test {
 
         let result = v.filter_by_columns(&columns);
         let result_map = result.as_map().unwrap();
-        assert_eq!(result_map.len(), 0, "No matching columns should return empty map");
+        assert_eq!(
+            result_map.len(),
+            0,
+            "No matching columns should return empty map"
+        );
     }
 
     #[test]
     fn test_filter_by_columns_all_columns_selected() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(1));
-        map.insert(Value::String("name".to_string()), Value::String("test".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("test".to_string()),
+        );
 
         let v = Value::Map(map.clone());
         let columns = Value::Array(vec![
@@ -332,7 +370,10 @@ mod test {
     fn test_filter_by_columns_preserves_values() {
         let mut map = ValueMap::new();
         map.insert(Value::String("id".to_string()), Value::I32(99));
-        map.insert(Value::String("name".to_string()), Value::String("preserved".to_string()));
+        map.insert(
+            Value::String("name".to_string()),
+            Value::String("preserved".to_string()),
+        );
         map.insert(Value::String("active".to_string()), Value::Bool(true));
         map.insert(Value::String("score".to_string()), Value::F64(95.5));
 
@@ -356,7 +397,7 @@ mod test {
             "age": 25,
             "email": "a@b.com"
         };
-        let columns = value! ["id","name"];
+        let columns = value!["id", "name"];
 
         let result = data.filter_by_columns(&columns);
         let result_map = result.as_map().unwrap();

@@ -22,14 +22,21 @@ mod test {
     struct MockDriver {}
 
     impl Driver for MockDriver {
-        fn name(&self) -> &str { "test" }
+        fn name(&self) -> &str {
+            "test"
+        }
         fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn connect_opt<'a>(&'a self, _option: &'a dyn ConnectOptions) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
+        fn connect_opt<'a>(
+            &'a self,
+            _option: &'a dyn ConnectOptions,
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn default_option(&self) -> Box<dyn ConnectOptions> { Box::new(MockConnectOptions {}) }
+        fn default_option(&self) -> Box<dyn ConnectOptions> {
+            Box::new(MockConnectOptions {})
+        }
     }
 
     #[derive(Clone, Debug)]
@@ -37,15 +44,33 @@ mod test {
 
     impl Connection for MockConnection {
         fn exec_rows(
-            &mut self, _sql: &str, _params: Vec<Value>,
-        ) -> BoxFuture<'_, Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>> {
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
             Box::pin(async { Err(Error::from("mock")) })
         }
-        fn exec(&mut self, _sql: &str, _params: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
-            Box::pin(async { Ok(ExecResult { rows_affected: 0, last_insert_id: Value::Null }) })
+        fn exec(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
+            Box::pin(async {
+                Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null,
+                })
+            })
         }
-        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> { Box::pin(async { Ok(()) }) }
-        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> { Box::pin(async { Ok(()) }) }
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
 
         fn begin(&mut self) -> BoxFuture<'_, Result<(), Error>> {
             Box::pin(async { Ok(()) })
@@ -65,7 +90,9 @@ mod test {
         fn connect(&self) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
-        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> { Ok(()) }
+        fn set_uri(&mut self, _uri: &str) -> Result<(), Error> {
+            Ok(())
+        }
     }
 
     // ==================== RBatisTxExecutor::done / set_done Tests ====================
@@ -341,7 +368,10 @@ mod test {
             let rb = RBatis::new();
             rb.init(MockDriver {}, "test").unwrap();
             let tx = rb.acquire_begin().await.unwrap();
-            let result = tx.exec("insert into test values (1)", vec![]).await.unwrap();
+            let result = tx
+                .exec("insert into test values (1)", vec![])
+                .await
+                .unwrap();
             assert_eq!(result.rows_affected, 0);
         };
         block_on(f);
@@ -394,7 +424,10 @@ mod test {
             let tx = rb.acquire_begin().await.unwrap();
             let guard = tx.defer_async(|_tx| async {});
 
-            let result = guard.exec("insert into test values (1)", vec![]).await.unwrap();
+            let result = guard
+                .exec("insert into test values (1)", vec![])
+                .await
+                .unwrap();
             assert_eq!(result.rows_affected, 0);
         };
         block_on(f);

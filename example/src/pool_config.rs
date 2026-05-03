@@ -15,10 +15,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .level(log::LevelFilter::Debug),
     )?;
     let rb = RBatis::new();
-    rb.init(
-        rbdc_sqlite::driver::SqliteDriver {},
-        "sqlite://target/sqlite.db",
-    )?;
+    rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
     // Configure connection pool parameters
     let pool = rb.get_pool()?;
     // Set the maximum number of open connections

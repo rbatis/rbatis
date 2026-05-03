@@ -15,9 +15,7 @@ mod test {
     use log::LevelFilter;
     use rbatis::executor::Executor;
     use rbatis::intercept::{
-        intercept_log::LogInterceptor,
-        intercept_page::PageIntercept,
-        Intercept, ResultType,
+        intercept_log::LogInterceptor, intercept_page::PageIntercept, Intercept, ResultType,
     };
     use rbatis::{Action, Error, RBatis};
     use rbdc::db::{ConnectOptions, Connection, Driver, ExecResult, Row};
@@ -32,13 +30,18 @@ mod test {
     struct MockDriver {}
 
     impl Driver for MockDriver {
-        fn name(&self) -> &str { "test" }
+        fn name(&self) -> &str {
+            "test"
+        }
 
         fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
-        fn connect_opt<'a>(&'a self, _option: &'a dyn ConnectOptions) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
+        fn connect_opt<'a>(
+            &'a self,
+            _option: &'a dyn ConnectOptions,
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
             Box::pin(async { Ok(Box::new(MockConnection {}) as Box<dyn Connection>) })
         }
 
@@ -52,16 +55,26 @@ mod test {
 
     impl Connection for MockConnection {
         fn exec_rows(
-            &mut self, _sql: &str, _params: Vec<Value>,
-        ) -> BoxFuture<'_, Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>> {
-            Box::pin(async {
-                Err(Error::from("mock"))
-            })
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
+            Box::pin(async { Err(Error::from("mock")) })
         }
 
-        fn exec(&mut self, _sql: &str, _params: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>> {
+        fn exec(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
             Box::pin(async {
-                Ok(ExecResult { rows_affected: 0, last_insert_id: Value::Null })
+                Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null,
+                })
             })
         }
 
@@ -216,8 +229,14 @@ mod test {
     #[test]
     fn test_page_intercept_count_param_count() {
         let pi = PageIntercept::new();
-        assert_eq!(pi.count_param_count("mysql", "SELECT * FROM t WHERE id = ? AND name = ?"), 2);
-        assert_eq!(pi.count_param_count("sqlite", "SELECT * FROM t WHERE id = ?"), 1);
+        assert_eq!(
+            pi.count_param_count("mysql", "SELECT * FROM t WHERE id = ? AND name = ?"),
+            2
+        );
+        assert_eq!(
+            pi.count_param_count("sqlite", "SELECT * FROM t WHERE id = ?"),
+            1
+        );
         assert_eq!(pi.count_param_count("pg", "SELECT * FROM t"), 0);
         assert_eq!(pi.count_param_count("mssql", "???"), 3);
     }
@@ -341,7 +360,11 @@ mod test {
         for item in rb.intercepts.iter() {
             let name = item.name().to_string();
             let dyn_result = rb.get_intercept_dyn(&name);
-            assert!(dyn_result.is_some(), "get_intercept_dyn should find {}", name);
+            assert!(
+                dyn_result.is_some(),
+                "get_intercept_dyn should find {}",
+                name
+            );
         }
     }
 
@@ -421,7 +444,8 @@ mod test {
             _args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
         ) -> Result<Action, Error> {
-            self.before_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.before_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             Ok(Action::Next)
         }
 
@@ -433,7 +457,8 @@ mod test {
             _args: &mut Vec<Value>,
             _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
         ) -> Result<Action, Error> {
-            self.after_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            self.after_count
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             Ok(Action::Next)
         }
     }
@@ -546,7 +571,11 @@ mod test {
         let rb = RBatis::default(); // No pool initialized
         let result = rb.get_pool();
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("pool not inited"));
+        assert!(result
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("pool not inited"));
     }
 
     // ==================== acquire error cases ====================

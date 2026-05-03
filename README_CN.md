@@ -167,7 +167,7 @@ fast_log = "1.6"
 use rbatis::rbdc::datetime::DateTime;
 use rbs::value;
 use rbatis::RBatis;
-use rbdc_sqlite::driver::SqliteDriver;
+use rbdc_sqlite::SqliteDriver;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 

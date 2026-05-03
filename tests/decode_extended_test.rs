@@ -11,7 +11,10 @@ mod test {
     use serde::{Deserialize, Serialize};
 
     fn make_csv_value(headers: &[&str], rows: Vec<Vec<Value>>) -> Value {
-        let header_row: Vec<Value> = headers.iter().map(|h| Value::String(h.to_string())).collect();
+        let header_row: Vec<Value> = headers
+            .iter()
+            .map(|h| Value::String(h.to_string()))
+            .collect();
         let data_rows: Vec<Value> = rows.into_iter().map(|r| Value::Array(r)).collect();
         Value::Array(vec![Value::Array(header_row), Value::Array(data_rows)])
     }
@@ -85,10 +88,7 @@ mod test {
     #[ignore]
     fn test_decode_csv_with_nulls() {
         // CSV format: [["id","name"],["1",null]]
-        let value = make_csv_value(
-            &["id", "name"],
-            vec![vec![Value::I32(1), Value::Null]],
-        );
+        let value = make_csv_value(&["id", "name"], vec![vec![Value::I32(1), Value::Null]]);
 
         let result: Vec<OptionNameStruct> = rbatis::decode(value).unwrap();
         assert_eq!(result.len(), 1);
@@ -132,7 +132,10 @@ mod test {
         let value = Value::Array(vec![{
             let mut m = ValueMap::new();
             m.insert(Value::String("id".to_string()), Value::I32(99));
-            m.insert(Value::String("label".to_string()), Value::String("hello".to_string()));
+            m.insert(
+                Value::String("label".to_string()),
+                Value::String("hello".to_string()),
+            );
             Value::Map(m)
         }]);
 
@@ -258,7 +261,10 @@ mod test {
         // Decoding tuple from map format
         let mut map = ValueMap::new();
         map.insert(Value::String("0".to_string()), Value::I32(1));
-        map.insert(Value::String("1".to_string()), Value::String("two".to_string()));
+        map.insert(
+            Value::String("1".to_string()),
+            Value::String("two".to_string()),
+        );
         let value = Value::Array(vec![Value::Map(map)]);
 
         let result: (i32, String) = rbatis::decode(value).unwrap();
@@ -275,7 +281,10 @@ mod test {
 
         let value = Value::Array(vec![{
             let mut m = ValueMap::new();
-            m.insert(Value::String("inner".to_string()), Value::String("hello".to_string()));
+            m.insert(
+                Value::String("inner".to_string()),
+                Value::String("hello".to_string()),
+            );
             Value::Map(m)
         }]);
 
@@ -313,7 +322,10 @@ mod test {
         let value = Value::Array(vec![{
             let mut m = ValueMap::new();
             m.insert(Value::String("x".to_string()), Value::I32(42));
-            m.insert(Value::String("y".to_string()), Value::String("answer".to_string()));
+            m.insert(
+                Value::String("y".to_string()),
+                Value::String("answer".to_string()),
+            );
             Value::Map(m)
         }]);
 
@@ -390,11 +402,17 @@ mod test {
         let value = Value::Array(vec![{
             let mut m = ValueMap::new();
             m.insert(Value::String("f1".to_string()), Value::I32(1));
-            m.insert(Value::String("f2".to_string()), Value::String("two".to_string()));
+            m.insert(
+                Value::String("f2".to_string()),
+                Value::String("two".to_string()),
+            );
             m.insert(Value::String("f3".to_string()), Value::Bool(true));
             m.insert(Value::String("f4".to_string()), Value::F64(3.14));
             m.insert(Value::String("f5".to_string()), Value::I64(999));
-            m.insert(Value::String("f6".to_string()), Value::String("some".to_string()));
+            m.insert(
+                Value::String("f6".to_string()),
+                Value::String("some".to_string()),
+            );
             m.insert(Value::String("f7".to_string()), Value::Null);
             Value::Map(m)
         }]);
@@ -414,10 +432,7 @@ mod test {
         // Vec<Vec<i32>>
         let inner_arr1: Vec<Value> = vec![Value::I32(1), Value::I32(2)];
         let inner_arr2: Vec<Value> = vec![Value::I32(3), Value::I32(4)];
-        let outer_arr: Vec<Value> = vec![
-            Value::Array(inner_arr1),
-            Value::Array(inner_arr2),
-        ];
+        let outer_arr: Vec<Value> = vec![Value::Array(inner_arr1), Value::Array(inner_arr2)];
         let value = Value::Array(vec![Value::Array(outer_arr)]);
 
         let result: Vec<Vec<i32>> = rbatis::decode(value).unwrap();

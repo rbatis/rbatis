@@ -13,10 +13,7 @@ use std::sync::Arc;
 pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(fast_log::Config::new().console());
     let rb = RBatis::new();
-    rb.init(
-        rbdc_sqlite::driver::SqliteDriver {},
-        "sqlite://target/sqlite.db",
-    )?;
+    rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
     // create table
     _ = rb
         .exec("CREATE TABLE activity_0 ( id INTEGER PRIMARY KEY);", vec![])

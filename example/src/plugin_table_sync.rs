@@ -3,7 +3,7 @@ use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::table_sync;
 use rbatis::Error;
-use rbdc_sqlite::driver::SqliteDriver;
+use rbdc_sqlite::SqliteDriver;
 use rbs::value;
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -28,9 +28,9 @@ pub async fn main() -> Result<(), Error> {
     });
     let rb = RBatis::new();
     // ------------choose driver------------
-    //rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
-    //rb.init(rbdc_pg::driver::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
-    //rb.init(rbdc_mssql::driver::MssqlDriver {}, "mssql://jdbc:sqlserver::localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
+    //rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    //rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    //rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver::localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(SqliteDriver {}, &"sqlite://target/sqlite.db".to_string())?;
 
     // ------------choose column mapper------------
