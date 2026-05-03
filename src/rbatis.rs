@@ -83,7 +83,7 @@ impl RBatis {
         let pool = DefaultPool::new(manager)?;
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("pool set fail!"))?;
+            .map_err(|_e| Error::from("[rb] pool already initialized, init can only be called once"))?;
         Ok(())
     }
 
@@ -110,14 +110,14 @@ impl RBatis {
         let pool = Pool::new(ConnectionManager::new_options(driver, option))?;
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("pool set fail!"))?;
+            .map_err(|_e| Error::from("[rb] pool already initialized, init_option can only be called once"))?;
         Ok(())
     }
 
     pub fn init_pool<Pool: rbdc::pool::Pool + 'static>(&self, pool: Pool) -> Result<(), Error> {
         self.pool
             .set(Box::new(pool))
-            .map_err(|_e| Error::from("pool set fail!"))?;
+            .map_err(|_e| Error::from("[rb] pool already initialized, init_pool can only be called once"))?;
         Ok(())
     }
 

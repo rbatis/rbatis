@@ -278,7 +278,7 @@ mod test {
         let result = rb.init_pool(pool2);
         assert!(result.is_err());
         let msg = result.err().unwrap().to_string();
-        assert!(msg.contains("pool set fail"));
+        assert!(msg.contains("pool already initialized"));
     }
 
     // ==================== RBatis::query (top-level) Test ====================
