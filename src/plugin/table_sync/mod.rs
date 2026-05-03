@@ -1,4 +1,8 @@
 pub mod rbdc_mapper;
+pub mod deprecated;
+
+pub use deprecated::*;
+
 use crate::executor::Executor;
 use crate::Error;
 use futures_core::future::BoxFuture;
