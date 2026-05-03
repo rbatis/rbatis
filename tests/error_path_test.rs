@@ -412,7 +412,7 @@ mod test {
             let table_data = rbs::Value::I32(42); // Not a Map!
             let result = RBatis::sync(
                 &conn,
-                &rbatis::table_sync::SqliteTableMapper {},
+                &rb,
                 &table_data,
                 "test_table",
             )
@@ -439,7 +439,7 @@ mod test {
             let table_data = rbs::value! {"id": "", "name": ""};
             let result = RBatis::sync(
                 &conn,
-                &rbatis::table_sync::MysqlTableMapper {}, // expects "mysql"
+                &rb, // expects "mysql"
                 &table_data,
                 "test_table",
             )
