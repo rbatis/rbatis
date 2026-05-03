@@ -44,21 +44,16 @@ pub async fn main() -> Result<(), Error> {
     RBatis::sync(&rb.acquire().await?, &rb, &table, "rb_user").await?;
 
     //sync table struct
-    RBatis::sync(
-        &rb.acquire().await?,
-        &rb,
-        &RBUser {
-            id: 0,
-            //name: Some("TEXT".to_string()),// Custom String Database Type
-            name: Some("".to_string()),
-            //remark: Some("TEXT".to_string()),// Custom String Database Type
-            remark: Some("".to_string()),
-            create_time: Some(DateTime::utc()),
-            version: Some(1),
-            delete_flag: Some(1),
-        },
-        "rb_user",
-    )
-    .await?;
+    let table = RBUser {
+        id: 0,
+        //name: Some("TEXT".to_string()),// Custom String Database Type
+        name: Some("".to_string()),
+        //remark: Some("TEXT".to_string()),// Custom String Database Type
+        remark: Some("".to_string()),
+        create_time: Some(DateTime::utc()),
+        version: Some(1),
+        delete_flag: Some(1),
+    };
+    RBatis::sync(&rb.acquire().await?, &rb, &table, "rb_user").await?;
     Ok(())
 }

@@ -53,9 +53,9 @@ mod my_pool {
     use std::borrow::Cow;
     use std::fmt::{Debug, Formatter};
     use std::ops::Deref;
-use std::pin::Pin;
+    use std::pin::Pin;
     use std::sync::Arc;
-use std::time::Duration;
+    use std::time::Duration;
 
     /// Connection wrapper that implements Connection trait by delegating to the pooled connection
     pub struct ConnWrapper {
@@ -167,7 +167,11 @@ use std::time::Duration;
             let inner = deadpool::managed::Pool::builder(manager_proxy)
                 .build()
                 .map_err(|e| Error::from(e.to_string()))?;
-            Ok(Self { inner, driver_type, driver})
+            Ok(Self {
+                inner,
+                driver_type,
+                driver,
+            })
         }
 
         async fn get(&self) -> Result<Box<dyn Connection>, Error> {

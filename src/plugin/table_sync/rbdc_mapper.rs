@@ -16,10 +16,10 @@ impl ColumnMapper for RBatis {
                 if !v.is_empty() {
                     v.to_string()
                 } else {
-                    if driver_name == "mysql" || driver_name == "postgres" || driver_name == "pg" {
-                        if column.eq("id") || column.ends_with("_id") || column.starts_with("id_") {
-                            return "VARCHAR(50)".to_string();
-                        }
+                    if (driver_name == "mysql" || driver_name == "postgres" || driver_name == "pg")
+                        && (column.eq("id") || column.ends_with("_id") || column.starts_with("id_"))
+                    {
+                        return "VARCHAR(50)".to_string();
                     }
                     "TEXT".to_string()
                 }

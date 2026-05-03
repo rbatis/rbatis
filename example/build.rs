@@ -1,6 +1,5 @@
 use log::LevelFilter;
 use rbatis::rbdc::DateTime;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::RBatis;
 
 /// this just only to create database table show example, you don't need this code
@@ -42,7 +41,7 @@ fn main() {
 
             _ = RBatis::sync(
                 &conn.unwrap(),
-                &SqliteTableMapper {},
+                &rb,
                 &Activity {
                     id: Some(String::new()),
                     name: Some(String::new()),
