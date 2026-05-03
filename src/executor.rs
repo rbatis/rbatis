@@ -1,5 +1,5 @@
 use crate::decode::decode;
-use crate::intercept;
+use crate::intercept::{self, ResultType};
 use crate::rbatis::RBatis;
 use crate::Error;
 use futures::Future;
@@ -103,14 +103,14 @@ impl RBatisConnExecutor {
         let mut sql = sql.to_string();
         let id = self.id;
         let mut before_result = Err(Error::from(""));
-        if intercept::run_before_query(&self.intercepts, id, self, &mut sql, &mut args, &mut before_result).await? {
+        if intercept::run_before(&self.intercepts, id, self, &mut sql, &mut args, ResultType::Query(&mut before_result)).await? {
             return before_result.and_then(|v| decode(v));
         }
         let mut conn = self.conn.lock().await;
         let mut args_after = args.clone();
         let mut result = conn.exec_decode(&sql, args).await;
         drop(conn);
-        if intercept::run_after_query(&self.intercepts, id, self, &mut sql, &mut args_after, &mut result).await? {
+        if intercept::run_after(&self.intercepts, id, self, &mut sql, &mut args_after, ResultType::Query(&mut result)).await? {
             return before_result.and_then(|v| decode(v));
         }
         result.and_then(|v| decode(v))
@@ -128,12 +128,12 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let id = self.id;
             let mut before_result = Err(Error::from(""));
-            if intercept::run_before_exec(&self.intercepts, id, self, &mut sql, &mut args, &mut before_result).await? {
+            if intercept::run_before(&self.intercepts, id, self, &mut sql, &mut args, ResultType::Exec(&mut before_result)).await? {
                 return before_result;
             }
             let mut args_after = args.clone();
             let mut result = self.conn.lock().await.exec(&sql, args).await;
-            if intercept::run_after_exec(&self.intercepts, id, self, &mut sql, &mut args_after, &mut result).await? {
+            if intercept::run_after(&self.intercepts, id, self, &mut sql, &mut args_after, ResultType::Exec(&mut result)).await? {
                 return before_result;
             }
             result
@@ -145,13 +145,13 @@ impl Executor for RBatisConnExecutor {
         Box::pin(async move {
             let id = self.id;
             let mut before_result = Err(Error::from(""));
-            if intercept::run_before_query(&self.intercepts, id, self, &mut sql, &mut args, &mut before_result).await? {
+            if intercept::run_before(&self.intercepts, id, self, &mut sql, &mut args, ResultType::Query(&mut before_result)).await? {
                 return before_result;
             }
             let mut conn = self.conn.lock().await;
             let mut args_after = args.clone();
             let mut result = conn.exec_decode(&sql, args).await;
-            if intercept::run_after_query(&self.intercepts, id, self, &mut sql, &mut args_after, &mut result).await? {
+            if intercept::run_after(&self.intercepts, id, self, &mut sql, &mut args_after, ResultType::Query(&mut result)).await? {
                 return before_result;
             }
             result
@@ -314,12 +314,12 @@ impl Executor for RBatisTxExecutor {
             let id = self.tx_id;
             let intercepts = &self.conn_executor.intercepts;
             let mut before_result = Err(Error::from(""));
-            if intercept::run_before_exec(intercepts, id, self, &mut sql, &mut args, &mut before_result).await? {
+            if intercept::run_before(intercepts, id, self, &mut sql, &mut args, ResultType::Exec(&mut before_result)).await? {
                 return before_result;
             }
             let mut args_after = args.clone();
             let mut result = self.conn_executor.conn.lock().await.exec(&sql, args).await;
-            if intercept::run_after_exec(intercepts, id, self, &mut sql, &mut args_after, &mut result).await? {
+            if intercept::run_after(intercepts, id, self, &mut sql, &mut args_after, ResultType::Exec(&mut result)).await? {
                 return before_result;
             }
             result
@@ -332,13 +332,13 @@ impl Executor for RBatisTxExecutor {
             let id = self.tx_id;
             let intercepts = &self.conn_executor.intercepts;
             let mut before_result = Err(Error::from(""));
-            if intercept::run_before_query(intercepts, id, self, &mut sql, &mut args, &mut before_result).await? {
+            if intercept::run_before(intercepts, id, self, &mut sql, &mut args, ResultType::Query(&mut before_result)).await? {
                 return before_result;
             }
             let mut conn = self.conn_executor.conn.lock().await;
             let mut args_after = args.clone();
             let mut result = conn.exec_decode(&sql, args).await;
-            if intercept::run_after_query(intercepts, id, self, &mut sql, &mut args_after, &mut result).await? {
+            if intercept::run_after(intercepts, id, self, &mut sql, &mut args_after, ResultType::Query(&mut result)).await? {
                 return before_result;
             }
             result
@@ -481,7 +481,7 @@ impl RBatis {
 
         let mut sql = sql.to_string();
         let mut before_result: Result<Value, Error> = Err(Error::from(""));
-        if intercept::run_before_query(&self.intercepts, 0, self, &mut sql, &mut args, &mut before_result).await? {
+        if intercept::run_before(&self.intercepts, 0, self, &mut sql, &mut args, ResultType::Query(&mut before_result)).await? {
             return before_result.and_then(|v| decode(v));
         }
         let pool = self
@@ -491,7 +491,7 @@ impl RBatis {
         let mut conn = pool.get().await?;
         let mut args_after = args.clone();
         let mut result = conn.exec_decode(&sql, args).await;
-        if intercept::run_after_query(&self.intercepts, 0, self, &mut sql, &mut args_after, &mut result).await? {
+        if intercept::run_after(&self.intercepts, 0, self, &mut sql, &mut args_after, ResultType::Query(&mut result)).await? {
             return before_result.and_then(|v| decode(v));
         }
         result.and_then(|v| decode(v))
