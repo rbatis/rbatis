@@ -1,7 +1,6 @@
 use log::LevelFilter;
 use rbatis::crud;
 use rbatis::dark_std::defer;
-use rbatis::table_sync::SqliteTableMapper;
 use rbatis::{table_sync, Error, RBatis};
 use rbs::value;
 
@@ -71,6 +70,6 @@ async fn create_table(rb: &RBatis) -> Result<(), Error> {
         "account2":"JSON",
     };
     let conn = rb.acquire().await?;
-    _ = table_sync::sync(&conn, &rb, value!(&table), "user").await;
+    _ = table_sync::sync(&conn, rb, value!(&table), "user").await;
     Ok(())
 }
