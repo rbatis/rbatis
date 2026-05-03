@@ -29,8 +29,8 @@ upper_case_sql_keyword = []
 println_gen = ["rbatis-macro-driver/println_gen"]
 
 [dependencies]
-rbatis-codegen = { version = "4.8", path = "rbatis-codegen" }
-rbatis-macro-driver = { version = "4.8", path = "rbatis-macro-driver", default-features = false, optional = true }
+rbatis-codegen = { version = "4.9", path = "rbatis-codegen" }
+rbatis-macro-driver = { version = "4.9", path = "rbatis-macro-driver", default-features = false, optional = true }
 rbs = { version = "4"}
 rbdc = { version = "4.9", default-features = false }
 rbdc-pool-fast = { version = "4.9" }
