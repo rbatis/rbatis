@@ -100,7 +100,7 @@ pub trait Intercept: Any + Send + Sync + Debug {
 
 /// Run before-interceptors. Returns `true` if an interceptor returned `Action::Return`.
 /// The `result` parameter carries either `Exec` or `Query` variant to determine the result type.
-pub async fn run_before(
+pub async fn apply_before(
     intercepts: &SyncVec<Arc<dyn Intercept>>,
     id: i64,
     executor: &dyn Executor,
@@ -122,7 +122,7 @@ pub async fn run_before(
 
 /// Run after-interceptors. Returns `true` if an interceptor returned `Action::Return`.
 /// The `result` parameter carries either `Exec` or `Query` variant to determine the result type.
-pub async fn run_after(
+pub async fn apply_after(
     intercepts: &SyncVec<Arc<dyn Intercept>>,
     id: i64,
     executor: &dyn Executor,
