@@ -3,7 +3,7 @@ use rbs::Value;
 
 #[deprecated(note = "use rbatis::RBatis")]
 pub struct PGTableMapper {}
-#[deprecated(note = "use rbatis::RBatis")]
+
 impl ColumnMapper for PGTableMapper {
     fn driver_type(&self) -> String {
         "postgres".to_string()

@@ -3,7 +3,7 @@ use rbs::Value;
 
 #[deprecated(note = "use rbatis::RBatis")]
 pub struct MssqlTableMapper {}
-#[deprecated(note = "use rbatis::RBatis")]
+
 impl ColumnMapper for MssqlTableMapper {
     fn driver_type(&self) -> String {
         "mssql".to_string()
