@@ -2,6 +2,7 @@ use crate::decode::decode;
 use crate::intercept::{self, ResultType};
 use crate::rbatis::RBatis;
 use crate::Error;
+use dark_std::sync::SyncVec;
 use futures::Future;
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
@@ -45,7 +46,7 @@ pub struct RBatisConnExecutor {
     pub id: i64,
     pub rb: RBatis,
     pub conn: Arc<Mutex<Box<dyn Connection>>>,
-    pub intercepts: Arc<dark_std::sync::SyncVec<Arc<dyn crate::intercept::Intercept>>>,
+    pub intercepts: Arc<SyncVec<Arc<dyn crate::intercept::Intercept>>>,
 }
 
 impl RBatisConnExecutor {
