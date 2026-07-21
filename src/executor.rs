@@ -1,12 +1,14 @@
 use crate::decode::decode;
-use crate::intercept::{self, ResultType};
+use crate::intercept::{self, ResultType, StreamResult, StreamStatus};
+use crate::query_stream::QueryStream;
 use crate::rbatis::RBatis;
 use crate::Error;
 use dark_std::sync::SyncVec;
-use futures::Future;
+use futures::{Future, StreamExt};
 use futures_core::future::BoxFuture;
 use rbdc::db::{Connection, ExecResult};
 use rbdc::rt::tokio::sync::Mutex;
+use rbdc::util::Scan;
 use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::any::Any;
@@ -24,6 +26,24 @@ pub trait Executor: RBatisRef + Send + Sync {
 
     fn exec(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<ExecResult, Error>>;
     fn query(&self, sql: &str, args: Vec<Value>) -> BoxFuture<'_, Result<Value, Error>>;
+
+    /// Query rows through a bounded stream.
+    ///
+    /// Implementations backed by a connection override this method with the
+    /// native RBDC row stream. The default preserves compatibility by adapting
+    /// the existing materialized query result.
+    fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> BoxFuture<'_, Result<QueryStream, Error>> {
+        let sql = sql.to_string();
+        Box::pin(async move {
+            let value = self.query(&sql, args).await?;
+            QueryStream::from_value(value, prefetch)
+        })
+    }
 }
 
 pub trait RBatisRef: Any + Send + Sync {
@@ -72,6 +92,109 @@ impl Debug for RBatisConnExecutor {
     }
 }
 
+fn native_query_stream<E>(
+    executor: E,
+    conn: Arc<Mutex<Box<dyn Connection>>>,
+    intercepts: Arc<SyncVec<Arc<dyn crate::intercept::Intercept>>>,
+    id: i64,
+    mut sql: String,
+    mut args: Vec<Value>,
+    prefetch: usize,
+) -> BoxFuture<'static, Result<QueryStream, Error>>
+where
+    E: Executor + Clone + 'static,
+{
+    Box::pin(async move {
+        intercept::ensure_query_stream_supported(&intercepts)?;
+        let mut before_result = Err(Error::from(""));
+        if intercept::apply_before(
+            &intercepts,
+            id,
+            &executor,
+            &mut sql,
+            &mut args,
+            ResultType::Query(&mut before_result),
+        )
+        .await?
+        {
+            return QueryStream::from_value(before_result?, prefetch);
+        }
+
+        let (sender, receiver) = QueryStream::channel(prefetch)?;
+        rbdc::rt::spawn(async move {
+            let result = {
+                let mut connection = conn.lock().await;
+                let query_result = connection.exec_rows(&sql, args.clone()).await;
+                let outcome = match query_result {
+                    Ok(rows) => {
+                        let mut rows = Scan::new(rows);
+                        let mut count = 0;
+                        loop {
+                            rbdc::rt::tokio::select! {
+                                _ = sender.closed() => {
+                                    break StreamResult {
+                                        status: StreamStatus::Cancelled,
+                                        rows: count,
+                                        error: None,
+                                    };
+                                }
+                                next = rows.next() => {
+                                    match next {
+                                        Some(Ok(row)) => {
+                                            count += 1;
+                                            if sender.send(Ok(row)).await.is_err() {
+                                                break StreamResult {
+                                                    status: StreamStatus::Cancelled,
+                                                    rows: count,
+                                                    error: None,
+                                                };
+                                            }
+                                        }
+                                        Some(Err(error)) => {
+                                            let message = error.to_string();
+                                            let _ = sender.send(Err(error)).await;
+                                            break StreamResult {
+                                                status: StreamStatus::Failed,
+                                                rows: count,
+                                                error: Some(message),
+                                            };
+                                        }
+                                        None => {
+                                            break StreamResult {
+                                                status: StreamStatus::Completed,
+                                                rows: count,
+                                                error: None,
+                                            };
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Err(error) => {
+                        let message = error.to_string();
+                        let _ = sender.send(Err(error)).await;
+                        StreamResult {
+                            status: StreamStatus::Failed,
+                            rows: 0,
+                            error: Some(message),
+                        }
+                    }
+                };
+                outcome
+            };
+
+            if let Err(error) =
+                intercept::apply_after_stream(&intercepts, id, &executor, &sql, &args, &result)
+                    .await
+            {
+                let _ = sender.send(Err(error)).await;
+            }
+        });
+        Ok(receiver)
+    })
+}
+
 impl RBatisConnExecutor {
     pub async fn exec(&self, sql: &str, args: Vec<Value>) -> Result<ExecResult, Error> {
         let v = Executor::exec(self, sql, args).await?;
@@ -81,6 +204,15 @@ impl RBatisConnExecutor {
     pub async fn query(&self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
         let v = Executor::query(self, sql, args).await?;
         Ok(v)
+    }
+
+    pub async fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> Result<QueryStream, Error> {
+        Executor::query_stream(self, sql, args, prefetch).await
     }
 
     // Fast path for exec_decode - inlined to avoid trait method call overhead
@@ -204,6 +336,23 @@ impl Executor for RBatisConnExecutor {
             result
         })
     }
+
+    fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> BoxFuture<'_, Result<QueryStream, Error>> {
+        native_query_stream(
+            self.clone(),
+            self.conn.clone(),
+            self.intercepts.clone(),
+            self.id,
+            sql.to_string(),
+            args,
+            prefetch,
+        )
+    }
 }
 
 impl RBatisRef for RBatisConnExecutor {
@@ -280,6 +429,15 @@ impl RBatisTxExecutor {
     pub async fn query(&self, sql: &str, args: Vec<Value>) -> Result<Value, Error> {
         let v = Executor::query(self, sql, args).await?;
         Ok(v)
+    }
+
+    pub async fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> Result<QueryStream, Error> {
+        Executor::query_stream(self, sql, args, prefetch).await
     }
     /// query and decode
     pub async fn exec_decode<T>(&self, sql: &str, args: Vec<Value>) -> Result<T, Error>
@@ -450,6 +608,23 @@ impl Executor for RBatisTxExecutor {
             result
         })
     }
+
+    fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> BoxFuture<'_, Result<QueryStream, Error>> {
+        native_query_stream(
+            self.clone(),
+            self.conn_executor.conn.clone(),
+            self.conn_executor.intercepts.clone(),
+            self.tx_id,
+            sql.to_string(),
+            args,
+            prefetch,
+        )
+    }
 }
 
 impl RBatisRef for RBatisTxExecutor {
@@ -510,6 +685,15 @@ impl RBatisTxExecutorGuard {
     {
         self.tx.exec_decode(sql, args).await
     }
+
+    pub async fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> Result<QueryStream, Error> {
+        self.tx.query_stream(sql, args, prefetch).await
+    }
 }
 
 impl Drop for RBatisTxExecutorGuard {
@@ -540,6 +724,16 @@ impl Executor for RBatisTxExecutorGuard {
         let sql = sql.to_string();
         Box::pin(async move { self.tx.query(&sql, args).await })
     }
+
+    fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> BoxFuture<'_, Result<QueryStream, Error>> {
+        let sql = sql.to_string();
+        Box::pin(async move { self.tx.query_stream(&sql, args, prefetch).await })
+    }
 }
 
 impl RBatis {
@@ -554,6 +748,17 @@ impl RBatis {
         let conn = self.acquire().await?;
         let v = conn.query(sql, args).await?;
         Ok(v)
+    }
+
+    /// Query through the native RBDC row stream using a dedicated connection.
+    pub async fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> Result<QueryStream, Error> {
+        let conn = self.acquire().await?;
+        conn.query_stream(sql, args, prefetch).await
     }
 
     /// query and decode - fully inlined to avoid RBatisConnExecutor allocation
@@ -638,5 +843,15 @@ impl Executor for RBatis {
             let conn = self.acquire().await?;
             conn.query(&sql, args).await
         })
+    }
+
+    fn query_stream(
+        &self,
+        sql: &str,
+        args: Vec<Value>,
+        prefetch: usize,
+    ) -> BoxFuture<'_, Result<QueryStream, Error>> {
+        let sql = sql.to_string();
+        Box::pin(async move { RBatis::query_stream(self, &sql, args, prefetch).await })
     }
 }

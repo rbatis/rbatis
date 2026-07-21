@@ -11,6 +11,22 @@ use std::any::Any;
 use std::fmt::Debug;
 use std::sync::Arc;
 
+/// Terminal state reported after a native row stream stops.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StreamStatus {
+    Completed,
+    Cancelled,
+    Failed,
+}
+
+/// Materialization-free query stream outcome exposed to interceptors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StreamResult {
+    pub status: StreamStatus,
+    pub rows: usize,
+    pub error: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub enum ResultType<A, B> {
     /// Exec type
@@ -70,6 +86,14 @@ pub trait Intercept: Any + Send + Sync + Debug {
         std::any::type_name::<Self>()
     }
 
+    /// Whether this interceptor can preserve its semantics for row streaming.
+    ///
+    /// The default is fail-closed. Interceptors that only rewrite SQL in
+    /// `before`, or that implement `after_stream`, can explicitly opt in.
+    fn supports_query_stream(&self) -> bool {
+        false
+    }
+
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
     async fn before(
@@ -96,6 +120,52 @@ pub trait Intercept: Any + Send + Sync + Debug {
     ) -> Result<Action, Error> {
         Ok(Action::Next)
     }
+
+    /// Observe completion, cancellation, or failure without materializing rows.
+    async fn after_stream(
+        &self,
+        _task_id: i64,
+        _rb: &dyn Executor,
+        _sql: &str,
+        _args: &[Value],
+        _result: &StreamResult,
+    ) -> Result<(), Error> {
+        Ok(())
+    }
+}
+
+pub fn ensure_query_stream_supported(
+    intercepts: &SyncVec<Arc<dyn Intercept>>,
+) -> Result<(), Error> {
+    let unsupported = intercepts
+        .iter()
+        .filter(|interceptor| !interceptor.supports_query_stream())
+        .map(|interceptor| interceptor.name())
+        .collect::<Vec<_>>();
+    if unsupported.is_empty() {
+        Ok(())
+    } else {
+        Err(Error::from(format!(
+            "[rb] query stream is not supported by interceptors: {}",
+            unsupported.join(", ")
+        )))
+    }
+}
+
+pub async fn apply_after_stream(
+    intercepts: &SyncVec<Arc<dyn Intercept>>,
+    id: i64,
+    executor: &dyn Executor,
+    sql: &str,
+    args: &[Value],
+    result: &StreamResult,
+) -> Result<(), Error> {
+    for interceptor in intercepts.iter() {
+        interceptor
+            .after_stream(id, executor, sql, args, result)
+            .await?;
+    }
+    Ok(())
 }
 
 /// Run before-interceptors. Returns `true` if an interceptor returned `Action::Return`.

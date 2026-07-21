@@ -62,6 +62,10 @@ impl PageIntercept {
 }
 #[async_trait]
 impl Intercept for PageIntercept {
+    fn supports_query_stream(&self) -> bool {
+        true
+    }
+
     async fn before(
         &self,
         _task_id: i64,

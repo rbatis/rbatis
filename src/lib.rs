@@ -19,11 +19,13 @@ pub mod crud;
 pub mod error;
 pub mod crud_traits;
 pub mod decode;
+pub mod query_stream;
 
 pub use async_trait::async_trait;
 pub use decode::*;
 pub use error::*;
 pub use executor::*;
 pub use plugin::*;
+pub use query_stream::*;
 pub use rbatis::*;
 pub use rbdc_pool_fast::FastPool as DefaultPool;

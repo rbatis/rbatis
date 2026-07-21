@@ -1,6 +1,6 @@
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
-use crate::intercept::{Intercept, ResultType};
+use crate::intercept::{Intercept, ResultType, StreamResult};
 use crate::{Action, Error};
 use async_trait::async_trait;
 use log::{log, Level, LevelFilter};
@@ -99,6 +99,10 @@ impl LogInterceptor {
 
 #[async_trait]
 impl Intercept for LogInterceptor {
+    fn supports_query_stream(&self) -> bool {
+        true
+    }
+
     async fn before(
         &self,
         task_id: i64,
@@ -164,5 +168,26 @@ impl Intercept for LogInterceptor {
             },
         }
         Ok(Action::Next)
+    }
+
+    async fn after_stream(
+        &self,
+        task_id: i64,
+        _rb: &dyn Executor,
+        _sql: &str,
+        _args: &[Value],
+        result: &StreamResult,
+    ) -> Result<(), Error> {
+        if let Some(level) = self.to_level() {
+            log!(
+                level,
+                "[rb] [{}] <= stream status={:?},rows={},error={:?}",
+                task_id,
+                result.status,
+                result.rows,
+                result.error
+            );
+        }
+        Ok(())
     }
 }
