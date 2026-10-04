@@ -35,7 +35,7 @@ pub async fn main() -> Result<(), Error> {
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
 
     //clear data
-    let _ = Activity::delete_by_map(&rb.clone(), value! {"id":["3"]}).await;
+    let _ = Activity::delete_by_map(&rb, value! {"id":["3"]}).await;
 
     // will forget commit
     let tx = rb.acquire_begin().await?.auto_commit();

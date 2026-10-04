@@ -51,10 +51,10 @@ pub async fn main() -> Result<(), Error> {
         }],
     };
 
-    let v = User::insert(&rb.clone(), &user).await;
+    let v = User::insert(&rb, &user).await;
     println!("insert:{:?}", v);
 
-    let users = User::select_by_map(&rb.clone(), value! {"id":1}).await;
+    let users = User::select_by_map(&rb, value! {"id":1}).await;
     println!("select:{}", value!(users));
     Ok(())
 }

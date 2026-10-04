@@ -53,8 +53,8 @@ impl RBatisConnExecutor {
         Self {
             id,
             conn: Arc::new(Mutex::new(conn)),
-            rb: rb.clone(),
             intercepts: rb.intercepts.clone(),
+            rb: rb,
         }
     }
 

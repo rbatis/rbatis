@@ -7,7 +7,6 @@ use rbs::Value;
 fn setup_test() -> RBatis {
     let rb = RBatis::new();
     let rb_clone = rb.clone();
-
     block_on(async move {
         let db_url = "sqlite://:memory:";
         println!("link database: {}", db_url);

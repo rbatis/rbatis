@@ -32,7 +32,7 @@ pub async fn main() -> Result<(), Error> {
     rb.get_intercept::<LogInterceptor>()
         .unwrap()
         .set_level_filter(LevelFilter::Info);
-    _ = Activity::select_by_map(&rb.clone(), value! {"id":"2"}).await;
+    _ = Activity::select_by_map(&rb, value! {"id":"2"}).await;
     tokio::time::sleep(Duration::from_secs(1)).await;
     println!("-----------------------------------------------------------------------");
 
@@ -40,7 +40,7 @@ pub async fn main() -> Result<(), Error> {
     rb.get_intercept::<LogInterceptor>()
         .unwrap()
         .set_level_filter(LevelFilter::Off);
-    _ = Activity::select_by_map(&rb.clone(), value! {"id":"2"}).await;
+    _ = Activity::select_by_map(&rb, value! {"id":"2"}).await;
     tokio::time::sleep(Duration::from_secs(1)).await;
     println!("-----------------------------------------------------------------------");
 

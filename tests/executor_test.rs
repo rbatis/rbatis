@@ -337,9 +337,8 @@ fn test_executor_interface() {
 
 fn make_test_rbatis() -> RBatis {
     let rb = RBatis::new();
-    let rb_clone = rb.clone();
     block_on(async move {
-        rb_clone
+        rb
             .link(SqliteDriver {}, "sqlite://:memory:")
             .await
             .unwrap();

@@ -45,7 +45,7 @@ pub async fn main() -> Result<(), Error> {
     // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
     // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
-    let datas = Activity::select_by_map(&rb.clone(), value! {}).await?;
+    let datas = Activity::select_by_map(&rb, value! {}).await?;
     println!("{}", json!(datas));
     Ok(())
 }
