@@ -342,6 +342,6 @@ fn make_test_rbatis() -> RBatis {
             .link(SqliteDriver {}, "sqlite://:memory:")
             .await
             .unwrap();
-    });
-    rb
+        rb
+    })
 }
