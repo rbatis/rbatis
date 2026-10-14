@@ -1,4 +1,23 @@
+//! SQL interceptors.
+//!
+//! An interceptor sees every statement that runs through an [`Executor`]:
+//! [`Intercept::before`] is called before the statement is sent to the database and can
+//! rewrite the SQL or the arguments (dynamic table names, read/write splitting, auditing,
+//! `RETURNING` emulation, ...), [`Intercept::after`] is called with the result and can
+//! replace it.
+//!
+//! Interceptors are installed on the engine with
+//! [`RBatis::set_intercepts`](crate::RBatis::set_intercepts) and are looked up by
+//! [`RBatis::get_intercept`](crate::RBatis::get_intercept).
+//!
+//! [`PageIntercept`](intercept_page::PageIntercept) (pagination) and
+//! [`LogInterceptor`](intercept_log::LogInterceptor) (SQL logging) are installed by
+//! default, more examples live in the
+//! [example](https://github.com/rbatis/rbatis/tree/master/example) directory.
+
+/// log every statement and its arguments through the `log` crate
 pub mod intercept_log;
+/// pagination interceptor, required by the `Page<T>` return type
 pub mod intercept_page;
 
 use crate::executor::Executor;
@@ -11,15 +30,18 @@ use std::any::Any;
 use std::fmt::Debug;
 use std::sync::Arc;
 
+/// Tells an interceptor whether the running statement is an `exec` (insert/update/
+/// delete, result is [`ExecResult`]) or a `query` (result is an [`rbs::Value`]).
 #[derive(Debug, Clone)]
 pub enum ResultType<A, B> {
-    /// Exec type
+    /// exec type: an [`ExecResult`] is available
     Exec(/* #[pin] */ A),
-    /// Query type
+    /// query type: an [`rbs::Value`] is available
     Query(/* #[pin] */ B),
 }
 
 impl<A, B> ResultType<A, B> {
+    /// `"exec"` or `"query"`
     pub fn type_name<'b>(&self) -> &'b str {
         match self {
             ResultType::Exec(_) => "exec",
@@ -28,15 +50,16 @@ impl<A, B> ResultType<A, B> {
     }
 }
 
+/// What the next interceptor should do.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
-    /// run next
+    /// let the statement (or the next interceptor) run
     Next,
-    /// return result
+    /// stop here and return the result that the interceptor wrote into `result`
     Return,
 }
 
-/// sql intercept
+/// SQL intercept
 /// example:
 ///
 /// ```rust
@@ -66,6 +89,8 @@ pub enum Action {
 /// ```
 #[async_trait]
 pub trait Intercept: Any + Send + Sync + Debug {
+    /// name used by [`RBatis::get_intercept_dyn`](crate::RBatis::get_intercept_dyn),
+    /// defaults to the type name of the interceptor
     fn name(&self) -> &str {
         std::any::type_name::<Self>()
     }

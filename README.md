@@ -1,6 +1,6 @@
 # Rbatis
 
-##### 📖 English Documentation | 📖 [中文文档](README_CN.md)
+##### 📖 English Documentation | 📖 [中文文档](https://github.com/rbatis/rbatis/blob/master/README_CN.md)
 
 [Website](https://rbatis.github.io/rbatis.io) | [Showcase](https://github.com/rbatis/rbatis/network/dependents) | [Examples](https://github.com/rbatis/rbatis/tree/master/example)
 
@@ -12,7 +12,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/rbatis/rbatis)](https://github.com/rbatis/rbatis/releases)
 [![discussions](https://img.shields.io/github/discussions/rbatis/rbatis)](https://github.com/rbatis/rbatis/discussions)
 
-<img style="width: 180px;height: 180px;" width="200" height="190" src="logo.png" />
+<img style="width: 180px;height: 180px;" width="200" height="190" src="https://raw.githubusercontent.com/rbatis/rbatis/master/logo.png" />
 
 
 ## Introduction
@@ -121,7 +121,7 @@ Rbatis uses compile-time code generation through the `rbatis-codegen` crate, whi
 
 ## Performance Benchmarks
 
-```
+```text
 ---- bench_raw stdout ----(windows/SingleThread)
 Time: 52.4187ms ,each:524 ns/op
 QPS: 1906435 QPS/s
@@ -159,9 +159,10 @@ fast_log = "1.6"
 
 ### Basic Usage
 
-```rust
+```rust,no_run
 use rbatis::rbdc::datetime::DateTime;
 use rbs::value;
+use rbatis::crud;
 use rbatis::RBatis;
 use rbdc_sqlite::SqliteDriver;
 use serde::{Deserialize, Serialize};
@@ -179,8 +180,8 @@ crud!(Activity{});
 
 #[tokio::main]
 async fn main() {
-    // Configure logging
-    fast_log::init(fast_log::Config::new().console()).expect("log init fail");
+    // Configure logging (optional, any logger works)
+    // fast_log::init(fast_log::Config::new().console()).expect("log init fail");
     
     // Initialize rbatis
     let rb = RBatis::new();
@@ -243,7 +244,7 @@ async fn main() {
 
 Use `#[rbatis::html_sql("html/file_path")]` macro for complex queries like pagination, join queries, etc.:
 
-```rust
+```rust,ignore
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Activity {
     pub id: Option<String>,
@@ -310,7 +311,7 @@ tokio = { version = "1", features = ["full"] }
 ```
 
 2. Implement the required traits:
-```rust
+```rust,ignore
 use rbdc::db::{Driver, MetaData, Row, Connection, ConnectOptions, Placeholder};
 
 pub struct YourDriver{}

@@ -1,3 +1,18 @@
+//! SQL logging interceptor.
+//!
+//! [`LogInterceptor`] prints every statement, its arguments and its result through the
+//! `log` crate. It is installed by default by [`RBatis::new`](crate::RBatis::new) at
+//! [`LevelFilter::Debug`]; raise the level to [`LevelFilter::Trace`] to also see the
+//! returned rows, or set [`LevelFilter::Off`] to silence it.
+//!
+//! ```rust,no_run
+//! use rbatis::{RBatis, plugin::intercept_log::LogInterceptor};
+//!
+//! let rb = RBatis::new();
+//! let intercept = rb.get_intercept::<LogInterceptor>().expect("installed by RBatis::new");
+//! intercept.set_level_filter(log::LevelFilter::Trace);
+//! ```
+
 use crate::decode::is_debug_mode;
 use crate::executor::Executor;
 use crate::intercept::{Intercept, ResultType};
@@ -54,6 +69,7 @@ impl Clone for LogInterceptor {
 }
 
 impl LogInterceptor {
+    /// create a log interceptor, [`LevelFilter::Off`] disables the logging
     pub fn new(level_filter: LevelFilter) -> Self {
         let s = Self {
             level_filter: AtomicUsize::new(0),
@@ -62,6 +78,7 @@ impl LogInterceptor {
         s
     }
 
+    /// the current level of this interceptor
     pub fn get_level_filter(&self) -> LevelFilter {
         match self.level_filter.load(Ordering::Relaxed) {
             0 => LevelFilter::Off,
@@ -74,6 +91,7 @@ impl LogInterceptor {
         }
     }
 
+    /// the current level as `log::Level`, `None` when logging is off
     pub fn to_level(&self) -> Option<Level> {
         match self.get_level_filter() {
             LevelFilter::Off => None,
@@ -85,6 +103,7 @@ impl LogInterceptor {
         }
     }
 
+    /// change the log level at runtime
     pub fn set_level_filter(&self, level_filter: LevelFilter) {
         match level_filter {
             LevelFilter::Off => self.level_filter.store(0, Ordering::SeqCst),

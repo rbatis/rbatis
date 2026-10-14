@@ -17,14 +17,55 @@ use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
-/// RBatis engine
+/// The rbatis engine: connection pool + interceptors + id generator.
+///
+/// ```rust,no_run
+/// use rbatis::RBatis;
+///
+/// #[tokio::main]
+/// async fn main() -> rbatis::Result<()> {
+///     let rb = RBatis::new();
+///     rb.link(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db").await?;
+///     Ok(())
+/// }
+/// ```
+///
+/// `&rb` implements [`Executor`], so it can be handed to any generated statement.
+/// For statement groups that must share a connection or a transaction, use
+/// [`RBatis::acquire`] or [`RBatis::acquire_begin`].
+///
+/// # Pools
+///
+/// [`RBatis::init`] and [`RBatis::link`] use [`DefaultPool`] (`FastPool`).
+/// [`RBatis::init_option`] chooses the pool type and passes your own
+/// `ConnectOptions`, [`RBatis::init_pool`] accepts a ready made pool:
+///
+/// ```rust,no_run
+/// use rbatis::{DefaultPool, RBatis};
+/// use rbdc_sqlite::{SqliteConnectOptions, SqliteDriver};
+///
+/// let rb = RBatis::new();
+/// let _ = rb.init_option::<SqliteDriver, SqliteConnectOptions, DefaultPool>(
+///     SqliteDriver {},
+///     SqliteConnectOptions::new(),
+/// );
+/// ```
+///
+/// A pool can only be installed once per engine; the second `init*` call fails. Use
+/// separate [`RBatis`] instances for separate databases.
+///
+/// # Interceptors
+///
+/// [`RBatis::new`] installs a [`PageIntercept`] (pagination) and a [`LogInterceptor`]
+/// (SQL logging). [`RBatis::set_intercepts`] replaces the whole list; remember to keep
+/// [`PageIntercept`] if you use `Page<T>` queries.
 #[derive(Clone, Debug)]
 pub struct RBatis {
-    // the connection pool
+    /// the connection pool, installed once by [`RBatis::init`], [`RBatis::init_option`] or [`RBatis::init_pool`]
     pub pool: Arc<OnceLock<Box<dyn Pool>>>,
-    // intercept vec(default the intercepts[0] is a log interceptor)
+    /// SQL interceptors, see [`RBatis::set_intercepts`] and [`Intercept`]
     pub intercepts: Arc<SyncVec<Arc<dyn Intercept>>>,
-    //rb task id gen
+    /// generator of the `task_id` passed to interceptors (defaults to [`Snowflake`])
     pub task_id_generator: Arc<dyn IdGenerator>,
 }
 
@@ -39,8 +80,10 @@ impl Default for RBatis {
 }
 
 impl RBatis {
-    /// create an RBatis
-    /// add intercept use LogInterceptor
+    /// create an engine with the default interceptors ([`PageIntercept`] for
+    /// `Page<T>` queries and [`LogInterceptor`] for SQL logs).
+    ///
+    /// The pool is not created yet, call [`RBatis::link`] or [`RBatis::init`] next.
     pub fn new() -> Self {
         let rb = RBatis::default();
         //default use LogInterceptor
@@ -117,6 +160,10 @@ impl RBatis {
         Ok(())
     }
 
+    /// install an already configured pool.
+    ///
+    /// Use this when you built the pool yourself (custom manager, custom pool
+    /// configuration, ...). Like [`RBatis::init`] it can only be called once.
     pub fn init_pool<Pool: rbdc::pool::Pool + 'static>(&self, pool: Pool) -> Result<(), Error> {
         self.pool
             .set(Box::new(pool))

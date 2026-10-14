@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents an <otherwise> tag node (child of <choose>) in the HTML AST.
+/// Represents an `<otherwise>` tag node (child of `<choose>`) in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct OtherwiseTagNode {
     pub attrs: HashMap<String, String>,

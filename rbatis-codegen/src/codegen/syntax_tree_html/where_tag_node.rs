@@ -4,8 +4,8 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap; // Import TrimTagNode for reuse
 
-/// Represents a <where> tag node in the HTML AST.
-/// This is a specialized form of the <trim> tag.
+/// Represents a `<where>` tag node in the HTML AST.
+/// This is a specialized form of the `<trim>` tag.
 #[derive(Debug, Clone)]
 pub struct WhereTagNode {
     // Where inherits behavior from trim but with specific prefixes/suffixes.

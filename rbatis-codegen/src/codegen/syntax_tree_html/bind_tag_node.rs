@@ -5,7 +5,7 @@ use quote::quote;
 use std::collections::HashMap;
 use syn::LitStr;
 
-/// Represents a <bind> tag node in the HTML AST.
+/// Represents a `<bind>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct BindTagNode {
     /// Extracted from the "name" attribute.

@@ -1,3 +1,73 @@
+//! The [`crud!`](crate::crud!) macro and the pagination helpers built on top of `py_sql`/`html_sql`.
+//!
+//! # `crud!`
+//!
+//! `crud!(Table{})` (or `crud!(Table{}, "table_name")` to override the table name)
+//! adds these methods to your struct:
+//!
+//! | Method | Generated SQL |
+//! |--------|---------------|
+//! | `insert(executor, &table)` | `INSERT INTO table (...) VALUES (...)` |
+//! | `insert_batch(executor, &[table], batch_size)` | several `INSERT` statements, at most `batch_size` rows each |
+//! | `select_by_map(executor, condition)` | `SELECT ... FROM table WHERE ...` |
+//! | `update_by_map(executor, &table, condition)` | `UPDATE table SET ... WHERE ...` |
+//! | `delete_by_map(executor, condition)` | `DELETE FROM table WHERE ...` |
+//!
+//! The condition is an [`rbs::Value`] map built with the `value!` macro:
+//!
+//! * `value!{"id": "1"}` -> `WHERE id = '1'` (a key that ends with an operator, like
+//!   `value!{"name like ": "%a%"}`, is used as is)
+//! * `value!{"id": ["1", "2"]}` -> `WHERE id in ('1', '2')`
+//! * several keys are joined with `and`, `null` values are skipped, and an empty array
+//!   makes the method return an empty result instead of running the query
+//! * `select_by_map` accepts a `"column"` key to select specific columns, and
+//!   `update_by_map` accepts one to update only these columns
+//!
+//! The struct name is converted to a table name with [`snake_name!`](crate::snake_name),
+//! so `BizActivity` maps to `biz_activity`. Every field of the struct becomes a
+//! column, `None` fields are skipped by `insert` and `update_by_map`, and the `id`
+//! column is never updated.
+//!
+//! ```rust,no_run
+//! use rbatis::{crud, RBatis};
+//! use rbs::value;
+//!
+//! #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+//! pub struct BizActivity {
+//!     pub id: Option<String>,
+//!     pub name: Option<String>,
+//! }
+//!
+//! // generates insert / insert_batch / select_by_map / update_by_map / delete_by_map
+//! crud!(BizActivity {});
+//! // or, with an explicit table name:
+//! // crud!(BizActivity {}, "biz_activity");
+//!
+//! async fn run(rb: &RBatis) -> rbatis::Result<()> {
+//!     let activity = BizActivity { id: Some("1".into()), name: Some("a".into()) };
+//!
+//!     BizActivity::insert(rb, &activity).await?;
+//!     BizActivity::insert_batch(rb, std::slice::from_ref(&activity), 10).await?;
+//!     let rows: Vec<BizActivity> = BizActivity::select_by_map(rb, value!{"name": "a"}).await?;
+//!     BizActivity::update_by_map(rb, &activity, value!{"id": "1"}).await?;
+//!     BizActivity::delete_by_map(rb, value!{"id": "1"}).await?;
+//!
+//!     println!("{}", rows.len());
+//!     Ok(())
+//! }
+//! ```
+//!
+//! # Pagination
+//!
+//! [`htmlsql_select_page!`](crate::htmlsql_select_page!) and
+//! [`pysql_select_page!`](crate::pysql_select_page!) wrap a SQL template into a
+//! function that returns [`Page<T>`](crate::plugin::Page) and runs both the count
+//! and the data query. See [`plugin::page`](crate::plugin::page) for the details.
+//!
+//! [`raw_sql!`](crate::raw_sql!), [`pysql!`](crate::pysql!) and
+//! [`htmlsql!`](crate::htmlsql!) are small wrappers that declare a function and let
+//! the matching attribute macro fill in its body.
+
 ///PySql: gen insert/insert_batch, select_by_map, update_by_map, delete_by_map methods
 ///```rust
 /// use rbs::value;
@@ -363,19 +433,19 @@ macro_rules! crud {
     };
 }
 
-/// impl html_sql select page.
+/// Generate a paginated function from an [`html_sql`](crate::html_sql) template.
 ///
-/// you must deal with 3 param:
-/// (do_count:bool,page_no:u64,page_size:u64)
+/// The generated function returns [`Page<T>`](crate::plugin::Page) and takes a
+/// [`PageRequest`](crate::plugin::PageRequest) as its second argument.
 ///
-/// you must deal with sql:
-/// return Vec<Record>（if param do_count = false）
-/// return u64（if param do_count = true）
+/// The template is executed twice and receives three extra leading parameters:
 ///
-/// you can see ${page_no} = (page_no -1) * page_size;
-/// you can see ${page_size} = page_size;
+/// * `do_count: bool` - `true` when counting, `false` when selecting the page
+/// * `page_no: u64` - the offset of the page, `(page_no - 1) * page_size`
+/// * `page_size: u64` - the number of rows per page
 ///
-/// just like this example:
+/// so the SQL must return a single `u64` when `do_count` is `true`, and the rows of
+/// the page when `do_count` is `false`:
 /// ```html
 /// <select id="select_page_data">
 ///         `select `
@@ -437,19 +507,19 @@ macro_rules! htmlsql_select_page {
     }
 }
 
-/// impl py_sql select page.
+/// Generate a paginated function from a [`py_sql`](crate::py_sql) template.
 ///
-/// you must deal with 3 param:
-/// (do_count:bool,page_no:u64,page_size:u64)
+/// The generated function returns [`Page<T>`](crate::plugin::Page) and takes a
+/// [`PageRequest`](crate::plugin::PageRequest) as its second argument.
 ///
-/// you must deal with sql:
-/// return Vec<Record>（if param do_count = false）
-/// return u64（if param do_count = true）·
+/// The template is executed twice and receives three extra leading parameters:
 ///
-/// you can see ${page_no} = (page_no -1) * page_size;
-/// you can see ${page_size} = page_size;
+/// * `do_count: bool` - `true` when counting, `false` when selecting the page
+/// * `page_no: u64` - the offset of the page, `(page_no - 1) * page_size`
+/// * `page_size: u64` - the number of rows per page
 ///
-/// just like this example:
+/// so the SQL must return a single `u64` when `do_count` is `true`, and the rows of
+/// the page when `do_count` is `false`:
 /// ```py
 /// `select * from activity where delete_flag = 0`
 ///                   if name != '':
@@ -502,7 +572,8 @@ macro_rules! pysql_select_page {
     }
 }
 
-/// use macro wrapper #[sql]
+/// Declare a function whose body is filled in by the `#[sql]` attribute macro.
+///
 /// for example:
 /// ```rust
 /// use rbatis::executor::Executor;
@@ -520,7 +591,8 @@ macro_rules! raw_sql {
     }
 }
 
-/// use macro wrapper #[py_sql]
+/// Declare a function whose body is filled in by the `#[py_sql]` attribute macro.
+///
 /// for query example:
 /// ```rust
 /// use rbatis::executor::Executor;
@@ -548,7 +620,8 @@ macro_rules! pysql {
     }
 }
 
-/// use macro wrapper #[html_sql]
+/// Declare a function whose body is filled in by the `#[html_sql]` attribute macro.
+///
 /// for example query rbs::Value:
 /// ```rust
 /// use rbatis::executor::Executor;

@@ -3,7 +3,7 @@ use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use std::collections::HashMap;
 
-/// Represents a <set> tag node in the HTML AST.
+/// Represents a `<set>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct SetTagNode {
     pub collection: Option<String>,

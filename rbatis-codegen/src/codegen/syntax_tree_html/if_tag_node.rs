@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents an <if> tag node in the HTML AST.
+/// Represents an `<if>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct IfTagNode {
     /// Extracted from the "test" attribute.

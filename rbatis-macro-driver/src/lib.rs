@@ -1,6 +1,21 @@
 // suppress "正在创建库 xxx.lib 和对象 xxx.exp" noise from link.exe on Windows/MSVC
 #![allow(linker_messages)]
 #![allow(unused_assignments)]
+//! Procedural macros of rbatis.
+//!
+//! These macros generate the Rust code that runs a statement, and are re-exported by
+//! the `rbatis` crate, so they are normally written as `rbatis::py_sql!` or
+//! `#[rbatis::py_sql("...")]`.
+//!
+//! * [`py_sql`] - python style dynamic SQL (`if`, `for`, `bind`, `trim`, `${}`, `#{}`)
+//! * [`html_sql`] - Mybatis 3 compatible XML dynamic SQL (`<if>`, `<where>`, `<foreach>`, ...)
+//! * [`sql`] - a raw SQL statement with `?` placeholders
+//! * [`snake_name`] - `CamelCase` to `snake_case` at compile time, used to derive table names
+//!
+//! All of them work on the declaration of a function: the signature is kept and the
+//! body is replaced by the generated code (`impled!()` is the customary placeholder).
+//! See [`rbatis`](https://docs.rs/rbatis/latest/rbatis/) for how they are used.
+
 extern crate proc_macro;
 extern crate rbatis_codegen;
 
@@ -105,7 +120,7 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
 /// or read from file
-/// ```rust
+/// ```text
 /// //#[rbatis::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
 /// //pub async fn test_same_id(rb: &dyn Executor, id: &u64) -> Result<Value, Error> { impled!() }
 /// ```
@@ -223,6 +238,17 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
     rbatis_codegen::rb_html(args, func)
 }
 
+/// turn a function declaration into a function that returns the `snake_case` name of
+/// the type given as the first argument:
+///
+/// ```rust,ignore
+/// #[rbatis::snake_name(BizActivity)]
+/// fn table_name() {}
+/// assert_eq!(table_name(), "biz_activity");
+/// ```
+///
+/// `crud!` uses this to derive a table name from a struct name when no table name
+/// was passed explicitly.
 #[proc_macro_attribute]
 pub fn snake_name(args: TokenStream, func: TokenStream) -> TokenStream {
     macros::snake_name::snake_name(args, func)

@@ -1,3 +1,20 @@
+//! Snowflake id generator (i64).
+//!
+//! A snowflake id packs a timestamp, a machine id, a node id and a per-millisecond
+//! counter into one `i64`, which makes ids unique across machines without a
+//! database round trip:
+//!
+//! ```rust
+//! use rbatis::id_generator::{IdGenerator, Snowflake};
+//!
+//! let snowflake = Snowflake::new(1, 1, 0); // machine_id, node_id, mode
+//! let id: i64 = snowflake.generate();
+//! assert!(id > 0);
+//! ```
+//!
+//! `mode` is `0` for the fast path (the timestamp is only advanced when the id
+//! space of a millisecond is exhausted) or `1` for real time generation.
+
 use parking_lot::ReentrantMutex;
 use std::hint::spin_loop;
 use std::sync::atomic::{AtomicI64, AtomicU16, Ordering};
@@ -10,14 +27,23 @@ pub trait IdGenerator: Send + Sync + std::fmt::Debug {
     fn generate(&self) -> i64;
 }
 
-///Snowflakes algorithm
+/// Snowflake id generator state.
+///
+/// The fields are public so a generator can be tuned or cloned; the whole struct is
+/// `Send + Sync` and `generate_id()` is safe to call from several tasks.
 #[derive(Debug)]
 pub struct Snowflake {
+    /// start of the timestamp, defaults to [`UNIX_EPOCH`] (41 bits of the id)
     pub epoch: SystemTime,
+    /// last used timestamp in milliseconds
     pub last_timestamp: AtomicI64, // Atomic to replace mutable i64
+    /// machine id (5 bits of the id)
     pub machine_id: i32,
+    /// node id (5 bits of the id)
     pub node_id: i32,
+    /// `0` = fast generate, `1` = realtime generate
     pub mode: i32,      // mode [0=fast_generate,1=realtime_generate]
+    /// per-millisecond counter (12 bits of the id)
     pub idx: AtomicU16, // Atomic to replace mutable u16
     lock: ReentrantMutex<()>,
 }
@@ -37,6 +63,7 @@ impl Clone for Snowflake {
 }
 
 impl Snowflake {
+    /// create a generator using [`UNIX_EPOCH`] as epoch, see [`Snowflake::with_epoch`]
     pub fn new(machine_id: i32, node_id: i32, mode: i32) -> Snowflake {
         Self::with_epoch(machine_id, node_id, mode, UNIX_EPOCH)
     }
@@ -85,6 +112,7 @@ impl Snowflake {
         }
     }
 
+    /// a generator with `machine_id = 1`, `node_id = 1`, `mode = 0` and `UNIX_EPOCH`
     #[allow(clippy::should_implement_trait)]
     pub fn default() -> Snowflake {
         <Snowflake as Default>::default()
@@ -98,6 +126,7 @@ impl Default for Snowflake {
 }
 
 impl Snowflake {
+    /// generate the next id (`i64`)
     #[inline]
     pub fn generate_id(&self) -> i64 {
         let g = self.lock.lock();
@@ -124,6 +153,7 @@ impl Snowflake {
             | (idx as i64)
     }
 
+    /// milliseconds elapsed since `epoch`
     #[inline(always)]
     pub fn get_time_millis(epoch: SystemTime) -> i64 {
         SystemTime::now()

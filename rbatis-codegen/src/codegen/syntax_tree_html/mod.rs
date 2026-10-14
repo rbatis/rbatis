@@ -56,7 +56,7 @@ where
     FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
 {
     /// Helper method to parse child elements using the provided child_parser function.
-    /// The `ignore` vector is passed directly here for flexibility with constructs like <foreach>.
+    /// The `ignore` vector is passed directly here for flexibility with constructs like `<foreach>`.
     pub fn parse_children(
         &mut self,
         children: &[Element],
@@ -80,7 +80,7 @@ pub trait HtmlAstNode {
         Self: Sized;
 
     /// Generates the Rust `TokenStream` for this specific AST node.
-    /// The `ignore` vector is passed directly to allow modification by calling nodes (e.g. for <foreach> scope).
+    /// The `ignore` vector is passed directly to allow modification by calling nodes (e.g. for `<foreach>` scope).
     fn generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,

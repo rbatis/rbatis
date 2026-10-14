@@ -3,6 +3,8 @@ use rbs::Value;
 
 // ---- Deprecated table mapper structs - replaced by RBatis (implements ColumnMapper) ----
 
+/// deprecated sqlite column mapper, [`RBatis`](crate::RBatis) now implements
+/// [`ColumnMapper`] for every driver
 #[deprecated(note = "use RBatis directly (it now implements ColumnMapper)")]
 pub struct SqliteTableMapper;
 
@@ -27,6 +29,8 @@ impl ColumnMapper for SqliteTableMapper {
     }
 }
 
+/// deprecated mysql column mapper, [`RBatis`](crate::RBatis) now implements
+/// [`ColumnMapper`] for every driver
 #[deprecated(note = "use RBatis directly (it now implements ColumnMapper)")]
 pub struct MysqlTableMapper;
 
@@ -51,6 +55,8 @@ impl ColumnMapper for MysqlTableMapper {
     }
 }
 
+/// deprecated mssql column mapper, [`RBatis`](crate::RBatis) now implements
+/// [`ColumnMapper`] for every driver
 #[deprecated(note = "use RBatis directly (it now implements ColumnMapper)")]
 pub struct MssqlTableMapper;
 
@@ -75,6 +81,8 @@ impl ColumnMapper for MssqlTableMapper {
     }
 }
 
+/// deprecated postgres column mapper, [`RBatis`](crate::RBatis) now implements
+/// [`ColumnMapper`] for every driver
 #[deprecated(note = "use RBatis directly (it now implements ColumnMapper)")]
 pub struct PGTableMapper;
 

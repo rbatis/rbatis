@@ -1,7 +1,13 @@
 use rbs::Value;
 
-/// take `vec![Table{"id":1}]` columns
+/// Collects the columns used by `insert` / `insert_batch`.
+///
+/// Implemented for [`rbs::Value`]: given the rows of an insert (`[{"id": 1,
+/// "name": null}]`) it returns the column names that are not `null`
+/// (`["id"]`). The generated `insert_batch` uses it to build the `(...)` column
+/// list of a multi row insert.
 pub trait ColumnSet {
+    /// the column names to insert, `null` fields excluded
     fn column_sets(&self) -> Value;
 }
 
@@ -51,8 +57,13 @@ impl ColumnSet for Value {
     }
 }
 
-/// create sql opt from rbs::Value
+/// Turns the key of a condition map into a SQL operator.
+///
+/// Used by `select_by_map` / `update_by_map` / `delete_by_map`: the condition key
+/// is either a plain column name (which becomes `col = `) or a column name with an
+/// operator inside it (`"name like "` becomes `name like `).
 pub trait ValueOperatorSql {
+    /// `"id"` -> `"id = "`, `"name like "` -> `"name like "`
     fn operator_sql(&self) -> String;
 }
 
@@ -72,8 +83,10 @@ impl ValueOperatorSql for Value {
     }
 }
 
-/// Filter value by specified columns
+/// Keeps only the given columns of a map, used by `update_by_map` when the
+/// condition contains a `"column"` key (update only these fields).
 pub trait FilterByColumns {
+    /// filter `self` down to `columns` (`Value::Array` of column names)
     fn filter_by_columns(&self, columns: &Value) -> Value;
 }
 

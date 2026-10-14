@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents a <choose> tag node in the HTML AST.
+/// Represents a `<choose>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct ChooseTagNode {
     pub attrs: HashMap<String, String>,

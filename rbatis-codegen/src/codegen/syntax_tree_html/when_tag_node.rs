@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents a <when> tag node (child of <choose>) in the HTML AST.
+/// Represents a `<when>` tag node (child of `<choose>`) in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct WhenTagNode {
     /// Extracted from the "test" attribute.

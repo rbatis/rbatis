@@ -21,6 +21,7 @@ const COUNTER_OFFSET: usize = PROCESS_ID_OFFSET + PROCESS_ID_SIZE;
 
 const MAX_U24: usize = 0xFF_FFFF;
 
+/// process wide counter used to make the last 3 bytes of an [`ObjectId`] unique
 pub static OID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 /// Errors that can occur during OID construction and generation.
@@ -28,7 +29,10 @@ pub static OID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 #[non_exhaustive]
 pub enum Error {
     /// An invalid argument was passed in.
-    ArgumentError { message: String },
+    ArgumentError {
+        /// description of the invalid argument
+        message: String,
+    },
 
     /// An error occured parsing a hex string.
     FromHexError(FromHexError),
@@ -64,6 +68,7 @@ impl error::Error for Error {
 /// A wrapper around raw 12-byte ObjectId representations.
 #[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Hash, serde::Serialize, serde::Deserialize)]
 pub struct ObjectId {
+    /// timestamp(4 bytes) + process id(5 bytes) + counter(3 bytes), big endian
     pub id: [u8; 12],
 }
 
@@ -149,6 +154,7 @@ impl ObjectId {
         u5 as u128 * 1000000000000000000 + u4 as u128 * 100000000 + u3 as u128
     }
 
+    /// rebuild an [`ObjectId`] from the `u128` produced by [`ObjectId::u128`]
     pub fn with_u128(arg: u128) -> Self {
         let u5 = (arg / 1000000000000000000) as u64;
         let u4 = ((arg - u5 as u128 * 1000000000000000000) / 100000000) as u32;
@@ -230,6 +236,7 @@ impl Default for ObjectIdGenerator {
 }
 
 impl ObjectIdGenerator {
+    /// create a generator
     pub fn new() -> Self {
         Self
     }

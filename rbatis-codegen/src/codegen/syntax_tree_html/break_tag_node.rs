@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents a <break> tag node in the HTML AST.
+/// Represents a `<break>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct BreakTagNode {
     pub attrs: HashMap<String, String>,

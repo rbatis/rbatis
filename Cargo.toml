@@ -9,7 +9,7 @@ members = [
 name = "rbatis"
 version = "4.9.7"
 description = "The Rust SQL Toolkit and ORM Library. An async, pure Rust SQL crate featuring compile-time Dynamic SQL"
-readme = "Readme.md"
+readme = "README.md"
 authors = ["ce <zhuxiujia@qq.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -18,6 +18,13 @@ keywords = ["database", "orm", "mysql", "postgres", "sqlite"]
 documentation = "https://docs.rs/rbatis/latest"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io"
+
+# docs.rs build options: build with every feature so feature-gated APIs show up,
+# and enable the `docsrs` cfg so `#[doc(cfg(..))]` badges can be rendered.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+default-target = "x86_64-unknown-linux-gnu"
 
 [features]
 default = ["rbatis-macro-driver/default"]

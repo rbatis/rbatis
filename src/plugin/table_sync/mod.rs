@@ -1,4 +1,32 @@
+//! Create missing tables and columns from a struct or an `rbs::Value` map.
+//!
+//! [`sync`] compares the columns of your value with the columns of the target table
+//! and runs the `CREATE TABLE` / `ALTER TABLE` statements needed to make them match.
+//! It is meant for development and for tests, where tables are created on the fly:
+//!
+//! ```rust,no_run
+//! use rbatis::table_sync::sync;
+//! use rbatis::{RBatis, RBatisRef};
+//!
+//! #[tokio::main]
+//! async fn main() -> rbatis::Result<()> {
+//!     let rb = RBatis::new();
+//!     rb.link(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db").await?;
+//!
+//!     let conn = rb.acquire().await?;
+//!     let map = rbs::value!{"id": "INT", "name": "TEXT"};
+//!     sync(&conn, conn.rb_ref(), map, "user").await?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! The column types come from [`ColumnMapper`], which is implemented for
+//! [`RBatis`](crate::RBatis) (the driver of the engine decides the types) and, for
+//! backwards compatibility, by the mappers in [`deprecated`].
+
+/// deprecated per-driver column mappers, kept for compatibility
 pub mod deprecated;
+/// [`ColumnMapper`] implementation for [`RBatis`](crate::RBatis)
 pub mod rbdc_mapper;
 
 pub use deprecated::*;
@@ -150,6 +178,7 @@ pub fn sync<'a>(
 
 /// Mapper Column and ColumnType
 pub trait ColumnMapper: Sync + Send {
+    /// database driver name, for example `sqlite` or `mysql`
     fn driver_type(&self) -> String;
 
     /// for example input `"id":i32` -> id:INT

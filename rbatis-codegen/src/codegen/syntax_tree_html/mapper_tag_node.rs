@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents a <mapper> tag node in the HTML AST.
+/// Represents a `<mapper>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct MapperTagNode {
     pub attrs: HashMap<String, String>,

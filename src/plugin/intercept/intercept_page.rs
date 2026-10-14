@@ -37,7 +37,9 @@ use std::sync::Arc;
 /// ```
 #[derive(Debug)]
 pub struct PageIntercept {
+    /// executors (connection or transaction ids) whose next query is a page select
     pub select_ids: Arc<SyncHashMap<i64, PageRequest>>,
+    /// executors (connection or transaction ids) whose next query is a `count(1)`
     pub count_ids: Arc<SyncHashMap<i64, PageRequest>>,
 }
 
@@ -48,6 +50,7 @@ impl Default for PageIntercept {
 }
 
 impl PageIntercept {
+    /// create the interceptor, [`RBatis::new`](crate::RBatis::new) does this for you
     pub fn new() -> PageIntercept {
         Self {
             select_ids: Arc::new(SyncHashMap::new()),
@@ -56,6 +59,8 @@ impl PageIntercept {
     }
 
     //driver_type=['postgres','pg','mssql','mysql','sqlite'...],but sql default is use '?'(Driver will replace to pg='$1' or mssql='@p1' or sqlite/mysql '?' )
+    /// number of `?` placeholders in the part of the SQL that has to be removed
+    /// when the query is turned into a `count(1)` query
     pub fn count_param_count(&self, _driver_type: &str, sql: &str) -> usize {
         sql.matches('?').count()
     }

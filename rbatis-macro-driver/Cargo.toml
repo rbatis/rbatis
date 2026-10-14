@@ -12,6 +12,11 @@ documentation = "https://docs.rs/rbatis-macro-driver/latest"
 repository = "https://github.com/rbatis/rbatis"
 homepage = "https://rbatis.github.io/rbatis.io"
 
+# docs.rs build options: build with every feature and enable the `docsrs` cfg.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]

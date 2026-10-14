@@ -4,7 +4,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
 
-/// Represents an <insert> tag node in the HTML AST.
+/// Represents an `<insert>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
 pub struct InsertTagNode {
     pub attrs: HashMap<String, String>,
