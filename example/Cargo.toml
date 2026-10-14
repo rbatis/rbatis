@@ -99,6 +99,11 @@ rbdc-mysql = { version = "4" }
 rbdc-pg = { version = "4"}
 rbdc-mssql = { version = "4" }
 
+# rbdc-mysql/rbdc-mssql are only referenced by commented-out sample code in src/,
+# so the `unused_dependencies` cargo lint is allowed here on purpose.
+[lints.cargo]
+unused_dependencies = "allow"
+
 # you don't need this
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

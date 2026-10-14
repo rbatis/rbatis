@@ -63,12 +63,13 @@ impl RBatisConnExecutor {
     }
 }
 
+// `conn: Box<dyn Connection>` does not implement Debug, so Debug cannot be derived here.
 impl Debug for RBatisConnExecutor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RBatisTxExecutor")
+        f.debug_struct("RBatisConnExecutor")
             .field("id", &self.id)
             .field("rb", &self.rb)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -242,7 +243,7 @@ impl RBatisConnExecutor {
 /// The `RBatisTxExecutor` is responsible for executing SQL statements within the context of a transaction.
 /// It provides methods to execute queries, updates, and other SQL operations, ensuring that all operations
 /// are part of the same transactional context.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RBatisTxExecutor {
     pub tx_id: i64,
     pub conn_executor: RBatisConnExecutor,
@@ -250,16 +251,6 @@ pub struct RBatisTxExecutor {
     /// if tx call .commit() or .rollback() done = true.
     /// if tx not call .commit() or .rollback() done = false
     done: Arc<AtomicBool>,
-}
-
-impl Debug for RBatisTxExecutor {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RBatisTxExecutor")
-            .field("tx_id", &self.tx_id)
-            .field("conn_executor", &self.conn_executor)
-            .field("done", &self.done)
-            .finish()
-    }
 }
 
 impl RBatisTxExecutor {
@@ -477,11 +468,12 @@ pub struct RBatisTxExecutorGuard {
     pub callback: Arc<dyn FnMut(RBatisTxExecutor) + Send + Sync>,
 }
 
+// `callback: Arc<dyn FnMut(..)>` does not implement Debug, so Debug cannot be derived here.
 impl Debug for RBatisTxExecutorGuard {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RBatisTxExecutorGuard")
             .field("tx", &self.tx)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 

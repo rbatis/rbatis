@@ -51,21 +51,15 @@ mod my_pool {
     use rbs::value::map::ValueMap;
     use rbs::{value, Value};
     use std::borrow::Cow;
-    use std::fmt::{Debug, Formatter};
     use std::ops::Deref;
     use std::pin::Pin;
     use std::sync::Arc;
     use std::time::Duration;
 
     /// Connection wrapper that implements Connection trait by delegating to the pooled connection
+    #[derive(Debug)]
     pub struct ConnWrapper {
         pub inner: Object<ConnManagerProxy>,
-    }
-
-    impl Debug for ConnWrapper {
-        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            f.debug_struct("ConnWrapper").finish()
-        }
     }
 
     impl db::Connection for ConnWrapper {
@@ -98,6 +92,7 @@ mod my_pool {
     }
 
     /// Manager for deadpool - creates and recycles ConnectionGuard
+    #[derive(Debug)]
     pub struct ConnManagerProxy {
         inner: ConnectionManager,
     }
@@ -132,6 +127,7 @@ mod my_pool {
         }
     }
 
+    #[derive(Debug)]
     pub struct DeadPool {
         inner: deadpool::managed::Pool<ConnManagerProxy>,
         driver_type: String,
@@ -141,12 +137,6 @@ mod my_pool {
     unsafe impl Send for DeadPool {}
 
     unsafe impl Sync for DeadPool {}
-
-    impl Debug for DeadPool {
-        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            f.debug_struct("Pool").finish()
-        }
-    }
 
     impl DeadPool {
         /// Retrieves Status of this Pool.
