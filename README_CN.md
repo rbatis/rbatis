@@ -3,7 +3,7 @@
 ##### 📖 [英文文档](README.md) | 📖 中文文档
 （机翻中文，如有差异，以英文原版为主）
 
-[Website](https://rbatis.github.io/rbatis.io) | [Showcase](https://github.com/rbatis/rbatis/network/dependents) | [Examples](https://github.com/rbatis/rbatis/tree/master/example)
+[官网](https://rbatis.github.io/rbatis.io) | [例子](https://github.com/rbatis/rbatis/tree/master/example)
 
 [![Build Status](https://github.com/rbatis/rbatis/workflows/ci/badge.svg)](https://github.com/zhuxiujia/rbatis/actions)
 [![doc.rs](https://docs.rs/rbatis/badge.svg)](https://docs.rs/rbatis/)
