@@ -1,44 +1,30 @@
 use crate::ops::Not;
+use crate::ops_macros::impl_value_unary_op;
 use rbs::Value;
 
 fn op_not(left: Value) -> Value {
-    use std::ops::Not;
     match left {
-        Value::I32(b) => Value::I32(b.not()),
-        Value::I64(b) => Value::I64(b.not()),
-        Value::U32(b) => Value::U32(b.not()),
-        Value::U64(b) => Value::U64(b.not()),
-        Value::Bool(b) => Value::Bool(b.not()),
-        Value::Ext(_, e) => op_not(*e),
+        Value::I32(value) => Value::I32(!value),
+        Value::I64(value) => Value::I64(!value),
+        Value::U32(value) => Value::U32(!value),
+        Value::U64(value) => Value::U64(!value),
+        Value::Bool(value) => Value::Bool(!value),
+        Value::Ext(_, value) => op_not(*value),
         _ => Value::Null,
     }
 }
 
-impl Not for Value {
-    type Output = Value;
+impl_value_unary_op!(Not, op_not, op_not);
 
-    fn op_not(self) -> Self::Output {
-        op_not(self)
-    }
-}
+#[cfg(test)]
+mod test {
+    use crate::ops::Not;
+    use rbs::Value;
 
-impl Not for &Value {
-    type Output = Value;
-    fn op_not(self) -> Self::Output {
-        op_not(self.to_owned())
-    }
-}
-
-impl Not for &&Value {
-    type Output = Value;
-    fn op_not(self) -> Self::Output {
-        op_not((*self).to_owned())
-    }
-}
-
-impl Not for &mut Value {
-    type Output = Value;
-    fn op_not(self) -> Self::Output {
-        op_not(self.to_owned())
+    #[test]
+    fn test_not() {
+        assert_eq!(Value::Bool(true).op_not(), Value::Bool(false));
+        assert_eq!((&Value::I64(0)).op_not(), Value::I64(-1));
+        assert_eq!((&&Value::U32(0)).op_not(), Value::U32(u32::MAX));
     }
 }

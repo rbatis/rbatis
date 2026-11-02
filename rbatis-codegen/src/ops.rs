@@ -203,8 +203,8 @@ impl AsProxy for str {
     }
 }
 
-macro_rules! as_number {
-    ($ty:ty,$bool_expr:expr) => {
+macro_rules! impl_as_proxy_number {
+    ($ty:ty, $truthy:expr) => {
         impl AsProxy for $ty {
             fn i32(&self) -> i32 {
                 *self as i32
@@ -235,12 +235,7 @@ macro_rules! as_number {
             }
 
             fn bool(&self) -> bool {
-                //*self==1
-                if *self == $bool_expr {
-                    true
-                } else {
-                    false
-                }
+                *self == $truthy
             }
 
             fn as_binary(&self) -> Vec<u8> {
@@ -250,20 +245,18 @@ macro_rules! as_number {
     };
 }
 
-as_number!(i8, 1i8);
-as_number!(i16, 1i16);
-as_number!(i32, 1i32);
-as_number!(i64, 1i64);
-as_number!(isize, 1isize);
-
-as_number!(u8, 1u8);
-as_number!(u16, 1u16);
-as_number!(u32, 1u32);
-as_number!(u64, 1u64);
-as_number!(usize, 1usize);
-
-as_number!(f32, 1.0);
-as_number!(f64, 1.0);
+impl_as_proxy_number!(i8, 1i8);
+impl_as_proxy_number!(i16, 1i16);
+impl_as_proxy_number!(i32, 1i32);
+impl_as_proxy_number!(i64, 1i64);
+impl_as_proxy_number!(isize, 1isize);
+impl_as_proxy_number!(u8, 1u8);
+impl_as_proxy_number!(u16, 1u16);
+impl_as_proxy_number!(u32, 1u32);
+impl_as_proxy_number!(u64, 1u64);
+impl_as_proxy_number!(usize, 1usize);
+impl_as_proxy_number!(f32, 1.0);
+impl_as_proxy_number!(f64, 1.0);
 
 pub trait PartialEq<Rhs: ?Sized = Self> {
     /// This method tests for `self` and `other` values to be equal, and is used

@@ -1,209 +1,185 @@
-use crate::ops::AsProxy;
-use crate::ops::Rem;
+use crate::ops::{AsProxy, Rem};
+use crate::ops_compare::integer_value;
+use crate::ops_macros::{impl_numeric_binary_op, impl_same_type_binary_op, impl_value_binary_op};
 use rbs::Value;
 
-fn op_rem_value(left: Value, rhs: Value) -> Value {
-    match left {
-        Value::I32(s) => {
-            let rhs = rhs.i32();
-            Value::I32(s % rhs)
-        }
-        Value::I64(s) => {
-            let rhs = rhs.i64();
-            Value::I64(s % rhs)
-        }
-        Value::U32(s) => {
-            let rhs = rhs.u32();
-            Value::U32(s % rhs)
-        }
-        Value::U64(s) => {
-            let rhs = rhs.u64();
-            Value::U64(s % rhs)
-        }
-        Value::F32(s) => {
-            let rhs = rhs.f64() as f32;
-            Value::F32(s % rhs)
-        }
-        Value::F64(s) => {
-            let rhs = rhs.f64();
-            Value::F64(s % rhs)
-        }
-        Value::Ext(_, e) => op_rem_value(*e, rhs),
-        _ => Value::Null,
-    }
-}
-//value
-impl Rem<Value> for Value {
-    type Output = Value;
-    fn op_rem(self, rhs: Value) -> Self::Output {
-        op_rem_value(self, rhs)
-    }
-}
-
-impl Rem<&Value> for Value {
-    type Output = Value;
-    fn op_rem(self, rhs: &Value) -> Self::Output {
-        op_rem_value(self, rhs.to_owned())
-    }
-}
-
-impl Rem<&&Value> for Value {
-    type Output = Value;
-    fn op_rem(self, rhs: &&Value) -> Self::Output {
-        op_rem_value(self, (*rhs).to_owned())
-    }
-}
-
-impl Rem<Value> for &Value {
-    type Output = Value;
-    fn op_rem(self, rhs: Value) -> Self::Output {
-        op_rem_value(self.to_owned(), rhs)
-    }
-}
-
-impl Rem<&Value> for &Value {
-    type Output = Value;
-    fn op_rem(self, rhs: &Value) -> Self::Output {
-        op_rem_value(self.to_owned(), rhs.to_owned())
-    }
-}
-
-impl Rem<&&Value> for &Value {
-    type Output = Value;
-    fn op_rem(self, rhs: &&Value) -> Self::Output {
-        op_rem_value(self.to_owned(), (*rhs).to_owned())
-    }
-}
-
 fn op_rem_u64(value: &Value, other: u64) -> u64 {
+    if other == 0 {
+        return 0;
+    }
     value.u64() % other
 }
 
 fn op_rem_i64(value: &Value, other: i64) -> i64 {
+    if other == 0 {
+        return 0;
+    }
     value.i64() % other
 }
 
 fn op_rem_f64(value: &Value, other: f64) -> f64 {
-    value.f64() % other
-}
-
-fn op_rem_u64_value(value: &Value, other: u64) -> u64 {
-    other % value.u64()
-}
-
-fn op_rem_i64_value(value: &Value, other: i64) -> i64 {
-    other % value.i64()
-}
-
-fn op_rem_f64_value(value: &Value, other: f64) -> f64 {
-    other % value.f64()
-}
-
-macro_rules! impl_numeric_rem {
-    ($($rem:ident,$rem_value:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
-        $($(
-            impl Rem<$ty> for Value {
-                type Output = $return_ty;
-                fn op_rem(self, other: $ty) -> Self::Output {
-                    $rem(&self, other as _)
-                }
-            }
-
-            impl Rem<&$ty> for Value {
-                type Output = $return_ty;
-                fn op_rem(self, other: &$ty) -> Self::Output {
-                    $rem(&self, *other as _)
-                }
-            }
-
-            impl<'a> Rem<$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_rem(self, other: $ty) -> Self::Output {
-                    $rem(self, other as _)
-                }
-            }
-
-            impl<'a> Rem<&$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_rem(self, other: &$ty) -> Self::Output {
-                    $rem(self, *other as _)
-                }
-            }
-
-            impl Rem<Value> for $ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: Value) -> Self::Output {
-                    $rem_value(&other, self as _)
-                }
-            }
-
-            impl Rem<&Value> for $ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: &Value) -> Self::Output {
-                    $rem_value(other, self as _)
-                }
-            }
-
-            impl Rem<Value> for &$ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: Value) -> Self::Output {
-                    $rem_value(&other, *self as _)
-                }
-            }
-
-            impl Rem<&Value> for &$ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: &Value) -> Self::Output {
-                    $rem_value(other, *self as _)
-                }
-            }
-            // for unary
-            impl Rem<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_rem(self, other: &&Value) -> Self::Output {
-                    $rem_value(other, self as _)
-                }
-            }
-        )*)*
+    if other == 0.0 {
+        0.0
+    } else {
+        value.f64() % other
     }
 }
 
-impl_numeric_rem! {
-    op_rem_u64,op_rem_u64_value[u8 u16 u32 u64] -> u64
-    op_rem_i64,op_rem_i64_value[i8 i16 i32 i64 isize usize] -> i64
-    op_rem_f64,op_rem_f64_value[f32 f64] -> f64
+fn op_rem_u64_value(value: &Value, other: u64) -> u64 {
+    let rhs = value.u64();
+    if rhs == 0 {
+        return 0;
+    }
+    other % rhs
 }
 
-macro_rules! self_rem {
-    ([$($ty:ty)*]) => {
-        $(
-impl Rem<$ty> for $ty{
-      type Output = $ty;
-      fn op_rem(self, rhs: $ty) -> Self::Output {
-        self % rhs
-      }
+fn op_rem_i64_value(value: &Value, other: i64) -> i64 {
+    let rhs = value.i64();
+    if rhs == 0 {
+        return 0;
+    }
+    other % rhs
 }
-impl Rem<&$ty> for $ty{
-      type Output = $ty;
-      fn op_rem(self, rhs: &$ty) -> Self::Output {
-        self % *rhs
-      }
+
+fn op_rem_f64_value(value: &Value, other: f64) -> f64 {
+    let rhs = value.f64();
+    if rhs == 0.0 {
+        0.0
+    } else {
+        other % rhs
+    }
 }
-impl Rem<$ty> for &$ty{
-      type Output = $ty;
-      fn op_rem(self, rhs: $ty) -> Self::Output {
-        *self % rhs
-      }
+
+fn integer_rem(left: i128, rhs: &Value) -> Option<i128> {
+    let rhs = integer_value(rhs)?;
+    if rhs == 0 {
+        Some(0)
+    } else {
+        Some(left % rhs)
+    }
 }
-impl Rem<&$ty> for &$ty{
-      type Output = $ty;
-      fn op_rem(self, rhs: &$ty) -> Self::Output {
-        *self % *rhs
-      }
+
+fn op_rem_value(left: Value, rhs: Value) -> Value {
+    match left {
+        Value::I32(value) => {
+            if let Some(result) = integer_rem(value as i128, &rhs) {
+                return i32::try_from(result)
+                    .map(Value::I32)
+                    .unwrap_or(Value::I32(0));
+            }
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::I32(0);
+            }
+            Value::I32((value as f64 % rhs) as i32)
+        }
+        Value::I64(value) => {
+            if let Some(result) = integer_rem(value as i128, &rhs) {
+                return i64::try_from(result)
+                    .map(Value::I64)
+                    .unwrap_or(Value::I64(0));
+            }
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::I64(0);
+            }
+            Value::I64((value as f64 % rhs) as i64)
+        }
+        Value::U32(value) => {
+            if let Some(result) = integer_rem(value as i128, &rhs) {
+                return u32::try_from(result)
+                    .map(Value::U32)
+                    .unwrap_or(Value::U32(0));
+            }
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::U32(0);
+            }
+            Value::U32((value as f64 % rhs) as u32)
+        }
+        Value::U64(value) => {
+            if let Some(result) = integer_rem(value as i128, &rhs) {
+                return u64::try_from(result)
+                    .map(Value::U64)
+                    .unwrap_or(Value::U64(0));
+            }
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::U64(0);
+            }
+            Value::U64((value as f64 % rhs) as u64)
+        }
+        Value::F32(value) => {
+            let rhs = rhs.f64() as f32;
+            if rhs == 0.0 {
+                return Value::F32(0.0);
+            }
+            Value::F32(value % rhs)
+        }
+        Value::F64(value) => {
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::F64(0.0);
+            }
+            Value::F64(value % rhs)
+        }
+        Value::Ext(_, value) => op_rem_value(*value, rhs),
+        _ => Value::Null,
+    }
 }
-        )*
-    };
+
+impl_value_binary_op!(Rem, op_rem, op_rem_value);
+impl_numeric_binary_op!(
+    Rem,
+    op_rem,
+    op_rem_u64,
+    op_rem_u64_value,
+    [u8, u16, u32, u64],
+    u64
+);
+impl_numeric_binary_op!(
+    Rem,
+    op_rem,
+    op_rem_i64,
+    op_rem_i64_value,
+    [i8, i16, i32, i64, isize, usize],
+    i64
+);
+impl_numeric_binary_op!(Rem, op_rem, op_rem_f64, op_rem_f64_value, [f32, f64], f64);
+impl_same_type_binary_op!(
+    Rem,
+    op_rem,
+    %,
+    [
+        u8, u16, u32, u64, i8, i16, i32, i64, isize, usize, f32, f64
+    ]
+);
+
+#[cfg(test)]
+mod test {
+    use crate::ops::Rem;
+    use rbs::Value;
+
+    #[test]
+    fn test_rem() {
+        let value = Value::I32(13);
+        assert_eq!((&value).op_rem(&5i64), 3i64);
+        assert_eq!(value.op_rem(5i64), 3i64);
+        assert_eq!(Value::I32(13).op_rem(&&Value::I32(5)), Value::I32(3));
+    }
+
+    #[test]
+    fn test_rem_by_zero() {
+        assert_eq!(Value::I32(13).op_rem(0i64), 0i64);
+        assert_eq!((&Value::I32(13)).op_rem(&&Value::I32(0)), Value::I32(0));
+    }
+
+    #[test]
+    fn test_integer_rem_keeps_precision() {
+        assert_eq!(
+            Value::I64(9_007_199_254_740_993).op_rem(&Value::I64(2)),
+            Value::I64(1)
+        );
+        assert_eq!(Value::I64(-5).op_rem(&Value::U64(2)), Value::I64(-1));
+    }
 }
-self_rem!([u8 u16 u32 u64]);
-self_rem!([i8 i16 i32 i64 isize usize]);
-self_rem!([f32 f64]);

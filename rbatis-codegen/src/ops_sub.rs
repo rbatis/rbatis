@@ -1,5 +1,5 @@
-use crate::ops::AsProxy;
-use crate::ops::Sub;
+use crate::ops::{AsProxy, Sub};
+use crate::ops_macros::{impl_numeric_binary_op, impl_same_type_binary_op, impl_value_binary_op};
 use rbs::Value;
 
 fn op_sub_value(left: Value, rhs: Value) -> Value {
@@ -12,49 +12,6 @@ fn op_sub_value(left: Value, rhs: Value) -> Value {
         Value::F64(s) => Value::F64(s - rhs.f64()),
         Value::Ext(_, e) => op_sub_value(*e, rhs),
         _ => Value::Null,
-    }
-}
-
-impl Sub<Value> for Value {
-    type Output = Value;
-    fn op_sub(self, rhs: Value) -> Self::Output {
-        op_sub_value(self, rhs)
-    }
-}
-
-//value
-impl Sub<&Value> for Value {
-    type Output = Value;
-    fn op_sub(self, rhs: &Value) -> Self::Output {
-        op_sub_value(self, rhs.to_owned())
-    }
-}
-
-impl Sub<&&Value> for Value {
-    type Output = Value;
-    fn op_sub(self, rhs: &&Value) -> Self::Output {
-        op_sub_value(self, (*rhs).to_owned())
-    }
-}
-
-impl Sub<Value> for &Value {
-    type Output = Value;
-    fn op_sub(self, rhs: Value) -> Self::Output {
-        op_sub_value(self.to_owned(), rhs)
-    }
-}
-
-impl Sub<&Value> for &Value {
-    type Output = Value;
-    fn op_sub(self, rhs: &Value) -> Self::Output {
-        op_sub_value(self.to_owned(), rhs.to_owned())
-    }
-}
-
-impl Sub<&&Value> for &Value {
-    type Output = Value;
-    fn op_sub(self, rhs: &&Value) -> Self::Output {
-        op_sub_value(self.to_owned(), (*rhs).to_owned())
     }
 }
 
@@ -82,125 +39,44 @@ fn op_sub_f64_value(value: &Value, other: f64) -> f64 {
     other - value.f64()
 }
 
-macro_rules! impl_numeric_sub {
-    ($($sub:ident,$sub_value:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
-        $($(
-            impl Sub<$ty> for Value {
-                type Output = $return_ty;
-                fn op_sub(self, other: $ty) -> Self::Output {
-                    $sub(&self, other as _)
-                }
-            }
-
-            impl Sub<&$ty> for Value {
-                type Output = $return_ty;
-                fn op_sub(self, other: &$ty) -> Self::Output {
-                    $sub(&self, *other as _)
-                }
-            }
-
-            impl<'a> Sub<$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_sub(self, other: $ty) -> Self::Output {
-                    $sub(self, other as _)
-                }
-            }
-
-            impl<'a> Sub<&$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_sub(self, other: &$ty) -> Self::Output {
-                    $sub(self, *other as _)
-                }
-            }
-
-            impl Sub<Value> for $ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: Value) -> Self::Output {
-                    $sub_value(&other, self as _)
-                }
-            }
-
-            impl Sub<&Value> for $ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: &Value) -> Self::Output {
-                    $sub_value(other, self as _)
-                }
-            }
-
-            impl Sub<Value> for &$ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: Value) -> Self::Output {
-                    $sub_value(&other, *self as _)
-                }
-            }
-
-            impl Sub<&Value> for &$ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: &Value) -> Self::Output {
-                    $sub_value(other, *self as _)
-                }
-            }
-            // for unary
-            impl Sub<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_sub(self, other: &&Value) -> Self::Output {
-                    $sub_value(*other, self as _)
-                }
-            }
-        )*)*
-    }
-}
-
-impl_numeric_sub! {
-    op_sub_u64,op_sub_u64_value[u8 u16 u32 u64] -> u64
-    op_sub_i64,op_sub_i64_value[i8 i16 i32 i64 isize usize] -> i64
-    op_sub_f64,op_sub_f64_value[f32 f64] -> f64
-}
-
-macro_rules! self_sub {
-    ([$($ty:ty)*]) => {
-        $(
-impl Sub<$ty> for $ty{
-      type Output = $ty;
-      fn op_sub(self, rhs: $ty) -> Self::Output {
-        self-rhs
-      }
-}
-impl Sub<&$ty> for $ty{
-      type Output = $ty;
-      fn op_sub(self, rhs: &$ty) -> Self::Output {
-        self-*rhs
-      }
-}
-impl Sub<$ty> for &$ty{
-      type Output = $ty;
-      fn op_sub(self, rhs: $ty) -> Self::Output {
-        *self-rhs
-      }
-}
-impl Sub<&$ty> for &$ty{
-      type Output = $ty;
-      fn op_sub(self, rhs: &$ty) -> Self::Output {
-        *self-*rhs
-      }
-}
-        )*
-    };
-}
-
-self_sub!([u8 u16 u32 u64]);
-self_sub!([i8 i16 i32 i64 isize usize]);
-self_sub!([f32 f64]);
+impl_value_binary_op!(Sub, op_sub, op_sub_value);
+impl_numeric_binary_op!(
+    Sub,
+    op_sub,
+    op_sub_u64,
+    op_sub_u64_value,
+    [u8, u16, u32, u64],
+    u64
+);
+impl_numeric_binary_op!(
+    Sub,
+    op_sub,
+    op_sub_i64,
+    op_sub_i64_value,
+    [i8, i16, i32, i64, isize, usize],
+    i64
+);
+impl_numeric_binary_op!(Sub, op_sub, op_sub_f64, op_sub_f64_value, [f32, f64], f64);
+impl_same_type_binary_op!(
+    Sub,
+    op_sub,
+    -,
+    [
+        u8, u16, u32, u64, i8, i16, i32, i64, isize, usize, f32, f64
+    ]
+);
 
 #[cfg(test)]
 mod test {
     use crate::ops::Sub;
-    use rbs::Value;
+    use rbs::{value, Value};
 
     #[test]
     fn test_sub() {
-        let v = 0.op_sub(&&Value::I32(-1));
-        println!("{}", v);
-        assert_eq!(v, 1i64);
+        let i: i64 = 1;
+        let v = value!(2);
+        assert_eq!((&v).op_sub(&i), 1i64);
+        assert_eq!(v.op_sub(&i), 1i64);
+        assert_eq!(Value::I32(2).op_sub(&&Value::I32(1)), Value::I32(1));
     }
 }

@@ -8,7 +8,7 @@ fn test_value_add_value() {
     assert_eq!(Value::I64(5).op_add(&Value::I64(3)), Value::I64(8));
     assert_eq!(Value::U32(5).op_add(&Value::U32(3)), Value::U32(8));
     assert_eq!(Value::U64(5).op_add(&Value::U64(3)), Value::U64(8));
-    assert_eq!(Value::F32(5.0).op_add(&Value::F32(3.0)), Value::F64(8.0));
+    assert_eq!(Value::F32(5.0).op_add(&Value::F32(3.0)), Value::F32(8.0));
     assert_eq!(Value::F64(5.0).op_add(&Value::F64(3.0)), Value::F64(8.0));
 
     // 字符串加法

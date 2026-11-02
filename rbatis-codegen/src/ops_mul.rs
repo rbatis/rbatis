@@ -1,77 +1,17 @@
-use crate::ops::AsProxy;
-use crate::ops::Mul;
+use crate::ops::{AsProxy, Mul};
+use crate::ops_macros::{impl_numeric_binary_op, impl_same_type_binary_op, impl_value_binary_op};
 use rbs::Value;
 
 fn op_mul_value(left: Value, rhs: Value) -> Value {
     match left {
-        Value::I32(s) => {
-            let rhs = rhs.i32();
-            Value::I32(s * rhs)
-        }
-        Value::I64(s) => {
-            let rhs = rhs.i64();
-            Value::I64(s * rhs)
-        }
-        Value::U32(s) => {
-            let rhs = rhs.u32();
-            Value::U32(s * rhs)
-        }
-        Value::U64(s) => {
-            let rhs = rhs.u64();
-            Value::U64(s * rhs)
-        }
-        Value::F32(s) => {
-            let rhs = rhs.f64();
-            Value::F32(s * rhs as f32)
-        }
-        Value::F64(s) => {
-            let rhs = rhs.f64();
-            Value::F64(s * rhs)
-        }
+        Value::I32(s) => Value::I32(s * rhs.i32()),
+        Value::I64(s) => Value::I64(s * rhs.i64()),
+        Value::U32(s) => Value::U32(s * rhs.u32()),
+        Value::U64(s) => Value::U64(s * rhs.u64()),
+        Value::F32(s) => Value::F32(s * rhs.f64() as f32),
+        Value::F64(s) => Value::F64(s * rhs.f64()),
         Value::Ext(_, e) => op_mul_value(*e, rhs),
         _ => Value::Null,
-    }
-}
-
-impl Mul<Value> for Value {
-    type Output = Value;
-    fn op_mul(self, rhs: Value) -> Self::Output {
-        op_mul_value(self, rhs)
-    }
-}
-
-impl Mul<&Value> for Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &Value) -> Self::Output {
-        op_mul_value(self, rhs.to_owned())
-    }
-}
-
-impl Mul<&&Value> for Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &&Value) -> Self::Output {
-        op_mul_value(self, (*rhs).to_owned())
-    }
-}
-
-impl Mul<&Value> for &Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &Value) -> Self::Output {
-        op_mul_value(self.to_owned(), rhs.to_owned())
-    }
-}
-
-impl Mul<&&Value> for &Value {
-    type Output = Value;
-    fn op_mul(self, rhs: &&Value) -> Self::Output {
-        op_mul_value(self.to_owned(), (*rhs).to_owned())
-    }
-}
-
-impl Mul<Value> for &Value {
-    type Output = Value;
-    fn op_mul(self, rhs: Value) -> Self::Output {
-        op_mul_value(self.to_owned(), rhs)
     }
 }
 
@@ -87,111 +27,43 @@ fn op_mul_f64(value: &Value, other: f64) -> f64 {
     value.f64() * other
 }
 
-macro_rules! impl_numeric_mul {
-    ($($mul:ident [$($ty:ty)*]-> $return_ty:ty)*) => {
-        $($(
-            impl Mul<$ty> for Value {
-                type Output = $return_ty;
-                fn op_mul(self, other: $ty) -> Self::Output {
-                    $mul(&self, other as _)
-                }
-            }
+impl_value_binary_op!(Mul, op_mul, op_mul_value);
+impl_numeric_binary_op!(
+    Mul,
+    op_mul,
+    op_mul_u64,
+    op_mul_u64,
+    [u8, u16, u32, u64],
+    u64
+);
+impl_numeric_binary_op!(
+    Mul,
+    op_mul,
+    op_mul_i64,
+    op_mul_i64,
+    [i8, i16, i32, i64, isize, usize],
+    i64
+);
+impl_numeric_binary_op!(Mul, op_mul, op_mul_f64, op_mul_f64, [f32, f64], f64);
+impl_same_type_binary_op!(
+    Mul,
+    op_mul,
+    *,
+    [
+        u8, u16, u32, u64, i8, i16, i32, i64, isize, usize, f32, f64
+    ]
+);
 
-            impl Mul<&$ty> for Value {
-                type Output = $return_ty;
-                fn op_mul(self, other: &$ty) -> Self::Output {
-                    $mul(&self, *other as _)
-                }
-            }
+#[cfg(test)]
+mod test {
+    use crate::ops::Mul;
+    use rbs::Value;
 
-            impl<'a> Mul<$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_mul(self, other: $ty) -> Self::Output {
-                    $mul(self, other as _)
-                }
-            }
-
-            impl<'a> Mul<&$ty> for &'a Value {
-                type Output = $return_ty;
-                fn op_mul(self, other: &$ty) -> Self::Output {
-                    $mul(self, *other as _)
-                }
-            }
-
-            impl Mul<Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: Value) -> Self::Output {
-                    $mul(&other, self as _)
-                }
-            }
-
-            impl Mul<&Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: &Value) -> Self::Output {
-                    $mul(other, self as _)
-                }
-            }
-
-            impl Mul<Value> for &$ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: Value) -> Self::Output {
-                    $mul(&other, *self as _)
-                }
-            }
-
-            impl Mul<&Value> for &$ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: &Value) -> Self::Output {
-                    $mul(other, *self as _)
-                }
-            }
-            // for unary
-            impl Mul<&&Value> for $ty {
-                type Output = $return_ty;
-                fn op_mul(self, other: &&Value) -> Self::Output {
-                    $mul(other, self as _)
-                }
-            }
-        )*)*
+    #[test]
+    fn test_mul() {
+        let value = Value::I32(3);
+        assert_eq!((&value).op_mul(&4i64), 12i64);
+        assert_eq!(value.op_mul(4i64), 12i64);
+        assert_eq!(Value::I32(3).op_mul(&&Value::I32(4)), Value::I32(12));
     }
 }
-
-impl_numeric_mul! {
-    op_mul_u64[u8 u16 u32 u64] -> u64
-    op_mul_i64[i8 i16 i32 i64 isize usize] -> i64
-    op_mul_f64[f32 f64] -> f64
-}
-
-macro_rules! self_mul {
-    ([$($ty:ty)*]) => {
-        $(
-impl Mul<$ty> for $ty{
-      type Output = $ty;
-      fn op_mul(self, rhs: $ty) -> Self::Output {
-        self * rhs
-      }
-}
-impl Mul<&$ty> for $ty{
-      type Output = $ty;
-      fn op_mul(self, rhs: &$ty) -> Self::Output {
-        self * *rhs
-      }
-}
-impl Mul<$ty> for &$ty{
-      type Output = $ty;
-      fn op_mul(self, rhs: $ty) -> Self::Output {
-        *self * rhs
-      }
-}
-impl Mul<&$ty> for &$ty{
-      type Output = $ty;
-      fn op_mul(self, rhs: &$ty) -> Self::Output {
-        *self * *rhs
-      }
-}
-        )*
-    };
-}
-self_mul!([u8 u16 u32 u64]);
-self_mul!([i8 i16 i32 i64 isize usize]);
-self_mul!([f32 f64]);

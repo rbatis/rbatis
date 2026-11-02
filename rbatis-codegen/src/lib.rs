@@ -19,6 +19,9 @@
 //! Most users never depend on this crate directly; it is documented because it is
 //! re-exported from rbatis.
 
+mod ops_compare;
+mod ops_macros;
+
 /// rendering a value as SQL, used by `${arg}` interpolation
 pub mod into_sql;
 pub use into_sql::IntoSql;

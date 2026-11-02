@@ -1,44 +1,39 @@
 use crate::ops::StrMethods;
 use rbs::Value;
 
-impl StrMethods for Value {
-    fn contains_str(self, s: &str) -> bool {
-        self.as_str().unwrap_or_default().contains(s)
-    }
+macro_rules! impl_str_methods {
+    ($($ty:ty),* $(,)?) => {
+        $(
+            impl StrMethods for $ty {
+                fn contains_str(self, value: &str) -> bool {
+                    self.as_str().unwrap_or_default().contains(value)
+                }
 
-    fn starts_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().starts_with(other)
-    }
+                fn starts_with(self, value: &str) -> bool {
+                    self.as_str().unwrap_or_default().starts_with(value)
+                }
 
-    fn ends_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().ends_with(other)
-    }
+                fn ends_with(self, value: &str) -> bool {
+                    self.as_str().unwrap_or_default().ends_with(value)
+                }
+            }
+        )*
+    };
 }
 
-impl StrMethods for &Value {
-    fn contains_str(self, s: &str) -> bool {
-        self.as_str().unwrap_or_default().contains(s)
-    }
+impl_str_methods!(Value, &Value, &&Value);
 
-    fn starts_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().starts_with(other)
-    }
+#[cfg(test)]
+mod test {
+    use crate::ops::StrMethods;
+    use rbs::Value;
 
-    fn ends_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().ends_with(other)
-    }
-}
-
-impl StrMethods for &&Value {
-    fn contains_str(self, s: &str) -> bool {
-        self.as_str().unwrap_or_default().contains(s)
-    }
-
-    fn starts_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().starts_with(other)
-    }
-
-    fn ends_with(self, other: &str) -> bool {
-        self.as_str().unwrap_or_default().ends_with(other)
+    #[test]
+    fn test_str_methods() {
+        let value = Value::String("hello world".to_string());
+        assert!((&value).contains_str("world"));
+        assert!((&value).starts_with("hello"));
+        assert!((&&value).ends_with("world"));
+        assert!(!Value::Null.contains_str("world"));
     }
 }
