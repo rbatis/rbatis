@@ -1,15 +1,14 @@
-use crate::ops::AsProxy;
-use crate::ops::PartialOrd;
+use crate::ops::{AsProxy, PartialOrd};
+use crate::ops_compare::{
+    value_cmp_bool, value_cmp_bool_reverse, value_cmp_f64, value_cmp_f64_reverse, value_cmp_i64,
+    value_cmp_i64_reverse, value_cmp_u64, value_cmp_u64_reverse, value_partial_cmp,
+};
+use crate::ops_macros::{impl_compare_matrix, impl_value_scalar_compare_op};
 use rbs::Value;
-use std::cmp::{Ordering, PartialOrd as P};
+use std::cmp::{Ordering, PartialOrd as StdPartialOrd};
 
 #[inline]
-fn cmp_u64(value: u64, rhs: u64) -> Option<Ordering> {
-    Some(value.cmp(&rhs))
-}
-
-#[inline]
-fn cmp_i64(value: i64, rhs: i64) -> Option<Ordering> {
+fn cmp_i128(value: i128, rhs: i128) -> Option<Ordering> {
     Some(value.cmp(&rhs))
 }
 
@@ -23,213 +22,131 @@ fn cmp_bool(value: bool, rhs: bool) -> Option<Ordering> {
     Some(value.cmp(&rhs))
 }
 
-/// PartialOrd
-fn eq_u64(value: &Value, rhs: u64) -> Option<Ordering> {
-    let value = value.u64();
-    if value == rhs {
-        Some(Ordering::Equal)
-    } else if value > rhs {
-        Some(Ordering::Greater)
-    } else {
-        Some(Ordering::Less)
-    }
-}
-
-fn eq_i64(value: &Value, rhs: i64) -> Option<Ordering> {
-    let value = value.i64();
-    if value == rhs {
-        Some(Ordering::Equal)
-    } else if value > rhs {
-        Some(Ordering::Greater)
-    } else {
-        Some(Ordering::Less)
-    }
-}
-
-fn eq_f64(value: &Value, rhs: f64) -> Option<Ordering> {
-    let value = value.f64();
-    if value == rhs {
-        Some(Ordering::Equal)
-    } else if value > rhs {
-        Some(Ordering::Greater)
-    } else {
-        Some(Ordering::Less)
-    }
-}
-
-fn eq_bool(value: &Value, rhs: bool) -> Option<Ordering> {
-    let value = value.bool();
-    if value == rhs {
-        Some(Ordering::Equal)
-    } else if value && !rhs {
-        Some(Ordering::Greater)
-    } else {
-        Some(Ordering::Less)
-    }
-}
-
-fn eq_str(value: &Value, rhs: &str) -> Option<Ordering> {
-    let value = value.clone().string();
-    if value == rhs {
-        Some(Ordering::Equal)
-    } else if value.as_str() > rhs {
-        Some(Ordering::Greater)
-    } else {
-        Some(Ordering::Less)
-    }
-}
-
-fn op_partial_cmp_value(left: &Value, rhs: &Value) -> Option<Ordering> {
-    match left {
-        Value::Null => Some(Ordering::Equal),
-        Value::Bool(b) => cmp_bool(*b, rhs.bool()),
-        Value::I32(n) => cmp_f64(*n as f64, rhs.f64()),
-        Value::I64(n) => cmp_f64(*n as f64, rhs.f64()),
-        Value::U32(n) => cmp_u64(*n as u64, rhs.u64()),
-        Value::U64(n) => cmp_u64(*n, rhs.u64()),
-        Value::F32(n) => cmp_f64(*n as f64, rhs.f64()),
-        Value::F64(n) => cmp_f64(*n, rhs.f64()),
-        Value::String(s) => Some(s.as_str().cmp(&rhs.clone().string())),
-        Value::Ext(_, e) => op_partial_cmp_value(e.as_ref(), rhs),
-        _ => None,
-    }
-}
-
-impl PartialOrd<&Value> for &Value {
-    fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
-    }
+#[inline]
+fn cmp_str(value: &str, rhs: &str) -> Option<Ordering> {
+    Some(value.cmp(rhs))
 }
 
 impl PartialOrd<Value> for Value {
     fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
-    }
-}
-
-impl PartialOrd<Value> for &Value {
-    fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
-    }
-}
-
-impl PartialOrd<&&Value> for &Value {
-    fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
+        value_partial_cmp(self, rhs)
     }
 }
 
 impl PartialOrd<&Value> for Value {
     fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
+        value_partial_cmp(self, rhs)
     }
 }
 
 impl PartialOrd<&&Value> for Value {
     fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
-        op_partial_cmp_value(self, rhs)
+        value_partial_cmp(self, rhs)
     }
 }
 
-macro_rules! impl_numeric_cmp {
-    ($($eq:ident [$($ty:ty)*])*) => {
-        $($(
-            impl PartialOrd<$ty> for Value {
-                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
-                    $eq(self, *rhs as _)
-                }
-            }
-
-            impl PartialOrd<&$ty> for Value {
-                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
-                    $eq(self, **rhs as _)
-                }
-            }
-
-            impl<'a> PartialOrd<$ty> for &'a Value {
-                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
-                    $eq(*self, *rhs as _)
-                }
-            }
-
-            impl<'a> PartialOrd<&$ty> for &'a Value {
-                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
-                    $eq(*self, **rhs as _)
-                }
-            }
-
-            impl PartialOrd<Value> for $ty {
-                fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-                    $eq(rhs, *self as _).map(|ord| ord.reverse())
-                }
-            }
-
-            impl PartialOrd<&Value> for $ty {
-                fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
-                    $eq(*rhs, *self as _).map(|ord| ord.reverse())
-                }
-            }
-
-            impl PartialOrd<Value> for &$ty {
-                fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
-                    $eq(rhs, **self as _).map(|ord| ord.reverse())
-                }
-            }
-
-            impl PartialOrd<&Value> for &$ty {
-                fn op_partial_cmp(&self, rhs: &&Value)  -> Option<Ordering> {
-                    $eq(*rhs, **self as _).map(|ord| ord.reverse())
-                }
-            }
-
-            // for unary
-            impl PartialOrd<&&Value> for $ty {
-                fn op_partial_cmp(&self, rhs: &&&Value)  -> Option<Ordering> {
-                    $eq(**rhs, *self as _).map(|ord| ord.reverse())
-                }
-            }
-        )*)*
+impl PartialOrd<Value> for &Value {
+    fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
     }
 }
 
-impl_numeric_cmp! {
-    eq_u64[u8 u16 u32 u64]
-    eq_i64[i8 i16 i32 i64 isize usize]
-    eq_f64[f32 f64]
-    eq_bool[bool]
-    eq_str[&str]
+impl PartialOrd<&Value> for &Value {
+    fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
+    }
 }
 
-macro_rules! self_cmp {
-    ($eq:ident[$($ty:ty)*]) => {
+impl PartialOrd<&&Value> for &Value {
+    fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
+    }
+}
+
+impl PartialOrd<Value> for &&Value {
+    fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
+    }
+}
+
+impl PartialOrd<&Value> for &&Value {
+    fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
+    }
+}
+
+impl PartialOrd<&&Value> for &&Value {
+    fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
+        value_partial_cmp(self, rhs)
+    }
+}
+
+impl_value_scalar_compare_op!(
+    PartialOrd,
+    op_partial_cmp,
+    value_cmp_u64,
+    value_cmp_u64_reverse,
+    [u8, u16, u32, u64],
+    Option<Ordering>
+);
+impl_value_scalar_compare_op!(
+    PartialOrd,
+    op_partial_cmp,
+    value_cmp_i64,
+    value_cmp_i64_reverse,
+    [i8, i16, i32, i64, isize, usize],
+    Option<Ordering>
+);
+impl_value_scalar_compare_op!(
+    PartialOrd,
+    op_partial_cmp,
+    value_cmp_f64,
+    value_cmp_f64_reverse,
+    [f32, f64],
+    Option<Ordering>
+);
+impl_value_scalar_compare_op!(
+    PartialOrd,
+    op_partial_cmp,
+    value_cmp_bool,
+    value_cmp_bool_reverse,
+    [bool],
+    Option<Ordering>
+);
+
+macro_rules! impl_same_type_cmp {
+    ($compare:ident [$($ty:ty)*]) => {
         $(
-impl PartialOrd<$ty> for $ty{
-      fn op_partial_cmp(&self, rhs: &$ty) ->  Option<Ordering> {
-        $eq(*self as _, *rhs as _)
-      }
-}
-impl PartialOrd<&$ty> for $ty{
-      fn op_partial_cmp(&self, rhs: &&$ty) ->  Option<Ordering> {
-        $eq(*self as _, **rhs as _)
-      }
-}
-impl PartialOrd<$ty> for &$ty{
-      fn op_partial_cmp(&self, rhs: &$ty) ->  Option<Ordering> {
-        $eq(**self as _, *rhs as _)
-      }
-}
-impl PartialOrd<&$ty> for &$ty{
-      fn op_partial_cmp(&self, rhs: &&$ty) ->  Option<Ordering> {
-        $eq(**self as _, **rhs as _)
-      }
-}
+            impl PartialOrd<$ty> for $ty {
+                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
+                    $compare(*self as _, *rhs as _)
+                }
+            }
+
+            impl PartialOrd<&$ty> for $ty {
+                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
+                    $compare(*self as _, **rhs as _)
+                }
+            }
+
+            impl PartialOrd<$ty> for &$ty {
+                fn op_partial_cmp(&self, rhs: &$ty) -> Option<Ordering> {
+                    $compare(**self as _, *rhs as _)
+                }
+            }
+
+            impl PartialOrd<&$ty> for &$ty {
+                fn op_partial_cmp(&self, rhs: &&$ty) -> Option<Ordering> {
+                    $compare(**self as _, **rhs as _)
+                }
+            }
         )*
     };
 }
 
-self_cmp!(cmp_u64[u8 u16 u32 u64]);
-self_cmp!(cmp_i64[i8 i16 i32 i64 isize usize]);
-self_cmp!(cmp_f64[f32 f64]);
+impl_same_type_cmp! {
+    cmp_bool [bool]
+}
 
 impl PartialOrd<&str> for &str {
     fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
@@ -284,11 +201,13 @@ impl PartialOrd<String> for &String {
         self.as_str().partial_cmp(rhs.as_str())
     }
 }
+
 impl PartialOrd<&String> for &String {
     fn op_partial_cmp(&self, rhs: &&String) -> Option<Ordering> {
         self.as_str().partial_cmp(rhs.as_str())
     }
 }
+
 impl PartialOrd<&&String> for &String {
     fn op_partial_cmp(&self, rhs: &&&String) -> Option<Ordering> {
         self.as_str().partial_cmp(rhs.as_str())
@@ -313,97 +232,149 @@ impl PartialOrd<&&String> for &&String {
     }
 }
 
-macro_rules! cmp_diff {
-    ($eq:ident[$(($ty1:ty,$ty2:ty),)*]) => {
-        $(
-        impl PartialOrd<$ty1> for $ty2{
-              fn op_partial_cmp(&self, rhs: &$ty1) ->  Option<Ordering> {
-                $eq(*self as _, *rhs as _)
-              }
-        }
-        impl PartialOrd<&$ty1> for $ty2{
-              fn op_partial_cmp(&self, rhs: &&$ty1) ->  Option<Ordering> {
-                $eq(*self as _, **rhs as _)
-              }
-        }
-        impl PartialOrd<$ty1> for &$ty2{
-              fn op_partial_cmp(&self, rhs: &$ty1) ->  Option<Ordering> {
-                $eq(**self as _, *rhs as _)
-              }
-        }
-        impl PartialOrd<&$ty1> for &$ty2{
-              fn op_partial_cmp(&self, rhs: &&$ty1) ->  Option<Ordering> {
-                $eq(**self as _, **rhs as _)
-              }
-        }
-        )*
-    };
+impl PartialOrd<&str> for Value {
+    fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
 }
 
-cmp_diff!(cmp_i64[
-    (i64,i8),
-    (i64,i16),
-    (i64,i32),
-    (i64,isize),
-    (i64,usize),
-]);
-cmp_diff!(cmp_i64[
-    (i64,u8),
-    (i64,u16),
-    (i64,u32),
-    (i64,u64),
-]);
-cmp_diff!(cmp_f64[
-    (i64,f32),
-    (i64,f64),
-]);
+impl PartialOrd<&&str> for Value {
+    fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
+}
 
-cmp_diff!(cmp_i64[
-    (u64,i8),
-    (u64,i16),
-    (u64,i32),
-    (u64,i64),
-    (u64,isize),
-]);
-cmp_diff!(cmp_u64[
-    (u64,u8),
-    (u64,u16),
-    (u64,u32),
-    (u64,usize),
-]);
-cmp_diff!(cmp_f64[
-    (u64,f32),
-    (u64,f64),
-]);
+impl PartialOrd<&str> for &Value {
+    fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
+}
 
-cmp_diff!(cmp_f64[
-    (f64,u8),
-    (f64,u16),
-    (f64,u32),
-    (f64,u64),
-    (f64,usize),
-    (f64,i8),
-    (f64,i16),
-    (f64,i32),
-    (f64,i64),
-    (f64,isize),
-    (f64,f32),
-]);
+impl PartialOrd<&&str> for &Value {
+    fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
+}
 
-// Additional usize comparisons
-cmp_diff!(cmp_i64[
-    (usize,i8),
-    (usize,i16),
-    (usize,i32),
-    (usize,i64),
-]);
-cmp_diff!(cmp_u64[
-    (usize,u8),
-    (usize,u16),
-    (usize,u32),
-    (usize,u64),
-]);
-cmp_diff!(cmp_f64[
-    (usize,f32),
-    (usize,f64),
-]);
+impl PartialOrd<&str> for &&Value {
+    fn op_partial_cmp(&self, rhs: &&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
+}
+
+impl PartialOrd<&&str> for &&Value {
+    fn op_partial_cmp(&self, rhs: &&&str) -> Option<Ordering> {
+        cmp_str(self.string().as_str(), rhs)
+    }
+}
+
+impl PartialOrd<Value> for &str {
+    fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl PartialOrd<&Value> for &str {
+    fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl PartialOrd<&&Value> for &str {
+    fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl PartialOrd<Value> for &&str {
+    fn op_partial_cmp(&self, rhs: &Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl PartialOrd<&Value> for &&str {
+    fn op_partial_cmp(&self, rhs: &&Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl PartialOrd<&&Value> for &&str {
+    fn op_partial_cmp(&self, rhs: &&&Value) -> Option<Ordering> {
+        cmp_str(self, rhs.string().as_str())
+    }
+}
+
+impl_compare_matrix!(
+    PartialOrd,
+    op_partial_cmp,
+    cmp_i128,
+    i128,
+    Option<Ordering>;
+    u8 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    u16 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    u32 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    u64 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    usize => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    i8 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    i16 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    i32 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    i64 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    isize => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize]
+);
+impl_compare_matrix!(
+    PartialOrd,
+    op_partial_cmp,
+    cmp_f64,
+    f64,
+    Option<Ordering>;
+    u8 => [f32, f64],
+    u16 => [f32, f64],
+    u32 => [f32, f64],
+    u64 => [f32, f64],
+    usize => [f32, f64],
+    i8 => [f32, f64],
+    i16 => [f32, f64],
+    i32 => [f32, f64],
+    i64 => [f32, f64],
+    isize => [f32, f64],
+);
+impl_compare_matrix!(
+    PartialOrd,
+    op_partial_cmp,
+    cmp_f64,
+    f64,
+    Option<Ordering>;
+    f32 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+    f64 => [u8, u16, u32, u64, usize, i8, i16, i32, i64, isize],
+);
+impl_compare_matrix!(
+    PartialOrd,
+    op_partial_cmp,
+    cmp_f64,
+    f64,
+    Option<Ordering>;
+    f32 => [f32, f64],
+    f64 => [f32, f64]
+);
+
+#[cfg(test)]
+mod test {
+    use crate::ops::PartialOrd;
+    use rbs::Value;
+    use std::cmp::Ordering;
+
+    #[test]
+    fn test_cmp() {
+        assert_eq!(
+            Value::I32(2).op_partial_cmp(&Value::I32(1)),
+            Some(Ordering::Greater)
+        );
+        assert_eq!(
+            (&&Value::I32(2)).op_partial_cmp(&Value::I32(1)),
+            Some(Ordering::Greater)
+        );
+        assert_eq!(1isize.op_partial_cmp(&1u8), Some(Ordering::Equal));
+        assert_eq!(1.0f32.op_partial_cmp(&1i64), Some(Ordering::Equal));
+        assert_eq!(true.op_partial_cmp(&false), Some(Ordering::Greater));
+    }
+}

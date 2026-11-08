@@ -1,44 +1,29 @@
 use crate::ops::Neg;
-
+use crate::ops_macros::impl_value_unary_op;
 use rbs::Value;
 
 fn op_neg(left: Value) -> Value {
-    use std::ops::Neg;
     match left {
-        Value::I32(b) => Value::I32(b.neg()),
-        Value::I64(b) => Value::I64(b.neg()),
-        Value::F32(b) => Value::F32(b.neg()),
-        Value::F64(b) => Value::F64(b.neg()),
-        Value::Ext(_, e) => op_neg(*e),
+        Value::I32(value) => Value::I32(-value),
+        Value::I64(value) => Value::I64(-value),
+        Value::F32(value) => Value::F32(-value),
+        Value::F64(value) => Value::F64(-value),
+        Value::Ext(_, value) => op_neg(*value),
         _ => Value::Null,
     }
 }
 
-impl Neg for Value {
-    type Output = Value;
+impl_value_unary_op!(Neg, neg, op_neg);
 
-    fn neg(self) -> Self::Output {
-        op_neg(self)
-    }
-}
+#[cfg(test)]
+mod test {
+    use crate::ops::Neg;
+    use rbs::Value;
 
-impl Neg for &Value {
-    type Output = Value;
-    fn neg(self) -> Self::Output {
-        op_neg(self.to_owned())
-    }
-}
-
-impl Neg for &&Value {
-    type Output = Value;
-    fn neg(self) -> Self::Output {
-        op_neg((*self).to_owned())
-    }
-}
-
-impl Neg for &mut Value {
-    type Output = Value;
-    fn neg(self) -> Self::Output {
-        op_neg(self.to_owned())
+    #[test]
+    fn test_neg() {
+        assert_eq!(Value::I32(2).neg(), Value::I32(-2));
+        assert_eq!((&Value::F64(1.5)).neg(), Value::F64(-1.5));
+        assert_eq!((&&Value::I64(3)).neg(), Value::I64(-3));
     }
 }
