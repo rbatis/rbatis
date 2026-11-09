@@ -352,8 +352,9 @@ impl RBatisConnExecutor {
 /// are part of the same transactional context.
 /// transaction state of [`RBatisTxExecutor`]: the transaction is still open
 const TX_OPEN: u8 = 0;
-/// [`RBatisTxExecutor::set_done`] asked for a commit when the guard drops
-const TX_COMMIT_ON_DROP: u8 = 1;
+/// [`RBatisTxExecutor::set_done(true)`](RBatisTxExecutor::set_done) marked the
+/// transaction as done; [`RBatisTxExecutor::auto_commit`] commits it when dropped
+const TX_DONE: u8 = 1;
 /// a COMMIT was already sent
 const TX_COMMITTED: u8 = 2;
 /// a ROLLBACK was already sent
@@ -440,7 +441,7 @@ impl RBatisTxExecutor {
     /// `false` marks the transaction as still open (so the guard rolls it back)
     pub fn set_done(&self, done: bool) {
         self.done.store(
-            if done { TX_COMMIT_ON_DROP } else { TX_OPEN },
+            if done { TX_DONE } else { TX_OPEN },
             Ordering::Relaxed,
         )
     }
@@ -492,7 +493,7 @@ impl RBatisTxExecutor {
                 let future = async move {
                     match tx.done.load(Ordering::Relaxed) {
                         TX_COMMITTED | TX_ROLLED_BACK => {}
-                        TX_COMMIT_ON_DROP => {
+                        TX_DONE => {
                             let r = tx.commit().await;
                             if let Err(e) = r {
                                 log::error!("transaction [{}] commit fail={}", tx.tx_id, e);
