@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
@@ -26,7 +27,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
@@ -40,8 +41,8 @@ pub async fn main() -> Result<(), Error> {
         .exec("update activity set status = 0 where id > 0", vec![])
         .await?;
     println!(">>>>> exec={}", result);
-    //query
-    let table: Option<Activity> = rb
+    //query (exec_decode decodes the rows into serde types, use Vec<T> for a row set)
+    let table: Vec<Activity> = rb
         .exec_decode("select * from activity limit ?", vec![value!(1)])
         .await?;
     println!(">>>>> table={}", json!(table));

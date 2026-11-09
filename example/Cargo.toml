@@ -64,8 +64,8 @@ path = "src/pool_custom.rs"
 name = "plugin_intercept_log"
 path = "src/plugin_intercept_log.rs"
 [[bin]]
-name = "plugin_intercept_returing_id"
-path = "src/plugin_intercept_returing_id.rs"
+name = "plugin_intercept_returning_id"
+path = "src/plugin_intercept_returning_id.rs"
 [[bin]]
 name = "table_util"
 path = "src/table_util.rs"
@@ -92,7 +92,7 @@ log = "0.4"
 fast_log = "1.7"
 #async runtime lib
 tokio = { version = "1", features = ["full"] }
-rbatis = { version = "4.8", features = ["debug_mode"], path = "../" }
+rbatis = { version = "4.9", features = ["debug_mode"], path = "../" }
 rbs = { version = "4" }
 rbdc-sqlite = { version = "4" }
 rbdc-mysql = { version = "4" }
@@ -107,7 +107,7 @@ unused_dependencies = "allow"
 # you don't need this
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
-rbatis = { version = "4.8", features = ["debug_mode"], path = "../" }
+rbatis = { version = "4.9", features = ["debug_mode"], path = "../" }
 rbs = { version = "4" }
 rbdc-sqlite = { version = "4" }
 

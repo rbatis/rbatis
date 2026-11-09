@@ -1,7 +1,8 @@
+use log::LevelFilter;
 use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::RBatis;
+use rbatis::{Error, RBatis};
 use rbs::value;
 use serde_json::json;
 
@@ -22,16 +23,16 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-// Generate CRUD methods including the new update_by_columns
+// crud! also supports the "column" key to write only the selected columns
 crud!(Activity {});
 
 // cargo run --bin crud_update_skip
 #[tokio::main]
-pub async fn main() -> Result<(), rbatis::Error> {
+pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();

@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::rbdc::datetime::DateTime;
@@ -21,13 +22,14 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-// or `#[html_sql("example.html")]`
+// or `#[html_sql("example.html")]` to read the SQL from a file
+// test="a" demonstrates a condition on a `bool` function parameter
 #[html_sql(
     r#"<select id="select_by_condition">
         `select * from activity`
         <where>
             <if test="a">
-                ` and name like #{name}`
+                ` and id != '0'`
             </if>
             <if test="name != ''">
                 ` and name like #{name}`
@@ -62,7 +64,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();

@@ -21,6 +21,8 @@ pub async fn main() -> Result<(), Error> {
     });
 
     let rb = RBatis::new();
+    // ------------choose database driver------------
+    // swap SqliteDriver/SqliteConnectOptions for rbdc_mysql or rbdc_pg types to use another database
     let opts = SqliteConnectOptions::from_str("sqlite://target/sqlite.db")?;
 
     // Uncomment to use default pool instead:

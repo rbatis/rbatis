@@ -1,4 +1,6 @@
-use rbatis::RBatis;
+use log::LevelFilter;
+use rbatis::dark_std::defer;
+use rbatis::{Error, RBatis};
 use std::time::Duration;
 
 /// Example: Configure the default connection pool
@@ -8,13 +10,18 @@ use std::time::Duration;
 /// - max_idle_conns: Maximum number of idle connections in the pool
 /// - conn_max_lifetime: Maximum lifetime of a connection
 #[tokio::main]
-pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    fast_log::init(
+pub async fn main() -> Result<(), Error> {
+    _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
-    )?;
+            .level(LevelFilter::Debug),
+    );
+    defer!(|| log::logger().flush());
     let rb = RBatis::new();
+    // ------------choose database driver------------
+    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
     // Configure connection pool parameters
     let pool = rb.get_pool()?;
@@ -27,6 +34,5 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await;
     // Print the current pool state
     println!(">>>>> state={}", pool.state().await);
-    log::logger().flush();
     Ok(())
 }

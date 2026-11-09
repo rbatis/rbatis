@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
@@ -67,7 +68,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| log::logger().flush());
     let rb = RBatis::new();
@@ -77,6 +78,15 @@ pub async fn main() -> Result<(), Error> {
     )?;
     //insert to log intercept before
     rb.intercepts.insert(0, Arc::new(ReturningIdPlugin {}));
+    // the example must provide its own table (build.rs only creates the sqlite ones)
+    _ = rb
+        .exec(
+            "CREATE TABLE IF NOT EXISTS activity (id TEXT PRIMARY KEY, name TEXT, pc_link TEXT, h5_link TEXT, pc_banner_img TEXT, h5_banner_img TEXT, sort TEXT, status INT8, remark TEXT, create_time TEXT, version INT8, delete_flag INT8)",
+            vec![],
+        )
+        .await?;
+    // clean up a previous run, so the insert of id '2' works again
+    _ = rb.exec("delete from activity where id = '2'", vec![]).await;
     let table = Activity {
         id: Some("2".into()),
         name: Some("2".into()),

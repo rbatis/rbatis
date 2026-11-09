@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::pysql;
@@ -58,7 +59,7 @@ pysql!(py_exec2(rb: &dyn Executor, name: &str, ids: &[i32]) -> Result<ExecResult
 
 #[tokio::main]
 pub async fn main() -> Result<(), Error> {
-    fast_log::init(fast_log::Config::new().console()).expect("rbatis init fail");
+    _ = fast_log::init(fast_log::Config::new().console().level(LevelFilter::Debug));
     defer!(|| {
         log::logger().flush();
     });

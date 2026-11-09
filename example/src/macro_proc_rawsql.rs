@@ -1,7 +1,7 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
-use rbatis::rbatis::RBatis;
 use rbatis::rbdc::datetime::DateTime;
-use rbatis::{sql, Error};
+use rbatis::{sql, Error, RBatis};
 use serde_json::json;
 
 /// table
@@ -32,7 +32,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();

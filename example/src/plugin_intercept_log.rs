@@ -18,7 +18,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();
@@ -26,6 +26,10 @@ pub async fn main() -> Result<(), Error> {
 
     //default rb.intercepts[0] = LogInterceptor{};
     let rb = RBatis::new();
+    // ------------choose database driver------------
+    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
 
     println!("-----------------log level = info--------------------------------------");

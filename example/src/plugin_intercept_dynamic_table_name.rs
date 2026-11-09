@@ -1,18 +1,24 @@
+use log::LevelFilter;
+use rbatis::dark_std::defer;
 use rbatis::dark_std::sync::SyncVec;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::ExecResult;
-use rbatis::{async_trait, Action, RBatis};
-use rbatis::{crud, Error};
-use rbs::Value;
+use rbatis::{async_trait, crud, Action, Error, RBatis};
+use rbs::{value, Value};
 use serde_json::json;
 use std::sync::Arc;
 
 #[tokio::main]
 pub async fn main() -> Result<(), Error> {
-    _ = fast_log::init(fast_log::Config::new().console());
+    _ = fast_log::init(fast_log::Config::new().console().level(LevelFilter::Debug));
+    defer!(|| log::logger().flush());
     let rb = RBatis::new();
+    // ------------choose database driver------------
+    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
     // create table
     _ = rb
@@ -37,7 +43,7 @@ pub async fn main() -> Result<(), Error> {
 
     // Execute query to see the mock intercept in action
     let _ = conn.query("SELECT <my_table_name>", vec![]).await;
-    let data = Activity::select_by_map(&conn, rbs::value! {}).await?;
+    let data = Activity::select_by_map(&conn, value! {}).await?;
     println!("data={:?}", json!(data));
     Ok(())
 }

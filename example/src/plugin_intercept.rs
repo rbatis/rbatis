@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::dark_std::sync::SyncHashMap;
 use rbatis::executor::Executor;
@@ -10,7 +11,8 @@ use serde_json::json;
 use std::sync::Arc;
 use std::time::Instant;
 
-/// Logic delete： The deletion statement changes to the modification of flag, and the query statement filters flag with additional conditions
+/// Count the running time of every statement: before() records the start moment,
+/// after() prints the elapsed time of (task_id).
 #[derive(Debug)]
 pub struct CountTimeIntercept {
     map: SyncHashMap<i64, Instant>,
@@ -68,7 +70,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();

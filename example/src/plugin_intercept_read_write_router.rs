@@ -2,7 +2,7 @@ use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::executor::Executor;
 use rbatis::intercept::{Intercept, ResultType};
-use rbatis::rbdc::DateTime;
+use rbatis::rbdc::datetime::DateTime;
 use rbatis::rbdc::ExecResult;
 use rbatis::{async_trait, crud, Action, Error, RBatis};
 use rbs::{value, Value};
@@ -75,10 +75,7 @@ async fn read_rb() -> Result<RBatis, Error> {
 
 async fn write_rb() -> Result<RBatis, Error> {
     let rb = RBatis::new();
-    // ------------choose database driver------------
-    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
-    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
-    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
+    // same driver as read_rb(), only the url differs
     rb.init(
         rbdc_sqlite::SqliteDriver {},
         "sqlite://target/sqlite_write.db",
@@ -131,41 +128,6 @@ impl Intercept for ReadWriteIntercept {
             Ok(Action::Next)
         }
     }
-
-    async fn after(
-        &self,
-        _task_id: i64,
-        _rb: &dyn Executor,
-        sql: &mut String,
-        args: &mut Vec<Value>,
-        result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
-    ) -> Result<Action, Error> {
-        if sql.trim().starts_with("select") {
-            let conn = self.read.acquire().await?;
-            let r = conn.query(&sql.clone(), args.clone()).await;
-            match r {
-                Ok(r) => match result {
-                    ResultType::Exec(exec) => {
-                        let result = rbatis::decode(r);
-                        *exec = Ok(result?);
-                    }
-                    ResultType::Query(q) => {
-                        let result = rbatis::decode(r);
-                        *q = Ok(result?);
-                    }
-                },
-                Err(e) => match result {
-                    ResultType::Exec(exec) => {
-                        *exec = Err(e);
-                    }
-                    ResultType::Query(q) => {
-                        *q = Err(e);
-                    }
-                },
-            }
-            Ok(Action::Return)
-        } else {
-            Ok(Action::Next)
-        }
-    }
+    // no after() here: before() already answers every SELECT with Action::Return,
+    // and the executor skips after() when before() returns early (see src/executor.rs)
 }

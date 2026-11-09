@@ -1,6 +1,8 @@
+use log::LevelFilter;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
+use rbs::value;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct Activity {
@@ -18,8 +20,8 @@ pub struct Activity {
     pub delete_flag: Option<i32>,
 }
 
-/// All methods read SQL from example/example.html
-#[rbatis::html_sql("example/example.html")]
+/// All methods read SQL from example.html (resolved relative to the example/ directory)
+#[rbatis::html_sql("example.html")]
 impl Activity {
     /// Maps to <select id="select_by_condition"> in HTML
     pub async fn select_by_condition(
@@ -66,16 +68,20 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();
     });
 
     let rb = RBatis::new();
+    // ------------choose database driver------------
+    // rb.init(rbdc_mysql::MysqlDriver {}, "mysql://root:123456@localhost:3306/test")?;
+    // rb.init(rbdc_pg::PgDriver {}, "postgres://postgres:123456@localhost:5432/postgres")?;
+    // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
     // Use impl block Mapper
     let results = Activity::select_by_page(&rb, &rbatis::PageRequest::new(1, 10), "", None).await?;
-    println!("Query by condition: {}", rbs::value!(results));
+    println!("select_by_page = {}", value!(results));
     Ok(())
 }

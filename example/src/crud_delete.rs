@@ -1,7 +1,9 @@
+use log::LevelFilter;
 use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
+use rbs::value;
 use serde_json::json;
 
 /// table
@@ -28,7 +30,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();
@@ -41,7 +43,7 @@ pub async fn main() -> Result<(), Error> {
     // rb.init(rbdc_mssql::MssqlDriver {}, "mssql://jdbc:sqlserver://localhost:1433;User=SA;Password={TestPass!123456};Database=master;")?;
     rb.init(rbdc_sqlite::SqliteDriver {}, "sqlite://target/sqlite.db")?;
 
-    let data = Activity::delete_by_map(&rb, rbs::value! {"name":"test"}).await?;
-    println!("delete_by_name = {}", json!(data));
+    let data = Activity::delete_by_map(&rb, value! {"name":"test"}).await?;
+    println!("delete_by_map = {}", json!(data));
     Ok(())
 }

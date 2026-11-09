@@ -1,7 +1,9 @@
+use log::LevelFilter;
 use rbatis::crud;
 use rbatis::dark_std::defer;
 use rbatis::rbdc::datetime::DateTime;
 use rbatis::{Error, RBatis};
+use rbs::value;
 use serde_json::json;
 
 /// table
@@ -28,7 +30,7 @@ pub async fn main() -> Result<(), Error> {
     _ = fast_log::init(
         fast_log::Config::new()
             .console()
-            .level(log::LevelFilter::Debug),
+            .level(LevelFilter::Debug),
     );
     defer!(|| {
         log::logger().flush();
@@ -55,7 +57,7 @@ pub async fn main() -> Result<(), Error> {
         delete_flag: Some(1),
     };
 
-    let data = Activity::update_by_map(&rb, &table, rbs::value! {"name":"2"}).await?;
-    println!("update_by_name = {}", json!(data));
+    let data = Activity::update_by_map(&rb, &table, value! {"name":"2"}).await?;
+    println!("update_by_map = {}", json!(data));
     Ok(())
 }
