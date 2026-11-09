@@ -135,7 +135,11 @@ impl ObjectId {
         hex::encode(self.id)
     }
 
-    /// Returns u64
+    /// The three parts of the id packed into one decimal `u128`:
+    /// `process_id * 1e18 + timestamp * 1e8 + counter`.
+    ///
+    /// Every part stays below the multiplier of the next one, so
+    /// [`ObjectId::with_u128`] can read them back without them overlapping.
     pub fn u128(&self) -> u128 {
         //4-TIMESTAMP 10
         let b: [u8; 4] = [self.id[0], self.id[1], self.id[2], self.id[3]];
@@ -183,7 +187,9 @@ impl ObjectId {
         timestamp.to_be_bytes()
     }
 
-    // Generate a random 5-byte array.
+    // The process part of the id, created once per process. The random value is
+    // below 2^24, so written big endian it fills bytes 1..4 and leaves byte 0 and
+    // byte 4 at 0: 24 bits of entropy, 5 bytes of space.
     fn gen_process_id() -> [u8; 5] {
         pub static BUF: OnceLock<[u8; 5]> = OnceLock::new();
         let r = BUF.get_or_init(|| {
@@ -241,13 +247,20 @@ impl ObjectIdGenerator {
         Self
     }
 
-    /// Generate a new ObjectId and convert it to i64
+    /// Generate a new ObjectId and return its [`ObjectId::u128`] value.
+    ///
+    /// note: that value needs more than 64 bits, so `as i64` drops the high bits
+    /// (it wraps, the result can even be negative). The kept bits are the ones of
+    /// the timestamp and of the counter, enough for the `task_id` rbatis uses an
+    /// [`IdGenerator`] for. For a collision free id use [`ObjectId::new`] and
+    /// [`ObjectId::to_hex`].
     pub fn generate_id(&self) -> i64 {
         ObjectId::new().u128() as i64
     }
 }
 
 impl IdGenerator for ObjectId {
+    /// see [`ObjectId::generate_id`] for the `i64` truncation
     fn generate(&self) -> i64 {
         self.u128() as i64
     }

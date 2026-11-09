@@ -73,3 +73,16 @@ fn test_rem_ref_variants() {
     assert_eq!(result3, 1i64);
     assert_eq!(result4, 1i64);
 }
+
+#[test]
+fn test_rem_by_zero_of_value() {
+    // 除数是 0 时结果是 0（和 op_div 一样）。浮点分支的保护此前没有测试钉住
+    assert_eq!(Value::F64(20.0).op_rem(&Value::F64(0.0)), Value::F64(0.0));
+    assert_eq!(Value::F32(20.0).op_rem(&Value::F32(0.0)), Value::F32(0.0));
+    assert_eq!(Value::F64(20.0).op_rem(&0.0f64), 0.0f64);
+    assert_eq!(10.0f64.op_rem(&Value::F64(0.0)), 0.0f64);
+    assert!(matches!(
+        Value::I64(10).op_rem(&Value::F64(0.0)),
+        Value::I64(0)
+    ));
+}

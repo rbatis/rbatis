@@ -135,7 +135,7 @@ impl Intercept for LogInterceptor {
             level,
             "[rb] [{}] => `{}` {}",
             task_id,
-            &sql,
+            sql,
             RbsValueDisplay::new(args)
         );
         Ok(Action::Next)
@@ -152,7 +152,7 @@ impl Intercept for LogInterceptor {
         if self.get_level_filter() == LevelFilter::Off {
             return Ok(Action::Next);
         }
-        let level = self.to_level().unwrap_or_else(|| Level::Debug);
+        let level = self.to_level().unwrap_or(Level::Debug);
         //ResultType
         match result {
             ResultType::Exec(result) => match result {

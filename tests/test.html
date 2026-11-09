@@ -181,6 +181,20 @@
         <set>1,</set>
     </select>
 
+    <!-- `<=` must be false when the left value is the greater one, `>=` the other way around -->
+    <select id="test_cmp_le_ge">`${1 <= 2},${2 <= 1},${2 >= 1},${1 >= 2},${1 <= 1},${1 <= id}`</select>
+
+    <!-- `!` on a template value -->
+    <select id="test_not_unary">`${!b}`</select>
+
+    <select id="test_not_if"><if test="!a">`skip`</if><if test="a">`keep`</if></select>
+
+    <!-- <bind> creates the key of the argument map, the following tags read it -->
+    <select id="test_bind_expr"><bind name="bound" value="id + 1"></bind>${bound},${bound == 2}</select>
+
+    <!-- the separator of a <foreach> only trims inside the text of the loop -->
+    <select id="test_for_keeps_outer_separator">`outer,`<foreach collection="ids" separator="," index="k" item="v">(${v})</foreach>`end`</select>
+
     <!-- Paginated query - automatically detected by Page<T> return type -->
     <select id="test_page">
         `select * from table`

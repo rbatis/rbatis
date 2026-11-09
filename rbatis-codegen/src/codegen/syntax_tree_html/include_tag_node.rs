@@ -1,6 +1,5 @@
 use super::{HtmlAstNode, NodeContext};
-use crate::codegen::loader_html::{load_html, Element};
-use crate::error::Error;
+use crate::codegen::loader_html::{load_mapper_vec, Element};
 use proc_macro2::TokenStream;
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
@@ -10,7 +9,6 @@ use url::Url;
 
 // Constants copied from parser_html.rs for local use in include logic
 const SQL_TAG: &str = "sql";
-const MAPPER_TAG: &str = "mapper";
 
 /// Represents an `<include>` tag node in the HTML AST.
 ///
@@ -27,22 +25,6 @@ pub struct IncludeTagNode {
 }
 
 impl IncludeTagNode {
-    /// Duplicated from parser_html.rs to avoid circular imports
-    fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
-        let elements = load_html(html).map_err(|e| Error::from(e.to_string()))?;
-
-        let mut mappers = Vec::new();
-        for element in elements {
-            if element.tag == MAPPER_TAG {
-                mappers.extend(element.childs);
-            } else {
-                mappers.push(element);
-            }
-        }
-
-        Ok(mappers)
-    }
-
     /// Resolves this include element to the referenced `<sql>` fragment.
     ///
     /// `refid` can be either:
@@ -107,13 +89,19 @@ impl IncludeTagNode {
         let mut html = String::new();
         file.read_to_string(&mut html).expect("Failed to read file");
 
-        Self::load_mapper_vec(&html)
-            .expect("Failed to parse HTML")
+        load_mapper_vec(&html)
+            .unwrap_or_else(|e| {
+                panic!(
+                    "[rbatis-codegen] parse include file='{}' fail: {}",
+                    file_path.to_str().unwrap_or_default(),
+                    e
+                )
+            })
             .into_iter()
             .find(|e| e.tag == SQL_TAG && e.attrs.get("id") == Some(&ref_id))
             .unwrap_or_else(|| {
                 panic!(
-                    "No ref_id={} found in file={}",
+                    "[rbatis-codegen] No <sql id=\"{}\"> found in file='{}'",
                     ref_id,
                     file_path.to_str().unwrap_or_default()
                 )

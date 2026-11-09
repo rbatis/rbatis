@@ -1,9 +1,9 @@
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
 use std::collections::BTreeMap;
 use syn::ItemFn;
 
-use crate::codegen::loader_html::{load_html, Element};
+use crate::codegen::loader_html::{self, Element};
 use crate::codegen::proc_macro::TokenStream as MacroTokenStream;
 use crate::codegen::string_util::{concat_str, find_convert_string};
 use crate::codegen::syntax_tree_html::*;
@@ -46,19 +46,11 @@ pub fn load_mapper_map(html: &str) -> Result<BTreeMap<String, Element>, Error> {
 }
 
 /// Loads HTML content into a vector of elements
+///
+/// kept as an alias of [`loader_html::load_mapper_vec`] because it is part of the
+/// public surface of this module
 pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
-    let elements = load_html(html).map_err(|e| Error::from(e.to_string()))?;
-
-    let mut mappers = Vec::new();
-    for element in elements {
-        if element.tag == MAPPER_TAG {
-            mappers.extend(element.childs);
-        } else {
-            mappers.push(element);
-        }
-    }
-
-    Ok(mappers)
+    loader_html::load_mapper_vec(html)
 }
 
 /// Handles include directives and replaces them with referenced content
@@ -104,13 +96,23 @@ pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> TokenS
         .trim_matches('"')
         .to_string();
 
-    let elements = load_mapper_map(&processed_html)
+    let mut elements = load_mapper_map(&processed_html)
         .unwrap_or_else(|_| panic!("Failed to load html: {}", processed_html));
 
-    let (_, element) = elements
-        .into_iter()
-        .next()
-        .unwrap_or_else(|| panic!("HTML not found for function: {}", fn_name));
+    // the map keeps every `<sql>`/`<select>`/... entry, so the id of the function must
+    // be looked up. Taking just the first entry compiled the wrong statement whenever
+    // an inline #[html_sql] had more than one (BTreeMap sorts by id, not by source
+    // order). If no id matches, fall back to the single statement of the template
+    let element = match elements.remove(fn_name) {
+        Some(element) => element,
+        None => {
+            elements
+                .into_iter()
+                .next()
+                .unwrap_or_else(|| panic!("HTML not found for function: {}", fn_name))
+                .1
+        }
+    };
 
     parse_html_node(vec![element], ignore, fn_name)
 }
@@ -315,6 +317,13 @@ pub fn impl_fn_html(m: &ItemFn, args: &ParseArgs) -> MacroTokenStream {
         );
     }
 
-    let html_data = args.sqls[0].to_token_stream().to_string();
+    // every argument is part of the template, taking just the first one would drop the
+    // rest of them
+    let html_data = args
+        .sqls
+        .iter()
+        .map(|sql| sql.value())
+        .collect::<Vec<String>>()
+        .join("");
     parse_html(&html_data, &fn_name, &mut vec![]).into()
 }

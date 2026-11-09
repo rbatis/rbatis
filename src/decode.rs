@@ -29,9 +29,11 @@
 //! }
 //! ```
 //!
-//! A single row is decoded both from `[{"k":1}]` and from the unwrapped `{"k":1}`,
-//! so `select count(1)` can be decoded into a plain `u64` (see
-//! [`try_decode_elements`]).
+//! [`decode`] and [`decode_ref`] expect the rows of a query, so their `Value` must be
+//! an array (`[{"k": v}, ...]`). Inside that array a single-column row is unwrapped
+//! (`[{"k":1}]` -> `1`), which is how `select count(1) as count` decodes into a plain
+//! `u64`. A value that is not an array is not decoded into a struct, use
+//! [`try_decode_elements`] when you are not sure.
 
 use rbs::Value;
 use serde::de::DeserializeOwned;
@@ -56,7 +58,8 @@ where
                 Err(e) => match try_decode_single_column(values) {
                     Ok(v) => Ok(v),
                     Err(Some(fallback_err)) => Err(fallback_err),
-                    Err(None) => Err(e.into()),
+                    // no single column to unwrap, keep the original decode error
+                    Err(None) => Err(e),
                 },
             }
         }
@@ -86,7 +89,7 @@ pub fn try_decode_elements<T: DeserializeOwned>(datas: &Value) -> Result<T, Erro
 fn try_decode_single_column<T: DeserializeOwned>(datas: &Value) -> Result<T, Option<Error>> {
     let items = match datas {
         Value::Array(items) => items,
-        _ => return rbs::from_value_ref::<T>(datas).map_err(|e| Some(e.into())),
+        _ => return rbs::from_value_ref::<T>(datas).map_err(Some),
     };
 
     let mut last_err = None;
@@ -97,10 +100,11 @@ fn try_decode_single_column<T: DeserializeOwned>(datas: &Value) -> Result<T, Opt
             _ => None,
         };
         if let Some(v) = inner {
-            if let Ok(r) = rbs::from_value_ref::<T>(v) {
-                return Ok(r);
+            match rbs::from_value_ref::<T>(v) {
+                Ok(r) => return Ok(r),
+                // keep the last decode error, it explains why this row was rejected
+                Err(e) => last_err = Some(e),
             }
-            last_err = rbs::from_value_ref::<T>(v).err().map(Error::from);
         }
     }
 

@@ -309,10 +309,11 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// # Examples
     ///
     /// ```
-    /// let result = 1.0 < 2.0;
+    /// use rbatis_codegen::ops::PartialOrd;
+    /// let result = 1.0f64.op_lt(&2.0f64);
     /// assert_eq!(result, true);
     ///
-    /// let result = 2.0 < 1.0;
+    /// let result = 2.0f64.op_lt(&1.0f64);
     /// assert_eq!(result, false);
     /// ```
     #[inline]
@@ -324,20 +325,28 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// This method tests less than or equal to (for `self` and `other`) and is used by the `<=`
     /// operator.
     ///
+    /// Returns `false` when the two values can not be compared (`None`).
+    ///
     /// # Examples
     ///
     /// ```
-    /// let result = 1.0 <= 2.0;
+    /// use rbatis_codegen::ops::PartialOrd;
+    /// let result = 1.0f64.op_le(&2.0f64);
     /// assert_eq!(result, true);
     ///
-    /// let result = 2.0 <= 2.0;
+    /// let result = 2.0f64.op_le(&2.0f64);
     /// assert_eq!(result, true);
+    ///
+    /// let result = 3.0f64.op_le(&2.0f64);
+    /// assert_eq!(result, false);
     /// ```
     #[inline]
     #[must_use]
     fn op_le(&self, other: &Rhs) -> bool {
-        let v = self.op_partial_cmp(other);
-        !v.eq(&None) | v.eq(&Some(Ordering::Greater))
+        matches!(
+            self.op_partial_cmp(other),
+            Some(Ordering::Less) | Some(Ordering::Equal)
+        )
     }
 
     /// This method tests greater than (for `self` and `other`) and is used by the `>` operator.
@@ -345,10 +354,11 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// # Examples
     ///
     /// ```
-    /// let result = 1.0 > 2.0;
+    /// use rbatis_codegen::ops::PartialOrd;
+    /// let result = 1.0f64.op_gt(&2.0f64);
     /// assert_eq!(result, false);
     ///
-    /// let result = 2.0 > 2.0;
+    /// let result = 2.0f64.op_gt(&2.0f64);
     /// assert_eq!(result, false);
     /// ```
     #[inline]
@@ -362,10 +372,11 @@ pub trait PartialOrd<Rhs: ?Sized = Self> {
     /// # Examples
     ///
     /// ```
-    /// let result = 2.0 >= 1.0;
+    /// use rbatis_codegen::ops::PartialOrd;
+    /// let result = 2.0f64.op_ge(&1.0f64);
     /// assert_eq!(result, true);
     ///
-    /// let result = 2.0 >= 2.0;
+    /// let result = 2.0f64.op_ge(&2.0f64);
     /// assert_eq!(result, true);
     /// ```
     #[inline]
@@ -612,7 +623,7 @@ pub trait StrMethods {
 
 #[cfg(test)]
 mod test {
-    use crate::ops::AsProxy;
+    use crate::ops::{AsProxy, PartialOrd};
     use rbs::value;
 
     #[test]
@@ -621,5 +632,26 @@ mod test {
         assert_eq!(b.i64(), -1);
         let b = value!(100u64);
         assert_eq!(b.i64(), 100i64);
+    }
+
+    /// `<=` and `>=` must be false when the values are incomparable, and
+    /// `<=` must be false when self is greater than other
+    #[test]
+    fn test_le_ge() {
+        assert!(1.0f64.op_le(&2.0f64));
+        assert!(2.0f64.op_le(&2.0f64));
+        assert!(!3.0f64.op_le(&2.0f64));
+        assert!(1i64.op_le(&2i64));
+        assert!(!2i64.op_le(&1i64));
+        assert!(!f64::NAN.op_le(&1.0f64));
+        assert!(!1.0f64.op_ge(&2.0f64));
+        assert!(2.0f64.op_ge(&2.0f64));
+        assert!(!f64::NAN.op_ge(&1.0f64));
+        // Value: a number is comparable with a number ...
+        assert!(value!(1).op_le(&value!(2)));
+        // ... but Null can not be compared with a number
+        assert!(!rbs::Value::Null.op_le(&value!(2)));
+        assert!(!rbs::Value::Null.op_lt(&value!(2)));
+        assert!(!rbs::Value::Null.op_ge(&value!(2)));
     }
 }

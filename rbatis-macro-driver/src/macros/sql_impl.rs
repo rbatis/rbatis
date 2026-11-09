@@ -74,12 +74,8 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         call_method = quote! {exec};
         decode = quote! { Ok(r)}
     }
-    //check use page method
-    let page_req_str = String::new();
-    let page_req = quote! {};
     //append all args
-    let sql_args_gen =
-        filter_args_context_id(&rbatis_name, &get_fn_args(target_fn), &[page_req_str]);
+    let sql_args_gen = filter_args_context_id(&rbatis_name, &get_fn_args(target_fn));
     let generic = target_fn.sig.generics.clone();
     //gen rust code templete
     let gen_token_temple = quote! {
@@ -88,7 +84,7 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            #sql_args_gen
            #fn_body
            use rbatis::executor::{Executor};
-           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args #page_req).await?;
+           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args).await?;
            #decode
        }
     };
@@ -98,7 +94,6 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
 fn filter_args_context_id(
     rbatis_name: &str,
     fn_arg_name_vec: &[Box<Pat>],
-    skip_names: &[String],
 ) -> proc_macro2::TokenStream {
     let mut sql_args_gen = quote! {};
     for item in fn_arg_name_vec {
@@ -108,17 +103,8 @@ fn filter_args_context_id(
             .trim()
             .trim_start_matches("mut ")
             .to_string();
+        // the executor argument is used to run the statement, it is not a bind value
         if item_ident_name.eq(rbatis_name) {
-            continue;
-        }
-        let mut do_continue = false;
-        for x in skip_names {
-            if x.eq(&item_ident_name) {
-                do_continue = true;
-                break;
-            }
-        }
-        if do_continue {
             continue;
         }
         sql_args_gen = quote! {

@@ -3,9 +3,12 @@ use rbs::Value;
 /// Collects the columns used by `insert` / `insert_batch`.
 ///
 /// Implemented for [`rbs::Value`]: given the rows of an insert (`[{"id": 1,
-/// "name": null}]`) it returns the column names that are not `null`
-/// (`["id"]`). The generated `insert_batch` uses it to build the `(...)` column
-/// list of a multi row insert.
+/// "name": null}]`) it returns the column names that are not `null` in at least one
+/// row (`["id"]`). Their order is the column order of the first row, columns that
+/// only a later row has follow it.
+///
+/// The generated `insert_batch` uses it to build the `(...)` column list of a multi
+/// row insert; a column that is `null` in some row is bound as `NULL` in that row.
 pub trait ColumnSet {
     /// the column names to insert, `null` fields excluded
     fn column_sets(&self) -> Value;
@@ -33,7 +36,15 @@ impl ColumnSet for Value {
             }
         }
 
-        // Slow path: multiple elements - collect non-null columns across all rows
+        // Slow path: multiple elements - every row of one insert_batch statement must
+        // write the same column list, so a column counts when it is non-null in *any*
+        // row. Walking just the first row would drop a column whose key serde skipped
+        // in that row (#[serde(skip_serializing_if = "Option::is_none")]) and whose
+        // value is non-null in a later row, and that value would silently never be
+        // inserted (it is bound as NULL in the rows that have no value for it).
+        // The order is the column order of the first row (for a struct without skipped
+        // fields that is the field order of the struct), columns only showing up in a
+        // later row follow it.
         let mut column_set = std::collections::HashSet::with_capacity(array.len() * 8);
         for item in array {
             for (k, v) in item {
@@ -42,18 +53,17 @@ impl ColumnSet for Value {
                 }
             }
         }
-
-        if let Some(table) = array.first() {
-            let mut column_datas = Vec::with_capacity(table.len());
-            for (column, _) in table {
-                if column_set.contains(&column) {
-                    column_datas.push(column.clone());
+        let mut column_datas = Vec::with_capacity(column_set.len());
+        // taking a column out of column_set emits it exactly once
+        for item in array {
+            for (k, _) in item {
+                if column_set.remove(&k) {
+                    column_datas.push(k);
                 }
             }
-            rbs::Value::from(column_datas)
-        } else {
-            rbs::Value::Array(vec![])
         }
+
+        rbs::Value::from(column_datas)
     }
 }
 

@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `set` node in py_sql.
@@ -40,10 +41,13 @@ impl ToHtml for SetNode {
 
         let mut attrs_string = String::new();
         if !self.collection.is_empty() {
-            attrs_string.push_str(&format!(" collection=\"{}\"", self.collection));
+            attrs_string.push_str(&format!(
+                " collection=\"{}\"",
+                escape_attr_value(&self.collection)
+            ));
         }
         if !self.skips.is_empty() {
-            attrs_string.push_str(&format!(" skips=\"{}\"", self.skips));
+            attrs_string.push_str(&format!(" skips=\"{}\"", escape_attr_value(&self.skips)));
         }
         if let Some(skip_null) = self.skip_null {
             if skip_null {

@@ -34,6 +34,9 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         }
     }
 
+    // with the debug_mode feature the template file is added to the compile input so
+    // that a change of the file re-runs the macro
+    #[allow(unused_mut)]
     let mut include_data = quote::quote! {};
     let mut sql_ident = quote!();
     if !args.sqls.is_empty() {
@@ -47,6 +50,8 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         for v in &args.sqls {
             if args.sqls.len() == 1 {
                 let v = args.sqls[0].value();
+                // `#[py_sql(r#"include_str!("xx.py_sql")"#)]`: the argument is the text
+                // `include_str!("...")`, the template is read from that file here
                 if v.starts_with("include_str!(\"") && v.ends_with("\")") {
                     let mut file_name = v
                         .trim_start_matches(r#"include_str!(""#)
@@ -68,13 +73,12 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                     let mut f = File::open(&file_name)
                         .unwrap_or_else(|_| panic!("can't find file={}", file_name));
                     let mut data = String::new();
-                    _ = f.read_to_string(&mut data);
+                    f.read_to_string(&mut data)
+                        .unwrap_or_else(|e| panic!("read '{}' fail: {}", file_name, e));
                     data = data.replace("\r\n", "\n");
 
                     #[cfg(feature = "debug_mode")]
                     if cfg!(debug_assertions) {
-                        use std::env::current_dir;
-                        use std::path::PathBuf;
                         let current_dir = current_dir().unwrap();
                         let mut include_file_name = file_name.to_string();
                         if !PathBuf::from(&file_name).is_absolute() {
@@ -97,7 +101,6 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     } else {
         panic!("[rb] Incorrect macro parameter length!");
     }
-    include_data = include_data.clone();
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);

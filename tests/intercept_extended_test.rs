@@ -22,6 +22,7 @@ mod test {
     use rbs::Value;
     use std::fmt::Debug;
     use std::pin::Pin;
+    use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
 
     // ==================== Mock infrastructure ====================
@@ -602,5 +603,182 @@ mod test {
         rb.init(MockDriver {}, "test").unwrap();
         let name = rb.name();
         assert!(name.contains("RBatis"));
+    }
+
+    // ==================== Action::Return of an after-interceptor ====================
+
+    #[derive(Debug)]
+    struct AfterWritesResult;
+
+    #[async_trait]
+    impl Intercept for AfterWritesResult {
+        async fn after(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
+            match result {
+                ResultType::Exec(v) => {
+                    *v = Ok(ExecResult {
+                        rows_affected: 42,
+                        last_insert_id: Value::U64(7),
+                    });
+                }
+                ResultType::Query(v) => {
+                    *v = Ok(Value::Array(vec![Value::I32(42)]));
+                }
+            }
+            Ok(Action::Return)
+        }
+    }
+
+    /// The result an after-interceptor wrote into its result slot is what the caller
+    /// gets. It must not be replaced by the (always failing) slot a before-interceptor
+    /// would have written.
+    #[tokio::test]
+    async fn test_after_intercept_return_uses_written_exec_result() {
+        let mut rb = RBatis::new();
+        rb.set_intercepts(vec![Arc::new(AfterWritesResult)]);
+        rb.init(MockDriver {}, "test").unwrap();
+
+        let r = rb.exec("update table set x = 1", vec![]).await.unwrap();
+        assert_eq!(r.rows_affected, 42);
+
+        // the same on a connection executor
+        let conn = rb.acquire().await.unwrap();
+        let r = conn.exec("update table set x = 1", vec![]).await.unwrap();
+        assert_eq!(r.rows_affected, 42);
+    }
+
+    #[tokio::test]
+    async fn test_after_intercept_return_uses_written_query_result() {
+        let mut rb = RBatis::new();
+        rb.set_intercepts(vec![Arc::new(AfterWritesResult)]);
+        rb.init(MockDriver {}, "test").unwrap();
+
+        let r = rb
+            .exec_decode::<Vec<i32>>("select id from table", vec![])
+            .await
+            .unwrap();
+        assert_eq!(r, vec![42]);
+    }
+
+    #[derive(Debug)]
+    struct ReturnWithoutResult;
+
+    #[async_trait]
+    impl Intercept for ReturnWithoutResult {
+        async fn before(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
+            // Action::Return without writing an answer
+            Ok(Action::Return)
+        }
+    }
+
+    /// An interceptor that stops the statement but writes no answer can not be answered
+    /// with a success, the caller gets an error that says what happened
+    #[tokio::test]
+    async fn test_intercept_return_without_result_is_an_error() {
+        let mut rb = RBatis::new();
+        rb.set_intercepts(vec![Arc::new(ReturnWithoutResult)]);
+        rb.init(MockDriver {}, "test").unwrap();
+
+        let r = rb.exec("update table set x = 1", vec![]).await;
+        assert!(r.is_err());
+        let message = r.unwrap_err().to_string();
+        println!("error={}", message);
+        assert!(message.contains("interceptor"), "{}", message);
+        assert!(message.contains("Return"), "{}", message);
+    }
+
+    // ==================== changing the interceptors while a statement runs ====================
+
+    #[derive(Debug)]
+    struct MarkIntercept {
+        marks: Arc<dark_std::sync::SyncVec<String>>,
+    }
+
+    #[async_trait]
+    impl Intercept for MarkIntercept {
+        async fn before(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
+            self.marks.push("mark".to_string());
+            Ok(Action::Next)
+        }
+    }
+
+    /// an interceptor that adds an interceptor to the container of its own RBatis while
+    /// it is being called. A Weak keeps this from becoming a reference cycle.
+    #[derive(Debug)]
+    struct AddDuringBefore {
+        intercepts: std::sync::Weak<dark_std::sync::SyncVec<Arc<dyn Intercept>>>,
+        marks: Arc<dark_std::sync::SyncVec<String>>,
+        added: AtomicBool,
+    }
+
+    #[async_trait]
+    impl Intercept for AddDuringBefore {
+        async fn before(
+            &self,
+            _task_id: i64,
+            _rb: &dyn Executor,
+            _sql: &mut String,
+            _args: &mut Vec<Value>,
+            _result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
+        ) -> Result<Action, Error> {
+            if !self.added.swap(true, Ordering::SeqCst) {
+                if let Some(intercepts) = self.intercepts.upgrade() {
+                    intercepts.push(Arc::new(MarkIntercept {
+                        marks: self.marks.clone(),
+                    }));
+                }
+            }
+            Ok(Action::Next)
+        }
+    }
+
+    /// The interceptors of a statement are copied out of the container before they are
+    /// called. `SyncVec` waits until every reader left the container before it lets a
+    /// writer in, so adding one while the container is read by the loop of
+    /// apply_before/apply_after deadlocked. Now the write happens outside a read, the
+    /// added interceptor simply is not part of the statement that added it, and runs
+    /// from the next statement on.
+    #[tokio::test]
+    async fn test_add_intercept_during_before_does_not_deadlock() {
+        let mut rb = RBatis::new();
+        rb.init(MockDriver {}, "test").unwrap();
+
+        let container = Arc::new(dark_std::sync::SyncVec::<Arc<dyn Intercept>>::new());
+        let marks = Arc::new(dark_std::sync::SyncVec::<String>::new());
+        container.push(Arc::new(AddDuringBefore {
+            intercepts: Arc::downgrade(&container),
+            marks: marks.clone(),
+            added: AtomicBool::new(false),
+        }));
+        rb.intercepts = container;
+
+        // the statement that adds one does not run the interceptor it added
+        rb.exec("update table set x = 1", vec![]).await.unwrap();
+        assert_eq!(rb.intercepts.len(), 2);
+        assert_eq!(marks.len(), 0);
+
+        // the next statement runs both
+        rb.exec("update table set x = 2", vec![]).await.unwrap();
+        assert_eq!(marks.len(), 1);
     }
 }

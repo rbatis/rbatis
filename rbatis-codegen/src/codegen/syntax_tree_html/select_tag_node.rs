@@ -35,11 +35,15 @@ impl HtmlAstNode for SelectTagNode {
         let method_name = Ident::new(context.fn_name, Span::call_site());
         let child_body = context.parse_children(&self.childs, ignore);
 
-        // TODO: Accurately determine capacity and push_count as in original.
-        // let capacity = element.child_string_cup() + 1000;
-        // let push_count = child_body.to_string().matches("args.push").count();
-        let capacity = 1024usize; // Placeholder with explicit i32 type
-        let push_count = 10usize; // Placeholder with explicit i32 type
+        // the estimates of the previous implementation: the text of the whole statement
+        // plus the `args.push(..)` calls the generated body contains
+        let capacity = self
+            .childs
+            .iter()
+            .map(|c| c.child_string_cup())
+            .sum::<usize>()
+            + 1000;
+        let push_count = child_body.to_string().matches("push").count();
 
         let function_token = quote! {
             pub fn #method_name(mut arg: rbs::Value, _tag: char) -> (String, Vec<rbs::Value>) {

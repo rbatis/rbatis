@@ -28,7 +28,7 @@ pub struct StringNode {
     pub value: String,
 }
 
-impl Name for String {
+impl Name for StringNode {
     fn name() -> &'static str {
         "string"
     }

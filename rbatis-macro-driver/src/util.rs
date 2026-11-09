@@ -55,15 +55,8 @@ pub(crate) fn is_query(return_source: &str) -> bool {
 }
 
 pub(crate) fn is_rb_ref(ty_stream: &str) -> bool {
-    if ty_stream.contains("RBatis")
-        || ty_stream.contains("RBatisConnExecutor")
-        || ty_stream.contains("RBatisTxExecutor")
-        || ty_stream.contains("RBatisTxExecutorGuard")
-        || ty_stream.contains("Executor")
-    {
-        return true;
-    }
-    false
+    // RBatis, RBatisConnExecutor, RBatisTxExecutor, RBatisTxExecutorGuard, ...
+    ty_stream.contains("Executor") || ty_stream.contains("RBatis")
 }
 
 /// Check if the return type is Page<T> or Result<Page<T>>
@@ -71,19 +64,11 @@ pub(crate) fn is_rb_ref(ty_stream: &str) -> bool {
 pub(crate) fn is_page_return_type(return_str: &str) -> Option<String> {
     let s = return_str.replace(" ", "");
 
-    // Handle Result<Page<T>> or rbatis::Result<Page<T>>
-    if s.contains("Result<Page<") || s.contains("Result<Page<") {
+    // Handle Page<T>, rbatis::plugin::Page<T>, Result<Page<T>> and rbatis::Result<Page<T>>.
+    // Every "Result<...>" form also contains "Page<", so testing "Page<" is enough.
+    if s.contains("Page<") {
         if let Some(start) = s.find("Page<") {
-            let inner = extract_type_after(&s, start + 5)?;
-            return Some(inner);
-        }
-    }
-
-    // Handle Page<T> or rbatis::plugin::Page<T>
-    if s.contains("Page<") || s.contains("::Page<") {
-        if let Some(start) = s.find("Page<") {
-            let inner = extract_type_after(&s, start + 5)?;
-            return Some(inner);
+            return extract_type_after(&s, start + 5);
         }
     }
 
@@ -115,13 +100,8 @@ fn extract_type_after(s: &str, start: usize) -> Option<String> {
     }
 
     if end > start {
-        let inner = s[start..end].to_string();
-        // Handle nested generics like Vec<T>
-        if inner.contains('<') {
-            Some(inner)
-        } else {
-            Some(inner.trim().to_string())
-        }
+        // nested generics like Vec<Activity> keep their angle brackets
+        Some(s[start..end].trim().to_string())
     } else {
         None
     }

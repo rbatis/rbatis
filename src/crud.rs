@@ -107,12 +107,22 @@ macro_rules! crud {
             /// batch insert records
             ///
             /// sql: `INSERT INTO table_name (column1, column2, ...) VALUES (value1, value2, ...), (value1, value2, ...), ...`
+            ///
+            /// `batch_size` is the number of records per statement, `0` sends all
+            /// records with one single statement
             pub async fn insert_batch(
                 executor: &dyn $crate::executor::Executor,
                 tables: &[$table],
                 batch_size: u64,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
                 use $crate::crud_traits::ColumnSet;
+                // batch_size == 0 would make make_ranges() return no ranges at all and
+                // the loop below would insert nothing. Use one single batch instead
+                let batch_size = if batch_size == 0 {
+                    tables.len() as u64
+                } else {
+                    batch_size
+                };
                 #[$crate::py_sql(
                     "`insert into ${table_name} `
                     trim ',':
@@ -196,7 +206,7 @@ macro_rules! crud {
                 executor: &dyn $crate::executor::Executor,
                 mut condition: rbs::Value,
             ) -> std::result::Result<Vec<$table>, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
+                use $crate::crud_traits::ValueOperatorSql;
                 // Extract column specification and remove it from condition
                 let table_column = {
                     let mut columns = String::new();
@@ -287,7 +297,7 @@ macro_rules! crud {
                 table: &$table,
                 mut condition: rbs::Value,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::{FilterByColumns, ValueOperatorSql};
+                use $crate::crud_traits::{FilterByColumns, ValueOperatorSql};
 
                 // Extract column list for selective updates - implements GitHub issue #591
                 let set_columns = {
@@ -391,7 +401,7 @@ macro_rules! crud {
                 executor: &dyn $crate::executor::Executor,
                 condition: rbs::Value,
             ) -> std::result::Result<$crate::rbdc::db::ExecResult, $crate::rbdc::Error> {
-                use rbatis::crud_traits::ValueOperatorSql;
+                use $crate::crud_traits::ValueOperatorSql;
                 #[$crate::py_sql(
                     "`delete from ${table_name}`
            trim end=' where ':

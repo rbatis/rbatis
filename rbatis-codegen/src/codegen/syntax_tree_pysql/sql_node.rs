@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a reusable SQL fragment node in py_sql, defined by a `<sql>` tag in XML or an equivalent in py_sql.
@@ -29,6 +30,10 @@ impl ToHtml for SqlNode {
         for x in &self.childs {
             childs.push_str(&x.as_html());
         }
-        format!("<sql id=\"{}\">{}</sql>", self.id, childs)
+        format!(
+            "<sql id=\"{}\">{}</sql>",
+            escape_attr_value(&self.id),
+            childs
+        )
     }
 }

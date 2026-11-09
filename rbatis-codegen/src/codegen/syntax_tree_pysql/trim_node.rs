@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `trim` node in py_sql.
@@ -32,7 +33,9 @@ impl ToHtml for TrimNode {
         }
         format!(
             "<trim prefixOverrides=\"{}\" suffixOverrides=\"{}\">{}</trim>",
-            self.start, self.end, childs
+            escape_attr_value(&self.start),
+            escape_attr_value(&self.end),
+            childs
         )
     }
 }

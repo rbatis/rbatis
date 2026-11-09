@@ -60,23 +60,12 @@ impl HtmlAstNode for BindTagNode {
 
         let lit_str_name = LitStr::new(&self.name, Span::call_site());
 
-        // Bind nodes do not typically have children that generate SQL, so child_parser is not used for self.childs.
-        // If they had children, their tokens would be generated using context.parse_children(&self.childs);
-        // and then appropriately placed.
-
+        // `<bind>` has no children that could carry SQL, so child_parser is not used.
+        //
+        // the assignment writes the value into the argument map under `name` (a missing
+        // key is created by `IndexMut<&str> for ValueMap`), which is what makes it
+        // reachable for `#{name}`/`${name}` of the following tags
         quote! {
-            if arg[#lit_str_name] == rbs::Value::Null {
-                // Ensure the key exists before assignment, even if it's to insert Null first.
-                // This behavior is slightly different from original, which only inserted if arg[#name] was Value::Null
-                // The original implies `arg` is a map-like structure where direct assignment might create the key.
-                // For rbs::Value, which seems to be map-like, direct assignment arg[key] = val is fine.
-                // The original check was `if arg[#lit_str] == rbs::Value::Null` then `arg.insert(...)`
-                // This seems slightly off as it would insert string key if null, then replace.
-                // The intention is probably to ensure the key exists or to set it.
-                // Let's stick to the original assignment logic: if it's Null, insert Null, then overwrite.
-                // This is a bit redundant. A more direct `arg[#lit_str] = ...` is likely intended.
-                // arg.insert(rbs::Value::String(#lit_str_name.to_string()), rbs::Value::Null);
-            }
             arg[#lit_str_name] = rbs::value(#method_impl).unwrap_or_default();
         }
     }

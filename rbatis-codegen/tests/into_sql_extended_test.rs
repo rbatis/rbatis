@@ -96,3 +96,29 @@ fn test_bool_into_sql() {
     let sql = value.sql();
     assert!(sql.contains("false"));
 }
+
+#[test]
+fn test_value_ref_into_sql_is_the_same_as_value() {
+    use rbs::value;
+
+    // `${arg}` reaches the reference impl. It renders the same as the owned Value:
+    // strings quoted, arrays as (a,b), maps as `key value ` pairs
+    for value in [
+        Value::String("test".to_string()),
+        Value::I32(42),
+        Value::Bool(true),
+        value!([1, 2]),
+        value!(["a", "b"]),
+        value!({"k": 1}),
+        Value::Null,
+    ] {
+        // call the `IntoSql for &Value` impl explicitly; method syntax would
+        // auto-borrow and keep using the owned impl
+        assert_eq!(
+            value.sql(),
+            rbatis_codegen::IntoSql::sql(&value),
+            "ref and owned differ for {:?}",
+            value
+        );
+    }
+}

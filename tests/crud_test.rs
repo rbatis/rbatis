@@ -477,6 +477,56 @@ mod test {
     }
 
     #[test]
+    fn test_insert_batch_batch_size_zero() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let mut t = MockTable {
+                id: Some("1".into()),
+                name: Some("1".into()),
+                pc_link: None,
+                h5_link: None,
+                pc_banner_img: None,
+                h5_banner_img: None,
+                sort: None,
+                status: Some(1),
+                remark: None,
+                create_time: Some(DateTime::now()),
+                version: Some(1),
+                delete_flag: Some(1),
+                count: 0,
+            };
+            let mut ts = vec![];
+            for i in 1..=3 {
+                t.id = Some(format!("{i}"));
+                ts.push(t.clone());
+            }
+
+            // batch_size == 0 sends everything with one single statement instead of
+            // splitting it into pages of size 0 (which would send nothing at all)
+            MockTable::insert_batch(&rb, &ts, 0).await.unwrap();
+            assert_eq!(queue.len(), 1);
+            let (sql, args) = queue.pop().unwrap();
+            println!("{}", sql);
+            assert_eq!(sql.matches("VALUES ").count(), 1);
+            assert_eq!(sql.matches("(?, ?, ?, ?, ?, ?, ? )").count(), 3);
+            // 3 rows x the 7 columns that are non-null in at least one row
+            assert_eq!(args.len(), 21);
+
+            // a batch_size of 2 splits the 3 rows into two statements
+            MockTable::insert_batch(&rb, &ts, 2).await.unwrap();
+            assert_eq!(queue.len(), 2);
+            let (sql, _) = queue.pop().unwrap();
+            assert_eq!(sql.matches("(?, ?, ?, ?, ?, ?, ? )").count(), 1);
+            let (sql, _) = queue.pop().unwrap();
+            assert_eq!(sql.matches("(?, ?, ?, ?, ?, ?, ? )").count(), 2);
+        };
+        block_on(f);
+    }
+
+    #[test]
     fn test_update_by_map() {
         let f = async move {
             let mut rb = RBatis::new();
@@ -1060,6 +1110,49 @@ mod test {
             println!("page records: {:?}", page.records);
             assert!(page.total > 0, "total should be > 0");
             assert!(!page.records.is_empty(), "records should not be empty");
+        };
+        block_on(f);
+    }
+
+    // PageIntercept turns the count query of a page select into
+    // `select count(1) as count ...`. Only the column list of the first `select ... from`
+    // may be replaced: the `select id from` of the sub query keeps its columns. The
+    // arguments of the dropped ` order by ` tail are dropped with it, otherwise the '?'
+    // placeholders of that tail are gone but their values stay in args
+    rbatis::htmlsql_select_page!(htmlsql_select_page_count_sub_query(name: &str, ord: &str) -> MockTable =>
+    r#"<select id="htmlsql_select_page_count_sub_query">`select `<if test="do_count == true">`id from activity where name = #{name} and id in (select id from activity where name = #{name}) order by name = #{ord} desc`</if><if test="do_count == false">`* from activity where name = #{name}`</if></select>"#);
+    #[test]
+    fn test_htmlsql_select_page_count_sub_query() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![
+                Arc::new(PageIntercept::new()),
+                Arc::new(MockIntercept::new(queue.clone())),
+            ]);
+            rb.init(MockDriver {}, "test").unwrap();
+            let page =
+                htmlsql_select_page_count_sub_query(&rb, &PageRequest::new(1, 10), "aaa", "bbb")
+                    .await
+                    .unwrap();
+            println!("page total={}, records={:?}", page.total, page.records);
+
+            // the page query runs last, so it is the first one off the LIFO queue
+            let (sql, args) = queue.pop().unwrap();
+            println!("select sql={}", sql);
+            assert_eq!(sql, "select * from activity where name = ? limit 0,10 ");
+            assert_eq!(args.len(), 1);
+
+            let (sql, args) = queue.pop().unwrap();
+            println!("count sql={}", sql);
+            assert_eq!(
+                sql,
+                "select count(1) as count from activity where name = ? and id in (select id from activity where name = ?)"
+            );
+            assert!(!sql.contains(" order by "), "got: {}", sql);
+            // every remaining placeholder has exactly one value bound to it
+            assert_eq!(sql.matches('?').count(), args.len());
+            assert_eq!(args.len(), 2);
         };
         block_on(f);
     }

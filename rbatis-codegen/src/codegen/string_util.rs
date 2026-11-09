@@ -35,6 +35,29 @@ pub fn count_string_num(s: &str, c: char) -> usize {
     num
 }
 
+/// Escape a value before writing it into a `name="value"` attribute of the HTML
+/// the code generators build for each other
+/// ([`crate::codegen::syntax_tree_pysql`] writes it,
+/// [`crate::codegen::loader_html`] reads it).
+///
+/// HTML entities are decoded by the parser, so the attribute value survives a
+/// write/read round trip unchanged. Replacing `"` with `'` would not be lossless:
+/// it changes the expression source, and a value containing both quote kinds
+/// could not be represented at all.
+pub fn escape_attr_value(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '&' => escaped.push_str("&amp;"),
+            '"' => escaped.push_str("&quot;"),
+            '<' => escaped.push_str("&lt;"),
+            '>' => escaped.push_str("&gt;"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
+}
+
 ///input 'strings' => strings
 pub fn un_packing_string(column: &str) -> &str {
     if column.len() >= 2 {

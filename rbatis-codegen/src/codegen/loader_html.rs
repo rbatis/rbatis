@@ -24,7 +24,9 @@ impl Display for Element {
                     f.write_str(" ")?;
                     f.write_str(k)?;
                     f.write_str("=\"")?;
-                    f.write_str(v)?;
+                    // an attribute value that carries a `"` would end the attribute
+                    // and be read back as a truncated one
+                    f.write_str(&crate::codegen::string_util::escape_attr_value(v))?;
                     f.write_str("\"")?;
                 }
                 f.write_str(">")?;

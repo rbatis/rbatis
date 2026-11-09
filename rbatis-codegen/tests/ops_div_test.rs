@@ -97,3 +97,21 @@ fn test_div_ref_variants() {
     assert_eq!(result3, 5i64);
     assert_eq!(result4, 5i64);
 }
+
+#[test]
+fn test_div_by_zero_of_value() {
+    // 除数是 0 时结果是 0。整数分支和 `Value / 0.0 字面量` 本来就是 0，
+    // 只有 `Value::F32 / Value::F32(0.0)`、`Value::F64 / Value::F64(0.0)` 会得到 inf，
+    // 而 inf 会污染后面所有用它算出来的值。两个浮点分支现在也走同样的保护
+    assert_eq!(Value::F64(20.0).op_div(&Value::F64(0.0)), Value::F64(0.0));
+    assert_eq!(Value::F32(20.0).op_div(&Value::F32(0.0)), Value::F32(0.0));
+    // 原始类型的一条路（除数是 0.0 字面量）
+    assert_eq!(Value::F64(20.0).op_div(&0.0f64), 0.0f64);
+    // 另一条（Value 是除数）
+    assert_eq!(10.0f64.op_div(&Value::F64(0.0)), 0.0f64);
+    // 整数 Value 除以 0.0（f64 回退分支）
+    assert!(matches!(
+        Value::I64(10).op_div(&Value::F64(0.0)),
+        Value::I64(0)
+    ));
+}

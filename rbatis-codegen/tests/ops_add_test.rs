@@ -112,3 +112,30 @@ fn test_mixed_type_add() {
 
     // 这里我们不做断言，只观察行为
 }
+
+#[test]
+fn test_add_overflow_neither_panics_nor_wraps() {
+    // 两个整数相加：debug 编译会 panic，release 编译会绕回。模板里的数字常常来自
+    // 数据库列（U32/U64），所以同一段模板在 debug 和 release 下结果不同。
+    // 现在：放得进更大的 Value 整数就用它（结果精确），放不下就饱和到边界
+    assert_eq!(
+        Value::I32(i32::MAX).op_add(&Value::I32(1)),
+        Value::I64(i32::MAX as i64 + 1)
+    );
+    assert_eq!(
+        Value::U32(u32::MAX).op_add(&Value::U32(1)),
+        Value::U64(u32::MAX as u64 + 1)
+    );
+    // 没有比 i64/u64 更宽的 Value 整数，饱和
+    assert_eq!(
+        Value::I64(i64::MAX).op_add(&Value::I64(1)),
+        Value::I64(i64::MAX)
+    );
+    assert_eq!(
+        Value::U64(u64::MAX).op_add(&Value::U64(1)),
+        Value::U64(u64::MAX)
+    );
+    // 原始类型的辅助函数返回类型是固定的，只能饱和
+    assert_eq!(Value::U64(u64::MAX).op_add(1u64), u64::MAX);
+    assert_eq!(Value::I64(i64::MAX).op_add(1i64), i64::MAX);
+}

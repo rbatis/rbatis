@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{DefaultName, Name, ToHtml};
 
 /// Represents a `bind` or `let` node in py_sql.
@@ -32,7 +33,8 @@ impl ToHtml for BindNode {
     fn as_html(&self) -> String {
         format!(
             "<bind name=\"{}\" value=\"{}\"></bind>",
-            self.name, self.value
+            escape_attr_value(&self.name),
+            escape_attr_value(&self.value)
         )
     }
 }

@@ -2,12 +2,17 @@ use crate::ops::{Add, AsProxy};
 use crate::ops_macros::{impl_numeric_binary_op, impl_same_type_binary_op, impl_value_binary_op};
 use rbs::Value;
 
+// A `+` of two integers panics in a debug build and wraps around in a release build
+// when the result does not fit the type. A number that came out of a database column
+// (Value::U32/Value::U64) is added to a literal all the time, so a template would run
+// differently in a debug and in a release build. Widen to the next larger Value integer
+// when one exists, saturate when it does not: never a panic, never a wrapped number.
 fn op_add_u64(value: &Value, other: u64) -> u64 {
-    value.u64() + other
+    value.u64().saturating_add(other)
 }
 
 fn op_add_i64(value: &Value, other: i64) -> i64 {
-    value.i64() + other
+    value.i64().saturating_add(other)
 }
 
 fn op_add_f64(value: &Value, other: f64) -> f64 {
@@ -17,10 +22,16 @@ fn op_add_f64(value: &Value, other: f64) -> f64 {
 fn op_add_value(left: Value, rhs: Value) -> Value {
     match left {
         Value::String(s) => Value::String(s + rhs.as_str().unwrap_or("")),
-        Value::I32(s) => Value::I32(s + rhs.i32()),
-        Value::I64(s) => Value::I64(s + rhs.i64()),
-        Value::U32(s) => Value::U32(s + rhs.u32()),
-        Value::U64(s) => Value::U64(s + rhs.u64()),
+        Value::I32(s) => match s.checked_add(rhs.i32()) {
+            Some(v) => Value::I32(v),
+            None => Value::I64(s as i64 + rhs.i32() as i64),
+        },
+        Value::I64(s) => Value::I64(s.saturating_add(rhs.i64())),
+        Value::U32(s) => match s.checked_add(rhs.u32()) {
+            Some(v) => Value::U32(v),
+            None => Value::U64(s as u64 + rhs.u32() as u64),
+        },
+        Value::U64(s) => Value::U64(s.saturating_add(rhs.u64())),
         Value::F64(s) => Value::F64(s + rhs.f64()),
         Value::F32(v) => Value::F32(v + rhs.f64() as f32),
         Value::Ext(_, e) => op_add_value(*e, rhs),

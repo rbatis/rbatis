@@ -49,6 +49,8 @@ pub(crate) fn impl_macro_html_sql(
         }
     }
     let mut sql_ident = quote!();
+    // the template exactly as it was written (LitStr::value() keeps `"` and newlines)
+    let mut inline_html = String::new();
     if !args.sqls.is_empty() {
         if rbatis_name.is_empty() {
             panic!(
@@ -60,6 +62,7 @@ pub(crate) fn impl_macro_html_sql(
         for v in &args.sqls {
             s += v.value().as_str();
         }
+        inline_html = s.clone();
         sql_ident = quote!(#s);
     } else {
         panic!("[rb] Incorrect macro parameter length!");
@@ -93,10 +96,53 @@ pub(crate) fn impl_macro_html_sql(
         f.read_to_string(&mut html_data)
             .unwrap_or_else(|_| panic!("{} read_to_string fail", file_name));
         let htmls = rbatis_codegen::codegen::parser_html::load_mapper_map(&html_data)
-            .expect("load html content fail");
-        let token = htmls.get(&func_name_ident.to_string()).expect("");
+            .unwrap_or_else(|e| panic!("[rb] load '{}' fail: {}", file_name, e));
+        let token = htmls
+            .get(&func_name_ident.to_string())
+            .unwrap_or_else(|| panic!("[rb] '{}' has no element with id='{}'. An html_sql file needs <select id=\"fn_name\"> (or <update>/<insert>/<delete>) with the id of the function.", file_name, func_name_ident));
         let token = format!("{}", token);
         sql_ident = token.to_token_stream();
+    } else {
+        // inline html. rbatis_codegen reads the statement with the id of the function it
+        // is given, but here it is given a fixed helper name ('impl_html_sql'), so an
+        // inline template with more than one statement would compile the alphabetically
+        // first one. The statement with the id of this function has to be picked here
+        // (the same way the file above does it).
+        let fn_name = func_name_ident.to_string();
+        // a template that does not load is left to rbatis_codegen, which reports it
+        if let Ok(htmls) = rbatis_codegen::codegen::parser_html::load_mapper_map(&inline_html) {
+            if htmls.len() > 1 {
+                // a `<sql id="..">` of the template is a fragment that another statement
+                // includes, not a statement of its own
+                let statements: Vec<&rbatis_codegen::codegen::loader_html::Element> = htmls
+                    .values()
+                    .filter(|element| {
+                        matches!(
+                            element.tag.as_str(),
+                            "select" | "insert" | "update" | "delete" | "set"
+                        )
+                    })
+                    .collect();
+                let selected = match htmls.get(&fn_name) {
+                    Some(element) => Some(element),
+                    // no statement with the id of the function. One single statement is
+                    // unambiguous, and the id of a statement is not required to be the
+                    // name of the function
+                    None if statements.len() == 1 => Some(statements[0]),
+                    None => None,
+                };
+                match selected {
+                    Some(element) => sql_ident = format!("{}", element).to_token_stream(),
+                    None => panic!(
+                        "[rb] the inline html of #[html_sql] on '{}()' has the statements [{}], but none with id='{}'. Give the statement you want to compile the id of the function (<select id=\"{}\">).",
+                        fn_name,
+                        htmls.keys().cloned().collect::<Vec<String>>().join(", "),
+                        fn_name,
+                        fn_name,
+                    ),
+                }
+            }
+        }
     }
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
@@ -140,23 +186,18 @@ pub(crate) fn impl_macro_html_sql(
     let gen_func: proc_macro2::TokenStream =
         rbatis_codegen::rb_html(gen_target_macro_arg.into(), gen_target_method.into()).into();
 
+    // with the debug_mode feature the html file is added to the compile input so that a
+    // change of the file re-runs the macro
+    #[allow(unused_mut)]
     let mut include_data = quote!();
-    include_data = quote! {
-        //no-debug_mode
-    };
     #[cfg(feature = "debug_mode")]
-    if cfg!(debug_assertions) {
-        if file_name.ends_with(".html") {
-            use std::env::current_dir;
-            use std::path::PathBuf;
-            let current_dir = current_dir().unwrap();
-            let mut html_file_name = file_name.clone();
-            if !PathBuf::from(&file_name).is_absolute() {
-                html_file_name =
-                    format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
-            }
-            include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
+    if cfg!(debug_assertions) && file_name.ends_with(".html") {
+        let current_dir = current_dir().unwrap();
+        let mut html_file_name = file_name.clone();
+        if !PathBuf::from(&file_name).is_absolute() {
+            html_file_name = format!("{}/{}", current_dir.to_str().unwrap_or_default(), file_name);
         }
+        include_data = quote! {#include_data  let _ = include_bytes!(#html_file_name);};
     }
     let generic = target_fn.sig.generics.clone();
     //gen rust code
@@ -196,10 +237,13 @@ fn impl_macro_html_sql_with_page(
     _is_trait_impl: bool,
 ) -> TokenStream {
     let func_name = target_fn.sig.ident.clone();
-    // Parse inner_type string as a type
-    let inner_type_ts: proc_macro2::TokenStream = inner_type
-        .parse()
-        .unwrap_or_else(|_| inner_type.parse().unwrap());
+    // the `T` of the `Page<T>` return type
+    let inner_type_ts: proc_macro2::TokenStream = inner_type.parse().unwrap_or_else(|e| {
+        panic!(
+            "[rb] parse the inner type '{}' of Page<{}> fail: {}",
+            inner_type, inner_type, e
+        )
+    });
 
     // Extract business parameters (exclude rb/executor and page_request)
     // Use the types as-is (htmlsql_select_page! macro will handle adding & where needed)
@@ -308,6 +352,3 @@ pub(crate) fn impl_macro_html_sql_impl(impl_block: &ItemImpl, args: &ParseArgs) 
     }
     .into()
 }
-
-
-

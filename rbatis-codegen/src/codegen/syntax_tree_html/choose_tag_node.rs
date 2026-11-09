@@ -45,14 +45,21 @@ impl HtmlAstNode for ChooseTagNode {
                     let otherwise_tokens = otherwise_node.generate_tokens(context, ignore);
                     inner_body = quote! { #inner_body #otherwise_tokens };
                 }
-                _ => panic!("[rbatis-codegen] <choose> node's children must be <when> or <otherwise> nodes! Found: {}", child_element.tag),
+                _ => panic!(
+                    "[rbatis-codegen] <choose> node's children must be <when> or <otherwise> nodes! Found: {}",
+                    child_element.tag
+                ),
             }
         }
 
-        // TODO: Replace with a proper capacity estimation.
-        // The original code used element.child_string_cup(), which needs to be available
-        // or re-implemented here or in a shared utility.
-        let capacity = 1024usize; // Placeholder capacity
+        // the sql of this branch is built in its own scope, so the text of the
+        // children is a good estimate for it
+        let capacity = self
+            .childs
+            .iter()
+            .map(|c| c.child_string_cup())
+            .sum::<usize>()
+            + 100;
 
         quote! {
             sql.push_str(&|| -> String {

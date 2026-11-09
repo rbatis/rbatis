@@ -73,8 +73,15 @@ use rbs::Value;
 use serde::de::DeserializeOwned;
 use std::any::Any;
 use std::fmt::{Debug, Formatter};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
+
+/// An interceptor that answers a statement with `Action::Return` must write its own
+/// result into the result slot it received. This is what the caller gets when it
+/// returns `Action::Return` and leaves the slot untouched.
+fn interceptor_return_error() -> Error {
+    Error::from("[rb] an interceptor returned Action::Return but wrote no result")
+}
 
 /// Anything that can execute SQL: [`crate::RBatis`], [`RBatisConnExecutor`],
 /// [`RBatisTxExecutor`] and [`RBatisTxExecutorGuard`] all implement it.
@@ -144,7 +151,7 @@ impl RBatisConnExecutor {
             id,
             conn: Arc::new(Mutex::new(conn)),
             intercepts: rb.intercepts.clone(),
-            rb: rb,
+            rb,
         }
     }
 
@@ -190,7 +197,7 @@ impl RBatisConnExecutor {
         }
         let mut sql = sql.to_string();
         let id = self.id;
-        let mut before_result = Err(Error::from(""));
+        let mut before_result = Err(interceptor_return_error());
         if intercept::apply_before(
             &self.intercepts,
             id,
@@ -217,7 +224,8 @@ impl RBatisConnExecutor {
         )
         .await?
         {
-            return before_result.and_then(|v| decode(v));
+            // an after-interceptor wrote its answer into `result`
+            return result.and_then(|v| decode(v));
         }
         result.and_then(|v| decode(v))
     }
@@ -233,7 +241,7 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let id = self.id;
-            let mut before_result = Err(Error::from(""));
+            let mut before_result = Err(interceptor_return_error());
             if intercept::apply_before(
                 &self.intercepts,
                 id,
@@ -258,7 +266,8 @@ impl Executor for RBatisConnExecutor {
             )
             .await?
             {
-                return before_result;
+                // an after-interceptor wrote its answer into `result`
+                return result;
             }
             result
         })
@@ -268,7 +277,7 @@ impl Executor for RBatisConnExecutor {
         let mut sql = sql.to_string();
         Box::pin(async move {
             let id = self.id;
-            let mut before_result = Err(Error::from(""));
+            let mut before_result = Err(interceptor_return_error());
             if intercept::apply_before(
                 &self.intercepts,
                 id,
@@ -294,7 +303,8 @@ impl Executor for RBatisConnExecutor {
             )
             .await?
             {
-                return before_result;
+                // an after-interceptor wrote its answer into `result`
+                return result;
             }
             result
         })
@@ -340,16 +350,24 @@ impl RBatisConnExecutor {
 /// The `RBatisTxExecutor` is responsible for executing SQL statements within the context of a transaction.
 /// It provides methods to execute queries, updates, and other SQL operations, ensuring that all operations
 /// are part of the same transactional context.
+/// transaction state of [`RBatisTxExecutor`]: the transaction is still open
+const TX_OPEN: u8 = 0;
+/// [`RBatisTxExecutor::set_done`] asked for a commit when the guard drops
+const TX_COMMIT_ON_DROP: u8 = 1;
+/// a COMMIT was already sent
+const TX_COMMITTED: u8 = 2;
+/// a ROLLBACK was already sent
+const TX_ROLLED_BACK: u8 = 3;
+
 #[derive(Clone, Debug)]
 pub struct RBatisTxExecutor {
     /// transaction id, also used as the `task_id` of interceptors
     pub tx_id: i64,
     /// the connection this transaction runs on
     pub conn_executor: RBatisConnExecutor,
-    /// please use tx.done()
-    /// if tx call .commit() or .rollback() done = true.
-    /// if tx not call .commit() or .rollback() done = false
-    done: Arc<AtomicBool>,
+    /// shared by every clone of this transaction. See [`RBatisTxExecutor::done`]
+    /// and the `TX_*` constants of this module
+    done: Arc<AtomicU8>,
 }
 
 impl RBatisTxExecutor {
@@ -358,7 +376,7 @@ impl RBatisTxExecutor {
         RBatisTxExecutor {
             tx_id,
             conn_executor,
-            done: Arc::new(AtomicBool::new(false)),
+            done: Arc::new(AtomicU8::new(TX_OPEN)),
         }
     }
 
@@ -389,34 +407,42 @@ impl RBatisTxExecutor {
         })
     }
 
-    /// send `ROLLBACK` and mark this transaction as done
+    /// send `ROLLBACK` and remember it, so that [`RBatisTxExecutor::auto_commit`] does
+    /// not send a `COMMIT` after this rollback
     pub fn rollback(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
             self.conn_executor.conn.lock().await.rollback().await?;
-            self.done.store(true, Ordering::Relaxed);
+            self.done.store(TX_ROLLED_BACK, Ordering::Relaxed);
             Ok(())
         })
     }
 
-    /// send `COMMIT` and mark this transaction as done
+    /// send `COMMIT` and remember it, so that [`RBatisTxExecutor::auto_commit`] does
+    /// not send a second `COMMIT`
     pub fn commit(&self) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async {
             self.conn_executor.conn.lock().await.commit().await?;
-            self.done.store(true, Ordering::Relaxed);
+            self.done.store(TX_COMMITTED, Ordering::Relaxed);
             Ok(())
         })
     }
 
     /// tx is done?
-    /// whether this transaction was committed or rolled back
+    ///
+    /// `true` when this transaction committed, rolled back, or was asked to commit
+    /// with [`RBatisTxExecutor::set_done(true)`]. `false` while it is still open, in
+    /// which case [`RBatisTxExecutor::auto_commit`] rolls it back.
     pub fn done(&self) -> bool {
-        self.done.load(Ordering::Relaxed)
+        self.done.load(Ordering::Relaxed) != TX_OPEN
     }
 
-    ///change is done
-    /// change is done
+    /// `true` asks [`RBatisTxExecutor::auto_commit`] to commit when its guard drops,
+    /// `false` marks the transaction as still open (so the guard rolls it back)
     pub fn set_done(&self, done: bool) {
-        self.done.store(done, Ordering::Relaxed)
+        self.done.store(
+            if done { TX_COMMIT_ON_DROP } else { TX_OPEN },
+            Ordering::Relaxed,
+        )
     }
 
     /// defer and use future method
@@ -450,22 +476,33 @@ impl RBatisTxExecutor {
 
     /// auto commit or rollback when transaction is done
     ///
-    /// If [`RBatisTxExecutor::done`] is `true` the transaction is committed when the
-    /// guard is dropped, otherwise it is rolled back.
+    /// When the returned guard drops:
+    ///
+    /// * already committed or rolled back by the caller: nothing is sent. A `COMMIT`
+    ///   after a `ROLLBACK` (or a second `COMMIT`) fails on most drivers
+    /// * [`RBatisTxExecutor::set_done(true)`]: send `COMMIT`
+    /// * still open: send `ROLLBACK`
+    ///
+    /// The `COMMIT`/`ROLLBACK` runs on the `rbdc` runtime, so keep the runtime (and the
+    /// log flush) alive until it finished, or call [`RBatisTxExecutor::commit`] yourself.
     pub fn auto_commit(&self) -> RBatisTxExecutorGuard {
         RBatisTxExecutorGuard {
             tx: self.clone(),
             callback: Arc::new(move |tx| {
                 let future = async move {
-                    if tx.done() {
-                        let r = tx.commit().await;
-                        if let Err(e) = r {
-                            log::error!("transaction [{}] commit fail={}", tx.tx_id, e);
+                    match tx.done.load(Ordering::Relaxed) {
+                        TX_COMMITTED | TX_ROLLED_BACK => {}
+                        TX_COMMIT_ON_DROP => {
+                            let r = tx.commit().await;
+                            if let Err(e) = r {
+                                log::error!("transaction [{}] commit fail={}", tx.tx_id, e);
+                            }
                         }
-                    } else {
-                        let r = tx.rollback().await;
-                        if let Err(e) = r {
-                            log::error!("transaction [{}] rollback fail={}", tx.tx_id, e);
+                        _ => {
+                            let r = tx.rollback().await;
+                            if let Err(e) = r {
+                                log::error!("transaction [{}] rollback fail={}", tx.tx_id, e);
+                            }
                         }
                     }
                 };
@@ -485,7 +522,7 @@ impl Executor for RBatisTxExecutor {
         Box::pin(async move {
             let id = self.tx_id;
             let intercepts = &self.conn_executor.intercepts;
-            let mut before_result = Err(Error::from(""));
+            let mut before_result = Err(interceptor_return_error());
             if intercept::apply_before(
                 intercepts,
                 id,
@@ -510,7 +547,8 @@ impl Executor for RBatisTxExecutor {
             )
             .await?
             {
-                return before_result;
+                // an after-interceptor wrote its answer into `result`
+                return result;
             }
             result
         })
@@ -521,7 +559,7 @@ impl Executor for RBatisTxExecutor {
         Box::pin(async move {
             let id = self.tx_id;
             let intercepts = &self.conn_executor.intercepts;
-            let mut before_result = Err(Error::from(""));
+            let mut before_result = Err(interceptor_return_error());
             if intercept::apply_before(
                 intercepts,
                 id,
@@ -547,7 +585,8 @@ impl Executor for RBatisTxExecutor {
             )
             .await?
             {
-                return before_result;
+                // an after-interceptor wrote its answer into `result`
+                return result;
             }
             result
         })
@@ -694,7 +733,7 @@ impl RBatis {
         }
 
         let mut sql = sql.to_string();
-        let mut before_result: Result<Value, Error> = Err(Error::from(""));
+        let mut before_result: Result<Value, Error> = Err(interceptor_return_error());
         if intercept::apply_before(
             &self.intercepts,
             0,
@@ -724,7 +763,8 @@ impl RBatis {
         )
         .await?
         {
-            return before_result.and_then(|v| decode(v));
+            // an after-interceptor wrote its answer into `result`
+            return result.and_then(|v| decode(v));
         }
         result.and_then(|v| decode(v))
     }

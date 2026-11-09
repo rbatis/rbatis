@@ -109,8 +109,24 @@ fn op_div_value(left: Value, rhs: Value) -> Value {
             }
             Value::U64((value as f64 / rhs) as u64)
         }
-        Value::F32(value) => Value::F32(value / rhs.f64() as f32),
-        Value::F64(value) => Value::F64(value / rhs.f64()),
+        // a 0 divisor is 0 here as well (as in op_div_f64 and in the integer arms
+        // above). Without this guard a `#{a} / #{b}` with b = 0.0 became inf, while the
+        // same template written with a 0.0 literal gave 0, and an inf then spreads into
+        // every value calculated from it
+        Value::F32(value) => {
+            let rhs = rhs.f64() as f32;
+            if rhs == 0.0 {
+                return Value::F32(0.0);
+            }
+            Value::F32(value / rhs)
+        }
+        Value::F64(value) => {
+            let rhs = rhs.f64();
+            if rhs == 0.0 {
+                return Value::F64(0.0);
+            }
+            Value::F64(value / rhs)
+        }
         Value::Ext(_, value) => op_div_value(*value, rhs),
         _ => Value::Null,
     }

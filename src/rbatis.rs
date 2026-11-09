@@ -313,10 +313,14 @@ impl RBatis {
     /// let name = std::any::type_name::<Intercept>();
     /// ```
     pub fn remove_intercept_dyn(&self, name: &str) -> Option<Arc<dyn Intercept>> {
-        // Find the index first and drop the read-locked iterator before
-        // removing, otherwise removing while iterating would deadlock on the
-        // container's read-write lock (and was a data race before that).
-        match self.intercepts.iter().position(|item| item.name() == name) {
+        // The index has to be a value of its own statement: the iterator of
+        // SyncVec keeps this thread registered as a reader until it is dropped,
+        // and `SyncVec::remove` waits until every reader left the container. A
+        // `match self.intercepts.iter()...` would keep the iterator alive over
+        // the whole match (a temporary of a match scrutinee lives until the end
+        // of the match) and the remove would spin forever on its own reader.
+        let index = self.intercepts.iter().position(|item| item.name() == name);
+        match index {
             Some(index) => self.intercepts.remove(index),
             None => None,
         }

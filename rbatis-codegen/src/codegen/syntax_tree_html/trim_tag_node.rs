@@ -119,13 +119,9 @@ impl HtmlAstNode for TrimTagNode {
                 sql.push_str(&{#trims.to_string(); sql});
             });
         } else {
-            final_tokens.extend(quote! {
-                {
-                    let mut inner_sql = String::with_capacity(#capacity);
-                    #trim_body
-                    sql.push_str(&inner_sql);
-                }
-            });
+            // nothing to trim: the children append to the `sql` of the enclosing tag
+            // by themselves, the prefix and the suffix are added around them
+            final_tokens.extend(quote! { #trim_body });
         }
 
         // 添加后缀（如果有）

@@ -244,9 +244,11 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                 .map_err(Error::from);
             }
             if b.op.to_token_stream().to_string().trim() == "!" {
+                // the same conversion `and`/`or` use, so `!x`, `x && y` and `x || y`
+                // agree on what a `rbs::Value` means as a bool
                 b.expr = Box::new(
                     syn::parse_str::<Expr>(&format!(
-                        "bool::from({})",
+                        "bool::op_from({})",
                         b.expr.to_token_stream().to_string().trim()
                     ))
                     .map_err(Error::from)?,

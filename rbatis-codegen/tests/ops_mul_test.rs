@@ -68,3 +68,26 @@ fn test_mul_ref_variants() {
     assert_eq!(result3, 15i64);
     assert_eq!(result4, 15i64);
 }
+
+#[test]
+fn test_mul_overflow_neither_panics_nor_wraps() {
+    // 同 add/sub：两个 i32（两个 u32）的积一定放得进 i64（u64），所以先放宽；
+    // i64/u64 没有更宽的 Value 整数，饱和
+    assert_eq!(
+        Value::I32(i32::MAX).op_mul(&Value::I32(2)),
+        Value::I64(i32::MAX as i64 * 2)
+    );
+    assert_eq!(
+        Value::U32(u32::MAX).op_mul(&Value::U32(2)),
+        Value::U64(u32::MAX as u64 * 2)
+    );
+    assert_eq!(
+        Value::I64(i64::MAX).op_mul(&Value::I64(2)),
+        Value::I64(i64::MAX)
+    );
+    assert_eq!(
+        Value::U64(u64::MAX).op_mul(&Value::U64(2)),
+        Value::U64(u64::MAX)
+    );
+    assert_eq!(Value::U64(u64::MAX).op_mul(2u64), u64::MAX);
+}

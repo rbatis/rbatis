@@ -77,3 +77,27 @@ fn test_sub_ref_variants() {
     assert_eq!(result3, 7i64);
     assert_eq!(result4, 7i64);
 }
+
+#[test]
+fn test_sub_underflow_neither_panics_nor_wraps() {
+    // `#{count} - 1`（count 是 0 的 U64/U32 列）以前在 debug 编译里 panic、
+    // 在 release 编译里绕回成最大整数。现在是饱和或者换到能精确表示它的 Value 整数
+    assert_eq!(Value::U64(0).op_sub(&Value::U64(1)), Value::U64(0));
+    // u32 减成负数：结果换成有符号的 I64（换成 I32 的话 u32 会先绕回）
+    assert_eq!(Value::U32(0).op_sub(&Value::U32(1)), Value::I64(-1));
+    assert_eq!(
+        Value::U32(0).op_sub(&Value::U32(u32::MAX)),
+        Value::I64(-(u32::MAX as i64))
+    );
+    assert_eq!(
+        Value::I32(i32::MIN).op_sub(&Value::I32(1)),
+        Value::I64(i32::MIN as i64 - 1)
+    );
+    assert_eq!(
+        Value::I64(i64::MIN).op_sub(&Value::I64(1)),
+        Value::I64(i64::MIN)
+    );
+    // 固定返回类型的两条辅助路径
+    assert_eq!(Value::U64(0).op_sub(1u64), 0u64);
+    assert_eq!(1u64.op_sub(&Value::U64(2)), 0u64);
+}

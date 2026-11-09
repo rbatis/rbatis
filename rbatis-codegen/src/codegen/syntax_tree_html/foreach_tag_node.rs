@@ -124,7 +124,14 @@ impl HtmlAstNode for ForeachTagNode {
         let (split_code, split_code_trim) = if !separator_str.is_empty() {
             (
                 quote! { sql.push_str(#separator_str); },
-                quote! { sql = sql.trim_end_matches(#separator_str).to_string(); },
+                // drop the separator of the last item. Only the text this loop added
+                // is looked at: trimming the whole `sql` would also remove a separator
+                // that was part of the SQL written before the <foreach>.
+                quote! {
+                    if sql.len() > __foreach_sql_start && sql.ends_with(#separator_str) {
+                        sql.truncate(sql.len() - #separator_str.len());
+                    }
+                },
             )
         } else {
             (quote! {}, quote! {})
@@ -132,6 +139,8 @@ impl HtmlAstNode for ForeachTagNode {
 
         let loop_tokens = if !self.separator.is_empty() {
             quote! {
+                // where the text of this loop starts, used by #split_code_trim
+                let __foreach_sql_start = sql.len();
                 for (ref #index_ident, #item_ident) in #collection_method_impl {
                     #foreach_body
                     #split_code

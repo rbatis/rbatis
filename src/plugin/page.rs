@@ -2,9 +2,12 @@
 //!
 //! # Automatic pagination (recommended)
 //!
-//! Declare a `py_sql` / `html_sql` function whose return type is [`Page<T>`](Page):
+//! Declare a `html_sql` function whose return type is [`Page<T>`](Page):
 //! rbatis then runs the page query, adds the `limit`/`offset` for the current
 //! database and (when the request asks for it) runs the matching `count(1)` query.
+//!
+//! A `py_sql` function is not rewritten that way, use
+//! [`pysql_select_page!`](crate::pysql_select_page) for the same result.
 //!
 //! ```rust,ignore
 //! use rbatis::{impled, Page, PageRequest};
@@ -158,17 +161,16 @@ pub struct PageRequest {
 }
 
 impl PageRequest {
-    /// create a request for `page_no` with `page_size` rows, see also [`PageRequest::new_total`]
+    /// create a request for `page_no` with `page_size` rows. `total` starts at `0`
+    /// (it is the row count of the database, so it is unknown until the `count(1)`
+    /// query ran), see also [`PageRequest::new_total`]
     pub fn new(page_no: u64, page_size: u64) -> Self {
-        PageRequest::new_total(page_no, page_size, DEFAULT_PAGE_SIZE)
+        PageRequest::new_total(page_no, page_size, 0)
     }
 
     /// create a request and set the total number of rows at the same time
     pub fn new_total(page_no: u64, page_size: u64, total: u64) -> Self {
-        let mut page_no = page_no;
-        if page_no < 1 {
-            page_no = 1;
-        }
+        let page_no = page_no.max(1);
         Self {
             total,
             page_size,
@@ -275,15 +277,7 @@ impl<T: Send + Sync> Page<T> {
         if page_size == 0 {
             page_size = DEFAULT_PAGE_SIZE;
         }
-        if page_no < 1 {
-            return Self {
-                total,
-                page_size,
-                page_no: 1u64,
-                records,
-                do_count: true,
-            };
-        }
+        let page_no = page_no.max(1);
         Self {
             total,
             page_size,
@@ -334,20 +328,24 @@ impl<T: Send + Sync> Page<T> {
 
     /// split an in-memory `data` vector into pages of `page_size` records
     pub fn make_pages(mut data: Vec<T>, page_size: u64) -> Vec<Page<T>> {
+        // `Page::new` reads a page size of 0 as 'use the default'. Do the same here:
+        // pages() of a 0 sized page is 0 pages, and the whole data would be dropped
+        let page_size = if page_size == 0 {
+            DEFAULT_PAGE_SIZE
+        } else {
+            page_size
+        };
         let total = data.len() as u64;
         let mut result = vec![];
-        let pages = PageRequest::new(1, page_size).set_total(total).pages();
-        for idx in 0..pages {
-            let mut current_page = Page::<T>::new(
-                idx + 1,
-                page_size,
-                total,
-                Vec::with_capacity(page_size as usize),
-            );
-            for _ in current_page.offset()..current_page.offset_limit() {
-                current_page.records.push(data.remove(0));
-            }
-            result.push(current_page);
+        for page in Self::make_page_requests(total, page_size) {
+            // drain() cuts from the front of what is left, so the range is the *length*
+            // of this page (offset_limit() - offset(), the last page is capped at total
+            // and just takes what is left). The absolute range offset()..offset_limit()
+            // counts against the whole `data` and would run past the end of the
+            // shrinking vector (and panic) from the second page on.
+            let page_len = (page.offset_limit() - page.offset()) as usize;
+            let records = data.drain(0..page_len).collect();
+            result.push(Page::<T>::new(page.page_no(), page_size, total, records));
         }
         result
     }
@@ -464,6 +462,7 @@ impl<V: Send + Sync> Page<V> {
     where
         V: From<T>,
     {
+        // Page::new() clamps page_no/page_size, so keep the metadata of `arg` as it is
         let mut page = Page::<V>::new(
             arg.page_no,
             arg.page_size,
@@ -472,7 +471,6 @@ impl<V: Send + Sync> Page<V> {
         );
         page.page_no = arg.page_no;
         page.page_size = arg.page_size;
-        page.total = arg.total;
         page.do_count = arg.do_count;
         for x in arg.records {
             page.records.push(V::from(x));

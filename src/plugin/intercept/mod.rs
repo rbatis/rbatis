@@ -110,7 +110,8 @@ pub trait Intercept: Any + Send + Sync + Debug {
 
     /// task_id maybe is conn_id or tx_id,
     /// is_prepared_sql = !args.is_empty(),
-    /// if return Ok(false) will be return data. return Ok(true) will run next
+    /// return `Action::Next` to let the next interceptor run, return `Action::Return`
+    /// to stop and use the result this interceptor wrote into `_result`
     async fn after(
         &self,
         _task_id: i64,
@@ -133,7 +134,13 @@ pub async fn apply_before(
     args: &mut Vec<Value>,
     mut result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
 ) -> Result<bool, Error> {
-    for item in intercepts.iter() {
+    // copy the interceptors out of the container. SyncVec::iter() keeps this thread
+    // registered as a reader until the iterator is dropped and a writer waits for every
+    // reader, so iterating over the whole loop would keep a thread that adds or removes
+    // an interceptor waiting for as long as this query runs - and would deadlock if an
+    // interceptor added or removed one itself
+    let interceptors: Vec<Arc<dyn Intercept>> = intercepts.iter().cloned().collect();
+    for item in interceptors.iter() {
         let next = match &mut result {
             ResultType::Exec(r) => {
                 item.before(id, executor, sql, args, ResultType::Exec(*r))
@@ -161,7 +168,9 @@ pub async fn apply_after(
     args: &mut Vec<Value>,
     mut result: ResultType<&mut Result<ExecResult, Error>, &mut Result<Value, Error>>,
 ) -> Result<bool, Error> {
-    for item in intercepts.iter() {
+    // the same reason as in apply_before
+    let interceptors: Vec<Arc<dyn Intercept>> = intercepts.iter().cloned().collect();
+    for item in interceptors.iter() {
         let next = match &mut result {
             ResultType::Exec(r) => {
                 item.after(id, executor, sql, args, ResultType::Exec(*r))

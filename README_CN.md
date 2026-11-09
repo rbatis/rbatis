@@ -42,7 +42,7 @@ Rbatis 是一个基于编译时代码生成的高性能 Rust ORM 框架。它在
 ### 3. 开发效率
 - **强大的 ORM 能力**：数据库表与 Rust 结构体自动映射
 - **多种 SQL 构建方式**：
-  - **py_sql**：Python 风格的动态 SQL，支持 `if`、`for`、`choose/when/otherwise`、`bind`、`trim` 结构和集合操作（`.sql()`、`.csv()`）
+  - **py_sql**：Python 风格的动态 SQL，支持 `if`、`for`、`choose/when/otherwise`、`bind`、`trim` 结构、集合迭代（`for index,item in list:`），以及用 `${x.sql()}` 把值渲染成 SQL
   - **html_sql**：类似 MyBatis 的 XML 模板，具有熟悉的标签结构（`<if>`、`<where>`、`<set>`、`<foreach>`），声明式 SQL 构建，自动处理 SQL 片段而无需 CDATA
   - **原始 SQL**：直接的 SQL 语句
 - **CRUD 宏**：一行代码生成通用 CRUD 操作

@@ -81,23 +81,28 @@ impl Intercept for PageIntercept {
         if self.count_ids.contains_key(&executor.id()) {
             self.count_ids.remove(&executor.id());
             if sql.trim_start().starts_with("select ") && sql.contains(" from ") {
+                // replace just the column list of the first 'select ... from' with
+                // 'count(1) as count'. sql.replace() would also rewrite the same text
+                // when it appears again inside a string literal or a sub query
                 let start = sql.find("select ").unwrap_or(0) + "select ".len();
                 let end = sql.find(" from ").unwrap_or(0);
-                let v = &sql[start..end];
-                *sql = sql.replace(v, "count(1) as count").to_string();
-                if let Some(idx) = sql.rfind(" limit ") {
-                    *sql = sql[..idx].to_string();
+                if end > start {
+                    *sql = format!("{}count(1) as count{}", &sql[..start], &sql[end..]);
                 }
-                if let Some(idx) = sql.rfind(" order by ") {
-                    //remove args(args.pop())
-                    let order_by_clause = &sql[idx..];
-                    let driver_type = executor.driver_type().unwrap_or_default();
-                    let param_count = self.count_param_count(driver_type, order_by_clause);
-                    // 移除对应的参数
-                    for _ in 0..param_count {
-                        args.pop();
+                // a count(1) query needs no limit and no order by. The arguments that
+                // belonged to the removed tail are dropped as well, otherwise their
+                // '?' placeholders are gone but the values stay in args
+                let driver_type = executor.driver_type().unwrap_or_default();
+                for tail_key in [" limit ", " order by "] {
+                    if let Some(idx) = sql.rfind(tail_key) {
+                        let removed = &sql[idx..];
+                        let param_count = self.count_param_count(driver_type, removed);
+                        // remove the bound arguments of the removed sql (args.pop())
+                        for _ in 0..param_count {
+                            args.pop();
+                        }
+                        *sql = sql[..idx].to_string();
                     }
-                    *sql = sql[..idx].to_string();
                 }
             }
         }

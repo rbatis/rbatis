@@ -18,7 +18,9 @@ mod test {
         let req = PageRequest::new(1, 10);
         assert_eq!(req.page_no, 1);
         assert_eq!(req.page_size, 10);
-        assert_eq!(req.total, DEFAULT_PAGE_SIZE); // default total from new()
+        // total is the row count of the database. It is unknown until the count(1)
+        // query ran, so a fresh request starts at 0 (same as PageRequest::default())
+        assert_eq!(req.total, 0);
         assert!(req.do_count);
     }
 
@@ -378,5 +380,85 @@ mod test {
 
         let req2 = PageRequest::new_total(3, 10, 100);
         assert_eq!(req2.offset(), 20); // (3-1)*10 = 20
+    }
+
+    // ==================== Page::make_ranges Tests ====================
+
+    #[test]
+    fn test_make_ranges_splits_total() {
+        // (offset, offset_limit) of every batch of 2 over 5 rows. The last range is
+        // capped at the total, it is not a full batch
+        assert_eq!(Page::<()>::make_ranges(5, 2), vec![(0, 2), (2, 4), (4, 5)]);
+        assert_eq!(Page::<()>::make_ranges(4, 2), vec![(0, 2), (2, 4)]);
+        assert_eq!(Page::<()>::make_ranges(0, 2), vec![]);
+    }
+
+    #[test]
+    fn test_make_ranges_page_size_zero_has_no_ranges() {
+        // 0 rows per page means no pages at all. A caller that splits its work into
+        // ranges of `batch_size` would send nothing for a `batch_size` of 0, which is
+        // why `crud::insert_batch` turns a 0 into 'one single batch'
+        assert_eq!(Page::<()>::make_ranges(5, 0), vec![]);
+    }
+
+    // ==================== Page::make_pages Tests ====================
+
+    #[test]
+    fn test_make_pages_last_page_takes_the_rest() {
+        let data: Vec<i32> = (1..=5).collect();
+        let pages = Page::make_pages(data.clone(), 2);
+        assert_eq!(pages.len(), 3);
+        assert_eq!(pages[0].records, vec![1, 2]);
+        assert_eq!(pages[1].records, vec![3, 4]);
+        // the last page takes what is left instead of staying empty
+        assert_eq!(pages[2].records, vec![5]);
+        // every row ended up in exactly one page
+        assert_eq!(
+            pages.iter().map(|p| p.records.len()).sum::<usize>(),
+            data.len()
+        );
+    }
+
+    #[test]
+    fn test_make_pages_page_size_bigger_than_data() {
+        let data: Vec<i32> = (1..=3).collect();
+        let pages = Page::make_pages(data.clone(), 10);
+        assert_eq!(pages.len(), 1);
+        assert_eq!(pages[0].records, data);
+    }
+
+    #[test]
+    fn test_make_pages_every_page_carries_the_metadata() {
+        // 7 rows over pages of 3. page_no counts from 1, total and page_size are the
+        // same on every page
+        let data: Vec<i32> = (1..=7).collect();
+        let pages = Page::make_pages(data.clone(), 3);
+        assert_eq!(pages.len(), 3);
+        assert_eq!(pages[0].records, vec![1, 2, 3]);
+        assert_eq!(pages[1].records, vec![4, 5, 6]);
+        assert_eq!(pages[2].records, vec![7]);
+        for (idx, page) in pages.iter().enumerate() {
+            assert_eq!(page.page_no, idx as u64 + 1);
+            assert_eq!(page.page_size, 3);
+            assert_eq!(page.total, 7);
+        }
+    }
+
+    #[test]
+    fn test_make_pages_page_size_zero_keeps_the_data() {
+        // Page::new reads a page size of 0 as 'use the default page size'. pages() of a
+        // 0 sized page is 0 pages, so without that clamp every row would be dropped
+        let data: Vec<i32> = (1..=5).collect();
+        let pages = Page::make_pages(data.clone(), 0);
+        assert!(!pages.is_empty());
+        assert_eq!(
+            pages.iter().map(|p| p.records.len()).sum::<usize>(),
+            data.len()
+        );
+    }
+
+    #[test]
+    fn test_make_pages_empty_data() {
+        assert!(Page::<i32>::make_pages(vec![], 3).is_empty());
     }
 }

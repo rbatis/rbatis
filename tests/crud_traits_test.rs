@@ -144,8 +144,8 @@ mod test {
 
     #[test]
     fn test_column_set_two_rows_second_row_has_extra_non_null() {
-        // If second row has a non-null column that first row doesn't have,
-        // it should NOT appear (only columns from first row are considered)
+        // every row of one insert must write the same columns, so a column that is
+        // non-null in the second row belongs to the column list as well
         let mut map1 = ValueMap::new();
         map1.insert(Value::String("id".to_string()), Value::I32(1));
         // name is null in first row
@@ -166,8 +166,28 @@ mod test {
         let names: Vec<&str> = arr.iter().map(|v| v.as_str().unwrap()).collect();
         // name appears because it's non-null in at least one row (HashSet collects it)
         // but order comes from first row
-        assert!(names.contains(&"id"));
-        assert!(names.contains(&"name"));
+        assert_eq!(names, vec!["id", "name"]);
+    }
+
+    #[test]
+    fn test_column_set_column_only_in_second_row_map() {
+        // #[serde(skip_serializing_if = "Option::is_none")] can drop the key of a null
+        // field from a row. The column still has to be part of the column list,
+        // otherwise the value the second row has for it would never be inserted.
+        let mut map1 = ValueMap::new();
+        map1.insert(Value::String("id".to_string()), Value::I32(1));
+        // the key 'extra' is not in the first row at all
+
+        let mut map2 = ValueMap::new();
+        map2.insert(Value::String("id".to_string()), Value::I32(2));
+        map2.insert(Value::String("extra".to_string()), Value::I32(3));
+
+        let v = Value::Array(vec![Value::Map(map1), Value::Map(map2)]);
+        let result = v.column_sets();
+
+        let arr = result.as_array().unwrap();
+        let names: Vec<&str> = arr.iter().map(|v| v.as_str().unwrap()).collect();
+        assert_eq!(names, vec!["id", "extra"]);
     }
 
     // ==================== ValueOperatorSql Tests ====================

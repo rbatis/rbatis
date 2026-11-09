@@ -123,7 +123,14 @@ pub fn sync<'a>(
                     sql_column.push_str(k);
                     sql_column.push(' ');
                     sql_column.push_str(column_type_value.as_str());
-                    if column_type_value.is_empty() && k.eq("id")
+                    // `&&` binds tighter than `||`, so this reads
+                    // `(no column type and the column is named id) or (the map value
+                    // is the literal "id")`. Every ColumnMapper returns a type for a
+                    // value, so `column_type_value.is_empty()` is normally false and
+                    // only the second test can add PRIMARY KEY here. The
+                    // `alter table` branch below uses the looser test
+                    // `k == "id" or value == "id"`.
+                    if (column_type_value.is_empty() && k.eq("id"))
                         || v.as_str().unwrap_or_default() == "id"
                     {
                         sql_column.push_str(PRIMARY_KEY);

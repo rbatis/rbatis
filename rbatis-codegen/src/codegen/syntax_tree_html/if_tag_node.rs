@@ -50,17 +50,11 @@ impl HtmlAstNode for IfTagNode {
             quote! {}
         };
 
-        // Replicates the logic from `impl_condition` and `handle_if_element`
-        let method_impl = crate::codegen::func::impl_fn(
-            "", // Placeholder for body_to_string, review if context is needed
-            "", // Placeholder for fn_name, review if context is needed
-            &format!("\"{}\"", self.test),
-            false,
-            ignore, // Pass the ignore vector here
-        );
+        // an empty func_name means "generate an expression body" instead of a function,
+        // `context` is not used by func::impl_fn
+        let method_impl =
+            crate::codegen::func::impl_fn("", "", &format!("\"{}\"", self.test), false, ignore);
 
-        // The original `impl_condition` had `appends` which was empty for `if` but `return sql;` for `when`.
-        // For a direct `if` node, appends is empty.
         quote! {
             if #method_impl.to_owned().into() {
                 #if_tag_body

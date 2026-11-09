@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `for` loop node in py_sql.
@@ -41,7 +42,10 @@ impl ToHtml for ForEachNode {
         }
         format!(
             "<foreach collection=\"{}\" index=\"{}\" item=\"{}\" >{}</foreach>",
-            self.collection, self.index, self.item, childs
+            escape_attr_value(&self.collection),
+            escape_attr_value(&self.index),
+            escape_attr_value(&self.item),
+            childs
         )
     }
 }

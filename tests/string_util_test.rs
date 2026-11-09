@@ -47,4 +47,22 @@ mod test {
         println!("{:?}", finds);
         assert_eq!("data.user_id", finds.iter().next().unwrap().0);
     }
+
+    #[test]
+    fn test_escape_attr_value() {
+        use rbatis_codegen::codegen::string_util::escape_attr_value;
+
+        // values that are safe in a double-quoted attribute stay readable
+        assert_eq!(escape_attr_value("a"), "a");
+        assert_eq!(escape_attr_value("name == 'a'"), "name == 'a'");
+        // HTML entities keep the expression lossless: the parser decodes them back
+        // before the expression is translated
+        assert_eq!(
+            escape_attr_value("name == \"a\" & b"),
+            "name == &quot;a&quot; &amp; b"
+        );
+        assert_eq!(escape_attr_value("\""), "&quot;");
+        assert_eq!(escape_attr_value("< >"), "&lt; &gt;");
+        assert_eq!(escape_attr_value(""), "");
+    }
 }

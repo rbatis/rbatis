@@ -15,6 +15,8 @@ mod test {
     use rbdc::rt::block_on;
     use rbs::Value;
     use std::pin::Pin;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
 
     // ==================== Mock Infrastructure ====================
 
@@ -515,5 +517,171 @@ mod test {
         let rb = RBatis::default();
         let result = rb.try_acquire_begin().await;
         assert!(result.is_err());
+    }
+
+    // ==================== auto_commit() guard Tests ====================
+    //
+    // A guard that commits would send a `COMMIT` after a `ROLLBACK` of the caller (and a
+    // second `COMMIT` after a `COMMIT`), which fails on most drivers. The guard looks at
+    // the state the transaction is in and sends nothing in that case.
+
+    #[derive(Debug, Clone)]
+    struct CountDriver {
+        commits: Arc<AtomicUsize>,
+        rollbacks: Arc<AtomicUsize>,
+    }
+
+    impl Driver for CountDriver {
+        fn name(&self) -> &str {
+            "test"
+        }
+        fn connect(&self, _url: &str) -> BoxFuture<'_, Result<Box<dyn Connection>, Error>> {
+            Box::pin(async {
+                Ok(Box::new(CountConnection {
+                    commits: self.commits.clone(),
+                    rollbacks: self.rollbacks.clone(),
+                }) as Box<dyn Connection>)
+            })
+        }
+        fn connect_opt<'a>(
+            &'a self,
+            _option: &'a dyn ConnectOptions,
+        ) -> BoxFuture<'a, Result<Box<dyn Connection>, Error>> {
+            self.connect("")
+        }
+        fn default_option(&self) -> Box<dyn ConnectOptions> {
+            Box::new(MockConnectOptions {})
+        }
+    }
+
+    #[derive(Debug)]
+    struct CountConnection {
+        commits: Arc<AtomicUsize>,
+        rollbacks: Arc<AtomicUsize>,
+    }
+
+    impl Connection for CountConnection {
+        fn exec_rows(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<
+            '_,
+            Result<Pin<Box<dyn Stream<Item = Result<Box<dyn Row>, Error>> + Send + '_>>, Error>,
+        > {
+            Box::pin(async { Err(Error::from("mock")) })
+        }
+        fn exec(
+            &mut self,
+            _sql: &str,
+            _params: Vec<Value>,
+        ) -> BoxFuture<'_, Result<ExecResult, Error>> {
+            Box::pin(async {
+                Ok(ExecResult {
+                    rows_affected: 0,
+                    last_insert_id: Value::Null,
+                })
+            })
+        }
+        fn close(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
+        fn ping(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
+        fn begin(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            Box::pin(async { Ok(()) })
+        }
+        fn commit(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            self.commits.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async { Ok(()) })
+        }
+        fn rollback(&mut self) -> BoxFuture<'_, Result<(), Error>> {
+            self.rollbacks.fetch_add(1, Ordering::SeqCst);
+            Box::pin(async { Ok(()) })
+        }
+    }
+
+    fn count_rb() -> (RBatis, Arc<AtomicUsize>, Arc<AtomicUsize>) {
+        let commits = Arc::new(AtomicUsize::new(0));
+        let rollbacks = Arc::new(AtomicUsize::new(0));
+        let rb = RBatis::new();
+        rb.init(
+            CountDriver {
+                commits: commits.clone(),
+                rollbacks: rollbacks.clone(),
+            },
+            "test",
+        )
+        .unwrap();
+        (rb, commits, rollbacks)
+    }
+
+    /// The `COMMIT`/`ROLLBACK` of a guard runs on the rbdc runtime, so give it the time
+    /// to run before reading the counters
+    async fn settled() {
+        rbdc::rt::sleep(std::time::Duration::from_millis(200)).await;
+    }
+
+    #[tokio::test]
+    async fn test_auto_commit_guard_after_commit_sends_nothing() {
+        let (rb, commits, rollbacks) = count_rb();
+        let tx = rb.acquire_begin().await.unwrap();
+        let guard = tx.auto_commit();
+
+        tx.commit().await.unwrap();
+        drop(guard);
+        settled().await;
+
+        // just the COMMIT of the caller, the guard added none
+        assert_eq!(commits.load(Ordering::SeqCst), 1);
+        assert_eq!(rollbacks.load(Ordering::SeqCst), 0);
+        assert!(tx.done());
+    }
+
+    #[tokio::test]
+    async fn test_auto_commit_guard_after_rollback_sends_no_commit() {
+        let (rb, commits, rollbacks) = count_rb();
+        let tx = rb.acquire_begin().await.unwrap();
+        let guard = tx.auto_commit();
+
+        tx.rollback().await.unwrap();
+        drop(guard);
+        settled().await;
+
+        // a COMMIT after the ROLLBACK of the caller would fail on most drivers
+        assert_eq!(rollbacks.load(Ordering::SeqCst), 1);
+        assert_eq!(commits.load(Ordering::SeqCst), 0);
+        assert!(tx.done());
+    }
+
+    #[tokio::test]
+    async fn test_auto_commit_guard_commits_when_set_done_true() {
+        let (rb, commits, rollbacks) = count_rb();
+        let tx = rb.acquire_begin().await.unwrap();
+        let guard = tx.auto_commit();
+
+        tx.set_done(true);
+        drop(guard);
+        settled().await;
+
+        assert_eq!(commits.load(Ordering::SeqCst), 1);
+        assert_eq!(rollbacks.load(Ordering::SeqCst), 0);
+        assert!(tx.done());
+    }
+
+    #[tokio::test]
+    async fn test_auto_commit_guard_rolls_back_when_still_open() {
+        let (rb, commits, rollbacks) = count_rb();
+        let tx = rb.acquire_begin().await.unwrap();
+        let guard = tx.auto_commit();
+
+        // neither commit() nor rollback() was called
+        assert!(!tx.done());
+        drop(guard);
+        settled().await;
+
+        assert_eq!(rollbacks.load(Ordering::SeqCst), 1);
+        assert_eq!(commits.load(Ordering::SeqCst), 0);
     }
 }

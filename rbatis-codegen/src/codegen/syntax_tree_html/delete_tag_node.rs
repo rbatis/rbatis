@@ -35,8 +35,15 @@ impl HtmlAstNode for DeleteTagNode {
         let method_name = Ident::new(context.fn_name, Span::call_site());
         let child_body = context.parse_children(&self.childs, ignore);
 
-        let capacity = 1024usize; // Placeholder
-        let push_count = 10usize; // Placeholder
+        // the estimates of the previous implementation: the text of the whole statement
+        // plus the `args.push(..)` calls the generated body contains
+        let capacity = self
+            .childs
+            .iter()
+            .map(|c| c.child_string_cup())
+            .sum::<usize>()
+            + 1000;
+        let push_count = child_body.to_string().matches("push").count();
 
         let function_token = quote! {
             pub fn #method_name(mut arg: rbs::Value, _tag: char) -> (String, Vec<rbs::Value>) {

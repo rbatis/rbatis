@@ -7,7 +7,6 @@ use crate::codegen::syntax_tree_pysql::{
     trim_node::TrimNode, when_node::WhenNode, where_node::WhereNode, DefaultName, Name, NodeType,
 };
 use crate::codegen::ParseArgs;
-use quote::ToTokens;
 use std::collections::HashMap;
 use syn::ItemFn;
 
@@ -19,21 +18,20 @@ pub trait ParsePySql {
 pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let fn_name = m.sig.ident.to_string();
 
-    let mut data = args
-        .sqls
-        .iter()
-        .map(|x| x.to_token_stream().to_string())
-        .collect::<String>();
-
-    if data.ne("\"\"") && data.starts_with('"') && data.ends_with('"') {
-        data = data[1..data.len() - 1].to_string();
-    }
-
-    data = data.replace("\\n", "\n");
+    // `LitStr::value()` is exactly the text written in the source: every argument is
+    // part of the template (rendering the tokens and joining them would keep the quote
+    // of each literal between them), and a newline stays a newline instead of the two
+    // characters `\n` a token stream would produce.
+    let data = args.sqls.iter().map(|sql| sql.value()).collect::<String>();
 
     let nodes = NodeType::parse_pysql(&data).expect("[rbatis-codegen] parse py_sql fail!");
 
-    let is_select = data.starts_with("select") || data.starts_with(" select");
+    // only decides whether the template is wrapped into <select> or <update>
+    let is_select = data
+        .trim_start()
+        .trim_start_matches('`')
+        .trim_start()
+        .starts_with("select");
     let htmls =
         crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
 
@@ -44,7 +42,6 @@ impl ParsePySql for NodeType {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error> {
         let line_space_map = Self::create_line_space_map(arg);
         let mut main_node = Vec::new();
-        let mut space = -1;
         let mut line = -1;
         let mut skip = -1;
 
@@ -59,10 +56,6 @@ impl ParsePySql for NodeType {
                 .get(&line)
                 .ok_or_else(|| Error::from(format!("line_space_map not have line:{}", line)))?;
 
-            if space == -1 {
-                space = count_index;
-            }
-
             let (child_str, do_skip) =
                 Self::find_child_str(line, count_index, arg, &line_space_map);
             if do_skip != -1 && do_skip >= skip {
@@ -75,11 +68,8 @@ impl ParsePySql for NodeType {
                 vec![]
             };
 
-            let current_space = *line_space_map
-                .get(&line)
-                .ok_or_else(|| Error::from(format!("line:{} not exist!", line)))?;
-
-            Self::parse(&mut main_node, x, current_space as usize, parsed)?;
+            // the same entry that was read as `count_index` a few lines above
+            Self::parse(&mut main_node, x, count_index as usize, parsed)?;
         }
 
         Ok(main_node)
@@ -258,7 +248,10 @@ impl NodeType {
         if item.contains(',') {
             let splits: Vec<&str> = item.split(',').collect();
             if splits.len() != 2 {
-                panic!("[rbatis-codegen_codegen] for node must be 'for key,item in col:'");
+                return Err(Error::from(format!(
+                    "[rbatis-codegen] for node must be 'for key,item in col:':{}",
+                    source_str
+                )));
             }
             index = splits[0].trim();
             item = splits[1].trim();
@@ -362,7 +355,9 @@ impl NodeType {
             express[BindNode::name().len()..].trim()
         };
 
-        let parts: Vec<&str> = expr.split('=').collect();
+        // splitn(2,..): the value may contain '=', for example
+        // `bind x = "a=b"` or `bind x = a == b`
+        let parts: Vec<&str> = expr.splitn(2, '=').collect();
         if parts.len() != 2 {
             return Err(Error::from(
                 "[rbatis-codegen] parser bind express fail:".to_string() + express,

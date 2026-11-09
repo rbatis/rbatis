@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents an `if` conditional node in py_sql.
@@ -32,6 +33,10 @@ impl ToHtml for IfNode {
         for x in &self.childs {
             childs.push_str(&x.as_html());
         }
-        format!("<if test=\"{}\">{}</if>", self.test, childs)
+        format!(
+            "<if test=\"{}\">{}</if>",
+            escape_attr_value(&self.test),
+            childs
+        )
     }
 }

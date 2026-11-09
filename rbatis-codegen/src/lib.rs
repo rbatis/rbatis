@@ -13,7 +13,7 @@
 //! * [`codegen::syntax_tree_pysql`] and [`codegen::syntax_tree_html`] are the
 //!   abstract syntax trees they produce
 //! * [`ops`] contains the operators that are available inside a template
-//!   (`+`, `==`, `.sql()`, `.csv()`, ...)
+//!   (`+`, `-`, `*`, `==`, `>=`, `.contains_str()`, `.starts_with()`, ...)
 //! * [`IntoSql`] renders a value as SQL, used by `${arg}` interpolation
 //!
 //! Most users never depend on this crate directly; it is documented because it is
@@ -57,7 +57,8 @@ pub mod ops_rem;
 pub mod ops_shl;
 /// `>>` operator
 pub mod ops_shr;
-/// string helpers (`.sql()`, `.csv()`, ...)
+/// string helpers of a template expression (`.contains_str()`, `.starts_with()`,
+/// `.ends_with()`)
 pub mod ops_string;
 /// `-` operator
 pub mod ops_sub;

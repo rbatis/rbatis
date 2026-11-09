@@ -119,9 +119,11 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 ///     WHERE id  = '2'")]
 ///   pub async fn py_select_rb(rb: &dyn Executor, name: &str) -> Option<MockTable> {}
 /// ```
-/// or read from file
+/// or read the template from a file. The argument is the text `include_str!("..")`, the
+/// file is read while compiling (relative to `CARGO_MANIFEST_DIR`, then to the current
+/// directory):
 /// ```text
-/// //#[rbatis::py_sql(r#"include!("C:/rs/rbatis/target/debug/xx.py_sql")"#)]
+/// //#[rbatis::py_sql(r#"include_str!("target/debug/xx.py_sql")"#)]
 /// //pub async fn test_same_id(rb: &dyn Executor, id: &u64) -> Result<Value, Error> { impled!() }
 /// ```
 #[proc_macro_attribute]

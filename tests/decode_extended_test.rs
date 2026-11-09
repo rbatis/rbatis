@@ -205,4 +205,33 @@ mod test {
         let result: String = rbatis::decode(value).unwrap();
         assert_eq!(result, "");
     }
+
+    // ==================== decode error path ====================
+
+    #[test]
+    fn test_decode_keeps_error_when_no_single_column_to_unwrap() {
+        // [1,2] holds values instead of the `[{"k": v}]` rows, so the single column
+        // fallback has nothing to unwrap. The error of the normal decode is what the
+        // caller sees (it is not replaced by a message about the fallback)
+        let value = Value::Array(vec![Value::I32(1), Value::I32(2)]);
+        let err = rbatis::decode::<i64>(value).err().unwrap();
+        let message = err.to_string();
+        println!("error={}", message);
+        assert!(message.contains("invalid type"), "{}", message);
+    }
+
+    #[test]
+    fn test_decode_error_of_rejected_row_is_kept() {
+        // the row is a single column, but its value does not fit the requested type.
+        // The error of that row explains why, and is kept over the general one
+        let value = Value::Array(vec![make_map(
+            "a",
+            Value::String("not a number".to_string()),
+        )]);
+        let err = rbatis::decode::<i64>(value).err().unwrap();
+        let message = err.to_string();
+        println!("error={}", message);
+        assert!(message.contains("invalid type: string"), "{}", message);
+        assert!(message.contains("expected i64"), "{}", message);
+    }
 }

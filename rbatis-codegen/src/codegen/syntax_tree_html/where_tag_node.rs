@@ -2,15 +2,15 @@ use super::{HtmlAstNode, NodeContext, TrimTagNode};
 use crate::codegen::loader_html::Element;
 use proc_macro2::TokenStream;
 use quote::quote;
-use std::collections::HashMap; // Import TrimTagNode for reuse
+use std::collections::HashMap;
 
 /// Represents a `<where>` tag node in the HTML AST.
-/// This is a specialized form of the `<trim>` tag.
+///
+/// `<where>` is a `<trim>` with fixed settings: it starts the fragment with `" where "`
+/// and drops a leading `and`/`or` (and the trailing ones) so that a condition list that
+/// begins with `and ...` becomes valid SQL.
 #[derive(Debug, Clone)]
 pub struct WhereTagNode {
-    // Where inherits behavior from trim but with specific prefixes/suffixes.
-    // We can either embed a TrimTagNode or replicate its fields if they are simple.
-    // For now, let's keep it simple, assuming its children are parsed and then specific where cleanup is applied.
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
 }

@@ -246,4 +246,131 @@ mod test {
         };
         block_on(f);
     }
+
+    /// drop every whitespace so that an assertion compares the SQL and not the layout
+    /// of the template
+    fn squeeze(sql: &str) -> String {
+        sql.chars().filter(|c| !c.is_whitespace()).collect()
+    }
+
+    #[test]
+    fn test_py_sql_double_quoted_condition() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            // a `"` of the template must survive the py_sql -> html bridge: py_sql is
+            // turned into the html the code generators use for each other, and there a
+            // `"` would end the `test="..."` attribute of the generated <if>
+            #[py_sql(
+                r#"select 1
+if name == "x":
+    `and name_is_x`
+"#
+            )]
+            pub async fn test_py_sql_double_quoted_condition(
+                rb: &RBatis,
+                name: &str,
+            ) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_py_sql_double_quoted_condition(&rb, "x").await.unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            println!("sql={}", sql);
+            assert_eq!(squeeze(&sql), "select1andname_is_x");
+
+            let _ = test_py_sql_double_quoted_condition(&rb, "other")
+                .await
+                .unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            println!("sql={}", sql);
+            assert_eq!(squeeze(&sql), "select1");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_py_sql_bind_with_eq_in_value() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            // the value of a bind carries a `=` itself (a comparison). Splitting the
+            // expression at the first `=` keeps name='flag' and value='id == 1'.
+            // A control line of py_sql ends with `:`, the SQL that follows it is a line
+            // of its own (a bind has no SQL children) and reads the name the bind wrote
+            #[py_sql(
+                r#"select 1
+bind flag = id == 1:
+`${flag}`
+"#
+            )]
+            pub async fn test_py_sql_bind_with_eq_in_value(
+                rb: &RBatis,
+                id: i32,
+            ) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_py_sql_bind_with_eq_in_value(&rb, 1).await.unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            println!("sql={}", sql);
+            assert_eq!(squeeze(&sql), "select1true");
+
+            let _ = test_py_sql_bind_with_eq_in_value(&rb, 2).await.unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            assert_eq!(squeeze(&sql), "select1false");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_py_sql_le_ge() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[py_sql("select ${2 <= 1},${1 <= 2},${2 >= 1},${1 >= 2}")]
+            pub async fn test_py_sql_le_ge(rb: &RBatis) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_py_sql_le_ge(&rb).await.unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            println!("sql={}", sql);
+            // `2 <= 1` and `1 >= 2` are the cases a `<=`/`>=` written as
+            // 'not less than' would answer with the wrong `true`
+            assert_eq!(squeeze(&sql), "selectfalse,true,true,false");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_py_sql_multiple_args() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[py_sql("select ", "${1}")]
+            pub async fn test_py_sql_multiple_args(rb: &RBatis) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_py_sql_multiple_args(&rb).await.unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            println!("sql={}", sql);
+            // every argument of the macro belongs to the template
+            assert_eq!(squeeze(&sql), "select1");
+        };
+        block_on(f);
+    }
 }

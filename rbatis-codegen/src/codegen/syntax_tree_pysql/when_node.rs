@@ -1,3 +1,4 @@
+use crate::codegen::string_util::escape_attr_value;
 use crate::codegen::syntax_tree_pysql::{Name, NodeType, ToHtml};
 
 /// Represents a `when` node in py_sql.
@@ -36,6 +37,10 @@ impl ToHtml for WhenNode {
         for x in &self.childs {
             childs.push_str(&x.as_html());
         }
-        format!("<when test=\"{}\">{}</when>", self.test, childs)
+        format!(
+            "<when test=\"{}\">{}</when>",
+            escape_attr_value(&self.test),
+            childs
+        )
     }
 }
