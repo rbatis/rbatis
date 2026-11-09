@@ -8,7 +8,7 @@
 //! | Method | Generated SQL |
 //! |--------|---------------|
 //! | `insert(executor, &table)` | `INSERT INTO table (...) VALUES (...)` |
-//! | `insert_batch(executor, &[table], batch_size)` | several `INSERT` statements, at most `batch_size` rows each |
+//! | `insert_batch(executor, &[table], batch_size)` | `INSERT` statements with at most `batch_size` rows each; `0` inserts all rows in one statement |
 //! | `select_by_map(executor, condition)` | `SELECT ... FROM table WHERE ...` |
 //! | `update_by_map(executor, &table, condition)` | `UPDATE table SET ... WHERE ...` |
 //! | `delete_by_map(executor, condition)` | `DELETE FROM table WHERE ...` |
