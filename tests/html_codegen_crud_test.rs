@@ -477,6 +477,10 @@ mod test {
         assert_eq!(found.childs[0].data, "frag_a");
     }
 
+    // Windows file URLs (`file:///D:/...`) produce a rooted-but-not-absolute path
+    // (`/D:/...`) that `IncludeTagNode` resolves relative to the manifest dir, so
+    // the absolute-path branch is Unix-only by construction.
+    #[cfg(unix)]
     #[test]
     fn include_node_file_scheme_absolute_path_success() {
         let path = write_fixture();
