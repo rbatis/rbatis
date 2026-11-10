@@ -40,7 +40,11 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         run: |
           cargo install cargo-tarpaulin
-          cargo tarpaulin --out Xml --output-dir ./coverage
+          # --workspace is required: the tests in rbatis-codegen/tests and its
+          # #[cfg(test)] modules only run (and count) when the member packages are
+          # tested too. example/rbatis-macro-driver are excluded so their
+          # compile-time-only code does not skew the line coverage.
+          cargo tarpaulin --workspace --exclude example --exclude rbatis-macro-driver --out Xml --output-dir ./coverage
       - name: Upload coverage reports to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
         uses: codecov/codecov-action@v3
