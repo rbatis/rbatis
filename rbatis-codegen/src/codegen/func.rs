@@ -62,14 +62,14 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .expect("codegen_func fail"),
+                        .map_err(|e| Error::from(format!("codegen_func fail: {}", e)))?,
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .expect("codegen_func fail"),
+                        .map_err(|e| Error::from(format!("codegen_func fail: {}", e)))?,
                     );
                 }
                 BinOp::Or(_) => {
@@ -78,14 +78,14 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                             "bool::op_from({})",
                             b.left.to_token_stream().to_string().trim()
                         ))
-                        .expect("codegen_func fail"),
+                        .map_err(|e| Error::from(format!("codegen_func fail: {}", e)))?,
                     );
                     b.right = Box::new(
                         syn::parse_str::<Expr>(&format!(
                             "bool::op_from({})",
                             b.right.to_token_stream().to_string().trim()
                         ))
-                        .expect("codegen_func fail"),
+                        .map_err(|e| Error::from(format!("codegen_func fail: {}", e)))?,
                     );
                 }
 
@@ -317,6 +317,10 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
 }
 
 /// gen method or body(if func_name_ident is empty)
+///
+/// This is the infallible compatibility wrapper: it panics when the template
+/// expression cannot be parsed. The proc-macro path uses
+/// [`try_impl_fn_with_span`] so the error is reported at the template literal.
 pub fn impl_fn(
     context: &str,
     func_name_ident: &str,
@@ -324,6 +328,27 @@ pub fn impl_fn(
     serialize_result: bool,
     ignore: &[String],
 ) -> proc_macro2::TokenStream {
+    try_impl_fn_with_span(
+        context,
+        func_name_ident,
+        args,
+        serialize_result,
+        ignore,
+        Span::call_site(),
+    )
+    .unwrap_or_else(|e| panic!("{}", e))
+}
+
+/// gen method or body(if func_name_ident is empty), reporting a template expression
+/// that does not parse as a spanned [`syn::Error`].
+pub fn try_impl_fn_with_span(
+    context: &str,
+    func_name_ident: &str,
+    args: &str,
+    serialize_result: bool,
+    ignore: &[String],
+    span: Span,
+) -> syn::Result<proc_macro2::TokenStream> {
     let mut string_data = args.to_string();
     string_data = string_data[1..string_data.len() - 1].to_string();
     //convert string define
@@ -338,25 +363,34 @@ pub fn impl_fn(
         last_char = x;
     }
     string_data = string_data_new;
-    let mut t = syn::parse_str::<Expr>(&string_data)
-        .unwrap_or_else(|e| panic!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e));
-    t = translate(context, t, ignore).expect("translate fail");
+    let mut t = syn::parse_str::<Expr>(&string_data).map_err(|e| {
+        syn::Error::new(
+            span,
+            format!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e),
+        )
+    })?;
+    t = translate(context, t, ignore)
+        .map_err(|e| syn::Error::new(span, format!("translate fail: {}", e)))?;
     string_data = t.to_token_stream().to_string();
-    let t = syn::parse_str::<Expr>(&string_data)
-        .unwrap_or_else(|e| panic!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e));
+    let t = syn::parse_str::<Expr>(&string_data).map_err(|e| {
+        syn::Error::new(
+            span,
+            format!("[rbatis-codegen]syn::parse_str: {} fail: {}", args, e),
+        )
+    })?;
     let mut result_impl = quote! { {#t} };
     if serialize_result {
         result_impl = quote! {rbs::value({#t}).unwrap_or_default()};
     }
     if func_name_ident.is_empty() || func_name_ident.eq("\"\"") {
-        quote! {#result_impl}
+        Ok(quote! {#result_impl})
     } else {
-        let func_name_ident = Ident::new(func_name_ident, Span::call_site());
-        quote! {
+        let func_name_ident = Ident::new(func_name_ident, span);
+        Ok(quote! {
             pub fn #func_name_ident(arg:&rbs::Value) -> rbs::Value {
                use rbatis_codegen::ops::*;
                #result_impl
             }
-        }
+        })
     }
 }

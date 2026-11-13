@@ -21,7 +21,7 @@ extern crate rbatis_codegen;
 
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token};
+use syn::{ItemFn, Token};
 
 use crate::macros::html_sql_impl::impl_macro_html_sql;
 use crate::macros::py_sql_impl::impl_macro_py_sql;
@@ -57,9 +57,18 @@ impl Parse for ParseArgs {
 ///```
 #[proc_macro_attribute]
 pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
-    let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = impl_macro_sql(&target_fn, &args);
+    let args = match syn::parse::<ParseArgs>(args) {
+        Ok(args) => args,
+        Err(e) => return e.to_compile_error().into(),
+    };
+    let target_fn: ItemFn = match syn::parse(func) {
+        Ok(target_fn) => target_fn,
+        Err(e) => return e.to_compile_error().into(),
+    };
+    let stream = match impl_macro_sql(&target_fn, &args) {
+        Ok(stream) => stream,
+        Err(e) => return crate::util::error_with_stub(e, &target_fn),
+    };
     #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
@@ -128,9 +137,18 @@ pub fn sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
-    let target_fn: ItemFn = syn::parse(func).unwrap();
-    let stream = impl_macro_py_sql(&target_fn, args);
+    let args = match syn::parse::<ParseArgs>(args) {
+        Ok(args) => args,
+        Err(e) => return e.to_compile_error().into(),
+    };
+    let target_fn: ItemFn = match syn::parse(func) {
+        Ok(target_fn) => target_fn,
+        Err(e) => return e.to_compile_error().into(),
+    };
+    let stream = match impl_macro_py_sql(&target_fn, args) {
+        Ok(stream) => stream,
+        Err(e) => return crate::util::error_with_stub(e, &target_fn),
+    };
     #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
@@ -200,16 +218,28 @@ pub fn py_sql(args: TokenStream, func: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn html_sql(args: TokenStream, item: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
+    let args = match syn::parse::<ParseArgs>(args) {
+        Ok(args) => args,
+        Err(e) => return e.to_compile_error().into(),
+    };
 
     // Parse as impl
     if let Ok(impl_block) = syn::parse::<syn::ItemImpl>(item.clone()) {
-        return crate::macros::html_sql_impl::impl_macro_html_sql_impl(&impl_block, &args);
+        return match crate::macros::html_sql_impl::impl_macro_html_sql_impl(&impl_block, &args) {
+            Ok(stream) => stream,
+            Err(e) => e.to_compile_error().into(),
+        };
     }
 
     // Parse as function
-    let target_fn: ItemFn = syn::parse(item).unwrap();
-    let stream = impl_macro_html_sql(&target_fn, &args, false);
+    let target_fn: ItemFn = match syn::parse(item) {
+        Ok(target_fn) => target_fn,
+        Err(e) => return e.to_compile_error().into(),
+    };
+    let stream = match impl_macro_html_sql(&target_fn, &args, false) {
+        Ok(stream) => stream,
+        Err(e) => return crate::util::error_with_stub(e, &target_fn),
+    };
     #[cfg(feature = "println_gen")]
     if cfg!(debug_assertions) {
         use quote::ToTokens;
@@ -231,13 +261,19 @@ pub fn html_sql(args: TokenStream, item: TokenStream) -> TokenStream {
 /// proxy rbatis_codegen rb_py
 #[proc_macro_attribute]
 pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
-    rbatis_codegen::rb_py(args, func)
+    match rbatis_codegen::rb_py(args, func) {
+        Ok(stream) => stream,
+        Err(e) => e.to_compile_error().into(),
+    }
 }
 
 /// proxy rbatis_codegen rb_html
 #[proc_macro_attribute]
 pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
-    rbatis_codegen::rb_html(args, func)
+    match rbatis_codegen::rb_html(args, func) {
+        Ok(stream) => stream,
+        Err(e) => e.to_compile_error().into(),
+    }
 }
 
 /// turn a function declaration into a function that returns the `snake_case` name of
@@ -253,5 +289,8 @@ pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
 /// was passed explicitly.
 #[proc_macro_attribute]
 pub fn snake_name(args: TokenStream, func: TokenStream) -> TokenStream {
-    macros::snake_name::snake_name(args, func)
+    match macros::snake_name::snake_name(args, func) {
+        Ok(stream) => stream,
+        Err(e) => e.to_compile_error().into(),
+    }
 }

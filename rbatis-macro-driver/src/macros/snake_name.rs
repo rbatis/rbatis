@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, ItemFn, Token};
+use syn::{ItemFn, Token};
 
 pub struct ParseArgs {
     pub sqls: Vec<syn::Ident>,
@@ -17,21 +17,21 @@ impl Parse for ParseArgs {
     }
 }
 
-pub fn snake_name(args: TokenStream, func: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
+pub fn snake_name(args: TokenStream, func: TokenStream) -> syn::Result<TokenStream> {
+    let args = syn::parse::<ParseArgs>(args)?;
     let mut struct_name = "".to_string();
     for x in args.sqls {
         struct_name += x.to_string().as_str();
     }
     struct_name = to_snake_name(&struct_name);
-    let target_fn: ItemFn = syn::parse(func).unwrap();
+    let target_fn: ItemFn = syn::parse(func)?;
     let func_name_ident = target_fn.sig.ident.to_token_stream();
     let stream = quote!(
         pub fn #func_name_ident() -> String {
              #struct_name.to_string()
         }
     );
-    stream.into()
+    Ok(stream.into())
 }
 
 fn to_snake_name(name: &str) -> String {

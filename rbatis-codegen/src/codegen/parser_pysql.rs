@@ -1,4 +1,4 @@
-use crate::codegen::parser_html::parse_html;
+use crate::codegen::parser_html::try_parse_html;
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree_pysql::{
     bind_node::BindNode, break_node::BreakNode, choose_node::ChooseNode,
@@ -15,7 +15,15 @@ pub trait ParsePySql {
     fn parse_pysql(arg: &str) -> Result<Vec<NodeType>, Error>;
 }
 
+/// This is the infallible compatibility wrapper: it panics on a bad template. The
+/// proc-macro entry points use [`try_impl_fn_py`].
 pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
+    try_impl_fn_py(m, args).unwrap_or_else(|e| panic!("{}", e))
+}
+
+/// Parse a `py_sql` template and generate its Rust implementation, reporting template
+/// errors as a spanned [`syn::Error`] that points at the `#[py_sql(...)]` literal.
+pub fn try_impl_fn_py(m: &ItemFn, args: &ParseArgs) -> syn::Result<TokenStream> {
     let fn_name = m.sig.ident.to_string();
 
     // `LitStr::value()` is exactly the text written in the source: every argument is
@@ -23,8 +31,14 @@ pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     // of each literal between them), and a newline stays a newline instead of the two
     // characters `\n` a token stream would produce.
     let data = args.sqls.iter().map(|sql| sql.value()).collect::<String>();
+    let span = args
+        .sqls
+        .first()
+        .map(|sql| sql.span())
+        .unwrap_or_else(|| m.sig.ident.span());
 
-    let nodes = NodeType::parse_pysql(&data).expect("[rbatis-codegen] parse py_sql fail!");
+    let nodes = NodeType::parse_pysql(&data)
+        .map_err(|e| syn::Error::new(span, format!("[rbatis-codegen] parse py_sql fail: {}", e)))?;
 
     // only decides whether the template is wrapped into <select> or <update>
     let is_select = data
@@ -35,7 +49,7 @@ pub fn impl_fn_py(m: &ItemFn, args: &ParseArgs) -> TokenStream {
     let htmls =
         crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
 
-    parse_html(&htmls, &fn_name, &mut vec![]).into()
+    Ok(try_parse_html(&htmls, &fn_name, &mut vec![], span)?.into())
 }
 
 impl ParsePySql for NodeType {

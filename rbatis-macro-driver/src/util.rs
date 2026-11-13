@@ -2,6 +2,37 @@ use quote::quote;
 use quote::ToTokens;
 use syn::{FnArg, ItemFn, Pat, ReturnType};
 
+/// Emit `err` as a compile error and keep a stub with the original signature.
+///
+/// Replacing the whole function with only `compile_error!` makes every call site
+/// report a second, misleading `cannot find function` error. The `unimplemented!()`
+/// stub keeps the name and signature so only the real template error is shown.
+pub(crate) fn error_with_stub(
+    err: syn::Error,
+    target_fn: &ItemFn,
+) -> crate::proc_macro::TokenStream {
+    let compile_error = err.to_compile_error();
+    let attrs = &target_fn.attrs;
+    let vis = &target_fn.vis;
+    let sig = &target_fn.sig;
+    quote! {
+        #compile_error
+        #(#attrs)*
+        #[allow(unused_variables, unused_mut)]
+        #vis #sig { unimplemented!() }
+    }
+    .into()
+}
+
+/// Span used for errors of a macro invocation: the SQL/template literal if there is
+/// one, otherwise the name of the generated function.
+pub(crate) fn macro_span(args: &crate::ParseArgs, target_fn: &ItemFn) -> proc_macro2::Span {
+    args.sqls
+        .first()
+        .map(|sql| sql.span())
+        .unwrap_or_else(|| target_fn.sig.ident.span())
+}
+
 //find and check method return type
 pub(crate) fn find_return_type(target_fn: &ItemFn) -> proc_macro2::TokenStream {
     let mut return_ty = target_fn.sig.output.to_token_stream();

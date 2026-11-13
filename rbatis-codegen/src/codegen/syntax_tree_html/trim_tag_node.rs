@@ -1,6 +1,6 @@
 use super::{HtmlAstNode, NodeContext};
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
 
@@ -20,7 +20,7 @@ impl HtmlAstNode for TrimTagNode {
         "trim"
     }
 
-    fn from_element(element: &Element) -> Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
         let empty = String::new();
         let prefix = element
             .attrs
@@ -47,25 +47,26 @@ impl HtmlAstNode for TrimTagNode {
             .cloned()
             .unwrap_or_else(|| empty.clone());
 
-        Self {
+        Ok(Self {
             prefix,
             suffix,
             prefix_overrides,
             suffix_overrides,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
-        let trim_body = context.parse_children(&self.childs, ignore);
+        let trim_body = context.parse_children(&self.childs, ignore)?;
 
         let prefixes: Vec<String> = self
             .prefix_overrides
@@ -132,6 +133,6 @@ impl HtmlAstNode for TrimTagNode {
             });
         }
 
-        final_tokens
+        Ok(final_tokens)
     }
 }

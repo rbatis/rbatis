@@ -1,6 +1,6 @@
 use super::{HtmlAstNode, NodeContext};
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
 
@@ -17,22 +17,23 @@ impl HtmlAstNode for BreakTagNode {
         "break"
     }
 
-    fn from_element(element: &Element) -> Self {
-        Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+        Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(), // Should be empty
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         _context: &mut NodeContext<FChildParser>,
         _ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // Replicates `impl_break`
-        quote! { break; }
+        Ok(quote! { break; })
     }
 }

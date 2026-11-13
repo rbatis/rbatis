@@ -1,6 +1,6 @@
 use super::{HtmlAstNode, NodeContext, TrimTagNode};
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
 
@@ -20,21 +20,22 @@ impl HtmlAstNode for WhereTagNode {
         "where"
     }
 
-    fn from_element(element: &Element) -> Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
         // No specific attributes to extract for <where> itself beyond common ones.
-        Self {
+        Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // Create a TrimTagNode with where-specific configurations
         let trim_node = TrimTagNode {
@@ -47,14 +48,14 @@ impl HtmlAstNode for WhereTagNode {
         };
 
         // Generate the base trimmed SQL
-        let trimmed_sql = trim_node.generate_tokens(context, ignore);
+        let trimmed_sql = trim_node.try_generate_tokens(context, ignore)?;
 
         // Additional where-specific cleanup
-        quote! {
+        Ok(quote! {
             {
                 #trimmed_sql
                 sql = sql.trim_end_matches(" ").trim_end_matches(" where").to_string();
             }
-        }
+        })
     }
 }

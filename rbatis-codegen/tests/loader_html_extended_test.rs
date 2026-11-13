@@ -88,6 +88,8 @@ fn test_load_html_with_mixed_content() {
 fn test_element_child_strings() {
     let child1 = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "child1".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -95,6 +97,8 @@ fn test_element_child_strings() {
 
     let child2 = Element {
         tag: "span".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -102,6 +106,8 @@ fn test_element_child_strings() {
 
     let grandchild = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "grandchild".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -112,6 +118,8 @@ fn test_element_child_strings() {
 
     let parent = Element {
         tag: "div".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![child1, child2_with_child],
@@ -127,6 +135,8 @@ fn test_element_child_strings() {
 fn test_element_child_string_cup() {
     let child1 = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "hello".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -134,6 +144,8 @@ fn test_element_child_string_cup() {
 
     let child2 = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "world".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -141,6 +153,8 @@ fn test_element_child_string_cup() {
 
     let parent = Element {
         tag: "div".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![child1, child2],
@@ -154,6 +168,8 @@ fn test_element_child_string_cup() {
 fn test_element_display_complex() {
     let child = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "child content".to_string(),
         attrs: std::collections::HashMap::new(),
         childs: vec![],
@@ -165,6 +181,8 @@ fn test_element_display_complex() {
 
     let parent = Element {
         tag: "div".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "".to_string(),
         attrs,
         childs: vec![child],

@@ -17,10 +17,14 @@ fn test_foreach_tag_node_from_element() {
 
     let element = Element {
         tag: "foreach".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
+            line: 0,
+            line_text: String::new(),
             data: "#{it}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -45,6 +49,8 @@ fn test_foreach_tag_node_with_defaults() {
 
     let element = Element {
         tag: "foreach".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -61,12 +67,14 @@ fn test_foreach_tag_node_with_defaults() {
 }
 
 #[test]
-#[should_panic(expected = "must have a 'collection' attribute")]
+#[should_panic(expected = "missing the required \"collection\" attribute")]
 fn test_foreach_tag_node_no_collection() {
     let attrs = HashMap::new();
 
     let element = Element {
         tag: "foreach".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -85,6 +93,8 @@ fn test_trim_tag_node_from_element() {
 
     let element = Element {
         tag: "trim".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -108,6 +118,8 @@ fn test_trim_tag_node_with_legacy_attributes() {
 
     let element = Element {
         tag: "trim".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -130,6 +142,8 @@ fn test_set_tag_node_from_element() {
 
     let element = Element {
         tag: "set".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -148,6 +162,8 @@ fn test_set_tag_node_with_defaults() {
 
     let element = Element {
         tag: "set".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -169,10 +185,14 @@ fn test_trim_tag_node_token_generation() {
 
     let element = Element {
         tag: "trim".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
+            line: 0,
+            line_text: String::new(),
             data: "AND name = #{name}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -189,13 +209,14 @@ fn test_trim_tag_node_token_generation() {
         _: &mut proc_macro2::TokenStream,
         _: &mut Vec<String>,
         _: &str,
-    ) -> proc_macro2::TokenStream {
-        quote!()
+    ) -> syn::Result<proc_macro2::TokenStream> {
+        Ok(quote!())
     }
 
     let mut context = rbatis_codegen::codegen::syntax_tree_html::NodeContext {
         methods: &mut methods,
         fn_name: "test",
+        span: proc_macro2::Span::call_site(),
         child_parser: &mut dummy_parser,
     };
 
@@ -222,10 +243,14 @@ fn test_foreach_tag_node_token_generation() {
 
     let element = Element {
         tag: "foreach".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
+            line: 0,
+            line_text: String::new(),
             data: "#{it}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -242,13 +267,14 @@ fn test_foreach_tag_node_token_generation() {
         _: &mut proc_macro2::TokenStream,
         _: &mut Vec<String>,
         _: &str,
-    ) -> proc_macro2::TokenStream {
-        quote!()
+    ) -> syn::Result<proc_macro2::TokenStream> {
+        Ok(quote!())
     }
 
     let mut context = rbatis_codegen::codegen::syntax_tree_html::NodeContext {
         methods: &mut methods,
         fn_name: "test",
+        span: proc_macro2::Span::call_site(),
         child_parser: &mut dummy_parser,
     };
 

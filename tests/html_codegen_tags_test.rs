@@ -37,6 +37,8 @@ mod test {
     fn element(tag: &str, attrs: &[(&str, &str)], childs: Vec<Element>) -> Element {
         Element {
             tag: tag.to_string(),
+            line: 0,
+            line_text: String::new(),
             data: String::new(),
             attrs: attrs
                 .iter()
@@ -55,6 +57,7 @@ mod test {
         let mut context = NodeContext {
             methods: &mut methods,
             fn_name: "f",
+            span: proc_macro2::Span::call_site(),
             child_parser: |children: &[Element],
                            _methods: &mut TokenStream,
                            ignore: &mut Vec<String>,
@@ -66,7 +69,7 @@ mod test {
                     let _ = tag;
                 }
                 ignore.push("child-parsed".to_string());
-                tokens
+                Ok(tokens)
             },
         };
         let tokens = node.generate_tokens(&mut context, &mut ignore);
@@ -166,7 +169,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "<if> element must have test field")]
+    #[should_panic(expected = "<if> is missing the required \"test\" attribute")]
     fn test_if_missing_test_panics() {
         parse(r#"<select id="s"><if>`x`</if></select>"#);
     }
@@ -331,6 +334,8 @@ mod test {
             &[],
             vec![Element {
                 tag: String::new(),
+                line: 0,
+                line_text: String::new(),
                 data: "and a = 1".to_string(),
                 attrs: HashMap::new(),
                 childs: vec![],
@@ -435,13 +440,13 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "<choose> node's children must be <when> or <otherwise>")]
+    #[should_panic(expected = "<choose> children must be <when> or <otherwise>")]
     fn test_choose_invalid_child_panics() {
         parse(r#"<select id="s"><choose><if test="a">`x`</if></choose></select>"#);
     }
 
     #[test]
-    #[should_panic(expected = "<when> element must have test field")]
+    #[should_panic(expected = "<when> is missing the required \"test\" attribute")]
     fn test_when_missing_test_panics() {
         parse(r#"<select id="s"><choose><when>`x`</when></choose></select>"#);
     }
@@ -540,7 +545,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "<foreach> element must have a 'collection' attribute")]
+    #[should_panic(expected = "<foreach> is missing the required \"collection\" attribute")]
     fn test_foreach_missing_collection_panics() {
         parse(r#"<select id="s"><foreach item="x">`#{x}`</foreach></select>"#);
     }
@@ -670,13 +675,13 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "<bind> element must have name")]
+    #[should_panic(expected = "<bind> is missing the required \"name\" attribute")]
     fn test_bind_missing_name_panics() {
         parse(r#"<select id="s"><bind value="a"/></select>"#);
     }
 
     #[test]
-    #[should_panic(expected = "<bind> element must have value")]
+    #[should_panic(expected = "<bind> is missing the required \"value\" attribute")]
     fn test_bind_missing_value_panics() {
         parse(r#"<select id="s"><bind name="b"/></select>"#);
     }

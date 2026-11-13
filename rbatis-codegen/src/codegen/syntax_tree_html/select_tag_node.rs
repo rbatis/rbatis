@@ -16,24 +16,25 @@ impl HtmlAstNode for SelectTagNode {
         "select"
     }
 
-    fn from_element(element: &Element) -> Self {
-        Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+        Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // Replicates logic from `handle_crud_element` for <select>
         let method_name = Ident::new(context.fn_name, Span::call_site());
-        let child_body = context.parse_children(&self.childs, ignore);
+        let child_body = context.parse_children(&self.childs, ignore)?;
 
         // the estimates of the previous implementation: the text of the whole statement
         // plus the `args.push(..)` calls the generated body contains
@@ -55,24 +56,10 @@ impl HtmlAstNode for SelectTagNode {
             }
         };
 
-        // Accumulate this function into methods if it's not already there.
-        // The original code accumulated methods in the outer scope.
-        // Here, we add it to context.methods. This needs careful handling to avoid duplicates
-        // if multiple CRUD tags are present or if this is called multiple times.
-        // For now, let's assume the caller of this whole parsing process handles method accumulation.
-        // This generate_tokens should return the main body call, and the function itself
-        // should be collected by the `methods` accumulator in the context.
-
-        // The original `handle_crud_element` would do: *body = quote! { #body #function };
-        // This means the function itself is the token stream for this node.
-        // The context.methods is where these should be stored by the main parser loop.
+        // A CRUD element (like <select>) doesn't add to the current SQL string directly
+        // in the place it's defined; it defines a function that is called later.
         context.methods.extend(function_token);
 
-        // A CRUD element itself (like <select>) doesn't add to the current SQL string directly in the place it's defined.
-        // It defines a function that will be called later.
-        // So, it should return an empty TokenStream or a marker if needed by the caller.
-        // The original `parse_elements` for a CRUD tag just assigned the function to `*body` and then `*body` becomes the function.
-        // This seems to imply the function *is* the result of parsing that tag.
-        quote! { /* <select> defines a method, no direct SQL output here */ }
+        Ok(quote! { /* <select> defines a method, no direct SQL output here */ })
     }
 }

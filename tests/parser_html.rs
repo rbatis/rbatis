@@ -157,6 +157,8 @@ mod test {
         // would be read back as `name == ` (everything after the second `"` is lost)
         let element = rbatis_codegen::codegen::loader_html::Element {
             tag: "if".to_string(),
+            line: 0,
+            line_text: String::new(),
             data: String::new(),
             attrs: std::collections::HashMap::from([(
                 "test".to_string(),

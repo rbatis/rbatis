@@ -5,10 +5,11 @@ use quote::ToTokens;
 use syn::{FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref, macro_span};
 
 //impl sql macro
-pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStream {
+pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> syn::Result<TokenStream> {
+    let span = macro_span(args, target_fn);
     let return_ty = find_return_type(target_fn);
     let func_name_ident = target_fn.sig.ident.to_token_stream();
 
@@ -31,31 +32,39 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
         }
     }
 
-    let mut sql_ident = quote!();
-    if !args.sqls.is_empty() {
+    let sql_lit = if !args.sqls.is_empty() {
         if rbatis_name.is_empty() {
-            panic!(
-                "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
-                target_fn.sig.ident
-            );
+            return Err(syn::Error::new(
+                target_fn.sig.ident.span(),
+                format!(
+                    "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
+                    target_fn.sig.ident
+                ),
+            ));
         }
         let mut s = "".to_string();
         for v in &args.sqls {
             s += v.value().as_str();
         }
-        sql_ident = quote!(#s);
+        syn::LitStr::new(&s, span)
     } else {
-        panic!("[rb] Incorrect macro parameter length!");
-    }
+        return Err(syn::Error::new(
+            span,
+            "[rb] Incorrect macro parameter length! The #[sql] attribute needs the SQL text, for example #[sql(\"select 1\")]",
+        ));
+    };
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     if !is_async {
-        panic!(
-            "[rbaits] 'fn {}({})' must be  async fn! ",
-            func_name_ident, func_args_stream
-        );
+        return Err(syn::Error::new(
+            target_fn.sig.ident.span(),
+            format!(
+                "[rbatis] fn {}({}) must be  async fn! ",
+                func_name_ident, func_args_stream
+            ),
+        ));
     }
     if rbatis_ident.to_string().starts_with("mut ") {
         rbatis_ident = Ident::new(
@@ -84,11 +93,11 @@ pub(crate) fn impl_macro_sql(target_fn: &ItemFn, args: &ParseArgs) -> TokenStrea
            #sql_args_gen
            #fn_body
            use rbatis::executor::{Executor};
-           let r= #rbatis_ident.#call_method(&#sql_ident,rb_args).await?;
+           let r= #rbatis_ident.#call_method(&#sql_lit,rb_args).await?;
            #decode
        }
     };
-    gen_token_temple.into()
+    Ok(gen_token_temple.into())
 }
 
 fn filter_args_context_id(

@@ -16,7 +16,12 @@ fn main() {
             //   `cargo run --bin X`           from the example/ dir ->  target/sqlite.db
             // create the table in both so that either invocation works
             for url in ["sqlite://../target/sqlite.db", "sqlite://target/sqlite.db"] {
-                _ = std::fs::create_dir_all(url.trim_start_matches("sqlite://"));
+                // create the directory that holds the database file, not a directory
+                // named `sqlite.db` (sqlite creates the file itself)
+                let db_path = url.trim_start_matches("sqlite://");
+                if let Some(parent) = std::path::Path::new(db_path).parent() {
+                    _ = std::fs::create_dir_all(parent);
+                }
                 let rb = RBatis::new();
                 if rb.init(rbdc_sqlite::SqliteDriver {}, url).is_err() {
                     continue;

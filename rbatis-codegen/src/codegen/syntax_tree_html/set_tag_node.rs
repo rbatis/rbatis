@@ -1,6 +1,6 @@
 use super::{ContinueTagNode, ForeachTagNode, HtmlAstNode, IfTagNode, NodeContext, TrimTagNode};
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use std::collections::HashMap;
 
 /// Represents a `<set>` tag node in the HTML AST.
@@ -18,31 +18,57 @@ impl HtmlAstNode for SetTagNode {
         "set"
     }
 
-    fn from_element(element: &Element) -> Self {
+    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
         let collection = element.attrs.get("collection").cloned();
+        if let Some(collection) = &collection {
+            if collection.trim().is_empty() {
+                return Err(syn::Error::new(
+                    span,
+                    format!(
+                        "[rbatis-codegen] <set> has an empty \"collection\" attribute{}",
+                        element.code_frame("collection must not be empty")
+                    ),
+                ));
+            }
+        }
         let skip_null = element.attrs.get("skip_null").cloned();
+        if let Some(skip_null) = &skip_null {
+            if !skip_null.eq_ignore_ascii_case("true")
+                && !skip_null.eq_ignore_ascii_case("false")
+            {
+                return Err(syn::Error::new(
+                    span,
+                    format!(
+                        "[rbatis-codegen] <set> has invalid skip_null=\"{}\"{}",
+                        skip_null,
+                        element.code_frame("expected skip_null=\"true\" or skip_null=\"false\"")
+                    ),
+                ));
+            }
+        }
         let skips = element
             .attrs
             .get("skips")
             .cloned()
             .unwrap_or_else(|| "id".to_string());
 
-        Self {
+        Ok(Self {
             collection,
             skip_null,
             skips,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(), // Original children if not using collection logic
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         if let Some(collection_name) = &self.collection {
             // Logic from `make_sets` in original parser_html.rs
@@ -58,6 +84,8 @@ impl HtmlAstNode for SetTagNode {
                 .iter()
                 .map(|x| Element {
                     tag: IfTagNode::node_tag_name().to_string(),
+                    line: 0,
+                    line_text: String::new(),
                     data: String::new(),
                     attrs: {
                         let mut attr = HashMap::new();
@@ -66,6 +94,8 @@ impl HtmlAstNode for SetTagNode {
                     },
                     childs: vec![Element {
                         tag: ContinueTagNode::node_tag_name().to_string(),
+                        line: 0,
+                        line_text: String::new(),
                         data: String::new(),
                         attrs: HashMap::new(),
                         childs: vec![],
@@ -76,6 +106,8 @@ impl HtmlAstNode for SetTagNode {
             if is_skip_null {
                 for_each_child_elements.push(Element {
                     tag: IfTagNode::node_tag_name().to_string(),
+                    line: 0,
+                    line_text: String::new(),
                     data: String::new(),
                     attrs: {
                         let mut attr = HashMap::new();
@@ -84,6 +116,8 @@ impl HtmlAstNode for SetTagNode {
                     },
                     childs: vec![Element {
                         tag: ContinueTagNode::node_tag_name().to_string(),
+                        line: 0,
+                        line_text: String::new(),
                         data: String::new(),
                         attrs: HashMap::new(),
                         childs: vec![],
@@ -93,6 +127,8 @@ impl HtmlAstNode for SetTagNode {
 
             for_each_child_elements.push(Element {
                 tag: "".to_string(), // Represents a text node
+                line: 0,
+                line_text: String::new(),
                 data: "${k}=#{v},".to_string(),
                 attrs: HashMap::new(),
                 childs: vec![],
@@ -100,6 +136,8 @@ impl HtmlAstNode for SetTagNode {
 
             let foreach_element = Element {
                 tag: ForeachTagNode::node_tag_name().to_string(),
+                line: 0,
+                line_text: String::new(),
                 data: String::new(),
                 attrs: {
                     let mut attr = HashMap::new();
@@ -113,6 +151,8 @@ impl HtmlAstNode for SetTagNode {
 
             let inner_trim_element = Element {
                 tag: TrimTagNode::node_tag_name().to_string(),
+                line: 0,
+                line_text: String::new(),
                 data: String::new(),
                 attrs: {
                     let mut attr = HashMap::new();
@@ -127,6 +167,8 @@ impl HtmlAstNode for SetTagNode {
 
             let outer_trim_element = Element {
                 tag: TrimTagNode::node_tag_name().to_string(),
+                line: 0,
+                line_text: String::new(),
                 data: String::new(),
                 attrs: {
                     let mut attr = HashMap::new();
@@ -141,8 +183,8 @@ impl HtmlAstNode for SetTagNode {
             };
 
             // Now, create a TrimTagNode from outer_trim_element and generate its tokens.
-            let trim_node = TrimTagNode::from_element(&outer_trim_element);
-            trim_node.generate_tokens(context, ignore)
+            let trim_node = TrimTagNode::try_from_element(&outer_trim_element, context.span)?;
+            trim_node.try_generate_tokens(context, ignore)
         } else {
             // Default behavior: acts like a <trim prefix=" set " suffix=" " prefixOverrides="," suffixOverrides=",">
             // This is slightly different from original parser_html which used " |," for overrides.
@@ -155,7 +197,7 @@ impl HtmlAstNode for SetTagNode {
                 attrs: self.attrs.clone(), // Keep original attrs if any, though usually none for this path
                 childs: self.childs.clone(),
             };
-            trim_node.generate_tokens(context, ignore)
+            trim_node.try_generate_tokens(context, ignore)
         }
     }
 }

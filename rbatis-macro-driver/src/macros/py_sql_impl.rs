@@ -9,11 +9,12 @@ use std::path::PathBuf;
 use syn::{FnArg, ItemFn, Pat};
 
 use crate::proc_macro::TokenStream;
-use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref};
+use crate::util::{find_fn_body, find_return_type, get_fn_args, is_query, is_rb_ref, macro_span};
 
 ///py_sql macro
 ///support args for rb:&RBatis
-pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStream {
+pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> syn::Result<TokenStream> {
+    let span = macro_span(&args, target_fn);
     let return_ty = find_return_type(target_fn);
     let mut rbatis_ident = "".to_token_stream();
     let mut rbatis_name = String::new();
@@ -38,13 +39,15 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
     // that a change of the file re-runs the macro
     #[allow(unused_mut)]
     let mut include_data = quote::quote! {};
-    let mut sql_ident = quote!();
-    if !args.sqls.is_empty() {
+    let sql_lit = if !args.sqls.is_empty() {
         if rbatis_name.is_empty() {
-            panic!(
-                "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
-                target_fn.sig.ident
-            );
+            return Err(syn::Error::new(
+                target_fn.sig.ident.span(),
+                format!(
+                    "[rb] you should add rbatis ref param  `rb:&dyn Executor`  on '{}()'!",
+                    target_fn.sig.ident
+                ),
+            ));
         }
         let mut s = "".to_string();
         for v in &args.sqls {
@@ -59,27 +62,41 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
                         .to_string();
                     let file_path = PathBuf::from(file_name.clone());
                     if file_path.is_relative() {
-                        let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-                            .expect("Failed to read CARGO_MANIFEST_DIR");
+                        let mut manifest_dir =
+                            std::env::var("CARGO_MANIFEST_DIR").map_err(|_| {
+                                syn::Error::new(span, "Failed to read CARGO_MANIFEST_DIR")
+                            })?;
                         manifest_dir.push('/');
                         let mut current = PathBuf::from(manifest_dir);
                         current.push(file_name.clone());
                         if !current.exists() {
-                            current = current_dir().unwrap_or_default();
+                            current = current_dir().map_err(|e| {
+                                syn::Error::new(
+                                    span,
+                                    format!("Failed to read the current directory: {}", e),
+                                )
+                            })?;
                             current.push(file_name.clone());
                         }
                         file_name = current.to_str().unwrap_or_default().to_string();
                     }
-                    let mut f = File::open(&file_name)
-                        .unwrap_or_else(|_| panic!("can't find file={}", file_name));
+                    let mut f = File::open(&file_name).map_err(|_| {
+                        syn::Error::new(span, format!("can't find file={}", file_name))
+                    })?;
                     let mut data = String::new();
-                    f.read_to_string(&mut data)
-                        .unwrap_or_else(|e| panic!("read '{}' fail: {}", file_name, e));
+                    f.read_to_string(&mut data).map_err(|e| {
+                        syn::Error::new(span, format!("read '{}' fail: {}", file_name, e))
+                    })?;
                     data = data.replace("\r\n", "\n");
 
                     #[cfg(feature = "debug_mode")]
                     if cfg!(debug_assertions) {
-                        let current_dir = current_dir().unwrap();
+                        let current_dir = current_dir().map_err(|e| {
+                            syn::Error::new(
+                                span,
+                                format!("Failed to read the current directory: {}", e),
+                            )
+                        })?;
                         let mut include_file_name = file_name.to_string();
                         if !PathBuf::from(&file_name).is_absolute() {
                             include_file_name = format!(
@@ -97,20 +114,26 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
             }
             s += v.value().as_str();
         }
-        sql_ident = quote!(#s);
+        syn::LitStr::new(&s, span)
     } else {
-        panic!("[rb] Incorrect macro parameter length!");
-    }
+        return Err(syn::Error::new(
+            span,
+            "[rb] Incorrect macro parameter length! The #[py_sql] attribute needs the SQL text",
+        ));
+    };
 
     let func_args_stream = target_fn.sig.inputs.to_token_stream();
     let fn_body = find_fn_body(target_fn);
     let is_async = target_fn.sig.asyncness.is_some();
     let func_name_ident = target_fn.sig.ident.to_token_stream();
     if !is_async {
-        panic!(
-            "[rbaits] fn {}({}) must be  async fn! ",
-            func_name_ident, func_args_stream
-        );
+        return Err(syn::Error::new(
+            target_fn.sig.ident.span(),
+            format!(
+                "[rbatis] fn {}({}) must be  async fn! ",
+                func_name_ident, func_args_stream
+            ),
+        ));
     }
     if rbatis_ident.to_string().starts_with("mut ") {
         rbatis_ident = Ident::new(
@@ -136,14 +159,14 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         };
     }
     let gen_target_method = quote! {
-        #[rbatis::rb_py(#sql_ident)]
+        #[rbatis::rb_py(#sql_lit)]
         pub fn do_py_sql(arg: &rbs::Value, _tag: char) {}
     };
     let gen_target_macro_arg = quote! {
-        #sql_ident
+        #sql_lit
     };
     let gen_func: proc_macro2::TokenStream =
-        rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into()).into();
+        rbatis_codegen::rb_py(gen_target_macro_arg.into(), gen_target_method.into())?.into();
 
     let generic = target_fn.sig.generics.clone();
 
@@ -152,7 +175,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
         .matches("rb_arg_map.insert")
         .count();
     //gen rust code templete
-    quote! {
+    Ok(quote! {
        pub async fn #func_name_ident #generic(#func_args_stream) -> #return_ty {
          let mut rb_arg_map = rbs::value::map::ValueMap::with_capacity(#push_count);
          #sql_args_gen
@@ -166,7 +189,7 @@ pub(crate) fn impl_macro_py_sql(target_fn: &ItemFn, args: ParseArgs) -> TokenStr
          #call_method
        }
     }
-    .into()
+    .into())
 }
 
 pub(crate) fn filter_args_context_id(

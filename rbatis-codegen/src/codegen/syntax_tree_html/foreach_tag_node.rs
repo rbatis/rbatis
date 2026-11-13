@@ -3,6 +3,7 @@ use crate::codegen::loader_html::Element;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
+use syn::Error;
 
 /// Represents a `<foreach>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -15,6 +16,10 @@ pub struct ForeachTagNode {
     pub separator: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
+    /// source line of the tag in the template, `0` when unknown
+    pub line: usize,
+    /// source text of that line, used in diagnostics
+    pub line_text: String,
 }
 
 impl HtmlAstNode for ForeachTagNode {
@@ -22,14 +27,35 @@ impl HtmlAstNode for ForeachTagNode {
         "foreach"
     }
 
-    fn from_element(element: &Element) -> Self {
+    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
         let empty = String::new();
         let def_item = "item".to_string();
         let def_index = "index".to_string();
 
-        let collection = element.attrs.get("collection").cloned().unwrap_or_else(|| {
-            panic!("[rbatis-codegen] <foreach> element must have a 'collection' attribute.")
-        });
+        let collection = match element.attrs.get("collection") {
+            Some(collection) => collection.clone(),
+            None => {
+                return Err(Error::new(
+                    span,
+                    format!(
+                        "[rbatis-codegen] <foreach> is missing the required \"collection\" attribute{}",
+                        element.code_frame(
+                            "add collection=\"...\", for example <foreach collection=\"ids\" item=\"id\">"
+                        )
+                    ),
+                ))
+            }
+        };
+
+        if collection.trim().is_empty() {
+            return Err(Error::new(
+                span,
+                format!(
+                    "[rbatis-codegen] <foreach> has an empty \"collection\" attribute{}",
+                    element.code_frame("collection must not be empty")
+                ),
+            ));
+        }
 
         let mut item = element
             .attrs
@@ -64,7 +90,7 @@ impl HtmlAstNode for ForeachTagNode {
             index = def_index;
         }
 
-        Self {
+        Ok(Self {
             collection,
             item,
             index,
@@ -73,16 +99,19 @@ impl HtmlAstNode for ForeachTagNode {
             separator,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+            line: element.line,
+            line_text: element.line_text.clone(),
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // Create a new ignore list for the children of this foreach loop,
         // including the item and index variables.
@@ -91,16 +120,31 @@ impl HtmlAstNode for ForeachTagNode {
         item_specific_ignores.push(self.item.clone());
 
         // Parse children using the new, extended ignore list.
-        let foreach_body = context.parse_children(&self.childs, &mut item_specific_ignores);
+        let foreach_body = context.parse_children(&self.childs, &mut item_specific_ignores)?;
 
         // The collection expression itself should be parsed using the original ignore list.
-        let collection_method_impl = crate::codegen::func::impl_fn(
+        let collection_method_impl = crate::codegen::func::try_impl_fn_with_span(
             "", // body_to_string context placeholder
             "", // fn_name context placeholder
             &format!("\"{}\"", self.collection),
             false,
             ignore, // Use original ignore list for the collection expression
-        );
+            context.span,
+        )
+        .map_err(|e| {
+            syn::Error::new(
+                e.span(),
+                format!(
+                    "{}{}",
+                    e,
+                    crate::codegen::loader_html::code_frame(
+                        self.line,
+                        &self.line_text,
+                        "check the collection expression"
+                    )
+                ),
+            )
+        })?;
 
         let open_str = &self.open;
         let open_impl = if !self.open.is_empty() {
@@ -155,10 +199,10 @@ impl HtmlAstNode for ForeachTagNode {
             }
         };
 
-        quote! {
+        Ok(quote! {
             #open_impl
             #loop_tokens
             #close_impl
-        }
+        })
     }
 }

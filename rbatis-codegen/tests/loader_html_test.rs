@@ -77,6 +77,8 @@ fn test_element_display() {
     // For display, the content is stored in a child element if the tag is not empty
     let element = Element {
         tag: "select".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "SELECT * FROM users".to_string(),
         attrs,
         childs: vec![],
@@ -91,6 +93,8 @@ fn test_element_display() {
     // Since data is not displayed for non-empty tags, we'll create a text element instead
     let text_element = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "SELECT * FROM users".to_string(),
         attrs: HashMap::new(),
         childs: vec![],
@@ -107,6 +111,8 @@ fn test_element_with_children_display() {
 
     let child_element = Element {
         tag: "".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "WHERE name = 'test'".to_string(),
         attrs: HashMap::new(),
         childs: vec![],
@@ -114,6 +120,8 @@ fn test_element_with_children_display() {
 
     let element = Element {
         tag: "select".to_string(),
+        line: 0,
+        line_text: String::new(),
         data: "SELECT * FROM users".to_string(),
         attrs,
         childs: vec![child_element],

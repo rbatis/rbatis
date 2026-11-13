@@ -33,6 +33,8 @@ mod test {
     fn element(tag: &str, data: &str, attrs: &[(&str, &str)], childs: Vec<Element>) -> Element {
         Element {
             tag: tag.to_string(),
+            line: 0,
+            line_text: String::new(),
             data: data.to_string(),
             attrs: attrs
                 .iter()
@@ -289,19 +291,19 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "must have id")]
+    #[should_panic(expected = "<sql> is missing the required")]
     fn sql_element_without_id_panics() {
         load_mapper_map(r#"<sql>`no id here`</sql>"#).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "must have attr")]
+    #[should_panic(expected = "<include> is missing the required")]
     fn include_element_without_refid_panics() {
         load_mapper_map(r#"<select id="s">x<include></include></select>"#).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "must have name")]
+    #[should_panic(expected = "missing the required \"name\" attribute")]
     fn bind_without_name_panics() {
         let mut ignore = vec![];
         parse_html(
@@ -312,7 +314,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "must have value")]
+    #[should_panic(expected = "missing the required \"value\" attribute")]
     fn bind_without_value_panics() {
         let mut ignore = vec![];
         parse_html(
@@ -415,12 +417,13 @@ mod test {
         let mut context = NodeContext {
             methods: &mut methods,
             fn_name: "f",
+            span: proc_macro2::Span::call_site(),
             child_parser: |children: &[Element],
                            _m: &mut TokenStream,
                            _i: &mut Vec<String>,
                            _n: &str| {
                 let count = children.len();
-                quote! { let __child_count = #count; }
+                Ok(quote! { let __child_count = #count; })
             },
         };
         let tokens = node.generate_tokens(&mut context, &mut ignore).to_string();
@@ -533,7 +536,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "Unimplemented scheme")]
+    #[should_panic(expected = "unsupported include URL scheme")]
     fn include_node_unsupported_scheme_panics() {
         let include = tag("include", &[("refid", "http://example.com/a?refid=x")]);
         let node = IncludeTagNode::from_element(&include);

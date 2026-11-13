@@ -1,6 +1,6 @@
 use super::{HtmlAstNode, NodeContext};
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
 
@@ -16,25 +16,26 @@ impl HtmlAstNode for MapperTagNode {
         "mapper"
     }
 
-    fn from_element(element: &Element) -> Self {
-        Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+        Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // The <mapper> tag, similar to <sql>, is a container.
         // The original `parse_elements` function, when encountering a <mapper> tag,
         // immediately recurses on its children without adding any specific tokens for the <mapper> itself.
-        let child_tokens = context.parse_children(&self.childs, ignore);
-        quote! { #child_tokens }
+        let child_tokens = context.parse_children(&self.childs, ignore)?;
+        Ok(quote! { #child_tokens })
     }
 }

@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::BTreeMap;
 use syn::ItemFn;
@@ -32,9 +32,18 @@ const DELETE_TAG: &str = "delete";
 
 /// Loads HTML content into a map of elements keyed by their ID
 pub fn load_mapper_map(html: &str) -> Result<BTreeMap<String, Element>, Error> {
+    load_mapper_map_with_span(html, Span::call_site())
+}
+
+/// Loads HTML content into a map of elements keyed by their ID, using `span` for the
+/// elements created while resolving `<include>` directives.
+pub fn load_mapper_map_with_span(
+    html: &str,
+    span: Span,
+) -> Result<BTreeMap<String, Element>, Error> {
     let elements = load_mapper_vec(html)?;
     let mut sql_map = BTreeMap::new();
-    let processed_elements = include_replace(elements, &mut sql_map);
+    let processed_elements = include_replace(elements, &mut sql_map, span)?;
 
     let mut m = BTreeMap::new();
     for x in processed_elements {
@@ -57,47 +66,71 @@ pub fn load_mapper_vec(html: &str) -> Result<Vec<Element>, Error> {
 fn include_replace(
     elements: Vec<Element>,
     sql_map: &mut BTreeMap<String, Element>,
-) -> Vec<Element> {
-    elements
-        .into_iter()
-        .map(|mut element| {
-            match element.tag.as_str() {
-                SQL_TAG => {
-                    let id = element
-                        .attrs
-                        .get("id")
-                        .expect("[rbatis-codegen] <sql> element must have id!");
+    span: Span,
+) -> Result<Vec<Element>, Error> {
+    let mut result = Vec::with_capacity(elements.len());
+    for mut element in elements {
+        match element.tag.as_str() {
+            SQL_TAG => {
+                let id = element.attrs.get("id").ok_or_else(|| {
+                    Error::from(format!(
+                        "[rbatis-codegen] <sql> is missing the required \"id\" attribute{}",
+                        element.code_frame("add id=\"...\"")
+                    ))
+                })?;
+                if id.trim().is_empty() {
+                    return Err(Error::from(format!(
+                        "[rbatis-codegen] <sql> has an empty \"id\" attribute{}",
+                        element.code_frame("id must not be empty")
+                    )));
+                }
+                sql_map.insert(id.clone(), element.clone());
+            }
+            INCLUDE_TAG => {
+                let node = IncludeTagNode::try_from_element(&element, span)?;
+                element = node.try_process_include(sql_map)?;
+            }
+            _ => {
+                if let Some(id) = element.attrs.get("id").filter(|id| !id.is_empty()) {
                     sql_map.insert(id.clone(), element.clone());
                 }
-                INCLUDE_TAG => {
-                    element = IncludeTagNode::from_element(&element).process_include(sql_map);
-                }
-                _ => {
-                    if let Some(id) = element.attrs.get("id").filter(|id| !id.is_empty()) {
-                        sql_map.insert(id.clone(), element.clone());
-                    }
-                }
             }
+        }
 
-            if !element.childs.is_empty() {
-                element.childs = include_replace(element.childs, sql_map);
-            }
+        if !element.childs.is_empty() {
+            element.childs = include_replace(element.childs, sql_map, span)?;
+        }
 
-            element
-        })
-        .collect()
+        result.push(element);
+    }
+    Ok(result)
 }
 
-/// Parses HTML content into a function TokenStream
+/// Parses HTML content into a function TokenStream.
+///
+/// This is the infallible compatibility wrapper: it panics on a bad template. The
+/// proc-macro entry points use [`try_parse_html`] to turn the error into a spanned
+/// `compile_error!` instead.
 pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> TokenStream {
+    try_parse_html(html, fn_name, ignore, Span::call_site()).unwrap_or_else(|e| panic!("{}", e))
+}
+
+/// Parses HTML content into a function TokenStream, reporting a bad template as a
+/// spanned [`syn::Error`] (the span of the `#[html_sql]` / `#[py_sql]` literal).
+pub fn try_parse_html(
+    html: &str,
+    fn_name: &str,
+    ignore: &mut Vec<String>,
+    span: Span,
+) -> syn::Result<TokenStream> {
     let processed_html = html
         .replace("\\\"", "\"")
         .replace("\\n", "\n")
         .trim_matches('"')
         .to_string();
 
-    let mut elements = load_mapper_map(&processed_html)
-        .unwrap_or_else(|_| panic!("Failed to load html: {}", processed_html));
+    let mut elements = load_mapper_map_with_span(&processed_html, span)
+        .map_err(|e| syn::Error::new(span, format!("Failed to load html: {}", e)))?;
 
     // the map keeps every `<sql>`/`<select>`/... entry, so the id of the function must
     // be looked up. Taking just the first entry compiled the wrong statement whenever
@@ -106,22 +139,45 @@ pub fn parse_html(html: &str, fn_name: &str, ignore: &mut Vec<String>) -> TokenS
     let element = match elements.remove(fn_name) {
         Some(element) => element,
         None => {
-            elements
-                .into_iter()
-                .next()
-                .unwrap_or_else(|| panic!("HTML not found for function: {}", fn_name))
-                .1
+            // Prefer the single statement of the template. A `<sql id="...">` fragment
+            // is not a statement, and BTreeMap order can put the fragment first.
+            let statements: Vec<Element> = elements
+                .values()
+                .filter(|element| {
+                    matches!(
+                        element.tag.as_str(),
+                        SELECT_TAG | INSERT_TAG | UPDATE_TAG | DELETE_TAG | SET_TAG
+                    )
+                })
+                .cloned()
+                .collect();
+            if statements.len() == 1 {
+                statements.into_iter().next().expect("one statement")
+            } else {
+                elements
+                    .into_iter()
+                    .next()
+                    .ok_or_else(|| {
+                        syn::Error::new(span, format!("HTML not found for function: {}", fn_name))
+                    })?
+                    .1
+            }
         }
     };
 
-    parse_html_node(vec![element], ignore, fn_name)
+    parse_html_node(vec![element], ignore, fn_name, span)
 }
 
 /// Parses HTML nodes into Rust code
-fn parse_html_node(elements: Vec<Element>, ignore: &mut Vec<String>, fn_name: &str) -> TokenStream {
+fn parse_html_node(
+    elements: Vec<Element>,
+    ignore: &mut Vec<String>,
+    fn_name: &str,
+    span: Span,
+) -> syn::Result<TokenStream> {
     let mut methods = quote!();
-    let fn_impl = parse_elements(&elements, &mut methods, ignore, fn_name);
-    quote! { #methods #fn_impl }
+    let fn_impl = parse_elements(&elements, &mut methods, ignore, fn_name, span)?;
+    Ok(quote! { #methods #fn_impl })
 }
 
 /// Main parsing function that converts elements to Rust code using AST nodes
@@ -130,118 +186,142 @@ fn parse_elements(
     methods: &mut TokenStream,
     ignore: &mut Vec<String>,
     fn_name: &str,
-) -> TokenStream {
+    span: Span,
+) -> syn::Result<TokenStream> {
     let mut body = quote! {};
 
     // Create a context object that will be passed to node generators
     let mut context = NodeContext {
         methods,
         fn_name,
-        child_parser: parse_elements,
+        span,
+        child_parser: |child_elements: &[Element],
+                       child_methods: &mut TokenStream,
+                       child_ignore: &mut Vec<String>,
+                       child_fn_name: &str| {
+            parse_elements(
+                child_elements,
+                child_methods,
+                child_ignore,
+                child_fn_name,
+                span,
+            )
+        },
     };
 
     for element in elements {
         match element.tag.as_str() {
             "" => {
                 // Text node, handle directly here
-                handle_text_element(element, &mut body, ignore);
+                handle_text_element(element, &mut body, ignore, span)?;
             }
             MAPPER_TAG => {
-                let node = MapperTagNode::from_element(element);
-                body = node.generate_tokens(&mut context, ignore);
+                let node = MapperTagNode::try_from_element(element, span)?;
+                body = node.try_generate_tokens(&mut context, ignore)?;
             }
             SQL_TAG => {
-                let node = SqlTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = SqlTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             INCLUDE_TAG => {
                 // Include tags are normally resolved earlier in `include_replace`
                 // (inside `load_mapper_map`). If one reaches this point, parse its children.
-                let node = IncludeTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = IncludeTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             CONTINUE_TAG => {
-                let node = ContinueTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = ContinueTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             BREAK_TAG => {
-                let node = BreakTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = BreakTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             IF_TAG => {
-                let node = IfTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = IfTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             TRIM_TAG => {
-                let node = TrimTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = TrimTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             BIND_TAG => {
-                let node = BindTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = BindTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             WHERE_TAG => {
-                let node = WhereTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = WhereTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             CHOOSE_TAG => {
-                let node = ChooseTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = ChooseTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             FOREACH_TAG => {
-                let node = ForeachTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = ForeachTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             SET_TAG => {
-                let node = SetTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = SetTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             SELECT_TAG => {
-                let node = SelectTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = SelectTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             UPDATE_TAG => {
-                let node = UpdateTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = UpdateTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             INSERT_TAG => {
-                let node = InsertTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = InsertTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             DELETE_TAG => {
-                let node = DeleteTagNode::from_element(element);
-                let code = node.generate_tokens(&mut context, ignore);
+                let node = DeleteTagNode::try_from_element(element, span)?;
+                let code = node.try_generate_tokens(&mut context, ignore)?;
                 body = quote! { #body #code };
             }
             WHEN_TAG => {}
             OTHERWISE_TAG => {}
-            _ => panic!(
-                "[rbatis-codegen] unsupported html tag: <{}>! please check your html_sql file.",
-                element.tag
-            ),
+            _ => {
+                return Err(syn::Error::new(
+                    span,
+                    format!(
+                    "[rbatis-codegen] unsupported html tag: <{}>{}",
+                    element.tag,
+                    element.code_frame("not a supported html_sql tag")
+                ),
+                ))
+            }
         }
     }
 
-    body
+    Ok(body)
 }
 
 /// Handles plain text elements
 #[allow(clippy::ptr_arg)]
-fn handle_text_element(element: &Element, body: &mut TokenStream, ignore: &mut Vec<String>) {
+fn handle_text_element(
+    element: &Element,
+    body: &mut TokenStream,
+    ignore: &mut Vec<String>,
+    span: Span,
+) -> syn::Result<()> {
     let mut string_data = remove_extra(&element.data);
     let convert_list = find_convert_string(&string_data);
 
@@ -249,13 +329,20 @@ fn handle_text_element(element: &Element, body: &mut TokenStream, ignore: &mut V
     let mut replace_num = 0;
 
     for (k, v) in convert_list {
-        let method_impl = crate::codegen::func::impl_fn(
+        let method_impl = crate::codegen::func::try_impl_fn_with_span(
             &body.to_string(),
             "",
             &format!("\"{}\"", k),
             false,
             ignore,
-        );
+            span,
+        )
+        .map_err(|e| {
+            syn::Error::new(
+                e.span(),
+                format!("{}{}", e, element.code_frame("check the expression")),
+            )
+        })?;
 
         if v.starts_with('#') {
             string_data = string_data.replacen(&v, "?", 1);
@@ -280,6 +367,7 @@ fn handle_text_element(element: &Element, body: &mut TokenStream, ignore: &mut V
             quote! { #body rbatis_codegen::codegen::string_util::concat_str(&mut sql, &format!(#string_data #formats_value)); }
         };
     }
+    Ok(())
 }
 
 /// Cleans up text content by removing extra characters
@@ -306,15 +394,27 @@ fn remove_extra(text: &str) -> String {
     data
 }
 
-/// Implements HTML SQL function
+/// Implements HTML SQL function.
+///
+/// This is the infallible compatibility wrapper: it panics on a bad template. The
+/// proc-macro entry points use [`try_impl_fn_html`].
 pub fn impl_fn_html(m: &ItemFn, args: &ParseArgs) -> MacroTokenStream {
+    try_impl_fn_html(m, args).unwrap_or_else(|e| panic!("{}", e))
+}
+
+/// Implements HTML SQL function, reporting template errors as a spanned
+/// [`syn::Error`] that points at the `#[html_sql(...)]` literal.
+pub fn try_impl_fn_html(m: &ItemFn, args: &ParseArgs) -> syn::Result<MacroTokenStream> {
     let fn_name = m.sig.ident.to_string();
 
     if args.sqls.is_empty() {
-        panic!(
-            "[rbatis-codegen] #[html_sql()] must have html_data, for example: {}",
-            stringify!(#[html_sql(r#"<select id="select_by_condition">`select * from biz_activity</select>"#)])
-        );
+        return Err(syn::Error::new(
+            m.sig.ident.span(),
+            format!(
+                "[rbatis-codegen] #[html_sql()] must have html_data, for example: {}",
+                stringify!(#[html_sql(r#"<select id="select_by_condition">`select * from biz_activity</select>"#)])
+            ),
+        ));
     }
 
     // every argument is part of the template, taking just the first one would drop the
@@ -325,5 +425,10 @@ pub fn impl_fn_html(m: &ItemFn, args: &ParseArgs) -> MacroTokenStream {
         .map(|sql| sql.value())
         .collect::<Vec<String>>()
         .join("");
-    parse_html(&html_data, &fn_name, &mut vec![]).into()
+    let span = args
+        .sqls
+        .first()
+        .map(|sql| sql.span())
+        .unwrap_or_else(|| m.sig.ident.span());
+    Ok(try_parse_html(&html_data, &fn_name, &mut vec![], span)?.into())
 }

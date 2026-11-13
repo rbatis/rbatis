@@ -2,7 +2,7 @@
 /// The syntax tree we use is the html tag structure loader_html.rs Element struct
 extern crate proc_macro;
 
-use syn::{parse_macro_input, ItemFn, Token};
+use syn::{ItemFn, Token};
 
 use proc_macro::TokenStream;
 use syn::parse::{Parse, ParseStream};
@@ -44,29 +44,33 @@ impl Parse for ParseArgs {
 
 pub fn expr(args: TokenStream, func: TokenStream) -> TokenStream {
     //let args = parse_macro_input!(args as AttributeArgs);
-    let target_fn: ItemFn = syn::parse(func).unwrap();
+    let target_fn: ItemFn = match syn::parse(func) {
+        Ok(target_fn) => target_fn,
+        Err(e) => return e.to_compile_error().into(),
+    };
 
-    func::impl_fn(
+    match func::try_impl_fn_with_span(
         "",
         &target_fn.sig.ident.to_string(),
         &args.to_string(),
         true,
         &[],
-    )
-    .into()
+        proc_macro2::Span::call_site(),
+    ) {
+        Ok(stream) => stream.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
 }
 
-pub fn rb_html(args: TokenStream, func: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
-    let target_fn = syn::parse(func).unwrap();
-
-    parser_html::impl_fn_html(&target_fn, &args)
+pub fn rb_html(args: TokenStream, func: TokenStream) -> syn::Result<TokenStream> {
+    let args = syn::parse::<ParseArgs>(args)?;
+    let target_fn = syn::parse::<ItemFn>(func)?;
+    parser_html::try_impl_fn_html(&target_fn, &args)
 }
 
 /// support py_sql fn convert
-pub fn rb_py(args: TokenStream, func: TokenStream) -> TokenStream {
-    let args = parse_macro_input!(args as ParseArgs);
-    let target_fn = syn::parse(func).unwrap();
-
-    parser_pysql::impl_fn_py(&target_fn, &args)
+pub fn rb_py(args: TokenStream, func: TokenStream) -> syn::Result<TokenStream> {
+    let args = syn::parse::<ParseArgs>(args)?;
+    let target_fn = syn::parse::<ItemFn>(func)?;
+    parser_pysql::try_impl_fn_py(&target_fn, &args)
 }

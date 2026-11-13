@@ -1,5 +1,5 @@
 use crate::codegen::loader_html::Element;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 
 pub mod bind_tag_node;
 pub mod break_tag_node;
@@ -44,16 +44,21 @@ pub use where_tag_node::WhereTagNode;
 /// FChildParser is a type parameter for the function that parses child elements.
 pub struct NodeContext<'a, FChildParser>
 where
-    FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+    FChildParser:
+        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
 {
     pub methods: &'a mut TokenStream, // For accumulating helper methods (e.g., for CRUD operations)
     pub fn_name: &'a str,             // The name of the main function being generated
-    pub child_parser: FChildParser,   // The function to call to parse child Elements
+    /// span of the template this node comes from, used to report errors at the
+    /// `#[py_sql]` / `#[html_sql]` attribute instead of panicking without a location
+    pub span: Span,
+    pub child_parser: FChildParser, // The function to call to parse child Elements
 }
 
 impl<'a, FChildParser> NodeContext<'a, FChildParser>
 where
-    FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+    FChildParser:
+        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
 {
     /// Helper method to parse child elements using the provided child_parser function.
     /// The `ignore` vector is passed directly here for flexibility with constructs like `<foreach>`.
@@ -61,31 +66,60 @@ where
         &mut self,
         children: &[Element],
         ignore: &mut Vec<String>,
-    ) -> TokenStream {
+    ) -> syn::Result<TokenStream> {
         (self.child_parser)(children, self.methods, ignore, self.fn_name)
     }
 }
 
 /// Trait for all HTML abstract syntax tree (AST) nodes.
-/// Defines how a node is created from an `Element` and how it generates Rust TokenStream.
+///
+/// The `try_*` methods are the fallible implementation: they return a [`syn::Error`]
+/// that carries the span of the template, so a bad template is reported by rustc at
+/// the `#[py_sql]` / `#[html_sql]` attribute instead of a text-only panic. The
+/// [`from_element`](HtmlAstNode::from_element) and
+/// [`generate_tokens`](HtmlAstNode::generate_tokens) wrappers are kept for callers
+/// that only need the old panicking API (tests, downstream tools); they panic with
+/// the message of the returned [`syn::Error`].
 pub trait HtmlAstNode {
     /// Returns the XML tag name for this node type (e.g., "if", "select").
     fn node_tag_name() -> &'static str;
 
-    /// Creates an instance of the node from a generic `Element`.
-    /// This method will extract necessary attributes and validate them.
-    /// Can panic if attributes are missing, similar to original code's expect().
-    fn from_element(element: &Element) -> Self
+    /// Creates an instance of the node from a generic `Element`, reporting missing
+    /// or invalid attributes as a spanned [`syn::Error`].
+    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self>
     where
         Self: Sized;
 
     /// Generates the Rust `TokenStream` for this specific AST node.
     /// The `ignore` vector is passed directly to allow modification by calling nodes (e.g. for `<foreach>` scope).
+    fn try_generate_tokens<FChildParser>(
+        &self,
+        context: &mut NodeContext<FChildParser>,
+        ignore: &mut Vec<String>,
+    ) -> syn::Result<TokenStream>
+    where
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>;
+
+    /// Panicking compatibility wrapper around [`HtmlAstNode::try_from_element`].
+    fn from_element(element: &Element) -> Self
+    where
+        Self: Sized,
+    {
+        Self::try_from_element(element, Span::call_site()).unwrap_or_else(|e| panic!("{}", e))
+    }
+
+    /// Panicking compatibility wrapper around [`HtmlAstNode::try_generate_tokens`].
     fn generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
     ) -> TokenStream
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream;
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+    {
+        self.try_generate_tokens(context, ignore)
+            .unwrap_or_else(|e| panic!("{}", e))
+    }
 }

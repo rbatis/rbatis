@@ -16,24 +16,25 @@ impl HtmlAstNode for DeleteTagNode {
         "delete"
     }
 
-    fn from_element(element: &Element) -> Self {
-        Self {
+    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+        Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-        }
+        })
     }
 
-    fn generate_tokens<FChildParser>(
+    fn try_generate_tokens<FChildParser>(
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> TokenStream
+    ) -> syn::Result<TokenStream>
     where
-        FChildParser: FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> TokenStream,
+        FChildParser:
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
     {
         // Replicates logic from `handle_crud_element` for <delete>
         let method_name = Ident::new(context.fn_name, Span::call_site());
-        let child_body = context.parse_children(&self.childs, ignore);
+        let child_body = context.parse_children(&self.childs, ignore)?;
 
         // the estimates of the previous implementation: the text of the whole statement
         // plus the `args.push(..)` calls the generated body contains
@@ -56,6 +57,6 @@ impl HtmlAstNode for DeleteTagNode {
         };
 
         context.methods.extend(function_token);
-        quote! { /* <delete> defines a method, no direct SQL output here */ }
+        Ok(quote! { /* <delete> defines a method, no direct SQL output here */ })
     }
 }
