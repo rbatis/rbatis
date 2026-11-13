@@ -1,9 +1,9 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::Error;
 
 /// Represents a `<when>` tag node (child of `<choose>`) in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,10 +12,6 @@ pub struct WhenTagNode {
     pub test: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
-    /// source line of the tag in the template, `0` when unknown
-    pub line: usize,
-    /// source text of that line, used in diagnostics
-    pub line_text: String,
 }
 
 impl HtmlAstNode for WhenTagNode {
@@ -23,36 +19,28 @@ impl HtmlAstNode for WhenTagNode {
         "when"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let test = match element.attrs.get("test") {
             Some(test) => test.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <when> is missing the required \"test\" attribute{}",
-                        element.code_frame(
-                            "add test=\"...\", for example <when test=\"name != ''\">"
-                        )
-                    ),
+                    "[rbatis-codegen] <when> is missing the required \"test\" attribute",
+                    "add test=\"...\", for example <when test=\"name != ''\">",
                 ))
             }
         };
         if test.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <when> has an empty \"test\" attribute{}",
-                    element.code_frame("test must not be empty")
-                ),
+                "[rbatis-codegen] <when> has an empty \"test\" attribute",
+                "test must not be empty",
             ));
         }
         Ok(Self {
             test,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-            line: element.line,
-            line_text: element.line_text.clone(),
         })
     }
 
@@ -60,10 +48,10 @@ impl HtmlAstNode for WhenTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // This logic is primarily used within the context of a <choose> tag.
         // The <choose> tag will call this and integrate it into its conditional structure.
@@ -83,20 +71,7 @@ impl HtmlAstNode for WhenTagNode {
             ignore,
             context.span,
         )
-        .map_err(|e| {
-            syn::Error::new(
-                e.span(),
-                format!(
-                    "{}{}",
-                    e,
-                    crate::codegen::loader_html::code_frame(
-                        self.line,
-                        &self.line_text,
-                        "check the test expression"
-                    )
-                ),
-            )
-        })?;
+        .map_err(|e| Diagnostic::from_error(e, "check the test expression"))?;
 
         // For <when> inside <choose>, if the condition is true, its body is evaluated,
         // and then the <choose> block should terminate for that path.

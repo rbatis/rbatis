@@ -1,4 +1,4 @@
-use crate::codegen::parser_html::try_parse_html;
+use crate::codegen::parser_html::try_parse_html_without_source;
 use crate::codegen::proc_macro::TokenStream;
 use crate::codegen::syntax_tree_pysql::{
     bind_node::BindNode, break_node::BreakNode, choose_node::ChooseNode,
@@ -49,7 +49,9 @@ pub fn try_impl_fn_py(m: &ItemFn, args: &ParseArgs) -> syn::Result<TokenStream> 
     let htmls =
         crate::codegen::syntax_tree_pysql::to_html::to_html_mapper(&nodes, is_select, &fn_name);
 
-    Ok(try_parse_html(&htmls, &fn_name, &mut vec![], span)?.into())
+    // py_sql is translated to html first; the generated line numbers do not map back
+    // to the user's py_sql source, so do not attach a code frame
+    Ok(try_parse_html_without_source(&htmls, &fn_name, &mut vec![], span)?.into())
 }
 
 impl ParsePySql for NodeType {

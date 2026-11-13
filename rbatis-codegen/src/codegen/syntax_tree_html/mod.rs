@@ -1,3 +1,4 @@
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 
@@ -45,7 +46,7 @@ pub use where_tag_node::WhereTagNode;
 pub struct NodeContext<'a, FChildParser>
 where
     FChildParser:
-        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
 {
     pub methods: &'a mut TokenStream, // For accumulating helper methods (e.g., for CRUD operations)
     pub fn_name: &'a str,             // The name of the main function being generated
@@ -58,7 +59,7 @@ where
 impl<'a, FChildParser> NodeContext<'a, FChildParser>
 where
     FChildParser:
-        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+        FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
 {
     /// Helper method to parse child elements using the provided child_parser function.
     /// The `ignore` vector is passed directly here for flexibility with constructs like `<foreach>`.
@@ -66,16 +67,17 @@ where
         &mut self,
         children: &[Element],
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream> {
+    ) -> Result<TokenStream, Diagnostic> {
         (self.child_parser)(children, self.methods, ignore, self.fn_name)
     }
 }
 
 /// Trait for all HTML abstract syntax tree (AST) nodes.
 ///
-/// The `try_*` methods are the fallible implementation: they return a [`syn::Error`]
-/// that carries the span of the template, so a bad template is reported by rustc at
-/// the `#[py_sql]` / `#[html_sql]` attribute instead of a text-only panic. The
+/// The `try_*` methods are the fallible implementation: they return a
+/// [`Diagnostic`] that the parser attaches to the source line of the element. A bad
+/// template is therefore reported by rustc at the `#[py_sql]` / `#[html_sql]`
+/// attribute instead of a text-only panic. The
 /// [`from_element`](HtmlAstNode::from_element) and
 /// [`generate_tokens`](HtmlAstNode::generate_tokens) wrappers are kept for callers
 /// that only need the old panicking API (tests, downstream tools); they panic with
@@ -85,8 +87,12 @@ pub trait HtmlAstNode {
     fn node_tag_name() -> &'static str;
 
     /// Creates an instance of the node from a generic `Element`, reporting missing
-    /// or invalid attributes as a spanned [`syn::Error`].
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self>
+    /// or invalid attributes as a [`Diagnostic`].
+    ///
+    /// Nodes do not store source locations: the parser attaches the element's
+    /// [`SourceSpan`](crate::codegen::diagnostic::SourceSpan) when converting the
+    /// diagnostic, so every node gets the same code-frame output.
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic>
     where
         Self: Sized;
 
@@ -96,17 +102,19 @@ pub trait HtmlAstNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>;
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>;
 
     /// Panicking compatibility wrapper around [`HtmlAstNode::try_from_element`].
     fn from_element(element: &Element) -> Self
     where
         Self: Sized,
     {
-        Self::try_from_element(element, Span::call_site()).unwrap_or_else(|e| panic!("{}", e))
+        Self::try_from_element(element, Span::call_site())
+            .map_err(|d| d.with_source(element.source.clone()).to_syn())
+            .unwrap_or_else(|e| panic!("{}", e))
     }
 
     /// Panicking compatibility wrapper around [`HtmlAstNode::try_generate_tokens`].
@@ -117,9 +125,10 @@ pub trait HtmlAstNode {
     ) -> TokenStream
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         self.try_generate_tokens(context, ignore)
+            .map_err(|d| d.to_syn())
             .unwrap_or_else(|e| panic!("{}", e))
     }
 }

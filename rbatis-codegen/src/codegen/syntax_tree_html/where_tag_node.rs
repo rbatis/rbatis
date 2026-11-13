@@ -1,4 +1,5 @@
 use super::{HtmlAstNode, NodeContext, TrimTagNode};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -20,7 +21,7 @@ impl HtmlAstNode for WhereTagNode {
         "where"
     }
 
-    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, _span: Span) -> Result<Self, Diagnostic> {
         // No specific attributes to extract for <where> itself beyond common ones.
         Ok(Self {
             attrs: element.attrs.clone(),
@@ -32,10 +33,10 @@ impl HtmlAstNode for WhereTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // Create a TrimTagNode with where-specific configurations
         let trim_node = TrimTagNode {

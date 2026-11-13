@@ -33,8 +33,7 @@ mod test {
     fn element(tag: &str, data: &str, attrs: &[(&str, &str)], childs: Vec<Element>) -> Element {
         Element {
             tag: tag.to_string(),
-            line: 0,
-            line_text: String::new(),
+            source: Default::default(),
             data: data.to_string(),
             attrs: attrs
                 .iter()

@@ -8,6 +8,8 @@ use proc_macro::TokenStream;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 
+/// shared source location and diagnostic rendering for the macro parsers
+pub mod diagnostic;
 pub mod func;
 pub mod loader_html;
 pub mod parser_html;

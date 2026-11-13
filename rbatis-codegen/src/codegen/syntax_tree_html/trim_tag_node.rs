@@ -1,4 +1,5 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -20,7 +21,7 @@ impl HtmlAstNode for TrimTagNode {
         "trim"
     }
 
-    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, _span: Span) -> Result<Self, Diagnostic> {
         let empty = String::new();
         let prefix = element
             .attrs
@@ -61,10 +62,10 @@ impl HtmlAstNode for TrimTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         let trim_body = context.parse_children(&self.childs, ignore)?;
 

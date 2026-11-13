@@ -1,4 +1,5 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -16,7 +17,7 @@ impl HtmlAstNode for OtherwiseTagNode {
         "otherwise"
     }
 
-    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, _span: Span) -> Result<Self, Diagnostic> {
         // No specific attributes to extract for <otherwise> itself beyond common ones.
         Ok(Self {
             attrs: element.attrs.clone(),
@@ -28,10 +29,10 @@ impl HtmlAstNode for OtherwiseTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // This logic is primarily used within the context of a <choose> tag.
         // The <choose> tag will call this for its <otherwise> branch.

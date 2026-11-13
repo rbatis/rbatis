@@ -1,9 +1,9 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::Error;
 
 /// Represents a `<foreach>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -16,10 +16,6 @@ pub struct ForeachTagNode {
     pub separator: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
-    /// source line of the tag in the template, `0` when unknown
-    pub line: usize,
-    /// source text of that line, used in diagnostics
-    pub line_text: String,
 }
 
 impl HtmlAstNode for ForeachTagNode {
@@ -27,7 +23,7 @@ impl HtmlAstNode for ForeachTagNode {
         "foreach"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let empty = String::new();
         let def_item = "item".to_string();
         let def_index = "index".to_string();
@@ -35,25 +31,19 @@ impl HtmlAstNode for ForeachTagNode {
         let collection = match element.attrs.get("collection") {
             Some(collection) => collection.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <foreach> is missing the required \"collection\" attribute{}",
-                        element.code_frame(
-                            "add collection=\"...\", for example <foreach collection=\"ids\" item=\"id\">"
-                        )
-                    ),
+                    "[rbatis-codegen] <foreach> is missing the required \"collection\" attribute",
+                    "add collection=\"...\", for example <foreach collection=\"ids\" item=\"id\">",
                 ))
             }
         };
 
         if collection.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <foreach> has an empty \"collection\" attribute{}",
-                    element.code_frame("collection must not be empty")
-                ),
+                "[rbatis-codegen] <foreach> has an empty \"collection\" attribute",
+                "collection must not be empty",
             ));
         }
 
@@ -99,8 +89,6 @@ impl HtmlAstNode for ForeachTagNode {
             separator,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-            line: element.line,
-            line_text: element.line_text.clone(),
         })
     }
 
@@ -108,10 +96,10 @@ impl HtmlAstNode for ForeachTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // Create a new ignore list for the children of this foreach loop,
         // including the item and index variables.
@@ -131,20 +119,7 @@ impl HtmlAstNode for ForeachTagNode {
             ignore, // Use original ignore list for the collection expression
             context.span,
         )
-        .map_err(|e| {
-            syn::Error::new(
-                e.span(),
-                format!(
-                    "{}{}",
-                    e,
-                    crate::codegen::loader_html::code_frame(
-                        self.line,
-                        &self.line_text,
-                        "check the collection expression"
-                    )
-                ),
-            )
-        })?;
+        .map_err(|e| Diagnostic::from_error(e, "check the collection expression"))?;
 
         let open_str = &self.open;
         let open_impl = if !self.open.is_empty() {

@@ -1,6 +1,6 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::{load_mapper_vec, Element};
-use crate::error::Error;
 use proc_macro2::{Span, TokenStream};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
@@ -23,17 +23,9 @@ pub struct IncludeTagNode {
     pub refid: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
-    /// source line of the tag in the template, `0` when unknown
-    pub line: usize,
-    /// source text of that line, used in diagnostics
-    pub line_text: String,
 }
 
 impl IncludeTagNode {
-    fn code_frame(&self, hint: &str) -> String {
-        crate::codegen::loader_html::code_frame(self.line, &self.line_text, hint)
-    }
-
     /// Resolves this include element to the referenced `<sql>` fragment.
     ///
     /// `refid` can be either:
@@ -42,48 +34,57 @@ impl IncludeTagNode {
     pub fn try_process_include(
         &self,
         sql_map: &BTreeMap<String, Element>,
-    ) -> Result<Element, Error> {
+    ) -> Result<Element, Diagnostic> {
         let ref_id = &self.refid;
 
         let url = if ref_id.contains("://") {
             Url::parse(ref_id).map_err(|_| {
-                Error::from(format!(
-                    "[rbatis-codegen] parse <include refid=\"{}\"> fail!{}",
-                    ref_id,
-                    self.code_frame("refid must be a valid URL")
-                ))
+                Diagnostic::new(
+                    Span::call_site(),
+                    format!("[rbatis-codegen] parse <include refid=\"{}\"> fail!", ref_id),
+                    "refid must be a valid URL",
+                )
             })?
         } else {
             Url::parse(&format!("current://current?refid={}", ref_id)).map_err(|_| {
-                Error::from(format!(
-                    "[rbatis-codegen] parse <include refid=\"{}\"> fail!{}",
-                    ref_id,
-                    self.code_frame("refid must be a valid URL")
-                ))
+                Diagnostic::new(
+                    Span::call_site(),
+                    format!("[rbatis-codegen] parse <include refid=\"{}\"> fail!", ref_id),
+                    "refid must be a valid URL",
+                )
             })?
         };
 
         match url.scheme() {
             "file" => self.try_handle_file_include(&url, ref_id),
             "current" => self.try_handle_current_include(&url, ref_id, sql_map),
-            _ => Err(Error::from(format!(
-                "[rbatis-codegen] unsupported include URL scheme in <include refid=\"{}\">{}",
-                ref_id,
-                self.code_frame("use file://path?refid=id or a plain <sql id>")
-            ))),
+            _ => Err(Diagnostic::new(
+                Span::call_site(),
+                format!(
+                    "[rbatis-codegen] unsupported include URL scheme in <include refid=\"{}\">",
+                    ref_id
+                ),
+                "use file://path?refid=id or a plain <sql id>",
+            )),
         }
     }
 
     /// Panicking compatibility wrapper around [`IncludeTagNode::try_process_include`].
     pub fn process_include(&self, sql_map: &BTreeMap<String, Element>) -> Element {
         self.try_process_include(sql_map)
+            .map_err(|d| d.to_syn())
             .unwrap_or_else(|e| panic!("{}", e))
     }
 
     /// Handles file-based includes, e.g. `<include refid="file://example.html?refid=a"></include>`
-    fn try_handle_file_include(&self, url: &Url, ref_id: &str) -> Result<Element, Error> {
-        let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-            .map_err(|_| Error::from("Failed to read CARGO_MANIFEST_DIR"))?;
+    fn try_handle_file_include(&self, url: &Url, ref_id: &str) -> Result<Element, Diagnostic> {
+        let mut manifest_dir = std::env::var("CARGO_MANIFEST_DIR").map_err(|_| {
+            Diagnostic::new(
+                Span::call_site(),
+                "Failed to read CARGO_MANIFEST_DIR",
+                "set CARGO_MANIFEST_DIR or use a relative include path",
+            )
+        })?;
         manifest_dir.push('/');
 
         let path = url.host_str().unwrap_or_default().to_string()
@@ -99,42 +100,62 @@ impl IncludeTagNode {
             .find(|(k, _)| k == "refid")
             .map(|(_, v)| v.to_string())
             .ok_or_else(|| {
-                Error::from(format!(
-                    "[rbatis-codegen] No ref_id found in URL '{}'{}",
-                    ref_id,
-                    self.code_frame("add the ?refid=id query parameter")
-                ))
+                Diagnostic::new(
+                    Span::call_site(),
+                    format!("[rbatis-codegen] No ref_id found in URL '{}'", ref_id),
+                    "add the ?refid=id query parameter",
+                )
             })?;
 
         let mut file = File::open(&file_path).map_err(|_| {
-            Error::from(format!(
-                "[rbatis-codegen] can't find file='{}', url='{}'{}",
-                file_path.to_str().unwrap_or_default(),
-                url,
-                self.code_frame("check the include file path")
-            ))
+            Diagnostic::new(
+                Span::call_site(),
+                format!(
+                    "[rbatis-codegen] can't find file='{}', url='{}'",
+                    file_path.to_str().unwrap_or_default(),
+                    url
+                ),
+                "check the include file path",
+            )
         })?;
 
         let mut html = String::new();
         file.read_to_string(&mut html).map_err(|e| {
-            Error::from(format!(
-                "[rbatis-codegen] failed to read include file='{}': {}{}",
-                file_path.to_str().unwrap_or_default(),
-                e,
-                self.code_frame("check the included file")
-            ))
+            Diagnostic::new(
+                Span::call_site(),
+                format!(
+                    "[rbatis-codegen] failed to read include file='{}': {}",
+                    file_path.to_str().unwrap_or_default(),
+                    e
+                ),
+                "check the included file",
+            )
         })?;
 
-        load_mapper_vec(&html)?
+        load_mapper_vec(&html)
+            .map_err(|e| {
+                Diagnostic::new(
+                    Span::call_site(),
+                    format!(
+                        "[rbatis-codegen] parse include file='{}' fail: {}",
+                        file_path.to_str().unwrap_or_default(),
+                        e
+                    ),
+                    "check the included file",
+                )
+            })?
             .into_iter()
             .find(|e| e.tag == SQL_TAG && e.attrs.get("id") == Some(&ref_id))
             .ok_or_else(|| {
-                Error::from(format!(
-                    "[rbatis-codegen] No <sql id=\"{}\"> found in file='{}'{}",
-                    ref_id,
-                    file_path.to_str().unwrap_or_default(),
-                    self.code_frame("add the missing <sql id=\"...\"> to the included file")
-                ))
+                Diagnostic::new(
+                    Span::call_site(),
+                    format!(
+                        "[rbatis-codegen] No <sql id=\"{}\"> found in file='{}'",
+                        ref_id,
+                        file_path.to_str().unwrap_or_default()
+                    ),
+                    "add the missing <sql id=\"...\"> to the included file",
+                )
             })
     }
 
@@ -144,7 +165,7 @@ impl IncludeTagNode {
         url: &Url,
         ref_id: &str,
         sql_map: &BTreeMap<String, Element>,
-    ) -> Result<Element, Error> {
+    ) -> Result<Element, Diagnostic> {
         let ref_id = url
             .query_pairs()
             .find(|(k, _)| k == "refid")
@@ -152,11 +173,14 @@ impl IncludeTagNode {
             .unwrap_or_else(|| ref_id.to_string());
 
         sql_map.get(&ref_id).cloned().ok_or_else(|| {
-            Error::from(format!(
-                "[rbatis-codegen] cannot find element <sql id=\"{}\"> referenced by <include>{}",
-                ref_id,
-                self.code_frame("add the referenced <sql id=\"...\"> fragment")
-            ))
+            Diagnostic::new(
+                Span::call_site(),
+                format!(
+                    "[rbatis-codegen] cannot find element <sql id=\"{}\"> referenced by <include>",
+                    ref_id
+                ),
+                "add the referenced <sql id=\"...\"> fragment",
+            )
         })
     }
 }
@@ -166,34 +190,28 @@ impl HtmlAstNode for IncludeTagNode {
         "include"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let refid = match element.attrs.get("refid") {
             Some(refid) => refid.clone(),
             None => {
-                return Err(syn::Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <include> is missing the required \"refid\" attribute{}",
-                        element.code_frame("add refid=\"...\"")
-                    ),
+                    "[rbatis-codegen] <include> is missing the required \"refid\" attribute",
+                    "add refid=\"...\"",
                 ))
             }
         };
         if refid.trim().is_empty() {
-            return Err(syn::Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <include> has an empty \"refid\" attribute{}",
-                    element.code_frame("refid must not be empty")
-                ),
+                "[rbatis-codegen] <include> has an empty \"refid\" attribute",
+                "refid must not be empty",
             ));
         }
         Ok(Self {
             refid,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-            line: element.line,
-            line_text: element.line_text.clone(),
         })
     }
 
@@ -201,10 +219,10 @@ impl HtmlAstNode for IncludeTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // `<include>` is normally resolved before token generation by `include_replace`
         // (inside `load_mapper_map`), which replaces it with the referenced `<sql>` fragment.

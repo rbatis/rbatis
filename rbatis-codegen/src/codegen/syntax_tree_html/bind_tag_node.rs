@@ -1,9 +1,10 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::{Error, LitStr};
+use syn::LitStr;
 
 /// Represents a `<bind>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -15,10 +16,6 @@ pub struct BindTagNode {
     pub attrs: HashMap<String, String>,
     // Bind tags typically do not have children, but Vec<Element> is kept for consistency.
     pub childs: Vec<Element>,
-    /// source line of the tag in the template, `0` when unknown
-    pub line: usize,
-    /// source text of that line, used in diagnostics
-    pub line_text: String,
 }
 
 impl HtmlAstNode for BindTagNode {
@@ -26,51 +23,39 @@ impl HtmlAstNode for BindTagNode {
         "bind"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let name = match element.attrs.get("name") {
             Some(name) => name.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <bind> is missing the required \"name\" attribute{}",
-                        element.code_frame(
-                            "add name=\"...\", for example <bind name=\"x\" value=\"a + b\">"
-                        )
-                    ),
+                    "[rbatis-codegen] <bind> is missing the required \"name\" attribute",
+                    "add name=\"...\", for example <bind name=\"x\" value=\"a + b\">",
                 ))
             }
         };
         let value = match element.attrs.get("value") {
             Some(value) => value.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <bind> is missing the required \"value\" attribute{}",
-                        element.code_frame(
-                            "add value=\"...\", for example <bind name=\"x\" value=\"a + b\">"
-                        )
-                    ),
+                    "[rbatis-codegen] <bind> is missing the required \"value\" attribute",
+                    "add value=\"...\", for example <bind name=\"x\" value=\"a + b\">",
                 ))
             }
         };
         if name.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <bind> has an empty \"name\" attribute{}",
-                    element.code_frame("name must not be empty")
-                ),
+                "[rbatis-codegen] <bind> has an empty \"name\" attribute",
+                "name must not be empty",
             ));
         }
         if value.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <bind> has an empty \"value\" attribute{}",
-                    element.code_frame("value must not be empty")
-                ),
+                "[rbatis-codegen] <bind> has an empty \"value\" attribute",
+                "value must not be empty",
             ));
         }
         Ok(Self {
@@ -78,8 +63,6 @@ impl HtmlAstNode for BindTagNode {
             value,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-            line: element.line,
-            line_text: element.line_text.clone(),
         })
     }
 
@@ -87,10 +70,10 @@ impl HtmlAstNode for BindTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // Replicates the logic from `handle_bind_element`
         let method_impl = crate::codegen::func::try_impl_fn_with_span(
@@ -101,20 +84,7 @@ impl HtmlAstNode for BindTagNode {
             ignore,
             context.span,
         )
-        .map_err(|e| {
-            syn::Error::new(
-                e.span(),
-                format!(
-                    "{}{}",
-                    e,
-                    crate::codegen::loader_html::code_frame(
-                        self.line,
-                        &self.line_text,
-                        "check the value expression"
-                    )
-                ),
-            )
-        })?;
+        .map_err(|e| Diagnostic::from_error(e, "check the value expression"))?;
 
         let lit_str_name = LitStr::new(&self.name, Span::call_site());
 

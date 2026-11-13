@@ -1,9 +1,9 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::Error;
 
 /// Represents an `<if>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -12,10 +12,6 @@ pub struct IfTagNode {
     pub test: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
-    /// source line of the tag in the template, `0` when unknown
-    pub line: usize,
-    /// source text of that line, used in diagnostics
-    pub line_text: String,
 }
 
 impl HtmlAstNode for IfTagNode {
@@ -23,36 +19,28 @@ impl HtmlAstNode for IfTagNode {
         "if"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let test = match element.attrs.get("test") {
             Some(test) => test.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <if> is missing the required \"test\" attribute{}",
-                        element.code_frame(
-                            "add test=\"...\", for example <if test=\"name != ''\">"
-                        )
-                    ),
+                    "[rbatis-codegen] <if> is missing the required \"test\" attribute",
+                    "add test=\"...\", for example <if test=\"name != ''\">",
                 ))
             }
         };
         if test.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <if> has an empty \"test\" attribute{}",
-                    element.code_frame("test must not be empty")
-                ),
+                "[rbatis-codegen] <if> has an empty \"test\" attribute",
+                "test must not be empty",
             ));
         }
         Ok(Self {
             test,
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
-            line: element.line,
-            line_text: element.line_text.clone(),
         })
     }
 
@@ -60,10 +48,10 @@ impl HtmlAstNode for IfTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         let if_tag_body = if !self.childs.is_empty() {
             context.parse_children(&self.childs, ignore)?
@@ -81,20 +69,7 @@ impl HtmlAstNode for IfTagNode {
             ignore,
             context.span,
         )
-        .map_err(|e| {
-            syn::Error::new(
-                e.span(),
-                format!(
-                    "{}{}",
-                    e,
-                    crate::codegen::loader_html::code_frame(
-                        self.line,
-                        &self.line_text,
-                        "check the test expression"
-                    )
-                ),
-            )
-        })?;
+        .map_err(|e| Diagnostic::from_error(e, "check the test expression"))?;
 
         Ok(quote! {
             if #method_impl.to_owned().into() {

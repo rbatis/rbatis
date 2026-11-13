@@ -59,8 +59,8 @@ fn elements_keep_the_template_line() {
     let html = "<select id=\"s\">\n  <if test=\"a\">\n  </if>\n</select>";
     let map = rbatis_codegen::codegen::parser_html::load_mapper_map(html).unwrap();
     let select = map.get("s").expect("select is stored in the map");
-    assert_eq!(select.line, 1);
-    assert_eq!(select.childs[0].line, 2);
+    assert_eq!(select.source.line, 1);
+    assert_eq!(select.childs[0].source.line, 2);
 }
 
 #[test]
@@ -96,6 +96,48 @@ fn fallback_prefers_the_single_statement_over_a_sql_fragment() {
         .to_string();
     assert!(code.contains("stmt"), "got: {code}");
     assert!(!code.contains("frag"), "got: {code}");
+}
+
+#[test]
+fn nested_node_error_has_a_single_code_frame() {
+    let html = "<select id=\"f\">\n  <where>\n    <if>`x`</if>\n  </where>\n</select>";
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("<if> without test must be an error");
+    let message = err.to_string();
+    assert_eq!(
+        message.matches("--> template:").count(),
+        1,
+        "the innermost node must be the only code frame: {message}"
+    );
+    assert!(message.contains("template:3"), "{message}");
+}
+
+#[test]
+fn foreach_missing_collection_has_a_code_frame() {
+    let html = "<select id=\"f\">\n  <foreach item=\"id\">`x`</foreach>\n</select>";
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("<foreach> without collection must be an error");
+    let message = err.to_string();
+    assert!(message.contains("template:2"), "{message}");
+    assert!(message.contains("<foreach item=\"id\">"), "{message}");
+    assert!(message.contains("collection"), "{message}");
+}
+
+#[test]
+fn py_sql_errors_do_not_claim_html_source_lines() {
+    let f: syn::ItemFn = syn::parse_quote! {
+        pub async fn f(rb: &dyn rbatis::Executor) -> rbatis::Result<()> {}
+    };
+    let args = ParseArgs {
+        sqls: vec![syn::LitStr::new("if:", Span::call_site())],
+    };
+    let err = try_impl_fn_py(&f, &args).expect_err("an empty if test must be an error");
+    let message = err.to_string();
+    assert!(message.contains("test"), "{message}");
+    assert!(
+        !message.contains("--> template:"),
+        "py_sql has no html source line to show: {message}"
+    );
 }
 
 #[test]

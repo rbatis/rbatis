@@ -1,9 +1,9 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::Error;
 
 /// Represents a `<sql>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -19,26 +19,22 @@ impl HtmlAstNode for SqlTagNode {
         "sql"
     }
 
-    fn try_from_element(element: &Element, span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, span: Span) -> Result<Self, Diagnostic> {
         let id = match element.attrs.get("id") {
             Some(id) => id.clone(),
             None => {
-                return Err(Error::new(
+                return Err(Diagnostic::new(
                     span,
-                    format!(
-                        "[rbatis-codegen] <sql> is missing the required \"id\" attribute{}",
-                        element.code_frame("add id=\"...\"")
-                    ),
+                    "[rbatis-codegen] <sql> is missing the required \"id\" attribute",
+                    "add id=\"...\"",
                 ))
             }
         };
         if id.trim().is_empty() {
-            return Err(Error::new(
+            return Err(Diagnostic::new(
                 span,
-                format!(
-                    "[rbatis-codegen] <sql> has an empty \"id\" attribute{}",
-                    element.code_frame("id must not be empty")
-                ),
+                "[rbatis-codegen] <sql> has an empty \"id\" attribute",
+                "id must not be empty",
             ));
         }
         Ok(Self {
@@ -52,10 +48,10 @@ impl HtmlAstNode for SqlTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // The <sql> tag itself doesn't directly generate code into the main SQL string in parse_elements.
         // It's used as a definition, and its children are processed when it's included or if it's a root element.

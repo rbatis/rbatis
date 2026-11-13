@@ -1,4 +1,5 @@
 use super::{HtmlAstNode, NodeContext};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -16,7 +17,7 @@ impl HtmlAstNode for MapperTagNode {
         "mapper"
     }
 
-    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, _span: Span) -> Result<Self, Diagnostic> {
         Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
@@ -27,10 +28,10 @@ impl HtmlAstNode for MapperTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         // The <mapper> tag, similar to <sql>, is a container.
         // The original `parse_elements` function, when encountering a <mapper> tag,

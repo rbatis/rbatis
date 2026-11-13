@@ -17,14 +17,12 @@ fn test_foreach_tag_node_from_element() {
 
     let element = Element {
         tag: "foreach".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
-            line: 0,
-            line_text: String::new(),
+            source: Default::default(),
             data: "#{it}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -49,8 +47,7 @@ fn test_foreach_tag_node_with_defaults() {
 
     let element = Element {
         tag: "foreach".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -73,8 +70,7 @@ fn test_foreach_tag_node_no_collection() {
 
     let element = Element {
         tag: "foreach".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -93,8 +89,7 @@ fn test_trim_tag_node_from_element() {
 
     let element = Element {
         tag: "trim".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -118,8 +113,7 @@ fn test_trim_tag_node_with_legacy_attributes() {
 
     let element = Element {
         tag: "trim".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -142,8 +136,7 @@ fn test_set_tag_node_from_element() {
 
     let element = Element {
         tag: "set".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -162,8 +155,7 @@ fn test_set_tag_node_with_defaults() {
 
     let element = Element {
         tag: "set".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![],
@@ -185,14 +177,12 @@ fn test_trim_tag_node_token_generation() {
 
     let element = Element {
         tag: "trim".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
-            line: 0,
-            line_text: String::new(),
+            source: Default::default(),
             data: "AND name = #{name}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -209,7 +199,7 @@ fn test_trim_tag_node_token_generation() {
         _: &mut proc_macro2::TokenStream,
         _: &mut Vec<String>,
         _: &str,
-    ) -> syn::Result<proc_macro2::TokenStream> {
+    ) -> Result<proc_macro2::TokenStream, rbatis_codegen::codegen::diagnostic::Diagnostic> {
         Ok(quote!())
     }
 
@@ -243,14 +233,12 @@ fn test_foreach_tag_node_token_generation() {
 
     let element = Element {
         tag: "foreach".to_string(),
-        line: 0,
-        line_text: String::new(),
+        source: Default::default(),
         data: String::new(),
         attrs,
         childs: vec![Element {
             tag: "".to_string(),
-            line: 0,
-            line_text: String::new(),
+            source: Default::default(),
             data: "#{it}".to_string(),
             attrs: HashMap::new(),
             childs: vec![],
@@ -267,7 +255,7 @@ fn test_foreach_tag_node_token_generation() {
         _: &mut proc_macro2::TokenStream,
         _: &mut Vec<String>,
         _: &str,
-    ) -> syn::Result<proc_macro2::TokenStream> {
+    ) -> Result<proc_macro2::TokenStream, rbatis_codegen::codegen::diagnostic::Diagnostic> {
         Ok(quote!())
     }
 

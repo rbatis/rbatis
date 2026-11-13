@@ -1,9 +1,9 @@
 use super::{HtmlAstNode, NodeContext, OtherwiseTagNode, WhenTagNode};
+use crate::codegen::diagnostic::Diagnostic;
 use crate::codegen::loader_html::Element;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::collections::HashMap;
-use syn::Error;
 
 /// Represents a `<choose>` tag node in the HTML AST.
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ impl HtmlAstNode for ChooseTagNode {
         "choose"
     }
 
-    fn try_from_element(element: &Element, _span: Span) -> syn::Result<Self> {
+    fn try_from_element(element: &Element, _span: Span) -> Result<Self, Diagnostic> {
         Ok(Self {
             attrs: element.attrs.clone(),
             childs: element.childs.clone(),
@@ -28,35 +28,42 @@ impl HtmlAstNode for ChooseTagNode {
         &self,
         context: &mut NodeContext<FChildParser>,
         ignore: &mut Vec<String>,
-    ) -> syn::Result<TokenStream>
+    ) -> Result<TokenStream, Diagnostic>
     where
         FChildParser:
-            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> syn::Result<TokenStream>,
+            FnMut(&[Element], &mut TokenStream, &mut Vec<String>, &str) -> Result<TokenStream, Diagnostic>,
     {
         let mut inner_body = quote! {};
 
         for child_element in &self.childs {
             match child_element.tag.as_str() {
                 tag_name if tag_name == WhenTagNode::node_tag_name() => {
-                    let when_node = WhenTagNode::try_from_element(child_element, context.span)?;
-                    let when_tokens = when_node.try_generate_tokens(context, ignore)?;
+                    let when_node = WhenTagNode::try_from_element(child_element, context.span)
+                        .map_err(|d| d.with_source(child_element.source.clone()))?;
+                    let when_tokens = when_node
+                        .try_generate_tokens(context, ignore)
+                        .map_err(|d| d.with_source(child_element.source.clone()))?;
                     inner_body = quote! { #inner_body #when_tokens };
                 }
                 tag_name if tag_name == OtherwiseTagNode::node_tag_name() => {
                     let otherwise_node =
-                        OtherwiseTagNode::try_from_element(child_element, context.span)?;
-                    let otherwise_tokens = otherwise_node.try_generate_tokens(context, ignore)?;
+                        OtherwiseTagNode::try_from_element(child_element, context.span)
+                            .map_err(|d| d.with_source(child_element.source.clone()))?;
+                    let otherwise_tokens = otherwise_node
+                        .try_generate_tokens(context, ignore)
+                        .map_err(|d| d.with_source(child_element.source.clone()))?;
                     inner_body = quote! { #inner_body #otherwise_tokens };
                 }
                 _ => {
-                    return Err(Error::new(
+                    return Err(Diagnostic::new(
                         context.span,
                         format!(
-                            "[rbatis-codegen] <choose> children must be <when> or <otherwise>, found <{}>{}",
-                            child_element.tag,
-                            child_element.code_frame("expected <when> or <otherwise>")
+                            "[rbatis-codegen] <choose> children must be <when> or <otherwise>, found <{}>",
+                            child_element.tag
                         ),
-                    ))
+                        "expected <when> or <otherwise>",
+                    )
+                    .with_source(child_element.source.clone()))
                 }
             }
         }

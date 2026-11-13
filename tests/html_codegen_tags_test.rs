@@ -37,8 +37,7 @@ mod test {
     fn element(tag: &str, attrs: &[(&str, &str)], childs: Vec<Element>) -> Element {
         Element {
             tag: tag.to_string(),
-            line: 0,
-            line_text: String::new(),
+            source: Default::default(),
             data: String::new(),
             attrs: attrs
                 .iter()
@@ -334,8 +333,7 @@ mod test {
             &[],
             vec![Element {
                 tag: String::new(),
-                line: 0,
-                line_text: String::new(),
+                source: Default::default(),
                 data: "and a = 1".to_string(),
                 attrs: HashMap::new(),
                 childs: vec![],
