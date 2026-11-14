@@ -10,8 +10,8 @@ pub struct Element {
     pub data: String,
     pub attrs: HashMap<String, String>,
     pub childs: Vec<Element>,
-    /// Source location of the start tag. [`SourceSpan::default()`] for text nodes and
-    /// for elements created by code generation, where no source line exists.
+    /// Source location of the start tag or text run. [`SourceSpan::default()`] for
+    /// elements created by code generation, where no source line exists.
     pub source: SourceSpan,
 }
 
@@ -47,14 +47,22 @@ impl Display for Element {
     }
 }
 
-/// Start-tag lines collected from the raw template, consumed in document order while
-/// the scraper tree is walked.
-type TagLines = std::vec::IntoIter<(String, usize, String)>;
+/// Source positions collected from the raw template. Start tags and text runs are
+/// kept separately because the scraper tree exposes them as different node kinds,
+/// but both are consumed in document order while the tree is walked.
+#[derive(Default)]
+struct ScannedSources {
+    tags: Vec<(String, SourceSpan)>,
+    text: Vec<SourceSpan>,
+}
+
+type TagLines = std::vec::IntoIter<(String, SourceSpan)>;
+type TextLines = std::vec::IntoIter<SourceSpan>;
 
 fn collect_elements(
     el: scraper::ElementRef<'_>,
-    lines: &mut std::iter::Peekable<TagLines>,
-    parent_source: &SourceSpan,
+    tag_lines: &mut std::iter::Peekable<TagLines>,
+    text_lines: &mut std::iter::Peekable<TextLines>,
 ) -> Vec<Element> {
     let mut els = vec![];
     for node in el.children() {
@@ -64,14 +72,14 @@ fn collect_elements(
                 if txt.trim().is_empty() {
                     continue;
                 }
-                // a text node has no start tag of its own: use the source of the
-                // enclosing element as a best-effort source position
+                // Text nodes have no start tag. Use the source position of the text
+                // run itself instead of inheriting the parent element's line.
                 els.push(Element {
                     tag: String::new(),
                     data: txt,
                     attrs: HashMap::new(),
                     childs: vec![],
-                    source: parent_source.clone(),
+                    source: text_lines.next().unwrap_or_default(),
                 });
             }
             Node::Element(elem) => {
@@ -79,13 +87,12 @@ fn collect_elements(
                     let tag = elem.name().to_string();
                     // consume the position before the children: start tags are in
                     // document order and come before their children
-                    let (line, line_text) = take_line_for_tag(&tag, lines);
-                    let source = SourceSpan { line, line_text };
+                    let source = take_source_for_tag(&tag, tag_lines);
                     let mut attrs = HashMap::new();
                     for (k, v) in elem.attrs() {
                         attrs.insert(k.to_string(), v.to_string());
                     }
-                    let childs = collect_elements(child_ref, lines, &source);
+                    let childs = collect_elements(child_ref, tag_lines, text_lines);
                     els.push(Element {
                         tag,
                         data: String::new(),
@@ -102,41 +109,38 @@ fn collect_elements(
     els
 }
 
-/// Take the line and source text of the next scanned start tag with `tag`, skipping
-/// entries the scraper normalized away. Returns `(0, "")` when the tag has no source
-/// position.
-fn take_line_for_tag(
-    tag: &str,
-    lines: &mut std::iter::Peekable<TagLines>,
-) -> (usize, String) {
-    while let Some((scanned_tag, line, line_text)) = lines.next() {
+/// Take the source position of the next scanned start tag with `tag`, skipping
+/// entries the scraper normalized away. Returns an empty source when the tag has no
+/// source position.
+fn take_source_for_tag(tag: &str, lines: &mut std::iter::Peekable<TagLines>) -> SourceSpan {
+    for (scanned_tag, source) in lines.by_ref() {
         if scanned_tag.eq_ignore_ascii_case(tag) {
-            return (line, line_text);
+            return source;
         }
     }
-    (0, String::new())
+    SourceSpan::default()
 }
 
-/// Find the 1-based line and the line text of every start tag in `html`, in document
-/// order.
+/// Find the source positions of start tags and non-whitespace text runs in `html`, in
+/// document order.
 ///
 /// `scraper`/`html5ever` do not expose source positions, so this small scanner walks
-/// the template itself. It is only used for diagnostics: the tag names are matched
-/// against the parsed tree to attach a source position to each [`Element`].
-fn scan_start_tag_lines(html: &str) -> Vec<(String, usize, String)> {
+/// the template itself. It is only used for diagnostics: the positions are matched
+/// against the parsed tree to attach a source location to each [`Element`].
+fn scan_source_positions(html: &str) -> ScannedSources {
     let bytes = html.as_bytes();
-    let mut result = Vec::new();
+    let mut result = ScannedSources::default();
     let mut i = 0usize;
     let mut line = 1usize;
 
     while i < bytes.len() {
-        if bytes[i] == b'\n' {
-            line += 1;
-            i += 1;
-            continue;
-        }
-        if bytes[i] != b'<' {
-            i += 1;
+        if bytes[i] != b'<' || !is_markup_start(html, i) {
+            let end = next_markup_start(html, i + 1).unwrap_or(bytes.len());
+            if let Some(source) = first_text_source(html, i, end, line) {
+                result.text.push(source);
+            }
+            line += count_newlines(&bytes[i..end]);
+            i = end;
             continue;
         }
 
@@ -181,7 +185,14 @@ fn scan_start_tag_lines(html: &str) -> Vec<(String, usize, String)> {
         let line_text = html[line_start..line_end]
             .trim_end_matches('\r')
             .to_string();
-        result.push((html[start..j].to_ascii_lowercase(), line, line_text));
+        result.tags.push((
+            html[start..j].to_ascii_lowercase(),
+            SourceSpan {
+                line,
+                line_text,
+                ..SourceSpan::default()
+            },
+        ));
 
         if let Some(end) = find_tag_end(bytes, j) {
             line += count_newlines(&bytes[i..=end]);
@@ -191,6 +202,59 @@ fn scan_start_tag_lines(html: &str) -> Vec<(String, usize, String)> {
         }
     }
     result
+}
+
+/// `true` when the `<` at `index` begins markup that the scanner should skip while
+/// looking for text. SQL comparisons such as `a < #{b}` must remain text.
+fn is_markup_start(html: &str, index: usize) -> bool {
+    let rest = &html[index..];
+    if rest.starts_with("<!--") {
+        return true;
+    }
+    match rest.as_bytes().get(1).copied() {
+        Some(b'/') | Some(b'!') | Some(b'?') => true,
+        Some(next) => next.is_ascii_alphabetic(),
+        None => false,
+    }
+}
+
+/// Index of the next real markup start at or after `from`.
+fn next_markup_start(html: &str, from: usize) -> Option<usize> {
+    let mut offset = from;
+    while let Some(relative) = html[offset..].find('<') {
+        let index = offset + relative;
+        if is_markup_start(html, index) {
+            return Some(index);
+        }
+        offset = index + 1;
+    }
+    None
+}
+
+/// Source position of the first non-whitespace character in a text run.
+fn first_text_source(
+    html: &str,
+    start: usize,
+    end: usize,
+    start_line: usize,
+) -> Option<SourceSpan> {
+    let relative = html[start..end]
+        .char_indices()
+        .find_map(|(index, ch)| (!ch.is_whitespace()).then_some(index))?;
+    let position = start + relative;
+    let line = start_line + count_newlines(&html.as_bytes()[start..position]);
+    let line_start = html[..position].rfind('\n').map(|p| p + 1).unwrap_or(0);
+    let line_end = html[position..]
+        .find('\n')
+        .map(|p| position + p)
+        .unwrap_or(html.len());
+    Some(SourceSpan {
+        line,
+        line_text: html[line_start..line_end]
+            .trim_end_matches('\r')
+            .to_string(),
+        ..SourceSpan::default()
+    })
 }
 
 fn count_newlines(bytes: &[u8]) -> usize {
@@ -217,7 +281,8 @@ fn find_tag_end(bytes: &[u8], start: usize) -> Option<usize> {
     None
 }
 
-/// Loads HTML and records the source line of every element.
+/// Loads HTML and records the source line of every element and non-whitespace text
+/// run.
 pub fn load_html(html: &str) -> std::result::Result<Vec<Element>, String> {
     load_html_with_source(html, true)
 }
@@ -230,15 +295,17 @@ pub fn load_html_with_source(
     track_source: bool,
 ) -> std::result::Result<Vec<Element>, String> {
     let document = Html::parse_fragment(html);
-    let mut lines = if track_source {
-        scan_start_tag_lines(html).into_iter().peekable()
+    let sources = if track_source {
+        scan_source_positions(html)
     } else {
-        Vec::new().into_iter().peekable()
+        ScannedSources::default()
     };
+    let mut tag_lines = sources.tags.into_iter().peekable();
+    let mut text_lines = sources.text.into_iter().peekable();
     Ok(collect_elements(
         document.root_element(),
-        &mut lines,
-        &SourceSpan::default(),
+        &mut tag_lines,
+        &mut text_lines,
     ))
 }
 

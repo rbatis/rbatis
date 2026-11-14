@@ -406,8 +406,12 @@ fn handle_text_element(
             span,
         )
         .map_err(|e| {
-            Diagnostic::from_error(e, "check the expression")
-                .with_source(element.source.clone())
+            Diagnostic::from_error(e, "check the expression").with_source(
+                element
+                    .source
+                    .clone()
+                    .highlighting_in_text(&element.data, &k),
+            )
         })?;
 
         if v.starts_with('#') {

@@ -69,8 +69,290 @@ fn try_parse_html_reports_the_source_line() {
     let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
         .expect_err("<if> without test must be an error");
     let message = err.to_string();
-    assert!(message.contains("template:2"), "unexpected message: {message}");
-    assert!(message.contains("<if>`x`</if>"), "missing source line: {message}");
+    assert!(
+        message.contains("template:2"),
+        "unexpected message: {message}"
+    );
+    assert!(
+        message.contains("<if>`x`</if>"),
+        "missing source line: {message}"
+    );
+}
+
+#[test]
+fn text_expression_error_points_to_the_expression_line_and_column() {
+    let html = concat!(
+        "<select id=\"f\">\n",
+        "  <if test=\"name == ''\">\n",
+        "    ` and name like #{name === 1}`\n",
+        "  </if>\n",
+        "</select>",
+    );
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("the invalid interpolation expression must be an error");
+    let message = err.to_string();
+
+    assert!(message.contains("template:3:"), "wrong line: {message}");
+    assert!(
+        message.contains("` and name like #{name === 1}`"),
+        "missing text line: {message}"
+    );
+    assert!(
+        message.contains("^^^^^^^^^^ check the expression"),
+        "the expression itself must be underlined: {message}"
+    );
+    assert!(
+        !message.contains("template:2:"),
+        "the parent <if> line must not be used: {message}"
+    );
+}
+
+#[test]
+fn text_expression_error_points_to_its_line_inside_a_multiline_text_node() {
+    let html = concat!(
+        "<select id=\"f\">\n",
+        "  <if test=\"true\">\n",
+        "    `select *\n",
+        "     from activity\n",
+        "     where name like #{name === 1}`\n",
+        "  </if>\n",
+        "</select>",
+    );
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("the invalid interpolation expression must be an error");
+    let message = err.to_string();
+
+    assert!(message.contains("template:5:"), "wrong line: {message}");
+    assert!(
+        message.contains("where name like #{name === 1}`"),
+        "missing expression line: {message}"
+    );
+    assert!(
+        message.contains("^^^^^^^^^^ check the expression"),
+        "the expression itself must be underlined: {message}"
+    );
+}
+
+#[test]
+fn text_expression_errors_keep_their_source_in_every_container() {
+    let cases = [
+        (
+            "select",
+            "<select id=\"f\">\n  `#{name === 1}`\n</select>",
+            2,
+        ),
+        ("sql", "<sql id=\"f\">\n  `#{name === 1}`\n</sql>", 2),
+        (
+            "insert",
+            "<insert id=\"f\">\n  `#{name === 1}`\n</insert>",
+            2,
+        ),
+        (
+            "update",
+            "<update id=\"f\">\n  `#{name === 1}`\n</update>",
+            2,
+        ),
+        (
+            "delete",
+            "<delete id=\"f\">\n  `#{name === 1}`\n</delete>",
+            2,
+        ),
+        (
+            "mapper",
+            concat!(
+                "<mapper>\n",
+                "  <select id=\"f\">\n",
+                "    `#{name === 1}`\n",
+                "  </select>\n",
+                "</mapper>",
+            ),
+            3,
+        ),
+        (
+            "if",
+            "<select id=\"f\">\n  <if test=\"true\">\n    `#{name === 1}`\n  </if>\n</select>",
+            3,
+        ),
+        (
+            "when",
+            concat!(
+                "<select id=\"f\">\n",
+                "  <choose>\n",
+                "    <when test=\"true\">\n",
+                "      `#{name === 1}`\n",
+                "    </when>\n",
+                "  </choose>\n",
+                "</select>",
+            ),
+            4,
+        ),
+        (
+            "otherwise",
+            concat!(
+                "<select id=\"f\">\n",
+                "  <choose>\n",
+                "    <otherwise>\n",
+                "      `#{name === 1}`\n",
+                "    </otherwise>\n",
+                "  </choose>\n",
+                "</select>",
+            ),
+            4,
+        ),
+        (
+            "foreach",
+            concat!(
+                "<select id=\"f\">\n",
+                "  <foreach collection=\"items\" item=\"item\">\n",
+                "    `#{name === 1}`\n",
+                "  </foreach>\n",
+                "</select>",
+            ),
+            3,
+        ),
+        (
+            "trim",
+            "<select id=\"f\">\n  <trim>\n    `#{name === 1}`\n  </trim>\n</select>",
+            3,
+        ),
+        (
+            "where",
+            "<select id=\"f\">\n  <where>\n    `#{name === 1}`\n  </where>\n</select>",
+            3,
+        ),
+        (
+            "set",
+            "<update id=\"f\">\n  <set>\n    `#{name === 1}`\n  </set>\n</update>",
+            3,
+        ),
+    ];
+
+    for (container, html, line) in cases {
+        let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+            .expect_err("the invalid interpolation expression must be an error");
+        let message = err.to_string();
+        assert!(
+            message.contains(&format!("template:{line}:")),
+            "{container} reported the wrong line: {message}"
+        );
+        assert!(
+            message.contains("`#{name === 1}`"),
+            "{container} did not show the text line: {message}"
+        );
+    }
+}
+
+#[test]
+fn resolved_include_child_errors_keep_the_fragment_source() {
+    let html = concat!(
+        "<sql id=\"frag\">\n",
+        "  `#{name === 1}`\n",
+        "</sql>\n",
+        "<select id=\"f\">\n",
+        "  <include refid=\"frag\"></include>\n",
+        "</select>",
+    );
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("the invalid included expression must be an error");
+    let message = err.to_string();
+    assert!(message.contains("template:2:"), "wrong line: {message}");
+    assert!(message.contains("`#{name === 1}`"), "{message}");
+}
+
+#[test]
+fn structural_node_errors_point_to_the_owning_tag() {
+    let cases = [
+        (
+            "choose",
+            "<select id=\"f\">\n  <choose>\n    invalid\n  </choose>\n</select>",
+            3,
+            "invalid",
+        ),
+        (
+            "include",
+            "<select id=\"f\">\n  <include></include>\n</select>",
+            2,
+            "<include>",
+        ),
+        ("sql", "<sql>`x`</sql>", 1, "<sql>"),
+    ];
+
+    for (node, html, line, source_text) in cases {
+        let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+            .expect_err("the invalid node structure must be an error");
+        let message = err.to_string();
+        assert!(
+            message.contains(&format!("template:{line}:")),
+            "<{node}> reported the wrong line: {message}"
+        );
+        assert!(
+            message.contains(source_text),
+            "<{node}> did not show its source: {message}"
+        );
+    }
+}
+
+#[test]
+fn node_expression_errors_point_to_the_owning_tag() {
+    let cases = [
+        (
+            "if",
+            "<select id=\"f\">\n  <if test=\"name === 1\">`x`</if>\n</select>",
+            2,
+        ),
+        (
+            "bind",
+            "<select id=\"f\">\n  <bind name=\"x\" value=\"name === 1\">`x`</bind>\n</select>",
+            2,
+        ),
+        (
+            "foreach",
+            "<select id=\"f\">\n  <foreach collection=\"name === 1\">`x`</foreach>\n</select>",
+            2,
+        ),
+        (
+            "when",
+            concat!(
+                "<select id=\"f\">\n",
+                "  <choose>\n",
+                "    <when test=\"name === 1\">`x`</when>\n",
+                "  </choose>\n",
+                "</select>",
+            ),
+            3,
+        ),
+    ];
+
+    for (node, html, line) in cases {
+        let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+            .expect_err("the invalid node expression must be an error");
+        let message = err.to_string();
+        assert!(
+            message.contains(&format!("template:{line}:")),
+            "<{node}> reported the wrong line: {message}"
+        );
+        assert!(
+            message.contains(&format!("<{node}")),
+            "<{node}> did not show its own source line: {message}"
+        );
+    }
+}
+
+#[test]
+fn sql_less_than_text_does_not_desynchronize_later_source_lines() {
+    let html = concat!(
+        "<select id=\"f\">\n",
+        "  `where a < #{a}`\n",
+        "  <if test=\"true\">\n",
+        "    `and b = #{name === 1}`\n",
+        "  </if>\n",
+        "</select>",
+    );
+    let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect_err("the invalid interpolation expression must be an error");
+    let message = err.to_string();
+    assert!(message.contains("template:4:"), "wrong line: {message}");
+    assert!(message.contains("`and b = #{name === 1}`"), "{message}");
 }
 
 #[test]

@@ -1,6 +1,6 @@
 use proc_macro2::Span;
 
-/// Source location of an element in an html/sql template.
+/// Source location of an element or text run in an html/sql template.
 ///
 /// Parsed elements own one of these; AST nodes do not store source fields. The
 /// parser attaches it when a node returns a [`Diagnostic`], so every node gets the
@@ -11,12 +11,77 @@ pub struct SourceSpan {
     pub line: usize,
     /// The source text of that line.
     pub line_text: String,
+    /// 1-based column to highlight. `0` selects the first non-whitespace column.
+    pub column: usize,
+    /// Number of characters to underline. `0` selects a best-effort token width.
+    pub length: usize,
 }
 
 impl SourceSpan {
     /// `true` when there is no source location to show.
     pub fn is_empty(&self) -> bool {
         self.line == 0 || self.line_text.is_empty()
+    }
+
+    /// Highlight the first occurrence of `needle` on this source line.
+    ///
+    /// Template expressions are normally identified by the parser after the
+    /// surrounding text node has been loaded, so this lets the diagnostic point at
+    /// the bad expression rather than only at the beginning of the text node.
+    pub fn highlighting(mut self, needle: &str) -> Self {
+        if needle.is_empty() {
+            return self;
+        }
+        if let Some(byte_index) = self.line_text.find(needle) {
+            self.column = self.line_text[..byte_index].chars().count() + 1;
+            self.length = needle.chars().count().max(1);
+        }
+        self
+    }
+
+    /// Highlight `needle` inside a possibly multi-line text node.
+    ///
+    /// A source span initially points at the first non-whitespace line of the text
+    /// node. If the expression is on a later line, use that line's text and offset.
+    pub fn highlighting_in_text(mut self, text: &str, needle: &str) -> Self {
+        if needle.is_empty() {
+            return self;
+        }
+        if self.line_text.contains(needle) {
+            return self.highlighting(needle);
+        }
+        let Some(needle_start) = text.find(needle) else {
+            return self;
+        };
+        let Some(first_non_whitespace) = text
+            .char_indices()
+            .find_map(|(index, ch)| (!ch.is_whitespace()).then_some(index))
+        else {
+            return self;
+        };
+
+        let first_line = text[..first_non_whitespace].matches('\n').count();
+        let needle_line = text[..needle_start].matches('\n').count();
+        let line_delta = needle_line.saturating_sub(first_line);
+        if line_delta == 0 {
+            return self;
+        }
+
+        let line_start = text[..needle_start]
+            .rfind('\n')
+            .map(|index| index + 1)
+            .unwrap_or(0);
+        let line_end = text[needle_start..]
+            .find('\n')
+            .map(|index| needle_start + index)
+            .unwrap_or(text.len());
+        self.line += line_delta;
+        self.line_text = text[line_start..line_end]
+            .trim_end_matches('\r')
+            .to_string();
+        self.column = text[line_start..needle_start].chars().count() + 1;
+        self.length = needle.chars().count().max(1);
+        self
     }
 
     /// Render a compiler-style snippet:
@@ -37,13 +102,27 @@ impl SourceSpan {
         let line_no = self.line.to_string();
         let gutter = " ".repeat(line_no.len());
         let trimmed = self.line_text.trim_start();
-        let indent = self.line_text.len() - trimmed.len();
-        let column = indent + 1;
-        // underline the tag name (the first whitespace/`>` after it)
-        let tag_len = trimmed
+        let auto_column = self.line_text[..self.line_text.len() - trimmed.len()]
+            .chars()
+            .count()
+            + 1;
+        let column = if self.column == 0 {
+            auto_column
+        } else {
+            self.column
+        };
+        // Underline the tag name (the first whitespace/`>` after it) unless the
+        // diagnostic identified a more precise expression.
+        let auto_length = trimmed
             .find(|c: char| c.is_whitespace() || c == '>')
-            .unwrap_or(trimmed.len())
+            .map(|byte_index| trimmed[..byte_index].chars().count())
+            .unwrap_or_else(|| trimmed.chars().count())
             .max(1);
+        let length = if self.length == 0 {
+            auto_length
+        } else {
+            self.length
+        };
         let hint = if hint.is_empty() {
             String::new()
         } else {
@@ -57,8 +136,8 @@ impl SourceSpan {
             line_no,
             self.line_text,
             gutter,
-            " ".repeat(indent),
-            "^".repeat(tag_len),
+            " ".repeat(column.saturating_sub(1)),
+            "^".repeat(length),
             hint
         )
     }
@@ -106,7 +185,9 @@ impl Diagnostic {
     /// Attach `source` unless a nested node already attached its own (the innermost
     /// element wins, which is the one the user needs to fix).
     pub fn with_source(mut self, source: SourceSpan) -> Self {
-        if self.source.is_none() {
+        // Generated helper nodes may carry an empty source. Keep looking outwards in
+        // that case so their user-authored parent can still provide a useful frame.
+        if self.source.as_ref().is_none_or(SourceSpan::is_empty) && !source.is_empty() {
             self.source = Some(source);
         }
         self
