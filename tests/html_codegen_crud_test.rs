@@ -382,13 +382,12 @@ mod test {
     }
 
     #[test]
-    fn include_with_extra_children_is_replaced() {
-        let code = parse(
+    #[should_panic(expected = "does not support child nodes")]
+    fn include_with_extra_children_is_rejected() {
+        parse(
             r#"<sql id="a">`from_sql`</sql><select id="s">`select * ` <include refid="a"><span>ignored</span></include></select>"#,
             "s",
         );
-        assert!(code.contains("from_sql"), "{code}");
-        assert!(!code.contains("ignored"), "{code}");
     }
 
     #[test]

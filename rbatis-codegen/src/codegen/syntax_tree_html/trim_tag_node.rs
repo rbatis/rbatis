@@ -83,57 +83,44 @@ impl HtmlAstNode for TrimTagNode {
             .filter(|s| !s.is_empty())
             .collect();
 
-        let has_trim = !prefixes.is_empty() || !suffixes.is_empty();
         let capacity = trim_body.to_string().len() + self.prefix.len() + self.suffix.len() + 100;
 
-        // 创建基础的trims表达式
-        let mut trims = quote! {
-            let mut sql = String::with_capacity(#capacity);
-            #trim_body
-            sql = sql
-        };
+        // Build the trim chain as an expression over the local `sql` value.
+        let mut trim_expr = quote! { sql };
 
         // 添加前缀去除
         for prefix in &prefixes {
             let p = prefix.as_str();
-            trims = quote! { #trims .trim_start_matches(#p) };
+            trim_expr = quote! { #trim_expr .trim_start_matches(#p) };
         }
 
         // 添加后缀去除
         for suffix in &suffixes {
             let s = suffix.as_str();
-            trims = quote! { #trims .trim_end_matches(#s) };
+            trim_expr = quote! { #trim_expr .trim_end_matches(#s) };
         }
 
-        let mut final_tokens = quote! {};
+        let trims = quote! {
+            let mut sql = String::with_capacity(#capacity);
+            #trim_body
+            (#trim_expr).to_string()
+        };
 
-        // 添加前缀（如果有）
-        if !self.prefix.is_empty() {
-            let prefix_str = &self.prefix;
-            final_tokens.extend(quote! {
+        let prefix_str = &self.prefix;
+        let suffix_str = &self.suffix;
+
+        // Generate the body in its own `sql` scope, then apply prefix/suffix only
+        // when that body produced SQL. This keeps empty conditions from emitting a
+        // standalone `set`, parentheses, or other trim markers.
+        Ok(quote! {
+            let __trim_sql = {
+                #trims
+            };
+            if !__trim_sql.is_empty() {
                 sql.push_str(#prefix_str);
-            });
-        }
-
-        // 添加内容（无论是否需要去除前后缀）
-        if has_trim {
-            final_tokens.extend(quote! {
-                sql.push_str(&{#trims.to_string(); sql});
-            });
-        } else {
-            // nothing to trim: the children append to the `sql` of the enclosing tag
-            // by themselves, the prefix and the suffix are added around them
-            final_tokens.extend(quote! { #trim_body });
-        }
-
-        // 添加后缀（如果有）
-        if !self.suffix.is_empty() {
-            let suffix_str = &self.suffix;
-            final_tokens.extend(quote! {
+                sql.push_str(&__trim_sql);
                 sql.push_str(#suffix_str);
-            });
-        }
-
-        Ok(final_tokens)
+            }
+        })
     }
 }

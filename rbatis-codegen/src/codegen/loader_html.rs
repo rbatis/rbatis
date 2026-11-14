@@ -144,6 +144,21 @@ fn scan_source_positions(html: &str) -> ScannedSources {
             continue;
         }
 
+        if html[i..].starts_with("<![CDATA[") {
+            let content_start = i + "<![CDATA[".len();
+            if let Some(relative_end) = html[content_start..].find("]]>") {
+                let content_end = content_start + relative_end;
+                if let Some(source) = first_text_source(html, content_start, content_end, line) {
+                    result.text.push(source);
+                }
+                let end = content_end + "]]>".len();
+                line += count_newlines(&bytes[i..end]);
+                i = end;
+                continue;
+            }
+            break;
+        }
+
         // <!-- comment -->
         if html[i..].starts_with("<!--") {
             if let Some(end) = html[i + 4..].find("-->") {
@@ -294,7 +309,8 @@ pub fn load_html_with_source(
     html: &str,
     track_source: bool,
 ) -> std::result::Result<Vec<Element>, String> {
-    let document = Html::parse_fragment(html);
+    let parsed_html = preprocess_cdata(html)?;
+    let document = Html::parse_fragment(&parsed_html);
     let sources = if track_source {
         scan_source_positions(html)
     } else {
@@ -307,6 +323,45 @@ pub fn load_html_with_source(
         &mut tag_lines,
         &mut text_lines,
     ))
+}
+
+/// Replace XML CDATA sections with text that the HTML parser keeps verbatim.
+///
+/// The markers keep adjacent CDATA and normal text in separate text nodes, which
+/// preserves the one-to-one mapping with positions collected from the original
+/// source.
+fn preprocess_cdata(html: &str) -> std::result::Result<String, String> {
+    const OPEN: &str = "<![CDATA[";
+    const CLOSE: &str = "]]>";
+
+    let mut result = String::with_capacity(html.len());
+    let mut offset = 0usize;
+    while let Some(relative_start) = html[offset..].find(OPEN) {
+        let start = offset + relative_start;
+        result.push_str(&html[offset..start]);
+        let content_start = start + OPEN.len();
+        let Some(relative_end) = html[content_start..].find(CLOSE) else {
+            return Err(format!("unterminated CDATA section at byte offset {start}"));
+        };
+        let content_end = content_start + relative_end;
+        result.push_str("<!--rbatis-cdata-->");
+        escape_cdata_text(&html[content_start..content_end], &mut result);
+        result.push_str("<!--/rbatis-cdata-->");
+        offset = content_end + CLOSE.len();
+    }
+    result.push_str(&html[offset..]);
+    Ok(result)
+}
+
+fn escape_cdata_text(text: &str, output: &mut String) {
+    for ch in text.chars() {
+        match ch {
+            '&' => output.push_str("&amp;"),
+            '<' => output.push_str("&lt;"),
+            '>' => output.push_str("&gt;"),
+            _ => output.push(ch),
+        }
+    }
 }
 
 impl Element {

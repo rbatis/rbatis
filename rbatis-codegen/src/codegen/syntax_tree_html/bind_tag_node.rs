@@ -51,6 +51,13 @@ impl HtmlAstNode for BindTagNode {
                 "name must not be empty",
             ));
         }
+        if syn::parse_str::<syn::Ident>(&name).is_err() {
+            return Err(Diagnostic::new(
+                span,
+                format!("[rbatis-codegen] <bind> has an invalid name: {name}"),
+                "name must be a valid Rust identifier",
+            ));
+        }
         if value.trim().is_empty() {
             return Err(Diagnostic::new(
                 span,

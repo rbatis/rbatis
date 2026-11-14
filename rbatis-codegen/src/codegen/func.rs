@@ -30,8 +30,20 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
             }
         }
         Expr::MethodCall(mut b) => {
-            //receiver is named need to convert to arg["xxx"]
             b.receiver = Box::new(translate(context, *b.receiver, ignore)?);
+            // `Str` is the Value-based equivalent of the standard string methods.
+            // Translate its arguments too so `name.contains_str(other)` reads `other`
+            // from the template arguments instead of leaving an unresolved name.
+            if crate::ops::takes_value_arguments(&b.method.to_string()) {
+                for arg in b.args.iter_mut() {
+                    let translated = translate(context, arg.clone(), ignore)?;
+                    *arg = syn::parse_str::<Expr>(&format!(
+                        "rbs::value({}).unwrap_or_default()",
+                        translated.to_token_stream()
+                    ))
+                    .map_err(Error::from)?;
+                }
+            }
             Ok(Expr::MethodCall(b))
         }
         Expr::Binary(mut b) => {
@@ -284,6 +296,15 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         }
         Expr::Index(mut b) => {
             *b.expr = translate(context, *b.expr, ignore)?;
+            if !matches!(
+                b.index.as_ref(),
+                Expr::Lit(syn::ExprLit {
+                    lit: Lit::Int(_) | Lit::Str(_),
+                    ..
+                })
+            ) {
+                *b.index = translate(context, *b.index, ignore)?;
+            }
             syn::parse_str::<Expr>(&format!(
                 "&{}[{}]",
                 b.expr.to_token_stream(),
@@ -312,7 +333,10 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
             }
             Ok(Expr::Lit(b))
         }
-        _ => Ok(arg),
+        unsupported => Err(Error::from(format!(
+            "unsupported expression: {}",
+            unsupported.to_token_stream()
+        ))),
     }
 }
 

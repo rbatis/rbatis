@@ -1,6 +1,6 @@
 //! Runtime coverage for the rbatis-codegen operator modules:
 //! ops_add, ops_sub, ops_mul, ops_div, ops_rem, ops_shl, ops_shr,
-//! ops_neg, ops_not, ops_xor, ops_bit_and, ops_bit_or, ops_string and the
+//! ops_neg, ops_not, ops_xor, ops_bit_and, ops_bit_or, ops_str and the
 //! macro bodies in ops_macros.rs.
 //!
 //! Every custom trait impl is called explicitly as a method so that the
@@ -10,7 +10,7 @@
 #[cfg(test)]
 mod test {
     use rbatis_codegen::ops::{
-        Add, BitAnd, BitOr, BitShl, BitShr, BitXor, Div, Mul, Neg, Not, Rem, StrMethods, Sub,
+        Add, BitAnd, BitOr, BitShl, BitShr, BitXor, Div, Mul, Neg, Not, Rem, Str, Sub,
     };
     use rbs::Value;
 
@@ -984,7 +984,7 @@ mod test {
     }
 
     // ==================================================================
-    // ops_string.rs
+    // ops_str.rs
     // ==================================================================
 
     #[test]
@@ -992,38 +992,38 @@ mod test {
         let v = Value::String("hello world".into());
 
         // Value receiver.
-        assert!(v.clone().contains_str("lo wo"));
-        assert!(v.clone().starts_with("hello"));
-        assert!(v.clone().ends_with("world"));
-        assert!(!v.clone().contains_str("xyz"));
-        assert!(!v.clone().starts_with("world"));
-        assert!(!v.clone().ends_with("hello"));
+        assert!(v.clone().contains_str(Value::String("lo wo".into())));
+        assert!(v.clone().starts_with(Value::String("hello".into())));
+        assert!(v.clone().ends_with(Value::String("world".into())));
+        assert!(!v.clone().contains_str(Value::String("xyz".into())));
+        assert!(!v.clone().starts_with(Value::String("world".into())));
+        assert!(!v.clone().ends_with(Value::String("hello".into())));
 
         // &Value receiver.
-        assert!((&v).contains_str("world"));
-        assert!((&v).starts_with("hello"));
-        assert!((&v).ends_with("world"));
-        assert!(!(&v).contains_str("xyz"));
-        assert!(!(&v).starts_with("xyz"));
-        assert!(!(&v).ends_with("xyz"));
+        assert!((&v).contains_str(Value::String("world".into())));
+        assert!((&v).starts_with(Value::String("hello".into())));
+        assert!((&v).ends_with(Value::String("world".into())));
+        assert!(!(&v).contains_str(Value::String("xyz".into())));
+        assert!(!(&v).starts_with(Value::String("xyz".into())));
+        assert!(!(&v).ends_with(Value::String("xyz".into())));
 
         // &&Value receiver.
-        assert!((&&v).contains_str("world"));
-        assert!((&&v).starts_with("hello"));
-        assert!((&&v).ends_with("world"));
-        assert!(!(&&v).contains_str("xyz"));
-        assert!(!(&&v).starts_with("xyz"));
-        assert!(!(&&v).ends_with("xyz"));
+        assert!((&&v).contains_str(Value::String("world".into())));
+        assert!((&&v).starts_with(Value::String("hello".into())));
+        assert!((&&v).ends_with(Value::String("world".into())));
+        assert!(!(&&v).contains_str(Value::String("xyz".into())));
+        assert!(!(&&v).starts_with(Value::String("xyz".into())));
+        assert!(!(&&v).ends_with(Value::String("xyz".into())));
 
         // Non-string values hit as_str().unwrap_or_default().
-        assert!(!Value::Null.contains_str("x"));
-        assert!(!Value::Null.starts_with("x"));
-        assert!(!Value::Null.ends_with("x"));
-        assert!(!Value::I32(5).contains_str("5"));
-        assert!(!Value::Binary(vec![1]).starts_with("1"));
+        assert!(!Value::Null.contains_str(Value::String("x".into())));
+        assert!(!Value::Null.starts_with(Value::String("x".into())));
+        assert!(!Value::Null.ends_with(Value::String("x".into())));
+        assert!(!Value::I32(5).contains_str(Value::String("5".into())));
+        assert!(!Value::Binary(vec![1]).starts_with(Value::String("1".into())));
         // Ext wraps a string and therefore is a string for these methods.
         assert!(
-            Value::Ext("custom", Box::new(Value::String("abc".into()))).contains_str("b")
+            Value::Ext("custom", Box::new(Value::String("abc".into()))).contains_str(Value::String("b".into()))
         );
     }
 }

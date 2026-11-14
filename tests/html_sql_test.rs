@@ -594,7 +594,7 @@ mod test {
             htmlsql!(test_trim(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
             let r = test_trim(&rb).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql, "()");
+            assert_eq!(sql, "");
             assert_eq!(args, vec![]);
         };
         block_on(f);
@@ -610,7 +610,7 @@ mod test {
             htmlsql!(test_trim2(rb: &RBatis)  -> Result<Value, Error> => "tests/test.html");
             let r = test_trim2(&rb).await.unwrap();
             let (sql, args) = queue.pop().unwrap();
-            assert_eq!(sql, "()");
+            assert_eq!(sql, "");
             assert_eq!(args, vec![]);
         };
         block_on(f);
@@ -1040,6 +1040,100 @@ mod test {
             println!("sql={}", sql);
             // every argument of the macro belongs to the template
             assert_eq!(squeeze(&sql), "select1");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_html_sql_string_methods() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[html_sql(
+                r#"<select id="test_html_sql_string_methods">`select 1`<if test="name.contains_str(fragment) && name.starts_with(prefix)">` where ok`</if></select>"#
+            )]
+            pub async fn test_html_sql_string_methods(
+                rb: &RBatis,
+                name: &str,
+                fragment: &str,
+                prefix: &str,
+            ) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_html_sql_string_methods(&rb, "hello", "ell", "he")
+                .await
+                .unwrap();
+            let (sql, _) = queue.pop().unwrap();
+            assert_eq!(squeeze(&sql), "select1whereok");
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_empty_foreach_trim_and_set_emit_nothing() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[html_sql(
+                r#"<select id="test_empty_foreach_trim_and_set_emit_nothing">`select 1`<foreach collection="ids" open="(" close=")" separator=",">`#{item}`</foreach><trim prefix=" where "><if test="false">`x`</if></trim><set><if test="false">`y`</if></set></select>"#
+            )]
+            pub async fn test_empty_foreach_trim_and_set_emit_nothing(
+                rb: &RBatis,
+                ids: &[i64],
+            ) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let empty: Vec<i64> = vec![];
+            let _ = test_empty_foreach_trim_and_set_emit_nothing(&rb, &empty)
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(squeeze(&sql), "select1");
+            assert!(args.is_empty());
+
+            let _ = test_empty_foreach_trim_and_set_emit_nothing(&rb, &[1, 2])
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(squeeze(&sql), "select1(?,?)");
+            assert_eq!(args.len(), 2);
+        };
+        block_on(f);
+    }
+
+    #[test]
+    fn test_html_sql_translates_index_arguments() {
+        let f = async move {
+            let mut rb = RBatis::new();
+            rb.init(MockDriver {}, "test").unwrap();
+            let queue = Arc::new(SyncVec::new());
+            rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
+
+            #[html_sql(
+                r#"<select id="test_html_sql_translates_index_arguments">`select #{items[index]}`</select>"#
+            )]
+            pub async fn test_html_sql_translates_index_arguments(
+                rb: &RBatis,
+                items: &[i64],
+                index: usize,
+            ) -> Result<Value, Error> {
+                impled!()
+            }
+
+            let _ = test_html_sql_translates_index_arguments(&rb, &[10, 20], 1)
+                .await
+                .unwrap();
+            let (sql, args) = queue.pop().unwrap();
+            assert_eq!(squeeze(&sql), "select?");
+            assert_eq!(args, vec![Value::I64(20)]);
         };
         block_on(f);
     }

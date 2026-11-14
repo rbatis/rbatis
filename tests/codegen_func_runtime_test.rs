@@ -12,10 +12,7 @@ mod test {
 
     fn tr(src: &str) -> String {
         let e = syn::parse_str::<Expr>(src).unwrap();
-        translate("", e, &[])
-            .unwrap()
-            .to_token_stream()
-            .to_string()
+        translate("", e, &[]).unwrap().to_token_stream().to_string()
     }
 
     /// Same as `tr` but with a non-empty context and an ignore-list.
@@ -30,7 +27,10 @@ mod test {
 
     fn tr_err(src: &str) -> String {
         let e = syn::parse_str::<Expr>(src).unwrap();
-        translate("", e, &[]).err().expect("expected Err").to_string()
+        translate("", e, &[])
+            .err()
+            .expect("expected Err")
+            .to_string()
     }
 
     // ------------------------------------------------------------------
@@ -76,17 +76,30 @@ mod test {
     #[test]
     fn method_call_receiver_is_translated() {
         assert_eq!(
-            tr("name.contains_str('x')"),
-            r#"(& arg ["name"]) . contains_str ('x')"#
+            tr(r#"name.contains_str("x")"#),
+            r#"(& arg ["name"]) . contains_str (rbs :: value ("x") . unwrap_or_default ())"#
+        );
+    }
+
+    #[test]
+    fn string_method_arguments_are_translated() {
+        assert_eq!(
+            tr("name.contains_str(other)"),
+            r#"(& arg ["name"]) . contains_str (rbs :: value (& arg ["other"]) . unwrap_or_default ())"#
+        );
+        assert_eq!(
+            tr("name.starts_with(prefix)"),
+            r#"(& arg ["name"]) . starts_with (rbs :: value (& arg ["prefix"]) . unwrap_or_default ())"#
+        );
+        assert_eq!(
+            tr("name.ends_with(suffix)"),
+            r#"(& arg ["name"]) . ends_with (rbs :: value (& arg ["suffix"]) . unwrap_or_default ())"#
         );
     }
 
     #[test]
     fn method_call_chained_receivers_are_translated_recursively() {
-        assert_eq!(
-            tr("a.trim().len()"),
-            r#"(& arg ["a"]) . trim () . len ()"#
-        );
+        assert_eq!(tr("a.trim().len()"), r#"(& arg ["a"]) . trim () . len ()"#);
     }
 
     // ------------------------------------------------------------------
@@ -142,18 +155,12 @@ mod test {
 
     #[test]
     fn binary_bitand() {
-        assert_eq!(
-            tr("a & b"),
-            r#"(& arg ["a"]) . op_bitand (& & arg ["b"])"#
-        );
+        assert_eq!(tr("a & b"), r#"(& arg ["a"]) . op_bitand (& & arg ["b"])"#);
     }
 
     #[test]
     fn binary_bitor() {
-        assert_eq!(
-            tr("a | b"),
-            r#"(& arg ["a"]) . op_bitor (& & arg ["b"])"#
-        );
+        assert_eq!(tr("a | b"), r#"(& arg ["a"]) . op_bitor (& & arg ["b"])"#);
     }
 
     #[test]
@@ -188,10 +195,7 @@ mod test {
 
     #[test]
     fn binary_bitxor() {
-        assert_eq!(
-            tr("a ^ b"),
-            r#"(& arg ["a"]) . op_bitxor (& & arg ["b"])"#
-        );
+        assert_eq!(tr("a ^ b"), r#"(& arg ["a"]) . op_bitxor (& & arg ["b"])"#);
     }
 
     #[test]
@@ -271,8 +275,9 @@ mod test {
     }
 
     #[test]
-    fn index_translates_base_and_keeps_index() {
-        assert_eq!(tr("a[b]"), r#"& & arg ["a"] [b]"#);
+    fn index_translates_base_and_argument_index() {
+        assert_eq!(tr("a[b]"), r#"& & arg ["a"] [& arg ["b"]]"#);
+        assert_eq!(tr("a[0]"), r#"& & arg ["a"] [0]"#);
     }
 
     // ------------------------------------------------------------------
@@ -346,16 +351,23 @@ mod test {
             }) => {}
             other => panic!("expected Lit::CStr, got {:?}", other.to_token_stream()),
         }
-        assert_eq!(translate("", e, &[]).unwrap().to_token_stream().to_string(), r#"c"x""#);
+        assert_eq!(
+            translate("", e, &[]).unwrap().to_token_stream().to_string(),
+            r#"c"x""#
+        );
     }
 
     // ------------------------------------------------------------------
-    // Fallthrough `_ => Ok(arg)`
+    // Unsupported expressions
     // ------------------------------------------------------------------
 
     #[test]
-    fn unsupported_expression_is_returned_unchanged() {
-        assert_eq!(tr("foo(1)"), "foo (1)");
+    fn unsupported_expression_is_an_error() {
+        assert_eq!(tr_err("foo(1)"), "unsupported expression: foo (1)");
+        assert_eq!(
+            tr_err("name as bool"),
+            "unsupported expression: name as bool"
+        );
     }
 
     // ------------------------------------------------------------------

@@ -273,12 +273,26 @@ impl NodeType {
             item = splits[1].trim();
         }
 
+        Self::validate_pysql_ident(item, "item", source_str)?;
+        if !index.is_empty() {
+            Self::validate_pysql_ident(index, "index", source_str)?;
+        }
+
         Ok(NodeType::NForEach(ForEachNode {
             childs,
             collection: col.to_string(),
             index: index.to_string(),
             item: item.to_string(),
         }))
+    }
+
+    fn validate_pysql_ident(value: &str, name: &str, source: &str) -> Result<(), Error> {
+        if value != "_" && syn::parse_str::<syn::Ident>(value).is_err() {
+            return Err(Error::from(format!(
+                "[rbatis-codegen] invalid py_sql foreach {name} identifier '{value}': {source}"
+            )));
+        }
+        Ok(())
     }
 
     fn parse_trim_tag_node(

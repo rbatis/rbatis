@@ -171,3 +171,19 @@ fn test_element_with_nested_children() {
         .iter()
         .any(|c| c.data.contains("WHERE name = #{name}")));
 }
+
+#[test]
+fn test_load_html_cdata_preserves_text() {
+    let html = r#"<select id="s">before<![CDATA[ where a < #{a} & b > 0 ]]>after</select>"#;
+    let result = load_html(html).expect("CDATA must load");
+    let select = &result[0];
+    let text = select.child_strings().join("");
+
+    assert_eq!(text, "before where a < #{a} & b > 0 after");
+}
+
+#[test]
+fn test_load_html_rejects_unterminated_cdata() {
+    let error = load_html("<select><![CDATA[where x < 1</select>").unwrap_err();
+    assert!(error.contains("unterminated CDATA"), "{error}");
+}

@@ -614,11 +614,61 @@ pub trait Neg {
     fn neg(self) -> Self::Output;
 }
 
-/// string contains method
-pub trait StrMethods {
-    fn contains_str(self, s: &str) -> bool;
-    fn starts_with(self, other: &str) -> bool;
-    fn ends_with(self, other: &str) -> bool;
+/// String methods available inside a template expression.
+///
+/// Non-string receivers are treated as an empty string, matching the historical
+/// `contains_str` behavior.
+macro_rules! define_str_trait {
+    (
+        value_argument_methods {
+            $(
+                $(#[$value_doc:meta])*
+                fn $value_method:ident (&self, $($arg:ident : $arg_ty:ty),+ $(,)?)
+                    -> $value_return:ty;
+            )*
+        }
+        methods {
+            $(
+                $(#[$doc:meta])*
+                fn $method:ident (&self $(,)?) -> $return:ty;
+            )*
+        }
+    ) => {
+        /// String methods available inside a template expression.
+        ///
+        /// Non-string receivers are treated as an empty string.
+        pub trait Str {
+            $(
+                $(#[$value_doc])*
+                fn $value_method(
+                    &self,
+                    $($arg : $arg_ty),+
+                ) -> $value_return;
+            )*
+
+            $(
+                $(#[$doc])*
+                fn $method(&self) -> $return;
+            )*
+        }
+
+        /// Whether the arguments of a `Str` method are template expressions.
+        pub(crate) fn takes_value_arguments(method: &str) -> bool {
+            matches!(method, $(stringify!($value_method))|*)
+        }
+    };
+}
+
+define_str_trait! {
+    value_argument_methods {
+        /// Returns whether the string contains `value`.
+        fn contains_str(&self, value: Value) -> bool;
+        /// Returns whether the string starts with `value`.
+        fn starts_with(&self, value: Value) -> bool;
+        /// Returns whether the string ends with `value`.
+        fn ends_with(&self, value: Value) -> bool;
+    }
+    methods {}
 }
 
 #[cfg(test)]

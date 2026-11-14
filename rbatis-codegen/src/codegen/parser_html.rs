@@ -107,6 +107,16 @@ fn include_replace(
                 sql_map.insert(id.clone(), element.clone());
             }
             INCLUDE_TAG => {
+                if !element.childs.is_empty() {
+                    return Err(Diagnostic::new(
+                        span,
+                        "[rbatis-codegen] <include> does not support child nodes",
+                        "move the content into the referenced <sql> fragment",
+                    )
+                    .with_source(element.source.clone())
+                    .to_syn()
+                    .into());
+                }
                 let node = IncludeTagNode::try_from_element(&element, span)
                     .map_err(|d| d.with_source(element.source.clone()).to_syn())?;
                 element = node

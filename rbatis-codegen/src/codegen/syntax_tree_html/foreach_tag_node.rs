@@ -28,16 +28,15 @@ impl HtmlAstNode for ForeachTagNode {
         let def_item = "item".to_string();
         let def_index = "index".to_string();
 
-        let collection = match element.attrs.get("collection") {
-            Some(collection) => collection.clone(),
-            None => {
-                return Err(Diagnostic::new(
+        let collection =
+            match element.attrs.get("collection") {
+                Some(collection) => collection.clone(),
+                None => return Err(Diagnostic::new(
                     span,
                     "[rbatis-codegen] <foreach> is missing the required \"collection\" attribute",
                     "add collection=\"...\", for example <foreach collection=\"ids\" item=\"id\">",
-                ))
-            }
-        };
+                )),
+            };
 
         if collection.trim().is_empty() {
             return Err(Diagnostic::new(
@@ -78,6 +77,20 @@ impl HtmlAstNode for ForeachTagNode {
         }
         if index.is_empty() || index == "_" {
             index = def_index;
+        }
+        if syn::parse_str::<Ident>(&item).is_err() {
+            return Err(Diagnostic::new(
+                span,
+                format!("[rbatis-codegen] <foreach> has an invalid item: {item}"),
+                "item must be a valid Rust identifier",
+            ));
+        }
+        if syn::parse_str::<Ident>(&index).is_err() {
+            return Err(Diagnostic::new(
+                span,
+                format!("[rbatis-codegen] <foreach> has an invalid index: {index}"),
+                "index must be a valid Rust identifier",
+            ));
         }
 
         Ok(Self {
@@ -156,28 +169,30 @@ impl HtmlAstNode for ForeachTagNode {
             (quote! {}, quote! {})
         };
 
-        let loop_tokens = if !self.separator.is_empty() {
+        let start_binding = if self.separator.is_empty() {
+            quote! {}
+        } else {
             quote! {
                 // where the text of this loop starts, used by #split_code_trim
                 let __foreach_sql_start = sql.len();
-                for (ref #index_ident, #item_ident) in #collection_method_impl {
-                    #foreach_body
-                    #split_code
-                }
-                #split_code_trim
-            }
-        } else {
-            quote! {
-                for (ref #index_ident, #item_ident) in #collection_method_impl {
-                    #foreach_body
-                }
             }
         };
 
         Ok(quote! {
-            #open_impl
-            #loop_tokens
-            #close_impl
+            #start_binding
+            let mut __foreach_has_items = false;
+            for (ref #index_ident, #item_ident) in #collection_method_impl {
+                if !__foreach_has_items {
+                    #open_impl
+                    __foreach_has_items = true;
+                }
+                #foreach_body
+                #split_code
+            }
+            if __foreach_has_items {
+                #split_code_trim
+                #close_impl
+            }
         })
     }
 }

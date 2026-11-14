@@ -339,6 +339,49 @@ fn node_expression_errors_point_to_the_owning_tag() {
 }
 
 #[test]
+fn invalid_identifiers_are_reported_without_panicking() {
+    let cases = [
+        (
+            "foreach item",
+            "<select id=\"f\">\n  <foreach collection=\"items\" item=\"a-b\">`x`</foreach>\n</select>",
+            "invalid item",
+        ),
+        (
+            "foreach index",
+            "<select id=\"f\">\n  <foreach collection=\"items\" index=\"a-b\">`x`</foreach>\n</select>",
+            "invalid index",
+        ),
+        (
+            "bind name",
+            "<select id=\"f\">\n  <bind name=\"a-b\" value=\"1\">`x`</bind>\n</select>",
+            "invalid name",
+        ),
+    ];
+
+    for (case, html, expected) in cases {
+        let err = try_parse_html(html, "f", &mut vec![], Span::call_site())
+            .expect_err("an invalid identifier must be a template error");
+        assert!(err.to_string().contains(expected), "{case}: {err}");
+        assert!(err.to_string().contains("template:2"), "{case}: {err}");
+    }
+}
+
+#[test]
+fn py_sql_rejects_invalid_foreach_identifiers() {
+    let f: syn::ItemFn = syn::parse_quote! {
+        pub async fn f(rb: &dyn rbatis::Executor) -> rbatis::Result<()> {}
+    };
+    let args = ParseArgs {
+        sqls: vec![syn::LitStr::new(
+            "for a-b in items:\n  `x`",
+            Span::call_site(),
+        )],
+    };
+    let err = try_impl_fn_py(&f, &args).expect_err("invalid py_sql item must fail");
+    assert!(err.to_string().contains("invalid py_sql foreach item"), "{err}");
+}
+
+#[test]
 fn sql_less_than_text_does_not_desynchronize_later_source_lines() {
     let html = concat!(
         "<select id=\"f\">\n",
@@ -353,6 +396,20 @@ fn sql_less_than_text_does_not_desynchronize_later_source_lines() {
     let message = err.to_string();
     assert!(message.contains("template:4:"), "wrong line: {message}");
     assert!(message.contains("`and b = #{name === 1}`"), "{message}");
+}
+
+#[test]
+fn cdata_is_parsed_as_sql_text() {
+    let html = concat!(
+        "<select id=\"f\">\n",
+        "  <![CDATA[`select * from t where a < #{a}`]]>\n",
+        "</select>",
+    );
+    let code = try_parse_html(html, "f", &mut vec![], Span::call_site())
+        .expect("CDATA must be valid template text")
+        .to_string();
+    assert!(code.contains("where a <"), "{code}");
+    assert!(code.contains("arg [\"a\"]"), "{code}");
 }
 
 #[test]

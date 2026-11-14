@@ -57,9 +57,9 @@ pub mod ops_rem;
 pub mod ops_shl;
 /// `>>` operator
 pub mod ops_shr;
-/// string helpers of a template expression (`.contains_str()`, `.starts_with()`,
+/// `str` helpers of a template expression (`.contains_str()`, `.starts_with()`,
 /// `.ends_with()`)
-pub mod ops_string;
+pub mod ops_str;
 /// `-` operator
 pub mod ops_sub;
 /// `^` operator
