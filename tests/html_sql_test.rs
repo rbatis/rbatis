@@ -1053,7 +1053,7 @@ mod test {
             rb.set_intercepts(vec![Arc::new(MockIntercept::new(queue.clone()))]);
 
             #[html_sql(
-                r#"<select id="test_html_sql_string_methods">`select 1`<if test="name.contains_str(fragment) && name.starts_with(prefix)">` where ok`</if></select>"#
+                r#"<select id="test_html_sql_string_methods">`select 1`<if test="name.trim().to_lowercase().replace('l', 'x').contains(fragment) && name.trim().starts_with(prefix)">` where ok`</if></select>"#
             )]
             pub async fn test_html_sql_string_methods(
                 rb: &RBatis,
@@ -1064,7 +1064,7 @@ mod test {
                 impled!()
             }
 
-            let _ = test_html_sql_string_methods(&rb, "hello", "ell", "he")
+            let _ = test_html_sql_string_methods(&rb, "  hello  ", "hexxo", "he")
                 .await
                 .unwrap();
             let (sql, _) = queue.pop().unwrap();

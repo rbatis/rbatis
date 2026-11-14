@@ -2,13 +2,26 @@ use crate::error::Error;
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use quote::ToTokens;
-use syn::{BinOp, Expr, Lit, Member};
+use syn::{BinOp, Expr, Lit, Member, UnOp};
 
 ///translate like `#{a + b}` Expr to rust code Expr
 #[allow(clippy::only_used_in_recursion)]
 pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Error> {
     match arg {
         Expr::Path(b) => {
+            if b.qself.is_some()
+                || b.path.leading_colon.is_some()
+                || b.path.segments.len() != 1
+                || !matches!(
+                    b.path.segments.first().map(|segment| &segment.arguments),
+                    Some(syn::PathArguments::None)
+                )
+            {
+                return Err(Error::from(format!(
+                    "unsupported path expression: {}",
+                    b.to_token_stream()
+                )));
+            }
             let token = b.to_token_stream().to_string();
             if token == "null" {
                 return syn::parse_str::<Expr>("rbs::Value::Null").map_err(Error::from);
@@ -31,18 +44,15 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         }
         Expr::MethodCall(mut b) => {
             b.receiver = Box::new(translate(context, *b.receiver, ignore)?);
-            // `Str` is the Value-based equivalent of the standard string methods.
-            // Translate its arguments too so `name.contains_str(other)` reads `other`
-            // from the template arguments instead of leaving an unresolved name.
-            if crate::ops::takes_value_arguments(&b.method.to_string()) {
-                for arg in b.args.iter_mut() {
-                    let translated = translate(context, arg.clone(), ignore)?;
-                    *arg = syn::parse_str::<Expr>(&format!(
-                        "rbs::value({}).unwrap_or_default()",
-                        translated.to_token_stream()
-                    ))
-                    .map_err(Error::from)?;
-                }
+            // Every method argument is a Value expression as well. This supports the
+            // built-in Str methods and user-defined extension traits on Value.
+            for arg in b.args.iter_mut() {
+                let translated = translate(context, arg.clone(), ignore)?;
+                *arg = syn::parse_str::<Expr>(&format!(
+                    "rbs::value({}).unwrap_or_default()",
+                    translated.to_token_stream()
+                ))
+                .map_err(Error::from)?;
             }
             Ok(Expr::MethodCall(b))
         }
@@ -248,23 +258,31 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         }
         Expr::Unary(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
-            if b.op.to_token_stream().to_string().trim() == "-" {
-                return syn::parse_str::<Expr>(&format!(
-                    "0i64.op_sub({})",
-                    b.expr.to_token_stream().to_string().trim()
-                ))
-                .map_err(Error::from);
-            }
-            if b.op.to_token_stream().to_string().trim() == "!" {
-                // the same conversion `and`/`or` use, so `!x`, `x && y` and `x || y`
-                // agree on what a `rbs::Value` means as a bool
-                b.expr = Box::new(
-                    syn::parse_str::<Expr>(&format!(
-                        "bool::op_from({})",
+            match b.op {
+                UnOp::Neg(_) => {
+                    return syn::parse_str::<Expr>(&format!(
+                        "0i64.op_sub({})",
                         b.expr.to_token_stream().to_string().trim()
                     ))
-                    .map_err(Error::from)?,
-                );
+                    .map_err(Error::from);
+                }
+                UnOp::Not(_) => {
+                    // the same conversion `and`/`or` use, so `!x`, `x && y` and
+                    // `x || y` agree on what a `rbs::Value` means as a bool
+                    b.expr = Box::new(
+                        syn::parse_str::<Expr>(&format!(
+                            "bool::op_from({})",
+                            b.expr.to_token_stream().to_string().trim()
+                        ))
+                        .map_err(Error::from)?,
+                    );
+                }
+                _ => {
+                    return Err(Error::from(format!(
+                        "unsupported unary operator: {}",
+                        b.op.to_token_stream()
+                    )))
+                }
             }
             Ok(Expr::Unary(b))
         }
@@ -277,17 +295,17 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         Expr::Field(mut b) => {
             b.base = Box::new(translate(context, *b.base, ignore)?);
             match b.member {
-                Member::Named(named) => {
-                    return syn::parse_str::<Expr>(&format!(
-                        "(&{}[\"{}\"])",
-                        b.base.to_token_stream(),
-                        named.to_token_stream()
-                    ))
-                    .map_err(Error::from);
-                }
-                Member::Unnamed(_) => {}
+                Member::Named(named) => syn::parse_str::<Expr>(&format!(
+                    "(&{}[\"{}\"])",
+                    b.base.to_token_stream(),
+                    named.to_token_stream()
+                ))
+                .map_err(Error::from),
+                Member::Unnamed(index) => Err(Error::from(format!(
+                    "unsupported tuple field: .{}",
+                    index.index
+                ))),
             }
-            Ok(Expr::Field(b))
         }
         Expr::Reference(mut b) => {
             b.expr = Box::new(translate(context, *b.expr, ignore)?);
@@ -296,14 +314,18 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         }
         Expr::Index(mut b) => {
             *b.expr = translate(context, *b.expr, ignore)?;
-            if !matches!(
-                b.index.as_ref(),
+            match b.index.as_ref() {
                 Expr::Lit(syn::ExprLit {
                     lit: Lit::Int(_) | Lit::Str(_),
                     ..
-                })
-            ) {
-                *b.index = translate(context, *b.index, ignore)?;
+                }) => {}
+                Expr::Lit(_) => {
+                    return Err(Error::from(format!(
+                        "unsupported index literal: {}",
+                        b.index.to_token_stream()
+                    )))
+                }
+                _ => *b.index = translate(context, *b.index, ignore)?,
             }
             syn::parse_str::<Expr>(&format!(
                 "&{}[{}]",
@@ -316,9 +338,6 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
         Expr::Lit(b) => {
             match b.lit {
                 Lit::Str(_) => {}
-                Lit::ByteStr(_) => {}
-                Lit::Byte(_) => {}
-                Lit::Char(_) => {}
                 Lit::Int(i) => {
                     //cast int to i64
                     return syn::parse_str::<Expr>(&format!("{}i64", i)).map_err(Error::from);
@@ -328,10 +347,18 @@ pub fn translate(context: &str, arg: Expr, ignore: &[String]) -> Result<Expr, Er
                     return syn::parse_str::<Expr>(&format!("{}f64", f)).map_err(Error::from);
                 }
                 Lit::Bool(_) => {}
-                Lit::Verbatim(_) => {}
-                _ => {}
+                other => {
+                    return Err(Error::from(format!(
+                        "unsupported literal: {}",
+                        other.to_token_stream()
+                    )))
+                }
             }
             Ok(Expr::Lit(b))
+        }
+        Expr::Group(mut b) => {
+            b.expr = Box::new(translate(context, *b.expr, ignore)?);
+            Ok(Expr::Group(b))
         }
         unsupported => Err(Error::from(format!(
             "unsupported expression: {}",

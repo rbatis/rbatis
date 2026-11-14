@@ -652,10 +652,6 @@ macro_rules! define_str_trait {
             )*
         }
 
-        /// Whether the arguments of a `Str` method are template expressions.
-        pub(crate) fn takes_value_arguments(method: &str) -> bool {
-            matches!(method, $(stringify!($value_method))|*)
-        }
     };
 }
 
@@ -663,12 +659,29 @@ define_str_trait! {
     value_argument_methods {
         /// Returns whether the string contains `value`.
         fn contains_str(&self, value: Value) -> bool;
+        /// Returns whether the string contains `value`.
+        fn contains(&self, value: Value) -> bool;
         /// Returns whether the string starts with `value`.
         fn starts_with(&self, value: Value) -> bool;
         /// Returns whether the string ends with `value`.
         fn ends_with(&self, value: Value) -> bool;
+        /// Compares two strings using ASCII case-insensitive equality.
+        fn eq_ignore_ascii_case(&self, value: Value) -> bool;
+        /// Replaces every occurrence of `from` with `to`.
+        fn replace(&self, from: Value, to: Value) -> Value;
     }
-    methods {}
+    methods {
+        /// Removes leading and trailing whitespace.
+        fn trim(&self) -> Value;
+        /// Removes leading whitespace.
+        fn trim_start(&self) -> Value;
+        /// Removes trailing whitespace.
+        fn trim_end(&self) -> Value;
+        /// Returns a lowercase copy of the string.
+        fn to_lowercase(&self) -> Value;
+        /// Returns an uppercase copy of the string.
+        fn to_uppercase(&self) -> Value;
+    }
 }
 
 #[cfg(test)]

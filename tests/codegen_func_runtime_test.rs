@@ -64,6 +64,15 @@ mod test {
     }
 
     #[test]
+    fn multi_segment_path_is_an_error() {
+        assert_eq!(tr_err("a::b"), "unsupported path expression: a :: b");
+        assert_eq!(
+            tr_err("<T as Trait>::value"),
+            "unsupported path expression: < T as Trait > :: value"
+        );
+    }
+
+    #[test]
     fn path_ignore_list_is_exact_match() {
         // "ab" is not equal to "a", so the arg-index branch is taken.
         assert_eq!(tr_ignored("ab", &["a"]), r#"& arg ["ab"]"#);
@@ -95,11 +104,27 @@ mod test {
             tr("name.ends_with(suffix)"),
             r#"(& arg ["name"]) . ends_with (rbs :: value (& arg ["suffix"]) . unwrap_or_default ())"#
         );
+        assert_eq!(
+            tr("name.contains(part)"),
+            r#"(& arg ["name"]) . contains (rbs :: value (& arg ["part"]) . unwrap_or_default ())"#
+        );
+        assert_eq!(
+            tr("name.replace(from, to)"),
+            r#"(& arg ["name"]) . replace (rbs :: value (& arg ["from"]) . unwrap_or_default () , rbs :: value (& arg ["to"]) . unwrap_or_default ())"#
+        );
     }
 
     #[test]
     fn method_call_chained_receivers_are_translated_recursively() {
         assert_eq!(tr("a.trim().len()"), r#"(& arg ["a"]) . trim () . len ()"#);
+    }
+
+    #[test]
+    fn custom_method_arguments_are_translated() {
+        assert_eq!(
+            tr("a.unknown(b)"),
+            r#"(& arg ["a"]) . unknown (rbs :: value (& arg ["b"]) . unwrap_or_default ())"#
+        );
     }
 
     // ------------------------------------------------------------------
@@ -246,8 +271,8 @@ mod test {
     }
 
     #[test]
-    fn unary_deref_falls_through_unchanged() {
-        assert_eq!(tr("*x"), r#"* & arg ["x"]"#);
+    fn unary_deref_is_an_error() {
+        assert_eq!(tr_err("*x"), "unsupported unary operator: *");
     }
 
     // ------------------------------------------------------------------
@@ -265,8 +290,8 @@ mod test {
     }
 
     #[test]
-    fn field_unnamed_member_keeps_field_expr() {
-        assert_eq!(tr("a.0"), r#"(& arg ["a"]) . 0"#);
+    fn field_unnamed_member_is_an_error() {
+        assert_eq!(tr_err("a.0"), "unsupported tuple field: .0");
     }
 
     #[test]
@@ -278,6 +303,7 @@ mod test {
     fn index_translates_base_and_argument_index() {
         assert_eq!(tr("a[b]"), r#"& & arg ["a"] [& arg ["b"]]"#);
         assert_eq!(tr("a[0]"), r#"& & arg ["a"] [0]"#);
+        assert_eq!(tr_err("a['x']"), "unsupported index literal: 'x'");
     }
 
     // ------------------------------------------------------------------
@@ -299,18 +325,18 @@ mod test {
     }
 
     #[test]
-    fn lit_byte_string_unchanged() {
-        assert_eq!(tr("b\"x\""), r#"b"x""#);
+    fn lit_byte_string_is_error() {
+        assert_eq!(tr_err("b\"x\""), r#"unsupported literal: b"x""#);
     }
 
     #[test]
-    fn lit_byte_unchanged() {
-        assert_eq!(tr("b'x'"), "b'x'");
+    fn lit_byte_is_error() {
+        assert_eq!(tr_err("b'x'"), "unsupported literal: b'x'");
     }
 
     #[test]
-    fn lit_char_unchanged() {
-        assert_eq!(tr("'x'"), "'x'");
+    fn lit_char_is_error() {
+        assert_eq!(tr_err("'x'"), "unsupported literal: 'x'");
     }
 
     #[test]
@@ -330,20 +356,20 @@ mod test {
     }
 
     #[test]
-    fn lit_verbatim_unchanged() {
+    fn lit_verbatim_is_error() {
         // `syn::parse_str` never produces Lit::Verbatim, so build one directly.
         let e = Expr::Lit(ExprLit {
             attrs: Vec::new(),
             lit: Lit::Verbatim(Literal::string("v")),
         });
-        let out = translate("", e, &[]).unwrap().to_token_stream().to_string();
-        assert_eq!(out, r#""v""#);
+        assert_eq!(
+            translate("", e, &[]).err().expect("expected Err").to_string(),
+            r#"unsupported literal: "v""#
+        );
     }
 
     #[test]
-    fn lit_cstr_hits_fallback_arm() {
-        // C string literals are a `Lit` variant the match does not name
-        // explicitly, so they reach the `_ => {}` fallback.
+    fn lit_cstr_is_error() {
         let e = syn::parse_str::<Expr>(r#"c"x""#).unwrap();
         match &e {
             Expr::Lit(ExprLit {
@@ -352,8 +378,8 @@ mod test {
             other => panic!("expected Lit::CStr, got {:?}", other.to_token_stream()),
         }
         assert_eq!(
-            translate("", e, &[]).unwrap().to_token_stream().to_string(),
-            r#"c"x""#
+            translate("", e, &[]).err().expect("expected Err").to_string(),
+            r#"unsupported literal: c"x""#
         );
     }
 
